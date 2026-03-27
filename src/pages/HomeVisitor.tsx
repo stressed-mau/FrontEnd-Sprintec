@@ -1,12 +1,13 @@
 import { Footer } from "@/components/Footer"
 import { Header } from "@/components/Header"
 import { Button } from "@/components/ui/button"
-import { Award, Briefcase, ChevronsLeftRight, FolderGit2, Sparkles } from "lucide-react"
+import {Award,Briefcase,ChevronsLeftRight,FolderGit2,Sparkles,Share2,Users,TrendingUp,Palette} from "lucide-react"
 import Foto from "@/assets/images/fotoEscritorio.png"
+import FotoP from "@/assets/images/fotoPorque.jpeg"
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-linear-to-b from-[#F2EBDF] to-[#4982AD] flex flex-col">
+    <div className="min-h-screen bg-linear-to-b from-[#F7F0E1] to-[#C2DBED] flex flex-col">
       <Header />
       <main className="flex-1">
         <section className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-2 lg:items-center">
@@ -74,6 +75,96 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <section className="py-24 ">
+          <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-16 items-center">
+         <div className="relative h-full w-full">
+         <img src={FotoP} alt="Equipo trabajando" className="h-full w-full object-cover rounded-[2rem] shadow-xl"/></div>
+         <div className="space-y-10">
+        <h2 className="text-4xl font-extrabold text-[#003A6C] mb-8">¿Por qué usar PortfolioGen?</h2>
+
+          <div className="space-y-8">
+          <div className="flex gap-6">
+          <div className="shrink-0 size-14 bg-[#C2DBED] rounded-2xl flex items-center justify-center shadow-sm">
+            <Share2 className="text-[#003A6C] size-7" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-[#003A6C] mb-2">Centraliza tu experiencia profesional</h3>
+            <p className="text-[#4982AD] leading-relaxed"> Toda tu información en un solo lugar, fácil de mantener y actualizar.</p>
+          </div>
+        </div>
+
+        <div className="flex gap-6">
+          <div className="shrink-0 size-14 bg-[#dfd0fe] rounded-2xl flex items-center justify-center shadow-sm">
+            <Users className="text-[#8B5CF6] size-7" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-[#003A6C] mb-2">Comparte tus proyectos con reclutadores</h3>
+            <p className="text-[#4982AD] leading-relaxed">Aumenta tus oportunidades laborales mostrando tu trabajo de forma profesional.</p>
+          </div>
+        </div>
+
+        <div className="flex gap-6">
+          <div className="shrink-0 size-14 bg-[#b1fad1] rounded-2xl flex items-center justify-center shadow-sm">
+            <TrendingUp className="text-[#1fc65c] size-7" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-[#003A6C] mb-2">Construye tu marca personal</h3>
+            <p className="text-[#4982AD] leading-relaxed">Destaca en el mercado laboral con un portafolio profesional y atractivo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section className="py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="text-center mb-16 space-y-4">
+          <h2 className="text-4xl font-extrabold text-[#003A6C]"> Elige tu plantilla favorita</h2>
+          <p className="text-lg text-[#4982AD] max-w-2xl mx-auto"> Diseños profesionales que se adaptan automáticamente a tu contenido</p>
+          </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      
+      {/* Tarjeta 1 - Plantilla Moderna */}
+      <div className="bg-white rounded-3xl border border-[#C2DBED] shadow-sm flex flex-col overflow-hidden hover:shadow-2xl transition-all group hover:-translate-y-1 lg:scale-105">
+        <div className="h-60 bg-linear-to-br from-[#77B6E6] to-[#003A6C] p-8 flex items-center justify-center">
+          <Palette className="size-20 text-white opacity-80" />
+        </div>
+        <div className="p-8 flex-1 flex flex-col justify-between space-y-4">
+          <div> 
+            <h3 className="text-2xl font-bold text-[#003A6C]">Plantilla Moderna</h3>
+            <p className="text-[#4982AD] text-base leading-relaxed mt-2"> Diseño contemporáneo con gradientes y animaciones suaves</p>
+          </div>
+        </div>
+      </div>
+      {/* Tarjeta 2 - Plantilla Minimalista */}
+        <div className="bg-white rounded-3xl border-2 border-[#C2DBED] shadow-xl flex flex-col overflow-hidden hover:shadow-2xl transition-all group hover:-translate-y-1 lg:scale-105">
+        <div className="h-60 bg-[#2D3748] p-8 flex items-center justify-center">
+          <Palette className="size-20 text-white opacity-60" />
+        </div>
+        <div className="p-8 flex-1 flex flex-col justify-between space-y-4">
+          <div>
+            <h3 className="text-2xl font-bold text-[#003A6C]">Plantilla Minimalista</h3>
+            <p className="text-[#4982AD] text-base leading-relaxed mt-2"> Diseño limpio y elegante enfocado en el contenido </p>
+          </div>
+        </div>
+      </div>
+      {/* Tarjeta 3 - Plantilla Corporativa */}
+      <div className="bg-white rounded-3xl border border-[#C2DBED] shadow-sm flex flex-col overflow-hidden hover:shadow-2xl transition-all group hover:-translate-y-1 lg:scale-105">
+        <div className="h-60 bg-linear-to-br from-[#4982AD] to-[#77B6E6] p-8 flex items-center justify-center">
+          <Palette className="size-20 text-white opacity-80" />
+        </div>
+        <div className="p-8 flex-1 flex flex-col justify-between space-y-4">
+          <div>
+            <h3 className="text-2xl font-bold text-[#003A6C]">Plantilla Corporativa</h3>
+            <p className="text-[#4982AD] text-base leading-relaxed mt-2">Diseño profesional perfecto para empresas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
       </main>
       <Footer />
     </div>
@@ -83,9 +174,7 @@ export default function Home() {
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="rounded-2xl border border-[#0e6db6] bg-[#F8FAFC] p-8 transition-shadow hover:shadow-md">
-      <div className="mb-6 flex size-12 items-center justify-center rounded-lg bg-white shadow-sm">
-        {icon}
-      </div>
+      <div className="mb-6 flex size-12 items-center justify-center rounded-lg bg-white shadow-sm">{icon}</div>
       <h3 className="mb-3 text-xl font-bold text-[#003A6C]">{title}</h3>
       <p className="leading-relaxed text-[#4982AD]">{description}</p>
     </div>
