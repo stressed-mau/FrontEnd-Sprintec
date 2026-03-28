@@ -43,12 +43,12 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<LoginErrors>({})
   const [showPassword, setShowPassword] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
-  const emailInputId = "login-email"
-  const passwordInputId = "login-password"
-  const emailErrorId = "login-email-error"
-  const passwordErrorId = "login-password-error"
-  const formErrorId = "login-form-error"
-  const successMessageId = "login-success-message"
+  const idEntradaCorreo = "inicio-sesion-correo"
+  const idEntradaContrasena = "inicio-sesion-contrasena"
+  const idErrorCorreo = "inicio-sesion-error-correo"
+  const idErrorContrasena = "inicio-sesion-error-contrasena"
+  const idErrorFormulario = "inicio-sesion-error-formulario"
+  const idMensajeExito = "inicio-sesion-mensaje-exito"
 
   function updateField(field: keyof LoginValues, value: string) {
     setValues((current) => ({ ...current, [field]: value }))
@@ -121,13 +121,13 @@ export default function LoginPage() {
             <CardContent className="space-y-6">
               <form noValidate onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor={emailInputId} className="text-[#003A6C]">
+                  <Label htmlFor={idEntradaCorreo} className="text-[#003A6C]">
                     Correo electrónico
                   </Label>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
-                      id={emailInputId}
+                      id={idEntradaCorreo}
                       type="email"
                       placeholder="tu@email.com"
                       maxLength={60}
@@ -136,11 +136,11 @@ export default function LoginPage() {
                       onChange={(e) => updateField("email", e.target.value)}
                       className="h-11 border-[#C2DBED] bg-white pl-10 text-[#003A6C] placeholder:text-[#7B98AF]"
                       aria-invalid={Boolean(errors.email)}
-                      aria-describedby={errors.email ? emailErrorId : undefined}
+                      aria-describedby={errors.email ? idErrorCorreo : undefined}
                     />
                   </div>
                   {errors.email ? (
-                    <p id={emailErrorId} className="text-sm text-red-600">
+                    <p id={idErrorCorreo} className="text-sm text-red-600">
                       {errors.email}
                     </p>
                   ) : null}
@@ -148,7 +148,7 @@ export default function LoginPage() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-3">
-                    <Label htmlFor={passwordInputId} className="text-[#003A6C]">
+                    <Label htmlFor={idEntradaContrasena} className="text-[#003A6C]">
                       Contraseña
                     </Label>
                     <button type="button" className="text-xs font-medium text-[#4982AD] transition hover:text-[#003A6C]">
@@ -158,7 +158,7 @@ export default function LoginPage() {
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
-                      id={passwordInputId}
+                      id={idEntradaContrasena}
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={values.password}
@@ -166,7 +166,7 @@ export default function LoginPage() {
                       onChange={(e) => updateField("password", e.target.value)}
                       className="h-11 border-[#C2DBED] bg-white pl-10 pr-11 text-[#003A6C] placeholder:text-[#7B98AF]"
                       aria-invalid={Boolean(errors.password)}
-                      aria-describedby={errors.password ? passwordErrorId : undefined}
+                      aria-describedby={errors.password ? idErrorContrasena : undefined}
                     />
                     <button
                       type="button"
@@ -178,7 +178,7 @@ export default function LoginPage() {
                     </button>
                   </div>
                   {errors.password ? (
-                    <p id={passwordErrorId} className="text-sm text-red-600">
+                    <p id={idErrorContrasena} className="text-sm text-red-600">
                       {errors.password}
                     </p>
                   ) : null}
@@ -186,7 +186,7 @@ export default function LoginPage() {
 
                 {errors.form ? (
                   <div
-                    id={formErrorId}
+                    id={idErrorFormulario}
                     className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
                   >
                     {errors.form}
@@ -195,7 +195,7 @@ export default function LoginPage() {
 
                 {successMessage ? (
                   <div
-                    id={successMessageId}
+                    id={idMensajeExito}
                     className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
                   >
                     {successMessage}

@@ -15,7 +15,7 @@ export function Footer() {
 
   return (
     <footer
-      id="site-footer"
+      id="pie-sitio"
       className="mt-auto border-t border-white/10 bg-[linear-gradient(135deg,#003A6C_0%,#4982AD_100%)] text-white"
     >
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
@@ -41,10 +41,10 @@ export function Footer() {
           </Card>
 
           <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6">
-            <h3 id="footer-links-heading" className="text-sm font-semibold uppercase tracking-[0.24em] text-[#003A6C]">
+            <h3 id="pie-enlaces-titulo" className="text-sm font-semibold uppercase tracking-[0.24em] text-[#003A6C]">
               Mas
             </h3>
-            <nav aria-labelledby="footer-links-heading" className="space-y-3 text-sm">
+            <nav aria-labelledby="pie-enlaces-titulo" className="space-y-3 text-sm">
               <Link to={aboutPath} className="block text-[#EAF4FB] transition hover:text-white">
                 Sobre la plataforma
               </Link>
@@ -55,10 +55,10 @@ export function Footer() {
           </div>
 
           <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6">
-            <h3 id="footer-company-heading" className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C2DBED]">
+            <h3 id="pie-empresa-titulo" className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C2DBED]">
               Empresa
             </h3>
-            <div aria-labelledby="footer-company-heading" className="space-y-4 text-sm text-[#EAF4FB]">
+            <div aria-labelledby="pie-empresa-titulo" className="space-y-4 text-sm text-[#EAF4FB]">
               <p className="font-semibold text-white">Sprintec Software Solution SRL</p>
               <a
                 href="mailto:sprintecsoftwaresolution@gmail.com"
