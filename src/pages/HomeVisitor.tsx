@@ -9,10 +9,14 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-linear-to-b from-[#F7F0E1] to-[#C2DBED] flex flex-col">
       <Header />
-      <main className="flex-1">
-        <section className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-2 lg:items-center">
+      <main id="home-visitor-main" className="flex-1">
+        <section
+          id="home-hero"
+          aria-labelledby="home-hero-title"
+          className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-2 lg:items-center"
+        >
           <div className="space-y-8">
-            <h1 className="text-5xl font-extrabold tracking-tight text-[#003A6C] sm:text-6xl">
+            <h1 id="home-hero-title" className="text-5xl font-extrabold tracking-tight text-[#003A6C] sm:text-6xl">
               Construye tu portafolio profesional de software
             </h1>
             <p className="text-lg leading-relaxed text-[#4982AD]">
@@ -34,10 +38,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-20">
+        <section id="home-features" aria-labelledby="home-features-title" className="py-20">
           <div className="mx-auto max-w-7xl px-6">
             <div className="mb-16 text-center">
-              <h2 className="mb-4 text-4xl font-bold text-[#003A6C]">Funcionalidades principales</h2>
+              <h2 id="home-features-title" className="mb-4 text-4xl font-bold text-[#003A6C]">Funcionalidades principales</h2>
               <p className="text-lg leading-relaxed text-[#4982AD]">Todo lo que necesitas para destacar profesionalmente</p>
             </div>
 
@@ -76,12 +80,12 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-24 ">
+        <section id="home-benefits" aria-labelledby="home-benefits-title" className="py-24 ">
           <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-16 items-center">
          <div className="relative h-full w-full">
          <img src={FotoP} alt="Equipo trabajando" className="h-full w-full object-cover rounded-[2rem] shadow-xl"/></div>
          <div className="space-y-10">
-        <h2 className="text-4xl font-extrabold text-[#003A6C] mb-8">¿Por qué usar PortfolioGen?</h2>
+        <h2 id="home-benefits-title" className="text-4xl font-extrabold text-[#003A6C] mb-8">¿Por qué usar PortfolioGen?</h2>
 
           <div className="space-y-8">
           <div className="flex gap-6">
@@ -118,10 +122,10 @@ export default function Home() {
   </div>
 </section>
 
-<section className="py-24">
+<section id="home-templates" aria-labelledby="home-templates-title" className="py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center mb-16 space-y-4">
-          <h2 className="text-4xl font-extrabold text-[#003A6C]"> Elige tu plantilla favorita</h2>
+          <h2 id="home-templates-title" className="text-4xl font-extrabold text-[#003A6C]"> Elige tu plantilla favorita</h2>
           <p className="text-lg text-[#4982AD] max-w-2xl mx-auto"> Diseños profesionales que se adaptan automáticamente a tu contenido</p>
           </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">

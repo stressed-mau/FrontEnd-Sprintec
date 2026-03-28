@@ -14,7 +14,10 @@ export function Footer() {
   const contactPath = isDashboard ? "/dashboard/contact" : isAdmin ? "/admin/contact" : "/contact"
 
   return (
-    <footer className="mt-auto border-t border-white/10 bg-[linear-gradient(135deg,#003A6C_0%,#4982AD_100%)] text-white">
+    <footer
+      id="site-footer"
+      className="mt-auto border-t border-white/10 bg-[linear-gradient(135deg,#003A6C_0%,#4982AD_100%)] text-white"
+    >
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
         <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.8fr)_minmax(0,1fr)] lg:gap-6">
           <Card className="border-white/15 bg-white/8 shadow-xl backdrop-blur-sm">
@@ -38,8 +41,10 @@ export function Footer() {
           </Card>
 
           <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-[#003A6C]">Mas</h3>
-            <nav className="space-y-3 text-sm">
+            <h3 id="footer-links-heading" className="text-sm font-semibold uppercase tracking-[0.24em] text-[#003A6C]">
+              Mas
+            </h3>
+            <nav aria-labelledby="footer-links-heading" className="space-y-3 text-sm">
               <Link to={aboutPath} className="block text-[#EAF4FB] transition hover:text-white">
                 Sobre la plataforma
               </Link>
@@ -50,17 +55,20 @@ export function Footer() {
           </div>
 
           <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-6">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C2DBED]">Empresa</h3>
-            <div className="space-y-4 text-sm text-[#EAF4FB]">
+            <h3 id="footer-company-heading" className="text-sm font-semibold uppercase tracking-[0.24em] text-[#C2DBED]">
+              Empresa
+            </h3>
+            <div aria-labelledby="footer-company-heading" className="space-y-4 text-sm text-[#EAF4FB]">
               <p className="font-semibold text-white">Sprintec Software Solution SRL</p>
               <a
                 href="mailto:sprintecsoftwaresolution@gmail.com"
+                aria-label="Enviar correo a sprintecsoftwaresolution@gmail.com"
                 className="flex items-start gap-3 transition hover:text-white"
               >
                 <Mail className="mt-0.5 size-4 shrink-0 text-[#77B6E6]" />
                 <span className="break-all">sprintecsoftwaresolution@gmail.com</span>
               </a>
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3" aria-label="Teléfono de contacto (+591) 71491159">
                 <Phone className="mt-0.5 size-4 shrink-0 text-[#77B6E6]" />
                 <span>(+591) 71491159</span>
               </div>

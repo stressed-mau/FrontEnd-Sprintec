@@ -39,11 +39,11 @@ export default function AboutPage() {
   return (
     <div className="flex min-h-screen flex-col bg-linear-to-b from-[#F2EBDF] via-[#ECF4F9] to-[#4982AD]">
       <Header />
-      <main className="flex-1 px-4 py-12 sm:px-6 sm:py-16">
+      <main id="about-page-main" className="flex-1 px-4 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-6xl space-y-8">
-          <section className="space-y-4 text-center">
+          <section id="about-page-hero" aria-labelledby="about-page-title" className="space-y-4 text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#4982AD]">Sobre la plataforma</p>
-            <h1 className="text-4xl font-bold tracking-tight text-[#003A6C] sm:text-5xl">
+            <h1 id="about-page-title" className="text-4xl font-bold tracking-tight text-[#003A6C] sm:text-5xl">
               PortfolioGen impulsa tu presencia profesional
             </h1>
             <p className="mx-auto max-w-3xl text-base leading-7 text-[#355B7A] sm:text-lg">
@@ -52,9 +52,9 @@ export default function AboutPage() {
             </p>
           </section>
 
-          <Card className="border-[#C2DBED] bg-white/85 shadow-xl backdrop-blur-sm">
+          <Card id="about-page-overview" className="border-[#C2DBED] bg-white/85 shadow-xl backdrop-blur-sm">
             <CardHeader className="space-y-3 border-b border-[#D7E6F2]">
-              <CardTitle className="text-2xl font-bold text-[#003A6C] sm:text-3xl">
+              <CardTitle id="about-page-overview-title" className="text-2xl font-bold text-[#003A6C] sm:text-3xl">
                 ¿Qué es PortfolioGen?
               </CardTitle>
               <p className="max-w-3xl text-sm leading-6 text-[#4F6F88] sm:text-base">
@@ -76,7 +76,7 @@ export default function AboutPage() {
             </CardContent>
           </Card>
 
-          <section className="grid gap-5 md:grid-cols-2">
+          <section id="about-page-info-cards" aria-labelledby="about-page-overview-title" className="grid gap-5 md:grid-cols-2">
             {infoCards.map(({ title, description, icon: Icon, iconClassName }) => (
               <Card key={title} className="border-[#CFE0EC] bg-white/85 shadow-lg backdrop-blur-sm">
                 <CardHeader className="space-y-4">

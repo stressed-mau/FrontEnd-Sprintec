@@ -30,11 +30,11 @@ export default function ContactPage() {
   return (
     <div className="flex min-h-screen flex-col bg-linear-to-b from-[#F2EBDF] via-[#EAF2F8] to-[#4982AD]">
       <Header />
-      <main className="flex-1 px-4 py-12 sm:px-6 sm:py-16">
+      <main id="contact-page-main" className="flex-1 px-4 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-5xl space-y-8">
-          <section className="space-y-4 text-center">
+          <section id="contact-page-hero" aria-labelledby="contact-page-title" className="space-y-4 text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#4982AD]">Contacto</p>
-            <h1 className="text-4xl font-bold tracking-tight text-[#003A6C] sm:text-5xl">
+            <h1 id="contact-page-title" className="text-4xl font-bold tracking-tight text-[#003A6C] sm:text-5xl">
               Estamos listos para ayudarte
             </h1>
             <p className="mx-auto max-w-2xl text-base leading-7 text-[#355B7A] sm:text-lg">
@@ -43,9 +43,9 @@ export default function ContactPage() {
             </p>
           </section>
 
-          <Card className="border-[#C2DBED] bg-white/85 shadow-xl backdrop-blur-sm">
+          <Card id="contact-page-card" className="border-[#C2DBED] bg-white/85 shadow-xl backdrop-blur-sm">
             <CardHeader className="space-y-3 border-b border-[#D7E6F2]">
-              <CardTitle className="text-2xl font-bold text-[#003A6C] sm:text-3xl">
+              <CardTitle id="contact-page-card-title" className="text-2xl font-bold text-[#003A6C] sm:text-3xl">
                 Sprintec Software Solution SRL
               </CardTitle>
               <p className="max-w-2xl text-sm leading-6 text-[#4F6F88] sm:text-base">
@@ -55,10 +55,15 @@ export default function ContactPage() {
             </CardHeader>
 
             <CardContent className="py-6 sm:py-8">
-              <div className="mx-auto flex max-w-3xl flex-col gap-4 sm:gap-5">
+              <div
+                id="contact-page-items"
+                aria-labelledby="contact-page-card-title"
+                className="mx-auto flex max-w-3xl flex-col gap-4 sm:gap-5"
+              >
               {contactItems.map(({ title, value, href, icon: Icon, iconClassName }) => (
                 <div
                   key={title}
+                  id={`contact-item-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
                   className="flex flex-col gap-4 rounded-2xl border border-[#D9E6F1] bg-[#F8FBFE] p-4 sm:flex-row sm:items-start sm:p-5"
                 >
                   <div className={`flex size-12 shrink-0 items-center justify-center rounded-xl ${iconClassName}`}>
@@ -69,6 +74,7 @@ export default function ContactPage() {
                     {href ? (
                       <a
                         href={href}
+                        aria-label={`${title}: ${value}`}
                         className="break-all text-base font-medium text-[#003A6C] transition hover:text-[#4982AD]"
                       >
                         {value}

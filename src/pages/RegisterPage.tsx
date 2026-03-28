@@ -84,6 +84,16 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const nameInputId = "register-name"
+  const emailInputId = "register-email"
+  const passwordInputId = "register-password"
+  const confirmPasswordInputId = "register-confirm-password"
+  const nameErrorId = "register-name-error"
+  const emailErrorId = "register-email-error"
+  const passwordHintId = "register-password-hint"
+  const passwordErrorId = "register-password-error"
+  const confirmPasswordErrorId = "register-confirm-password-error"
+  const successModalTitleId = "register-success-title"
 
   function updateField(field: keyof RegisterValues, value: string) {
     setValues((current) => ({ ...current, [field]: value }))
@@ -159,13 +169,13 @@ export default function RegisterPage() {
             <CardContent className="space-y-6">
               <form noValidate onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-[#003A6C]">
+                  <Label htmlFor={nameInputId} className="text-[#003A6C]">
                     Nombre de usuario
                   </Label>
                   <div className="relative">
                     <UserRound className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
-                      id="name"
+                      id={nameInputId}
                       type="text"
                       placeholder="Tu nombre de usuario"
                       maxLength={30}
@@ -174,19 +184,24 @@ export default function RegisterPage() {
                       onChange={(e) => updateField("name", e.target.value)}
                       className="h-11 border-[#C2DBED] bg-white pl-10 text-[#003A6C] placeholder:text-[#7B98AF]"
                       aria-invalid={Boolean(errors.name)}
+                      aria-describedby={errors.name ? nameErrorId : undefined}
                     />
                   </div>
-                  {errors.name ? <p className="text-sm text-red-600">{errors.name}</p> : null}
+                  {errors.name ? (
+                    <p id={nameErrorId} className="text-sm text-red-600">
+                      {errors.name}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[#003A6C]">
+                  <Label htmlFor={emailInputId} className="text-[#003A6C]">
                     Correo electrónico
                   </Label>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
-                      id="email"
+                      id={emailInputId}
                       type="email"
                       placeholder="tu@email.com"
                       maxLength={60}
@@ -195,22 +210,27 @@ export default function RegisterPage() {
                       onChange={(e) => updateField("email", e.target.value)}
                       className="h-11 border-[#C2DBED] bg-white pl-10 text-[#003A6C] placeholder:text-[#7B98AF]"
                       aria-invalid={Boolean(errors.email)}
+                      aria-describedby={errors.email ? emailErrorId : undefined}
                     />
                   </div>
-                  {errors.email ? <p className="text-sm text-red-600">{errors.email}</p> : null}
+                  {errors.email ? (
+                    <p id={emailErrorId} className="text-sm text-red-600">
+                      {errors.email}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-[#003A6C]">
+                  <Label htmlFor={passwordInputId} className="text-[#003A6C]">
                     Contraseña
                   </Label>
-                  <p className="text-xs leading-5 text-[#5E7D95]">
+                  <p id={passwordHintId} className="text-xs leading-5 text-[#5E7D95]">
                     Debe tener entre 8 y 20 caracteres, incluir una mayúscula, un número y un carácter especial.
                   </p>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
-                      id="password"
+                      id={passwordInputId}
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       maxLength={20}
@@ -219,6 +239,7 @@ export default function RegisterPage() {
                       onChange={(e) => updateField("password", e.target.value)}
                       className="h-11 border-[#C2DBED] bg-white pl-10 pr-11 text-[#003A6C] placeholder:text-[#7B98AF]"
                       aria-invalid={Boolean(errors.password)}
+                      aria-describedby={errors.password ? `${passwordHintId} ${passwordErrorId}` : passwordHintId}
                     />
                     <button
                       type="button"
@@ -229,17 +250,21 @@ export default function RegisterPage() {
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
                   </div>
-                  {errors.password ? <p className="text-sm text-red-600">{errors.password}</p> : null}
+                  {errors.password ? (
+                    <p id={passwordErrorId} className="text-sm text-red-600">
+                      {errors.password}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-[#003A6C]">
+                  <Label htmlFor={confirmPasswordInputId} className="text-[#003A6C]">
                     Confirmar contraseña
                   </Label>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
-                      id="confirmPassword"
+                      id={confirmPasswordInputId}
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="••••••••"
                       maxLength={20}
@@ -248,6 +273,7 @@ export default function RegisterPage() {
                       onChange={(e) => updateField("confirmPassword", e.target.value)}
                       className="h-11 border-[#C2DBED] bg-white pl-10 pr-11 text-[#003A6C] placeholder:text-[#7B98AF]"
                       aria-invalid={Boolean(errors.confirmPassword)}
+                      aria-describedby={errors.confirmPassword ? confirmPasswordErrorId : undefined}
                     />
                     <button
                       type="button"
@@ -258,7 +284,11 @@ export default function RegisterPage() {
                       {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
                   </div>
-                  {errors.confirmPassword ? <p className="text-sm text-red-600">{errors.confirmPassword}</p> : null}
+                  {errors.confirmPassword ? (
+                    <p id={confirmPasswordErrorId} className="text-sm text-red-600">
+                      {errors.confirmPassword}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="flex gap-3">
@@ -301,7 +331,12 @@ export default function RegisterPage() {
 
       {showSuccessModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#003A6C]/45 px-4">
-          <div className="relative w-full max-w-lg rounded-3xl border border-[#C2DBED] bg-white p-6 shadow-2xl">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={successModalTitleId}
+            className="relative w-full max-w-lg rounded-3xl border border-[#C2DBED] bg-white p-6 shadow-2xl"
+          >
             <button
               type="button"
               onClick={() => setShowSuccessModal(false)}
@@ -310,7 +345,9 @@ export default function RegisterPage() {
             >
               <X className="size-5" />
             </button>
-            <h2 className="text-2xl font-bold text-[#003A6C]">Registro exitoso. Tu cuenta ha sido creada correctamente.</h2>
+            <h2 id={successModalTitleId} className="text-2xl font-bold text-[#003A6C]">
+              Registro exitoso. Tu cuenta ha sido creada correctamente.
+            </h2>
             <p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#4F6F88]">{WELCOME_MESSAGE}</p>
           </div>
         </div>

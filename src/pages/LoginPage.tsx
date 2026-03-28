@@ -43,6 +43,12 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<LoginErrors>({})
   const [showPassword, setShowPassword] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
+  const emailInputId = "login-email"
+  const passwordInputId = "login-password"
+  const emailErrorId = "login-email-error"
+  const passwordErrorId = "login-password-error"
+  const formErrorId = "login-form-error"
+  const successMessageId = "login-success-message"
 
   function updateField(field: keyof LoginValues, value: string) {
     setValues((current) => ({ ...current, [field]: value }))
@@ -115,13 +121,13 @@ export default function LoginPage() {
             <CardContent className="space-y-6">
               <form noValidate onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-[#003A6C]">
+                  <Label htmlFor={emailInputId} className="text-[#003A6C]">
                     Correo electrónico
                   </Label>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
-                      id="email"
+                      id={emailInputId}
                       type="email"
                       placeholder="tu@email.com"
                       maxLength={60}
@@ -130,14 +136,19 @@ export default function LoginPage() {
                       onChange={(e) => updateField("email", e.target.value)}
                       className="h-11 border-[#C2DBED] bg-white pl-10 text-[#003A6C] placeholder:text-[#7B98AF]"
                       aria-invalid={Boolean(errors.email)}
+                      aria-describedby={errors.email ? emailErrorId : undefined}
                     />
                   </div>
-                  {errors.email ? <p className="text-sm text-red-600">{errors.email}</p> : null}
+                  {errors.email ? (
+                    <p id={emailErrorId} className="text-sm text-red-600">
+                      {errors.email}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-3">
-                    <Label htmlFor="password" className="text-[#003A6C]">
+                    <Label htmlFor={passwordInputId} className="text-[#003A6C]">
                       Contraseña
                     </Label>
                     <button type="button" className="text-xs font-medium text-[#4982AD] transition hover:text-[#003A6C]">
@@ -147,7 +158,7 @@ export default function LoginPage() {
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
-                      id="password"
+                      id={passwordInputId}
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={values.password}
@@ -155,6 +166,7 @@ export default function LoginPage() {
                       onChange={(e) => updateField("password", e.target.value)}
                       className="h-11 border-[#C2DBED] bg-white pl-10 pr-11 text-[#003A6C] placeholder:text-[#7B98AF]"
                       aria-invalid={Boolean(errors.password)}
+                      aria-describedby={errors.password ? passwordErrorId : undefined}
                     />
                     <button
                       type="button"
@@ -165,17 +177,27 @@ export default function LoginPage() {
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
                   </div>
-                  {errors.password ? <p className="text-sm text-red-600">{errors.password}</p> : null}
+                  {errors.password ? (
+                    <p id={passwordErrorId} className="text-sm text-red-600">
+                      {errors.password}
+                    </p>
+                  ) : null}
                 </div>
 
                 {errors.form ? (
-                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <div
+                    id={formErrorId}
+                    className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                  >
                     {errors.form}
                   </div>
                 ) : null}
 
                 {successMessage ? (
-                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  <div
+                    id={successMessageId}
+                    className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+                  >
                     {successMessage}
                   </div>
                 ) : null}
