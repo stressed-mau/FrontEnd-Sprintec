@@ -145,7 +145,7 @@ const UserPersonalData = () => {
                   <button
                     id="btn-save"
                     type="submit"
-                    className="w-full sm:w-auto bg-[#003A6C] text-white px-8 py-2.5 rounded-lg font-semibold text-sm hover:bg-[#1a4f7a] transition-colors order-1 sm:order-none"
+                    className="w-full sm:w-auto bg-[#003A6C] text-white px-8 py-2.5 rounded-lg font-semibold text-sm hover:bg-[#1a4f7a] transition-colors order-1 sm:order-0"
                   >
                     Guardar cambios
                   </button>
@@ -153,7 +153,7 @@ const UserPersonalData = () => {
                   <button
                     id="btn-cancel"
                     type="button"
-                    className="w-full sm:w-auto bg-[#c2dbed] text-[#003A6C] px-8 py-2.5 rounded-lg font-semibold text-sm border border-[#6dacbf] hover:bg-[#C4A57C]/20 transition-colors order-2 sm:order-none"
+                    className="w-full sm:w-auto bg-[#c2dbed] text-[#003A6C] px-8 py-2.5 rounded-lg font-semibold text-sm border border-[#6dacbf] hover:bg-[#C4A57C]/20 transition-colors order-2 sm:order-0"
                   >
                     Cancelar
                   </button>
