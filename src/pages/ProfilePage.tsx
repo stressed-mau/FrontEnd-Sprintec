@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Header from '../components/Header';
+import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { User, Mail, Lock, SquarePen, X, ShieldCheck } from 'lucide-react';
 

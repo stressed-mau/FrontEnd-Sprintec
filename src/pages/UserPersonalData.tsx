@@ -1,4 +1,4 @@
-import Header from '../components/Header';
+import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { allCountries } from 'country-telephone-data'
 import { useState } from 'react';
