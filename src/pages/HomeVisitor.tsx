@@ -13,39 +13,39 @@ export default function Home() {
         <section
           id="seccion-principal-inicio"
           aria-labelledby="titulo-principal-inicio"
-          className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-2 lg:items-center"
+          className="mx-auto grid max-w-7xl gap-8 px-6 py-12 lg:py-20 lg:grid-cols-2 lg:items-center"
         >
-          <div className="space-y-8">
+          <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
             <h1 id="titulo-principal-inicio" className="text-5xl font-extrabold tracking-tight text-[#003A6C] sm:text-6xl">
               Construye tu portafolio profesional de software
             </h1>
-            <p className="text-lg leading-relaxed text-[#4982AD]">
+            <p className="text-base lg:text-lg leading-relaxed text-[#4982AD] max-w-xl mx-auto lg:mx-0">
               Crea, gestiona y comparte tus proyectos, habilidades y experiencia en una plataforma profesional
             </p>
-            <div className="flex gap-4">
-              <Button size="lg" className="bg-[#003A6C] px-6 py-6 text-lg shadow-lg transition-all hover:bg-[#4982AD]">
-                <Sparkles className="ml-2 size-5" />
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+              <Button size="lg" className="bg-[#003A6C] px-8 py-6 text-lg shadow-lg transition-all hover:bg-[#4982AD] w-full sm:w-auto">
+                <Sparkles className="mr-2 size-5" />
                 Crear mi portafolio
               </Button>
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative mt-8 lg:mt-0">
             <div className="aspect-video overflow-hidden rounded-xl border-4 border-[#C2DBED] bg-slate-200 shadow-2xl">
               <img src={Foto} alt="Vista del sistema" className="h-full w-full object-cover" />
             </div>
-            <div className="absolute -bottom-6 -left-6 size-32 rounded-full bg-[#F7F0E1] blur-2xl" />
+            <div className="hidden sm:block absolute -bottom-6 -left-6 size-32 rounded-full bg-[#F7F0E1] blur-2xl" />
           </div>
         </section>
 
-        <section id="seccion-funcionalidades-inicio" aria-labelledby="titulo-funcionalidades-inicio" className="py-20">
+        <section id="seccion-funcionalidades-inicio" aria-labelledby="titulo-funcionalidades-inicio" className="py-16 lg:py-20">
           <div className="mx-auto max-w-7xl px-6">
-            <div className="mb-16 text-center">
-              <h2 id="titulo-funcionalidades-inicio" className="mb-4 text-4xl font-bold text-[#003A6C]">Funcionalidades principales</h2>
-              <p className="text-lg leading-relaxed text-[#4982AD]">Todo lo que necesitas para destacar profesionalmente</p>
+            <div className="mb-12 lg:mb-16 text-center">
+              <h2 id="titulo-funcionalidades-inicio" className="mb-4 text-3xl lg:text-4xl font-bold text-[#003A6C]">Funcionalidades principales</h2>
+              <p className="text-base lg:text-lg leading-relaxed text-[#4982AD]">Todo lo que necesitas para destacar profesionalmente</p>
             </div>
 
-            <div className="grid gap-8 md:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <FeatureCard
                 icon={<div className="rounded-lg bg-[#77B6E6] p-3"><FolderGit2 className="text-[#003A6C]" /></div>}
                 title="Crear portafolio profesional"
@@ -80,94 +80,49 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="seccion-beneficios-inicio" aria-labelledby="titulo-beneficios-inicio" className="py-24 ">
-          <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-16 items-center">
-         <div className="relative h-full w-full">
+        <section id="seccion-beneficios-inicio" aria-labelledby="titulo-beneficios-inicio" className="py-16 lg:py-24">
+          <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+         <div className="relative h-64 sm:h-96 lg:h-full w-full order-2 lg:order-1">
          <img src={FotoP} alt="Equipo trabajando" className="h-full w-full object-cover rounded-[2rem] shadow-xl"/></div>
-         <div className="space-y-10">
-        <h2 id="titulo-beneficios-inicio" className="text-4xl font-extrabold text-[#003A6C] mb-8">¿Por qué usar PortfolioGen?</h2>
+         <div className="space-y-8 lg:space-y-10 order-1 lg:order-2">
+        <h2 id="titulo-beneficios-inicio" className="text-3xl lg:text-4xl font-extrabold text-[#003A6C] text-center lg:text-left">¿Por qué usar PortfolioGen?</h2>
 
-          <div className="space-y-8">
-          <div className="flex gap-6">
-          <div className="shrink-0 size-14 bg-[#C2DBED] rounded-2xl flex items-center justify-center shadow-sm">
-            <Share2 className="text-[#003A6C] size-7" />
+          <div className="space-y-6 lg:space-y-8">
+                <BenefitItem 
+                  icon={<Share2 className="text-[#003A6C] size-6 lg:size-7" />} 
+                  color="bg-[#C2DBED]"
+                  title="Centraliza tu experiencia profesional"
+                  description="Toda tu información en un solo lugar, fácil de mantener y actualizar."
+                />
+                <BenefitItem 
+                  icon={<Users className="text-[#8B5CF6] size-6 lg:size-7" />} 
+                  color="bg-[#dfd0fe]"
+                  title="Comparte tus proyectos con reclutadores"
+                  description="Aumenta tus oportunidades laborales mostrando tu trabajo de forma profesional."
+                />
+                <BenefitItem 
+                  icon={<TrendingUp className="text-[#1fc65c] size-6 lg:size-7" />} 
+                  color="bg-[#b1fad1]"
+                  title="Construye tu marca personal"
+                  description="Destaca en el mercado laboral con un portafolio profesional y atractivo."
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xl font-bold text-[#003A6C] mb-2">Centraliza tu experiencia profesional</h3>
-            <p className="text-[#4982AD] leading-relaxed"> Toda tu información en un solo lugar, fácil de mantener y actualizar.</p>
-          </div>
-        </div>
-
-        <div className="flex gap-6">
-          <div className="shrink-0 size-14 bg-[#dfd0fe] rounded-2xl flex items-center justify-center shadow-sm">
-            <Users className="text-[#8B5CF6] size-7" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-[#003A6C] mb-2">Comparte tus proyectos con reclutadores</h3>
-            <p className="text-[#4982AD] leading-relaxed">Aumenta tus oportunidades laborales mostrando tu trabajo de forma profesional.</p>
-          </div>
-        </div>
-
-        <div className="flex gap-6">
-          <div className="shrink-0 size-14 bg-[#b1fad1] rounded-2xl flex items-center justify-center shadow-sm">
-            <TrendingUp className="text-[#1fc65c] size-7" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-[#003A6C] mb-2">Construye tu marca personal</h3>
-            <p className="text-[#4982AD] leading-relaxed">Destaca en el mercado laboral con un portafolio profesional y atractivo.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </section>
 
-<section id="seccion-plantillas-inicio" aria-labelledby="titulo-plantillas-inicio" className="py-24">
+<section id="seccion-plantillas-inicio" aria-labelledby="titulo-plantillas-inicio" className="py-16 lg:py-24">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="text-center mb-16 space-y-4">
-          <h2 id="titulo-plantillas-inicio" className="text-4xl font-extrabold text-[#003A6C]"> Elige tu plantilla favorita</h2>
-          <p className="text-lg text-[#4982AD] max-w-2xl mx-auto"> Diseños profesionales que se adaptan automáticamente a tu contenido</p>
+          <div className="text-center mb-12 lg:mb-16 space-y-4">
+          <h2 id="titulo-plantillas-inicio" className="text-3xl lg:text-4xl font-extrabold text-[#003A6C]"> Elige tu plantilla favorita</h2>
+          <p className="text-base lg:text-lg text-[#4982AD] max-w-2xl mx-auto"> Diseños profesionales que se adaptan automáticamente a tu contenido</p>
           </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-      
-      {/* Tarjeta 1 - Plantilla Moderna */}
-      <div className="bg-white rounded-3xl border border-[#C2DBED] shadow-sm flex flex-col overflow-hidden hover:shadow-2xl transition-all group hover:-translate-y-1 lg:scale-105">
-        <div className="h-60 bg-linear-to-br from-[#77B6E6] to-[#003A6C] p-8 flex items-center justify-center">
-          <Palette className="size-20 text-white opacity-80" />
-        </div>
-        <div className="p-8 flex-1 flex flex-col justify-between space-y-4">
-          <div> 
-            <h3 className="text-2xl font-bold text-[#003A6C]">Plantilla Moderna</h3>
-            <p className="text-[#4982AD] text-base leading-relaxed mt-2"> Diseño contemporáneo con gradientes y animaciones suaves</p>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+              <TemplateCard title="Plantilla Moderna" gradient="from-[#77B6E6] to-[#003A6C]" description="Diseño contemporáneo con gradientes y animaciones suaves" />
+              <TemplateCard title="Plantilla Minimalista" bgColor="bg-[#2D3748]" description="Diseño limpio y elegante enfocado en el contenido" isFeatured={true} />
+              <TemplateCard title="Plantilla Corporativa" gradient="from-[#4982AD] to-[#77B6E6]" description="Diseño profesional perfecto para empresas" />
+            </div>
           </div>
-        </div>
-      </div>
-      {/* Tarjeta 2 - Plantilla Minimalista */}
-        <div className="bg-white rounded-3xl border-2 border-[#C2DBED] shadow-xl flex flex-col overflow-hidden hover:shadow-2xl transition-all group hover:-translate-y-1 lg:scale-105">
-        <div className="h-60 bg-[#2D3748] p-8 flex items-center justify-center">
-          <Palette className="size-20 text-white opacity-60" />
-        </div>
-        <div className="p-8 flex-1 flex flex-col justify-between space-y-4">
-          <div>
-            <h3 className="text-2xl font-bold text-[#003A6C]">Plantilla Minimalista</h3>
-            <p className="text-[#4982AD] text-base leading-relaxed mt-2"> Diseño limpio y elegante enfocado en el contenido </p>
-          </div>
-        </div>
-      </div>
-      {/* Tarjeta 3 - Plantilla Corporativa */}
-      <div className="bg-white rounded-3xl border border-[#C2DBED] shadow-sm flex flex-col overflow-hidden hover:shadow-2xl transition-all group hover:-translate-y-1 lg:scale-105">
-        <div className="h-60 bg-linear-to-br from-[#4982AD] to-[#77B6E6] p-8 flex items-center justify-center">
-          <Palette className="size-20 text-white opacity-80" />
-        </div>
-        <div className="p-8 flex-1 flex flex-col justify-between space-y-4">
-          <div>
-            <h3 className="text-2xl font-bold text-[#003A6C]">Plantilla Corporativa</h3>
-            <p className="text-[#4982AD] text-base leading-relaxed mt-2">Diseño profesional perfecto para empresas</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </section>
       </main>
       <Footer />
@@ -185,6 +140,33 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode; titl
   )
 }
 
+function BenefitItem({ icon, color, title, description }: { icon: React.ReactNode; color: string; title: string; description: string }) {
+  return (
+    <div className="flex gap-4 lg:gap-6">
+      <div className={`shrink-0 size-12 lg:size-14 ${color} rounded-2xl flex items-center justify-center shadow-sm`}> {icon} </div>
+      <div>
+        <h3 className="text-lg lg:text-xl font-bold text-[#003A6C] mb-1">{title}</h3>
+        <p className="text-sm lg:text-base text-[#4982AD] leading-relaxed">{description}</p>
+      </div>
+    </div>
+  )
+}
+
+function TemplateCard({ title, description, gradient, bgColor, isFeatured }: { title: string; description: string; gradient?: string; bgColor?: string; isFeatured?: boolean }) {
+  return (
+    <div className={`bg-white rounded-3xl border ${isFeatured ? 'border-2 border-[#C2DBED] shadow-xl lg:scale-105' : 'border-[#C2DBED] shadow-sm'} flex flex-col overflow-hidden hover:shadow-2xl transition-all group hover:-translate-y-1`}>
+      <div className={`h-48 lg:h-60 ${gradient ? `bg-linear-to-br ${gradient}` : bgColor} p-8 flex items-center justify-center`}>
+        <Palette className="size-16 lg:size-20 text-white opacity-80" />
+      </div>
+      <div className="p-6 lg:p-8 flex-1 flex flex-col justify-between space-y-4">
+        <div>
+          <h3 className="text-xl lg:text-2xl font-bold text-[#003A6C]">{title}</h3>
+          <p className="text-[#4982AD] text-sm lg:text-base leading-relaxed mt-2">{description}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
 function GitHubIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
