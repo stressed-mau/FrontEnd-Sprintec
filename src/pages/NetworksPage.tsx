@@ -357,7 +357,11 @@ const NetworksPage = () => {
 
             <form noValidate onSubmit={handleSubmit} className="space-y-5 px-5 py-5 sm:px-6 sm:py-6">
               <div className="space-y-2">
-                <Label htmlFor="network-name" className="text-[#003A6C]">
+                <Label
+                  id="network-name-label"
+                  htmlFor="network-name"
+                  className="text-[#003A6C]"
+                >
                   Nombre de la red
                 </Label>
                 <Input
@@ -366,9 +370,10 @@ const NetworksPage = () => {
                   value={formData.name}
                   onBlur={() => handleBlur("name")}
                   onChange={(e) => updateField("name", e.target.value)}
-                  placeholder="LinkedIn, GitHub, Portfolio..."
+                  placeholder="LinkedIn, GitHub, Portafolio..."
                   className="h-11 border-[#A5D7E8] bg-white text-[#003A6C] placeholder:text-[#7B98AF]"
                   aria-invalid={Boolean(errors.name)}
+                  aria-labelledby="network-name-label"
                   aria-describedby={errors.name ? "network-name-error" : undefined}
                 />
                 {errors.name ? (
@@ -379,7 +384,11 @@ const NetworksPage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="network-url" className="text-[#003A6C]">
+                <Label
+                  id="network-url-label"
+                  htmlFor="network-url"
+                  className="text-[#003A6C]"
+                >
                   URL
                 </Label>
                 <Input
@@ -392,6 +401,7 @@ const NetworksPage = () => {
                   placeholder="https://..."
                   className="h-11 border-[#A5D7E8] bg-white text-[#003A6C] placeholder:text-[#7B98AF]"
                   aria-invalid={Boolean(errors.url)}
+                  aria-labelledby="network-url-label"
                   aria-describedby={errors.url ? "network-url-error" : undefined}
                 />
                 {errors.url ? (
