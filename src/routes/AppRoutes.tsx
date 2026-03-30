@@ -7,6 +7,7 @@ import RegisterPage from '../pages/RegisterPage'
 import UserHome from '@/pages/UserHome'
 import UserPersonalData from "@/pages/UserPersonalData";
 import ProfilePage from "../pages/ProfilePage";
+import UserSkills from "@/pages/UserSkills";
 
 function AppRoutes() {
   return (
@@ -19,6 +20,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<UserHome />} />
       <Route path="/personal" element={<UserPersonalData />} />
       <Route path="/perfil" element={<ProfilePage />} />
+      <Route path="/habilidades" element={<UserSkills />} />
     </Routes>
   )
 }
