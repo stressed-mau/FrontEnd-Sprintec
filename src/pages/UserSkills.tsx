@@ -6,6 +6,10 @@ import { useSkillsManager, type Skill } from '../hooks/useSkillsManager';
 const UserSkills = () => {
   const {    isModalOpen, skills, skillType, skillName, skillLevel, errorMessage, successMessage,showSuccessModal,
             setSkillType, setSkillLevel, openModal,  closeModal, handleSave, handleDelete, handleSkillNameChange, } = useSkillsManager();
+
+  const technicalSkills = skills.filter((skill) => skill.type === "Habilidad técnica");
+  const softSkills = skills.filter((skill) => skill.type === "Habilidad blanda");
+
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
       <Header />
@@ -15,42 +19,46 @@ const UserSkills = () => {
           <div className="max-w-5xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
               <div>
-                <h1 className="text-[#003A6C] text-3xl font-bold mb-1">Mis Habilidades</h1>
-                <p className="text-[#6dacbf] text-sm md:text-base">Gestiona tus habilidades técnicas y blandas</p>
+                <h1 id="titulo-pagina-habilidades" className="mb-2 text-3xl font-bold text-[#003A6C] md:text-4xl">Mis Habilidades</h1>
+                <p id="descripcion-pagina-habilidad"  className="text-sm text-[#4B778D] md:text-base">Gestiona tus habilidades técnicas y blandas</p>
               </div>
-              <button onClick={() => openModal()} className="flex items-center justify-center gap-2 bg-[#003A6C] text-white px-5 py-2 rounded-lg font-semibold hover:bg-[#002a50] transition-all shadow-sm">
+              <button onClick={() => openModal()} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#003A6C] px-5 py-2 font-semibold text-white shadow-sm transition-all hover:bg-[#002a50] sm:w-auto">
                 <Plus className="size-5" /> Agregar habilidad
               </button>
             </div>
 
-            <section className="mb-10">
+            <section className="mb-8 space-y-4 sm:mb-10">
               <div className="flex items-center gap-2 mb-4 text-[#003A6C]">
                 <Code2 className="size-5" />
-                <h2 className="text-xl font-bold">Habilidades Técnicas</h2>
+                <h2 className="text-xl font-bold sm:text-2xl">Habilidades Técnicas</h2>
               </div>
               <div className="space-y-3">
-                {skills.filter(s => s.type === "Habilidad técnica").length === 0 ? (
-                  <div className="border-2 border-dashed border-[#6dacbf]/50 rounded-2xl p-10 flex items-center justify-center bg-transparent">
-                    <p className="text-gray-500 font-medium">No hay habilidades técnicas registradas</p>
+                {technicalSkills.length === 0 ? (
+                  <div className="rounded-3xl border-2 border-dashed border-[#6dacbf] bg-white py-0 shadow-sm">
+                    <div className="px-6 py-12 text-center sm:py-14">
+                      <p className="text-sm text-[#4B778D] sm:text-base">No hay habilidades técnicas registradas</p>
+                    </div>
                   </div>
-                ) : (  skills.filter(s => s.type === "Habilidad técnica").map(skill => (
+                ) : (  technicalSkills.map(skill => (
                     <SkillCard key={skill.id} skill={skill} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
                   ))
                 )}
               </div>
             </section>
 
-            <section>
+            <section className="space-y-4">
               <div className="flex items-center gap-2 mb-4 text-[#003A6C]">
                 <Lightbulb className="size-5" />
-                <h2 className="text-xl font-bold">Habilidades Blandas</h2>
+                <h2 className="text-xl font-bold sm:text-2xl">Habilidades Blandas</h2>
               </div>
               <div className="space-y-3">
-                {skills.filter(s => s.type === "Habilidad blanda").length === 0 ? (
-                  <div className="border-2 border-dashed border-[#6dacbf]/50 rounded-2xl p-10 flex items-center justify-center bg-transparent">
-                    <p className="text-gray-500 font-medium">No hay habilidades blandas registradas</p>
+                {softSkills.length === 0 ? (
+                  <div className="rounded-3xl border-2 border-dashed border-[#6dacbf] bg-white py-0 shadow-sm">
+                    <div className="px-6 py-12 text-center sm:py-14">
+                      <p className="text-sm text-[#4B778D] sm:text-base">No hay habilidades blandas registradas</p>
+                    </div>
                   </div>
-                ) : ( skills.filter(s => s.type === "Habilidad blanda").map(skill => (
+                ) : ( softSkills.map(skill => (
                     <SkillCard key={skill.id} skill={skill} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
                   ))
                 )}
@@ -60,8 +68,8 @@ const UserSkills = () => {
         </main>
       </div>
 
-      {isModalOpen && ( <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
-          <div className="bg-[#D9EAF8] w-full max-w-lg rounded-[2rem] shadow-xl border border-white/20 animate-in zoom-in-95 duration-200">
+      {isModalOpen && ( <div className="fixed inset-0 z-100 flex items-end justify-center bg-black/30 px-3 backdrop-blur-[2px] sm:items-center sm:px-4">
+          <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/20 bg-[#D9EAF8] shadow-xl animate-in zoom-in-95 duration-200 sm:rounded-[2rem]">
             <div className="px-8 pt-8 pb-2 flex justify-between items-start">
               <div>
                 <h2 className="text-[#003A6C] text-2xl font-bold">Nueva habilidad</h2>
@@ -148,20 +156,20 @@ const UserSkills = () => {
 
 // COMPONENTE PARA CADA TARJETA DE HABILIDAD (Como la última imagen)
 const SkillCard = ({ skill, onEdit, onDelete }: { skill: Skill, onEdit: () => void, onDelete: () => void }) => (
-  <div className="flex items-center justify-between bg-white border border-[#0E7D96]/30 p-4 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-    <div className="flex items-center gap-4">
-      <span className="text-[#003A6C] font-bold text-lg">{skill.name}</span>
+  <div className="flex flex-col gap-4 rounded-2xl border border-[#0E7D96]/30 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
+      <span className="wrap-break-words text-lg font-bold text-[#003A6C]">{skill.name}</span>
       {skill.level && (
         <span className="bg-[#F1F5F9] text-gray-500 text-xs px-3 py-1 rounded-full border border-gray-100 font-medium">
           {skill.level}
         </span>
       )}
     </div>
-    <div className="flex gap-2">
-      <button onClick={onEdit} className="p-2 text-[#003A6C] bg-[#C2DBED]/50 hover:bg-[#C2DBED] rounded-lg border border-[#6dacbf]/30 transition-colors">
+    <div className="flex w-full gap-2 sm:w-auto">
+      <button onClick={onEdit} className="flex-1 rounded-lg border border-[#6dacbf]/30 bg-[#C2DBED]/50 p-2 text-[#003A6C] transition-colors hover:bg-[#C2DBED] sm:flex-none">
         <Edit3 className="size-4" />
       </button>
-      <button onClick={onDelete} className="p-2 text-red-500 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors">
+      <button onClick={onDelete} className="flex-1 rounded-lg border border-red-200 bg-red-50 p-2 text-red-500 transition-colors hover:bg-red-100 sm:flex-none">
         <Trash2 className="size-4" />
       </button>
     </div>

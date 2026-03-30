@@ -415,7 +415,7 @@ const ExperiencePage = () => {
                           <CardTitle className="text-lg font-semibold text-[#003A6C]">
                             {experience.position}
                           </CardTitle>
-                          <p className="mt-1 break-words text-sm font-medium text-[#4B778D] sm:text-base">
+                          <p className="mt-1 wrap-break-words text-sm font-medium text-[#4B778D] sm:text-base">
                             {experience.company}
                           </p>
                           <p className="mt-2 text-sm text-[#6B7E8E]">
