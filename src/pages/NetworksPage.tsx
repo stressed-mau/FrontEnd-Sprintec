@@ -318,12 +318,6 @@ const NetworksPage = () => {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="px-5 pb-5 pt-0 sm:px-6 sm:pb-6">
-                      <p className="text-sm text-[#4B778D]">
-                        Diseño de frontend listo. La integración real con backend puede conectarse
-                        después.
-                      </p>
-                    </CardContent>
                   </Card>
                 ))}
               </div>
