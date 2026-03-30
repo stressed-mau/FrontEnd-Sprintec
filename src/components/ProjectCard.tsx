@@ -1,0 +1,67 @@
+import { GitBranch, ExternalLink, Pencil, Trash2 } from 'lucide-react';
+
+interface ProjectProps {
+  project: any;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+const ProjectCard = ({ project, onEdit, onDelete }: ProjectProps) => {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm flex flex-col h-full">
+      
+      {project.image && (
+        <div className="h-48 bg-gray-100 relative">
+          <img src={project.image} alt={project.nombre} className="w-full h-full object-cover" />
+        </div>
+      )}
+
+      <div className="p-5 flex-1 flex flex-col">
+        <h3 className="text-[#003A6C] font-bold text-xl mb-2">{project.nombre}</h3>
+
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{project.descripcion}</p>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {project.tecnologias.map((tech: string, idx: number) => (
+            <span key={idx} className="bg-blue-50 text-blue-600 text-xs px-3 py-1 rounded-full border border-blue-100">
+              {tech}
+            </span>
+          ))}
+        </div>
+
+        <div className="text-sm text-gray-700 space-y-1 mb-6">
+          <p><span className="font-bold">Rol:</span> {project.rol}</p>
+          <p><span className="font-bold">Fecha:</span> {project.fecha}</p>
+        </div>
+
+        {(project.github || project.demo) && (
+          <div className="flex gap-3 mb-4">
+            {project.github && (
+              <a href={project.github} target="_blank" className="flex items-center gap-2 text-sm">
+                <GitBranch size={16}/> GitHub
+              </a>
+            )}
+            {project.demo && (
+              <a href={project.demo} target="_blank" className="flex items-center gap-2 text-sm">
+                <ExternalLink size={16}/> Demo
+              </a>
+            )}
+          </div>
+        )}
+
+        <hr className="mb-4" />
+
+        <div className="flex gap-4">
+          <button onClick={onEdit} className="flex items-center gap-2 text-sm">
+            <Pencil size={16}/> Editar
+          </button>
+          <button onClick={onDelete} className="flex items-center gap-2 text-red-500 text-sm">
+            <Trash2 size={16}/> Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProjectCard;
