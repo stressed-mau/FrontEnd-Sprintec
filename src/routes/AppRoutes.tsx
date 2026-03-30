@@ -6,6 +6,7 @@ import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
 import UserHome from '@/pages/UserHome'
 import UserPersonalData from "@/pages/UserPersonalData";
+import NetworksPage from "@/pages/NetworksPage";
 import ProfilePage from "../pages/ProfilePage";
 <<<<<<< HEAD
 import CreateProyect from '../pages/CreateProyect';
@@ -23,6 +24,7 @@ function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/dashboard" element={<UserHome />} />
       <Route path="/personal" element={<UserPersonalData />} />
+      <Route path="/red-profesional" element={<NetworksPage />} />
       <Route path="/perfil" element={<ProfilePage />} />
 <<<<<<< HEAD
       <Route path="/proyectos" element={<CreateProyect />} />

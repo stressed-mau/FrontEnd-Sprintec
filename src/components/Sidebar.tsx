@@ -1,4 +1,4 @@
-import { Award, Briefcase, FolderGit2, User } from "lucide-react";
+import { Award, Briefcase, FolderGit2, Globe, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
@@ -7,6 +7,7 @@ const Sidebar = () => {
 
   const navItems = [
     { id: "personal", label: "Datos personales", icon: User, path: "/personal" },
+    { id: "red-profesional", label: "Red profesional", icon: Globe, path: "/red-profesional" },
     { id: "proyectos", label: "Proyectos", icon: FolderGit2, path: "/proyectos" },
     { id: "habilidades", label: "Habilidades", icon: Award, path: "/habilidades" },
     { id: "experiencia", label: "Experiencia", icon: Briefcase, path: "/experiencia" },
