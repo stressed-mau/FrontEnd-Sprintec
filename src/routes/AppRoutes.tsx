@@ -11,7 +11,7 @@ import CreateProyect from '../pages/CreateProyect';
 import UserSkills from "@/pages/UserSkills";
 import NetworksPage from '../pages/NetworksPage';
 import ExperiencePage from '../pages/ExperiencePage';
-
+import PublishPortfolio from '@/pages/PublishPortfolio'
 function AppRoutes() {
   return (
     <Routes>
@@ -27,6 +27,7 @@ function AppRoutes() {
       <Route path="/habilidades" element={<UserSkills />} />
       <Route path="/red-profesional" element={<NetworksPage />} />
       <Route path="/experiencia" element={<ExperiencePage />} />
+      <Route path="/publicar" element={<PublishPortfolio />} />
     </Routes>
   )
 }
