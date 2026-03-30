@@ -3,6 +3,7 @@ import UserHome from '@/pages/UserHome'
 import UserPersonalData from "@/pages/UserPersonalData";
 import NetworksPage from "@/pages/NetworksPage";
 import ProfilePage from "../pages/ProfilePage";
+import ExperiencePage from "@/pages/ExperiencePage";
 
 function AppRoutes() {
   return (
@@ -11,6 +12,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<UserHome />} />
       <Route path="/personal" element={<UserPersonalData />} />
       <Route path="/red-profesional" element={<NetworksPage />} />
+      <Route path="/experiencia" element={<ExperiencePage />} />
       <Route path="/perfil" element={<ProfilePage />} />
     </Routes>
   )
