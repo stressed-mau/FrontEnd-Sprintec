@@ -26,10 +26,9 @@ const PublishPortfolio = () => {
               <h1 className="text-[#003A6C] text-3xl md:text-4xl font-bold mb-2">Publicar Portafolio</h1>
               <p className="text-gray-600 text-sm md:text-base">Configura tu portafolio, elige una plantilla y publícalo</p>
             </div>
-
-            {/* Contenedor Principal */}
-            <div className="bg-white rounded-2xl border border-[#C9E1F0] p-6 shadow-sm">
-              <h2 className="text-[#003A6C] text-xl font-bold mb-1">Configuración de Visibilidad</h2>
+     
+            <section className="bg-white rounded-2xl border border-[#C9E1F0] p-6 shadow-sm" aria-labelledby="visibility-config-title">
+              <h2 id="visibility-config-title" className="text-[#003A6C] text-xl font-bold mb-1">Configuración de Visibilidad</h2>
               <p className="text-gray-500 text-sm mb-6">Elige qué elementos específicos mostrar en tu portafolio</p>
 
               <div className="space-y-6">
@@ -103,12 +102,11 @@ const PublishPortfolio = () => {
                           </div>
                         </div>
                       </div>
-
                     </div>
                   );
                 })}
               </div>
-            </div>
+            </section>
             
             
           </div>

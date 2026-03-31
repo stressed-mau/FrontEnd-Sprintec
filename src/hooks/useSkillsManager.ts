@@ -7,6 +7,13 @@ export interface Skill {
   level?: string;
 }
 
+const technicalLevelPriority: Record<string, number> = {
+  Experto: 4,
+  Avanzado: 3,
+  Básico: 2,
+  Intermedio: 1,
+};
+
 export const useSkillsManager = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -107,9 +114,20 @@ export const useSkillsManager = () => {
     setSkills(skills.filter(s => s.id !== id));
   };
 
+  const technicalSkills = skills
+    .filter((skill) => skill.type === "Habilidad técnica")
+    .sort((a, b) => {
+      const aPriority = technicalLevelPriority[a.level ?? ''] ?? 0;
+      const bPriority = technicalLevelPriority[b.level ?? ''] ?? 0;
+      return bPriority - aPriority;
+    });
+
+  const softSkills = skills.filter((skill) => skill.type === "Habilidad blanda");
+
   return {
     // Estados
     isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,
+    technicalSkills,softSkills,
     // Setters
     setSkillType,setSkillName, setSkillLevel, handleSkillNameChange,
     // Métodos

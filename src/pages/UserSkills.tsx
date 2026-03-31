@@ -4,11 +4,8 @@ import { Plus, Code2, Lightbulb, X, Edit3, Trash2 } from 'lucide-react';
 import { useSkillsManager, type Skill } from '../hooks/useSkillsManager';
 
 const UserSkills = () => {
-  const {    isModalOpen, skills, skillType, skillName, skillLevel, errorMessage, successMessage,showSuccessModal,
+  const {    isModalOpen, technicalSkills, softSkills, skillType, skillName, skillLevel, errorMessage, successMessage,showSuccessModal,
             setSkillType, setSkillLevel, openModal,  closeModal, handleSave, handleDelete, handleSkillNameChange, } = useSkillsManager();
-
-  const technicalSkills = skills.filter((skill) => skill.type === "Habilidad técnica");
-  const softSkills = skills.filter((skill) => skill.type === "Habilidad blanda");
 
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
