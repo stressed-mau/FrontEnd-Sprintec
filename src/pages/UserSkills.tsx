@@ -154,7 +154,7 @@ const UserSkills = () => {
   );
 };
 
-// COMPONENTE PARA CADA TARJETA DE HABILIDAD (Como la última imagen)
+// COMPONENTE PARA CADA TARJETA DE HABILIDAD
 const SkillCard = ({ skill, onEdit, onDelete }: { skill: Skill, onEdit: () => void, onDelete: () => void }) => (
   <div className="flex flex-col gap-4 rounded-2xl border border-[#0E7D96]/30 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:justify-between">
     <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">

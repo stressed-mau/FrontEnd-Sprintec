@@ -109,24 +109,10 @@ export const useSkillsManager = () => {
 
   return {
     // Estados
-    isModalOpen,
-    skills,
-    editingSkill,
-    skillType,
-    skillName,
-    skillLevel,
-    errorMessage,
-    successMessage,
-    showSuccessModal,
+    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,
     // Setters
-    setSkillType,
-    setSkillName,
-    setSkillLevel,
-    handleSkillNameChange,
+    setSkillType,setSkillName, setSkillLevel, handleSkillNameChange,
     // Métodos
-    openModal,
-    closeModal,
-    handleSave,
-    handleDelete,
+    openModal,closeModal,handleSave,handleDelete,
   };
 };
