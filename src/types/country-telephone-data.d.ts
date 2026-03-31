@@ -1,9 +1,9 @@
-declare module "country-telephone-data" {
-  export type CountryTelephoneEntry = {
-    name: string;
-    iso2: string;
-    dialCode: string;
-  };
+declare module 'country-telephone-data' {
+	export interface CountryTelephoneData {
+		name: string;
+		iso2: string;
+		dialCode: string;
+	}
 
-  export const allCountries: CountryTelephoneEntry[];
+	export const allCountries: CountryTelephoneData[];
 }

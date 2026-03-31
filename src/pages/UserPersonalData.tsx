@@ -1,11 +1,145 @@
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
-import { allCountries } from 'country-telephone-data'
-import { useState } from 'react';
+import { allCountries } from 'country-telephone-data';
+import { useState, useRef } from 'react';
 
 const UserPersonalData = () => {
   const [countryCode, setCountryCode] = useState("591");
   const [phoneNumber, setPhoneNumber] = useState("");
+
+  const [form, setForm] = useState({
+    fullName: "",
+    occupation: "",
+    bio: "",
+    location: "",
+    email: ""
+  });
+
+  const [errors, setErrors] = useState<any>({});
+  const [success, setSuccess] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  // =========================
+  // MANEJO INPUTS
+  // =========================
+  const handleChange = (e: any) => {
+    setForm({
+      ...form,
+      [e.target.id]: e.target.value
+    });
+  };
+
+  // =========================
+  // VALIDACIONES
+  // =========================
+  const validate = () => {
+    let newErrors: any = {};
+
+    // Nombre
+    if (!form.fullName.trim()) {
+      newErrors.fullName = "El nombre completo es obligatorio.";
+    } else if (!/^[a-zA-Z\s]+$/.test(form.fullName)) {
+      newErrors.fullName = "El nombre solo puede contener letras.";
+    } else if (form.fullName.length > 100) {
+      newErrors.fullName = "El nombre no puede exceder los 100 caracteres.";
+    }
+
+    // Ocupación
+    if (form.occupation.length > 80) {
+      newErrors.occupation = "La ocupación no puede exceder los 80 caracteres.";
+    }
+
+    // Bio
+    if (form.bio.length > 300) {
+      newErrors.bio = "La biografía no puede exceder los 300 caracteres.";
+    }
+
+    // Ubicación
+    if (form.location.length > 100) {
+      newErrors.location = "La ubicación no puede exceder los 100 caracteres.";
+    }
+
+    // Email
+    if (!form.email.trim()) {
+      newErrors.email = "El correo electrónico es obligatorio.";
+    } else if (form.email.length > 60) {
+      newErrors.email = "El correo no puede exceder los 60 caracteres.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = "Formato de correo inválido.";
+    }
+
+    // Teléfono
+    if (phoneNumber && !/^[0-9]+$/.test(phoneNumber)) {
+      newErrors.phone = "El teléfono solo debe contener números.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // =========================
+  // SUBMIT
+  // =========================
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    // Simulación guardado
+    setSuccess("Información actualizada correctamente.");
+
+    setTimeout(() => {
+      setSuccess("");
+    }, 3000);
+  };
+
+  // =========================
+  // CANCELAR
+  // =========================
+  const handleCancel = () => {
+    setForm({
+      fullName: "",
+      occupation: "",
+      bio: "",
+      location: "",
+      email: ""
+    });
+    setPhoneNumber("");
+    setPreview(null);
+    setErrors({});
+  };
+
+  // =========================
+  // IMAGEN
+  // =========================
+  const handleClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: any) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
+      setErrors({ ...errors, image: "Formato de imagen no válido." });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setErrors({ ...errors, image: "El tamaño no debe superar 2MB." });
+      return;
+    }
+
+    const imageUrl = URL.createObjectURL(file);
+    setPreview(imageUrl);
+    setErrors({ ...errors, image: "" });
+  };
+
+  const removeImage = () => {
+    setPreview(null);
+  };
 
   return (
     <div id="personaldata-page" className="min-h-screen bg-[#F7F0E1]">
@@ -35,19 +169,45 @@ const UserPersonalData = () => {
                 Actualiza los datos que verán los visitantes de tu portafolio
               </p>
 
-              <form id="form-personaldata" className="space-y-6">
+              <form id="form-personaldata" onSubmit={handleSubmit} className="space-y-6">
                 
                 {/* Sección de Foto de Perfil */}
                 <div id="profile-photo-section" className="flex flex-col items-center mb-8">
-                  <div className="w-28 h-28 md:w-32 md:h-32 bg-[#E2E8F0] rounded-full flex items-center justify-center mb-4">
-                    <svg className="w-14 h-14 md:w-16 md:h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
+
+                  {/* INPUT OCULTO */}
+                  <input
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+
+                  {/* FOTO */}
+                  <div className="w-28 h-28 md:w-32 md:h-32 bg-[#E2E8F0] rounded-full flex items-center justify-center mb-4 overflow-hidden">
+                    
+                    {preview ? (
+                      <img
+                        src={preview}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <svg className="w-14 h-14 md:w-16 md:h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    )}
+
                   </div>
-                  <p className="text-[#003A6C] font-normal text-sm mb-2">Foto de perfil</p>
+
+                  <p className="text-[#003A6C] font-normal text-sm mb-2">
+                    Foto de perfil
+                  </p>
+
+                  {/* BOTÓN */}
                   <button
-                    id="btn-upload-photo"
                     type="button"
+                    onClick={handleClick}
                     className="flex items-center gap-2 px-4 py-2 border border-[#6dacbf] rounded-lg text-[#003A6C] text-sm bg-[#c2dbed] hover:bg-[#C4A57C] transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,7 +215,23 @@ const UserPersonalData = () => {
                     </svg>
                     Subir foto
                   </button>
-                  <p className="text-gray-400 text-xs mt-2 text-center">Formatos: JPG, PNG (máx. 2MB)</p>
+                  {preview && (
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="text-red-500 text-xs mt-2 hover:underline"
+                    >
+                      Eliminar foto
+                    </button>
+                  )}
+                  <p className="text-gray-400 text-xs mt-2 text-center">
+                    Formatos: JPG, PNG (máx. 2MB)
+                  </p>
+                  {errors.image && (
+                    <p className="text-red-500 text-xs mt-2 text-center">
+                      {errors.image}
+                    </p>
+                  )}
                 </div>
 
                 {/* Campos de texto */}
@@ -63,51 +239,70 @@ const UserPersonalData = () => {
                   <div>
                     <label className="block text-[#003A6C] font-normal text-sm mb-2">Nombre completo *</label>
                     <input 
-                      id="input-fullname"
+                      id="fullName"
+                      value={form.fullName}
+                      onChange={handleChange}
                       type="text" 
                       placeholder="Ej: Google User"
                       className="w-full py-2.5 px-3 border border-[#0E7D96] rounded-xl bg-white text-[#003A6C] text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7D96] placeholder:text-[#0E7D96]/60"
                     />
+                    {errors.fullName && (
+                      <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-[#003A6C] font-normal text-sm mb-2">Ocupación</label>
                     <input 
-                      id="input-occupation"
+                      id="occupation"
+                      value={form.occupation}
+                      onChange={handleChange}
                       type="text" 
                       placeholder="Ej: Desarrollador Full Stack"
                       className="w-full py-2.5 px-3 border border-[#0E7D96] rounded-xl bg-white text-[#003A6C] text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7D96] placeholder:text-[#0E7D96]/60"
                     />
+                    {errors.occupation && (
+                      <p className="text-red-500 text-xs mt-1">{errors.occupation}</p>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-[#003A6C] font-normal text-sm mb-2">Biografía</label>
                     <textarea 
-                      id="input-bio"
+                      id="bio"
+                      value={form.bio}
+                      onChange={handleChange}
                       rows={4}
                       placeholder="Cuéntanos sobre ti y tu experiencia..."
                       className="w-full py-2.5 px-3 border border-[#0E7D96] rounded-xl bg-white text-[#003A6C] text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7D96] resize-none placeholder:text-[#0E7D96]/60"
                     />
+                    {errors.bio && <p className="text-red-500 text-xs">{errors.bio}</p>}
                   </div>
 
                   <div>
                     <label className="block text-[#003A6C] font-normal text-sm mb-2">Residencia actual</label>
                     <input 
-                      id="input-location"
+                      id="location"
+                      value={form.location}
+                      onChange={handleChange}
                       type="text" 
                       placeholder="Ej: La Paz, Bolivia"
                       className="w-full py-2.5 px-3 border border-[#0E7D96] rounded-xl bg-white text-[#003A6C] text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7D96] placeholder:text-[#0E7D96]/60"
                     />
+                    {errors.location && <p className="text-red-500 text-xs">{errors.location}</p>}
                   </div>
 
                   <div>
                     <label className="block text-[#003A6C] font-normal text-sm mb-2">Correo electrónico público</label>
                     <input 
-                      id="input-public-email"
+                      id="email"
                       type="email" 
+                      value={form.email}
+                      onChange={handleChange}
                       placeholder="Ej: juan.perez@example.com"
                       className="w-full py-2.5 px-3 border border-[#0E7D96] rounded-xl bg-white text-[#003A6C] text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7D96] placeholder:text-[#0E7D96]/60"
                     />
+                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                   </div>
 
                   <div>
@@ -136,6 +331,7 @@ const UserPersonalData = () => {
                         placeholder="Ej: 74267890"
                         className="flex-1 py-2.5 px-3 border border-[#0E7D96] rounded-xl bg-white text-[#003A6C] text-sm focus:outline-none focus:ring-2 focus:ring-[#0E7D96] placeholder:text-[#0E7D96]/60"
                       />
+                      {errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
                     </div>
                   </div>
                 </div>
@@ -153,11 +349,17 @@ const UserPersonalData = () => {
                   <button
                     id="btn-cancel"
                     type="button"
-                    className="w-full sm:w-auto bg-[#c2dbed] text-[#003A6C] px-8 py-2.5 rounded-lg font-semibold text-sm border border-[#6dacbf] hover:bg-[#C4A57C]/20 transition-colors order-2 sm:order-0"
+                    onClick={handleCancel}
+                    className="w-full sm:w-auto bg-[#c2dbed] text-[#003A6C] px-8 py-2.5 rounded-lg font-semibold text-sm border border-[#6dacbf] hover:bg-[#C4A57C]/20 transition-colors order-2 sm:order-none"
                   >
                     Cancelar
                   </button>
                 </div>
+                {success && ( 
+                  <p className="text-green-600 text-sm mt-2 text-center">
+                    {success}
+                  </p>
+                )}
               </form>
             </div>
 
