@@ -1,9 +1,14 @@
-import { Routes, Route } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import AboutPage from '../pages/AboutPage'
 import ContactPage from '../pages/ContactPage'
 import HomeVisitor from '../pages/HomeVisitor'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
+import ExperiencePage from '@/pages/ExperiencePage'
+import NetworksPage from '@/pages/NetworksPage'
+import UserHome from '@/pages/UserHome'
+import UserPersonalData from '@/pages/UserPersonalData'
+import ProfilePage from '../pages/ProfilePage'
 
 function AppRoutes() {
   return (
@@ -14,6 +19,11 @@ function AppRoutes() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/dashboard" element={<UserHome />} />
+      <Route path="/personal" element={<UserPersonalData />} />
+      <Route path="/red-profesional" element={<NetworksPage />} />
+      <Route path="/experiencia" element={<ExperiencePage />} />
+      <Route path="/perfil" element={<ProfilePage />} />
     </Routes>
   )
 }
