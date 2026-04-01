@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Header from '../components/Header';
+import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { User, Mail, Lock, SquarePen, X, ShieldCheck } from 'lucide-react';
 
@@ -75,7 +75,7 @@ const ProfilePage = () => {
           <div id="modal-overlay" className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm px-3 sm:px-4">
           <div 
             id="modal-container" 
-            className="bg-[#D1E4F0] w-full max-w-2xl rounded-t-2xl sm:rounded-xl shadow-2xl flex flex-col h-[90vh] sm:h-auto max-h-[92vh]"
+            className="bg-[#C2DBED] w-full max-w-2xl rounded-t-2xl sm:rounded-xl shadow-2xl flex flex-col h-[90vh] sm:h-auto max-h-[92vh]"
           >
             
             {/* Header Modal */}
