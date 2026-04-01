@@ -4,14 +4,15 @@ import ContactPage from '../pages/ContactPage'
 import HomeVisitor from '../pages/HomeVisitor'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
-import UserHome from '@/pages/UserHome'
-import UserPersonalData from "@/pages/UserPersonalData";
-import ProfilePage from "../pages/ProfilePage";
 import CreateProyect from '../pages/CreateProyect';
 import UserSkills from "@/pages/UserSkills";
-import NetworksPage from '../pages/NetworksPage';
-import ExperiencePage from '../pages/ExperiencePage';
 import PublishPortfolio from '@/pages/PublishPortfolio'
+import ExperiencePage from '@/pages/ExperiencePage'
+import NetworksPage from '@/pages/NetworksPage'
+import UserHome from '@/pages/UserHome'
+import UserPersonalData from '@/pages/UserPersonalData'
+import ProfilePage from '../pages/ProfilePage'
+
 function AppRoutes() {
   return (
     <Routes>
@@ -28,6 +29,7 @@ function AppRoutes() {
       <Route path="/red-profesional" element={<NetworksPage />} />
       <Route path="/experiencia" element={<ExperiencePage />} />
       <Route path="/publicar" element={<PublishPortfolio />} />
+      <Route path="/perfil" element={<ProfilePage />} />
     </Routes>
   )
 }

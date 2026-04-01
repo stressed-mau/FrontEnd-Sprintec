@@ -1,5 +1,4 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
+﻿import { Link } from "react-router-dom"
 import { Eye, EyeOff, LockKeyhole, LogIn, Mail } from "lucide-react"
 
 import { Footer } from "@/components/Footer"
@@ -8,97 +7,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { findUserByEmail } from "@/lib/auth-storage"
 
-type LoginValues = {
-  email: string
-  password: string
-}
-
-type LoginErrors = Partial<Record<keyof LoginValues, string>> & {
-  form?: string
-}
-
-function validateLoginField(field: keyof LoginValues, values: LoginValues): string {
-  const email = values.email.trim()
-  const password = values.password
-
-  if (field === "email") {
-    if (!email) return "El campo Correo electrónico es obligatorio."
-    if (email.length > 60) return "El campo Correo electrónico permite un máximo de 60 caracteres."
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return "El Correo electrónico debe tener un formato válido (ej. usuario@gmail.com)."
-    }
-  }
-
-  if (field === "password") {
-    if (!password) return "El campo contraseña es obligatorio."
-  }
-
-  return ""
-}
+import { useLoginForm } from "@/hooks/useLoginForm"
+import { usePasswordVisibility } from "@/hooks/usePasswordVisibility"
 
 export default function LoginPage() {
-  const [values, setValues] = useState<LoginValues>({ email: "", password: "" })
-  const [errors, setErrors] = useState<LoginErrors>({})
-  const [showPassword, setShowPassword] = useState(false)
-  const [successMessage, setSuccessMessage] = useState("")
+  const { values, errors, successMessage, updateField, handleBlur, handleSubmit } = useLoginForm()
+  const { isVisible: showPassword, toggleVisibility: togglePasswordVisibility } = usePasswordVisibility()
   const idEntradaCorreo = "inicio-sesion-correo"
   const idEntradaContrasena = "inicio-sesion-contrasena"
   const idErrorCorreo = "inicio-sesion-error-correo"
   const idErrorContrasena = "inicio-sesion-error-contrasena"
   const idErrorFormulario = "inicio-sesion-error-formulario"
   const idMensajeExito = "inicio-sesion-mensaje-exito"
-
-  function updateField(field: keyof LoginValues, value: string) {
-    setValues((current) => ({ ...current, [field]: value }))
-
-    if (errors[field] || errors.form) {
-      const nextValues = { ...values, [field]: value }
-      setErrors((current) => ({
-        ...current,
-        form: "",
-        [field]: validateLoginField(field, nextValues),
-      }))
-    }
-  }
-
-  function handleBlur(field: keyof LoginValues) {
-    setErrors((current) => ({
-      ...current,
-      [field]: validateLoginField(field, values),
-    }))
-  }
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-
-    const nextErrors: LoginErrors = {
-      email: validateLoginField("email", values),
-      password: validateLoginField("password", values),
-      form: "",
-    }
-
-    if (!nextErrors.email && !nextErrors.password) {
-      const user = findUserByEmail(values.email)
-
-      if (!user) {
-        nextErrors.form = "El correo electrónico no está registrado."
-      } else if (user.password !== values.password) {
-        nextErrors.form = "La contraseña ingresada es incorrecta."
-      }
-    }
-
-    setErrors(nextErrors)
-
-    if (nextErrors.email || nextErrors.password || nextErrors.form) {
-      setSuccessMessage("")
-      return
-    }
-
-    setSuccessMessage("Validación exitosa.")
-  }
-
 
   return (
     <div className="flex min-h-screen flex-col bg-[#C2DBED]">
@@ -133,17 +54,13 @@ export default function LoginPage() {
                       maxLength={60}
                       value={values.email}
                       onBlur={() => handleBlur("email")}
-                      onChange={(e) => updateField("email", e.target.value)}
+                      onChange={(event) => updateField("email", event.target.value)}
                       className="h-11 border-[#C2DBED] bg-white pl-10 text-[#003A6C] placeholder:text-[#7B98AF]"
                       aria-invalid={Boolean(errors.email)}
                       aria-describedby={errors.email ? idErrorCorreo : undefined}
                     />
                   </div>
-                  {errors.email ? (
-                    <p id={idErrorCorreo} className="text-sm text-red-600">
-                      {errors.email}
-                    </p>
-                  ) : null}
+                  {errors.email ? <p id={idErrorCorreo} className="text-sm text-red-600">{errors.email}</p> : null}
                 </div>
 
                 <div className="space-y-2">
@@ -163,25 +80,21 @@ export default function LoginPage() {
                       placeholder="••••••••"
                       value={values.password}
                       onBlur={() => handleBlur("password")}
-                      onChange={(e) => updateField("password", e.target.value)}
+                      onChange={(event) => updateField("password", event.target.value)}
                       className="h-11 border-[#C2DBED] bg-white pl-10 pr-11 text-[#003A6C] placeholder:text-[#7B98AF]"
                       aria-invalid={Boolean(errors.password)}
                       aria-describedby={errors.password ? idErrorContrasena : undefined}
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword((current) => !current)}
+                      onClick={togglePasswordVisibility}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B88A0] transition hover:text-[#003A6C]"
                       aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
                   </div>
-                  {errors.password ? (
-                    <p id={idErrorContrasena} className="text-sm text-red-600">
-                      {errors.password}
-                    </p>
-                  ) : null}
+                  {errors.password ? <p id={idErrorContrasena} className="text-sm text-red-600">{errors.password}</p> : null}
                 </div>
 
                 {errors.form ? (
@@ -215,13 +128,13 @@ export default function LoginPage() {
                   <span className="bg-white px-3 text-[#6B88A0]">O continúa con</span>
                 </div>
               </div>
-                <Button
+              <Button
                 type="button"
                 disabled
-                className="flex h-11 w-full items-center justify-center gap-3 opacity-50 cursor-not-allowed"
-                >
+                className="flex h-11 w-full cursor-not-allowed items-center justify-center gap-3 opacity-50"
+              >
                 Continuar con Google (próximamente)
-                </Button>
+              </Button>
 
               <div className="flex flex-col items-center gap-3 text-center text-sm text-[#4F6F88]">
                 <p>
@@ -239,3 +152,4 @@ export default function LoginPage() {
     </div>
   )
 }
+
