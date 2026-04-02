@@ -127,18 +127,27 @@ function unwrapSkill(data: unknown): SkillDto {
 
 export async function getSkills(): Promise<Skill[]> {
   try {
+    console.log('[getSkills] Iniciando GET a', SKILLS_ENDPOINT);
     const response = await api.get(SKILLS_ENDPOINT);
-    return unwrapSkillList(response.data).map(normalizeSkill);
+    console.log('[getSkills] Respuesta recibida:', response.data);
+    const unwrapped = unwrapSkillList(response.data);
+    console.log('[getSkills] Skills después de unwrap:', unwrapped);
+    return unwrapped.map(normalizeSkill);
   } catch (error) {
+    console.error('[getSkills] Error en GET:', error);
     throw formatError(error);
   }
 }
 
 export async function createSkill(payload: SkillPayload): Promise<Skill> {
   try {
-    const response = await api.post(SKILLS_ENDPOINT, toApiPayload(payload));
+    const apiPayload = toApiPayload(payload);
+    console.log('[createSkill] Enviando POST con payload:', apiPayload);
+    const response = await api.post(SKILLS_ENDPOINT, apiPayload);
+    console.log('[createSkill] Respuesta recibida:', response.data);
     return normalizeSkill(unwrapSkill(response.data));
   } catch (error) {
+    console.error('[createSkill] Error en POST:', error);
     throw formatError(error);
   }
 }

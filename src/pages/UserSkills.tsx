@@ -15,8 +15,9 @@ const UserSkills = () => {
         <main className="flex-1 p-4 sm:p-6 md:p-10">
           <div className="max-w-5xl mx-auto">
             {pageError && (
-              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {pageError}
+              <div className="mb-6 rounded-2xl border-2 border-red-400 bg-red-100 px-4 py-4 text-sm text-red-900 font-semibold shadow-md">
+                <p className="font-bold mb-1">⚠️ Error cargando habilidades:</p>
+                <p>{pageError}</p>
               </div>
             )}
 
@@ -36,14 +37,13 @@ const UserSkills = () => {
                 <h2 className="text-xl font-bold sm:text-2xl">Habilidades Técnicas</h2>
               </div>
               <div className="space-y-3">
-                {isLoading && (
+                {isLoading ? (
                   <div className="rounded-3xl border border-[#6dacbf]/30 bg-white py-0 shadow-sm">
                     <div className="px-6 py-8 text-center sm:py-10">
                       <p className="text-sm text-[#4B778D] sm:text-base">Cargando habilidades...</p>
                     </div>
                   </div>
-                )}
-                {technicalSkills.length === 0 ? (
+                ) : technicalSkills.length === 0 ? (
                   <div className="rounded-3xl border-2 border-dashed border-[#6dacbf] bg-white py-0 shadow-sm">
                     <div className="px-6 py-12 text-center sm:py-14">
                       <p className="text-sm text-[#4B778D] sm:text-base">No hay habilidades técnicas registradas</p>
@@ -62,14 +62,13 @@ const UserSkills = () => {
                 <h2 className="text-xl font-bold sm:text-2xl">Habilidades Blandas</h2>
               </div>
               <div className="space-y-3">
-                {isLoading && (
+                {isLoading ? (
                   <div className="rounded-3xl border border-[#6dacbf]/30 bg-white py-0 shadow-sm">
                     <div className="px-6 py-8 text-center sm:py-10">
                       <p className="text-sm text-[#4B778D] sm:text-base">Cargando habilidades...</p>
                     </div>
                   </div>
-                )}
-                {softSkills.length === 0 ? (
+                ) : softSkills.length === 0 ? (
                   <div className="rounded-3xl border-2 border-dashed border-[#6dacbf] bg-white py-0 shadow-sm">
                     <div className="px-6 py-12 text-center sm:py-14">
                       <p className="text-sm text-[#4B778D] sm:text-base">No hay habilidades blandas registradas</p>
@@ -122,7 +121,7 @@ const UserSkills = () => {
                   type="text" 
                   value={skillName}
                   onChange={(e) => handleSkillNameChange(e.target.value)}
-                  placeholder="Ej: React, Python, Trabajo en equipo"
+                  placeholder="Ej: React, Python"
                   className="w-full py-2.5 px-4 border border-[#0E7D96]/20 rounded-xl bg-white text-[#003A6C] focus:ring-2 focus:ring-[#0E7D96]/40 outline-none placeholder:text-[#0E7D96]/40"
                 />
               </div>

@@ -37,12 +37,15 @@ export const useSkillsManager = () => {
   const loadSkills = useCallback(async () => {
     setIsLoading(true);
     setPageError("");
+    console.log('[loadSkills] Iniciando carga de habilidades');
 
     try {
       const remoteSkills = await getSkills();
+      console.log('[loadSkills] Habilidades cargadas exitosamente:', remoteSkills);
       setSkills(remoteSkills);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudieron cargar las habilidades.';
+      console.error('[loadSkills] Error al cargar habilidades:', message);
       setPageError(message);
     } finally {
       setIsLoading(false);
@@ -50,6 +53,7 @@ export const useSkillsManager = () => {
   }, []);
 
   useEffect(() => {
+    console.log('[useSkillsManager] Component montado, llamando loadSkills');
     void loadSkills();
   }, [loadSkills]);
 
