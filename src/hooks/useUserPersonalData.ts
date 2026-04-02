@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { getAuthSession } from "@/services/auth/auth-storage";
-
+import { allCountries } from 'country-telephone-data';
 export const useUserPersonalData = () => {
   console.log("HOOK useUserPersonalData CARGADO");
   const [countryCode, setCountryCode] = useState("591");
@@ -69,12 +69,25 @@ export const useUserPersonalData = () => {
 
       setForm(mappedForm);
 
-      setPhoneNumber(
-        user.phone_number
-          ? user.phone_number.replace("+591", "")
-          : ""
-      );
+      if (user.phone_number) {
+        const foundCountry = allCountries.find(c =>
+          user.phone_number.startsWith("+" + c.dialCode)
+        );
 
+        if (foundCountry) {
+          setCountryCode(foundCountry.dialCode);
+
+          const numberWithoutCode = user.phone_number.replace(
+            "+" + foundCountry.dialCode,
+            ""
+          );
+
+          setPhoneNumber(numberWithoutCode);
+        } else {
+          // fallback
+          setPhoneNumber(user.phone_number);
+        }
+      }
     } catch (error) {
       console.error("Error al obtener datos:", error);
     } finally {
@@ -213,6 +226,12 @@ export const useUserPersonalData = () => {
     }
 
     try {
+      const session = getAuthSession();
+
+      if (!session || !session.accessToken) {
+        setErrors({ server: "Sesión expirada. Inicia sesión nuevamente." });
+        return;
+      }
       const formData = new FormData();
 
       formData.append("fullname", form.fullName);
@@ -228,6 +247,9 @@ export const useUserPersonalData = () => {
 
       const response = await fetch("http://localhost:8000/api/user_information", {
         method: "POST",
+        headers: {
+        Authorization: `Bearer ${session.accessToken}`, 
+        },
         body: formData
       });
 
@@ -243,7 +265,7 @@ export const useUserPersonalData = () => {
         return;
       }
 
-      setSuccess("Información guardada correctamente 🚀");
+      setSuccess("Información guardada correctamente ");
 
     } catch (error) {
       setErrors({ server: "Error de conexión con el servidor" });
@@ -317,6 +339,7 @@ export const useUserPersonalData = () => {
     handleCancel,
     handleClick,
     handleFileChange,
-    removeImage
+    removeImage,
+    loading
   };
 };
