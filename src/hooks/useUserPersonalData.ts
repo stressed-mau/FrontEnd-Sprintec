@@ -13,51 +13,126 @@ export const useUserPersonalData = () => {
     email: "",
     image: ""
   });
-
+  useEffect(() => {
+    console.log("FORM CAMBIÓ:", form);
+  }, [form]);
   const [errors, setErrors] = useState<any>({});
   const [success, setSuccess] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
-    useEffect(() => {
-    console.log("USEEFFECT CORRIENDO");
-        const fetchData = async () => {
-            try {
-            const res = await fetch("http://localhost:8000/api/user_information/1");
-            const data = await res.json();
+  useEffect(() => {
+  console.log("USEEFFECT CORRIENDO");
 
-            if (res.ok) {
-                console.log("ANTES SETFORM", data);
-                setForm({
-                fullName: data.fullname || "",
-                occupation: data.occupation || "",
-                bio: data.biography || "",
-                location: data.nationality || "",
-                email: data.public_email || "", 
-                image: data.image_url || "" 
-                });
+  const fetchData = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/api/user_information/1");
+      const data = await res.json();
 
-                setPhoneNumber(
-                data.phone_number?.replace("+591", "") || ""
-                );
-                console.log("DESPUÉS SETFORM");
-            }
-            } catch (error) {
-            console.error(error);
-            }
-        };
+      console.log("DATA DEL BACKEND:", data);
 
-        fetchData();
-        }, []);
+      if (!res.ok) {
+        console.error("Error en la respuesta del backend");
+        return;
+      }
+
+      const mappedForm = {
+        fullName: data.fullname || data.full_name || "",
+        occupation: data.occupation || "",
+        bio: data.biography || "",
+        location: data.nationality || "",
+        email: data.public_email || data.email || "",
+        image: data.image_url || ""
+      };
+
+      console.log("FORM MAPEADO:", mappedForm);
+
+      setForm(mappedForm);
+
+      setPhoneNumber(
+        data.phone_number ? data.phone_number.replace("+591", "") : ""
+      );
+
+    } catch (error) {
+      console.error("Error al obtener datos:", error);
+    }
+  };
+
+  fetchData();
+}, []);
   // =========================
   // INPUTS
   // =========================
   const handleChange = (e: any) => {
-    setForm({
-      ...form,
-      [e.target.id]: e.target.value
-    });
+  const { id, value } = e.target;
+
+  const updatedForm = {
+    ...form,
+    [id]: value
   };
+
+  setForm(updatedForm);
+
+  // 🔥 VALIDACIÓN EN TIEMPO REAL
+  setErrors((prev: any) => {
+    const newErrors = { ...prev };
+
+    // FULL NAME
+    if (id === "fullName") {
+      if (!value.trim()) {
+        newErrors.fullName = "El nombre completo es obligatorio.";
+      } else if (!/^[a-zA-Z\s]+$/.test(value)) {
+        newErrors.fullName = "El nombre solo puede contener letras.";
+      } else if (value.length > 100) {
+        newErrors.fullName = "El nombre no puede exceder los 100 caracteres.";
+      } else {
+        newErrors.fullName = "";
+      }
+    }
+
+    // OCCUPATION
+    if (id === "occupation") {
+      if (value.length > 80) {
+        newErrors.occupation = "La ocupación no puede exceder los 80 caracteres.";
+      } else {
+        newErrors.occupation = "";
+      }
+    }
+
+    // BIO
+    if (id === "bio") {
+      if (value.length > 300) {
+        newErrors.bio = "La biografía no puede exceder los 300 caracteres.";
+      } else {
+        newErrors.bio = "";
+      }
+    }
+
+    // LOCATION
+    if (id === "location") {
+      if (value.length > 100) {
+        newErrors.location = "La ubicación no puede exceder los 100 caracteres.";
+      } else {
+        newErrors.location = "";
+      }
+    }
+
+    // EMAIL
+    if (id === "email") {
+      if (!value.trim()) {
+        newErrors.email = "El correo electrónico es obligatorio.";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        newErrors.email = "Formato de correo inválido.";
+      } else if (value.length > 60) {
+        newErrors.email = "El correo no puede exceder los 60 caracteres.";
+      } else {
+        newErrors.email = "";
+      }
+    }
+
+    return newErrors;
+  });
+};
 
   // =========================
   // VALIDACIONES
