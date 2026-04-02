@@ -1,5 +1,8 @@
 ﻿import { useState } from "react"
 
+import { useNavigate } from "react-router-dom"
+
+import { USER_HOME_ROUTE } from "@/routes/route-paths"
 import { AuthServiceError, loginUser, saveAuthSession } from "@/services/auth"
 
 export type LoginValues = {
@@ -37,6 +40,7 @@ function validateLoginField(field: keyof LoginValues, values: LoginValues): stri
 }
 
 export function useLoginForm() {
+  const navigate = useNavigate()
   const [values, setValues] = useState<LoginValues>(INITIAL_VALUES)
   const [errors, setErrors] = useState<LoginErrors>({})
   const [successMessage, setSuccessMessage] = useState("")
@@ -89,6 +93,7 @@ export function useLoginForm() {
       saveAuthSession(response)
       setErrors({})
       setSuccessMessage(response.message || "Inicio de sesión exitoso")
+      navigate(USER_HOME_ROUTE, { replace: true })
     } catch (error) {
       setSuccessMessage("")
 
