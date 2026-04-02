@@ -4,7 +4,6 @@ import ContactPage from '../pages/ContactPage'
 import HomeVisitor from '../pages/HomeVisitor'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
-import CreateProyect from '@/pages/CreateProyect';
 import UserSkills from "@/pages/UserSkills";
 import PublishPortfolio from '@/pages/PublishPortfolio'
 import ExperiencePage from '@/pages/ExperiencePage'
@@ -24,7 +23,6 @@ function AppRoutes() {
       <Route path="/dashboard" element={<UserHome />} />
       <Route path="/personal" element={<UserPersonalData />} />
       <Route path="/perfil" element={<ProfilePage />} />
-      <Route path="/proyectos" element={<CreateProyect />} />
       <Route path="/habilidades" element={<UserSkills />} />
       <Route path="/red-profesional" element={<NetworksPage />} />
       <Route path="/experiencia" element={<ExperiencePage />} />
