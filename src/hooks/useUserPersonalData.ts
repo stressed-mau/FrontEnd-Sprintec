@@ -10,7 +10,8 @@ export const useUserPersonalData = () => {
     occupation: "",
     bio: "",
     location: "",
-    email: ""
+    email: "",
+    image: ""
   });
 
   const [errors, setErrors] = useState<any>({});
@@ -30,7 +31,8 @@ export const useUserPersonalData = () => {
                 occupation: data.occupation || "",
                 bio: data.biography || "",
                 location: data.nationality || "",
-                email: data.email || "" // ⚠️ solo si backend lo tiene
+                email: data.email || "", 
+                image: data.image_url || "" 
                 });
 
                 setPhoneNumber(
@@ -155,7 +157,8 @@ export const useUserPersonalData = () => {
       occupation: "",
       bio: "",
       location: "",
-      email: ""
+      email: "",
+      image: ""
     });
     setPhoneNumber("");
     setPreview(null);

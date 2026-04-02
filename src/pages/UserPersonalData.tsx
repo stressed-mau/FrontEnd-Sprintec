@@ -69,11 +69,9 @@ const UserPersonalData = () => {
                   <div className="w-28 h-28 md:w-32 md:h-32 bg-[#E2E8F0] rounded-full flex items-center justify-center mb-4 overflow-hidden">
                     
                     {preview ? (
-                      <img
-                        src={preview}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={preview} alt="Preview" />
+                    ) : form.image ? (
+                      <img src={form.image} alt="Profile" />
                     ) : (
                       <svg className="w-14 h-14 md:w-16 md:h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
