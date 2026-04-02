@@ -107,7 +107,7 @@ const UserSkills = () => {
                 />
               </div>
 
-              {skillType === "Habilidad técnica" && (
+              {skillType === "tecnica" && (
                 <div className="animate-in fade-in slide-in-from-top-2">
                   <label className="block text-[#003A6C] font-semibold text-sm mb-1.5">Nivel de dominio</label>
                   <select 
