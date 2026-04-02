@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { getAuthSession } from "@/services/auth/auth-storage";
 
 export const useUserPersonalData = () => {
   console.log("HOOK useUserPersonalData CARGADO");
@@ -13,11 +14,15 @@ export const useUserPersonalData = () => {
     email: "",
     image: ""
   });
+
   useEffect(() => {
     console.log("FORM CAMBIÓ:", form);
   }, [form]);
+
+
   const [errors, setErrors] = useState<any>({});
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -26,7 +31,22 @@ export const useUserPersonalData = () => {
 
   const fetchData = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/user_information/1");
+      const session = getAuthSession();
+
+      if (!session || !session.user?.id || !session.accessToken) {
+        console.error("No hay sesión válida");
+        return;
+      }
+
+      const res = await fetch(
+        `http://localhost:8000/api/user_information/${session.user.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        }
+      );
+
       const response = await res.json();
 
       console.log("DATA DEL BACKEND:", response);
@@ -36,7 +56,7 @@ export const useUserPersonalData = () => {
         return;
       }
 
-      const user = response.data; 
+      const user = response.data;
 
       const mappedForm = {
         fullName: user.fullname || "",
@@ -44,10 +64,8 @@ export const useUserPersonalData = () => {
         bio: user.biography || "",
         location: user.nationality || "",
         email: user.public_email || "",
-        image: user.image_url || ""
+        image: user.image_url || "",
       };
-
-      console.log("FORM MAPEADO:", mappedForm);
 
       setForm(mappedForm);
 
@@ -59,6 +77,8 @@ export const useUserPersonalData = () => {
 
     } catch (error) {
       console.error("Error al obtener datos:", error);
+    } finally {
+    setLoading(false); 
     }
   };
 

@@ -20,9 +20,10 @@ const UserPersonalData = () => {
     handleCancel,
     handleClick,
     handleFileChange,
-    removeImage
+    removeImage,
+    loading
   } = useUserPersonalData();
-
+  
   return (
     <div id="personaldata-page" className="min-h-screen bg-[#F7F0E1]">
       <Header />
@@ -33,7 +34,15 @@ const UserPersonalData = () => {
 
         <main id="personaldata-main" className="flex-1 p-4 sm:p-6 md:p-10">
           <div className="max-w-5xl mx-auto">
-            
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-6 h-6 border-2 border-[#003A6C] border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-[#003A6C]">Cargando datos...</p>
+                </div>
+              </div>
+            ) : (
+              <>
             {/* Título y Subtítulo: Alineación central en móviles para coincidir con la UI de las fotos */}
             <div id="personaldata-header" className="text-center md:text-left mb-6 md:mb-8">
               <h1 id="personaldata-title" className="text-[#003A6C] text-3xl md:text-4xl font-bold mb-2">
@@ -242,7 +251,8 @@ const UserPersonalData = () => {
                 )}
               </form>
             </div>
-
+            </>
+            )}
           </div>
         </main>
       </div>
