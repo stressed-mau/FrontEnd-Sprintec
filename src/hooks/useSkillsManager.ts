@@ -25,7 +25,7 @@ export const useSkillsManager = () => {
   // Estados del formulario del modal
   const [skillType, setSkillType] = useState<SkillType>("tecnica");
   const [skillName, setSkillName] = useState("");
-  const [skillLevel, setSkillLevel] = useState("intermedio");
+  const [skillLevel, setSkillLevel] = useState("basico");
   // Estados de validación y mensajes
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -62,12 +62,12 @@ export const useSkillsManager = () => {
       setEditingSkill(skill);
       setSkillType(skill.type);
       setSkillName(skill.name);
-      setSkillLevel(skill.level || "intermedio");
+      setSkillLevel(skill.level || "basico");
     } else {
       setEditingSkill(null);
       setSkillName("");
       setSkillType("tecnica");
-      setSkillLevel("intermedio");
+      setSkillLevel("basico");
     }
     setErrorMessage("");
     setIsModalOpen(true);
@@ -117,7 +117,7 @@ export const useSkillsManager = () => {
     const payload = {
       name: skillName.trim(),
       type: skillType,
-      level: skillType === "tecnica" ? skillLevel : undefined,
+      level: skillType === "tecnica" ? skillLevel.toLowerCase() : undefined,
     };
 
     try {

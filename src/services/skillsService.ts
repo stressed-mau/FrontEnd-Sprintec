@@ -55,7 +55,7 @@ function mapUiTypeToApi(type: SkillType): ApiSkillType {
 function toApiPayload(payload: SkillPayload): ApiSkillPayload {
   return {
     name: payload.name,
-    level_of_domain: payload.level?.toLowerCase(),
+    level_of_domain: payload.level ? payload.level.toLowerCase() : undefined,
     type: mapUiTypeToApi(payload.type),
   };
 }
@@ -65,7 +65,15 @@ function capitalizeLevel(level?: string | null): string | undefined {
     return undefined;
   }
 
-  return level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+  // Mapeo de valores backend (minúscula) a display (capitalizado)
+  const levelMap: Record<string, string> = {
+    basico: 'Básico',
+    intermedio: 'Intermedio',
+    avanzado: 'Avanzado',
+    experto: 'Experto',
+  };
+
+  return levelMap[level.toLowerCase()] || level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
 }
 
 function formatError(error: unknown): Error {

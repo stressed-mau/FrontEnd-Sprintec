@@ -134,10 +134,10 @@ const UserSkills = () => {
                     onChange={(e) => setSkillLevel(e.target.value)}
                     className="w-full py-2.5 px-4 border border-[#0E7D96]/20 rounded-xl bg-white text-[#003A6C] focus:ring-2 focus:ring-[#0E7D96]/40 outline-none"
                   >
-                    <option value="Básico">Básico</option>
-                    <option value="Intermedio" >Intermedio</option>
-                    <option value="Avanzado">Avanzado</option>
-                    <option value="Experto">Experto</option>
+                    <option value="basico">Básico</option>
+                    <option value="intermedio">Intermedio</option>
+                    <option value="avanzado">Avanzado</option>
+                    <option value="experto">Experto</option>
                   </select>
                 </div>
               )}
