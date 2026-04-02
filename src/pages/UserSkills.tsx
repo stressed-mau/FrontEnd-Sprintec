@@ -3,8 +3,19 @@ import Sidebar from '../components/Sidebar';
 import { Plus, Code2, Lightbulb, X, Edit3, Trash2 } from 'lucide-react';
 import { useSkillsManager, type Skill } from '../hooks/useSkillsManager';
 
+const LEVEL_LABELS: Record<string, string> = {
+  experto: 'Experto',
+  avanzado: 'Avanzado',
+  intermedio: 'Intermedio',
+  basico: 'Basico',
+};
+
+function getLevelLabel(level: string): string {
+  return LEVEL_LABELS[level] ?? level;
+}
+
 const UserSkills = () => {
-  const {    isModalOpen, technicalSkills, softSkills, skillType, skillName, skillLevel, errorMessage, successMessage,showSuccessModal, pageError, isLoading,
+  const {    isModalOpen, technicalSkills, softSkills, skillType, skillName, skillLevel, errorMessage, successMessage,showSuccessModal, pageError, isLoading, isSaving,
             setSkillType, setSkillLevel, openModal,  closeModal, handleSave, handleDelete, handleSkillNameChange, } = useSkillsManager();
 
   return (
@@ -50,7 +61,7 @@ const UserSkills = () => {
                     </div>
                   </div>
                 ) : (  technicalSkills.map(skill => (
-                    <SkillCard key={skill.id} skill={skill} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
+                    <SkillCard key={skill.id} skill={skill} disabled={isLoading} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
                   ))
                 )}
               </div>
@@ -75,7 +86,7 @@ const UserSkills = () => {
                     </div>
                   </div>
                 ) : ( softSkills.map(skill => (
-                    <SkillCard key={skill.id} skill={skill} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
+                    <SkillCard key={skill.id} skill={skill} disabled={isLoading} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
                   ))
                 )}
               </div>
@@ -121,7 +132,7 @@ const UserSkills = () => {
                   type="text" 
                   value={skillName}
                   onChange={(e) => handleSkillNameChange(e.target.value)}
-                  placeholder="Ej: React, Python"
+                  placeholder={skillType === 'tecnica' ? 'Ej: React, Python' : 'Ej: Trabajo en equipo'}
                   className="w-full py-2.5 px-4 border border-[#0E7D96]/20 rounded-xl bg-white text-[#003A6C] focus:ring-2 focus:ring-[#0E7D96]/40 outline-none placeholder:text-[#0E7D96]/40"
                 />
               </div>
@@ -134,16 +145,18 @@ const UserSkills = () => {
                     onChange={(e) => setSkillLevel(e.target.value)}
                     className="w-full py-2.5 px-4 border border-[#0E7D96]/20 rounded-xl bg-white text-[#003A6C] focus:ring-2 focus:ring-[#0E7D96]/40 outline-none"
                   >
-                    <option value="basico">Básico</option>
-                    <option value="intermedio">Intermedio</option>
-                    <option value="avanzado">Avanzado</option>
                     <option value="experto">Experto</option>
+                    <option value="avanzado">Avanzado</option>
+                    <option value="intermedio">Intermedio</option>
+                    <option value="basico">Basico</option>
                   </select>
                 </div>
               )}
 
               <div className="flex gap-3 pt-4">
-                <button type="submit" className="flex-1 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all">Guardar</button>
+                <button type="submit" disabled={isSaving} className="flex-1 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60">
+                  {isSaving ? 'Guardando...' : 'Guardar'}
+                </button>
                 <button type="button" onClick={closeModal} className="flex-1 bg-[#C2DBED] text-[#003A6C] py-3 rounded-xl font-bold border border-[#6dacbf] hover:bg-[#b0cfeb]">Cancelar</button>
               </div>
             </form>
@@ -171,21 +184,21 @@ const UserSkills = () => {
 };
 
 // COMPONENTE PARA CADA TARJETA DE HABILIDAD
-const SkillCard = ({ skill, onEdit, onDelete }: { skill: Skill, onEdit: () => void, onDelete: () => void }) => (
+const SkillCard = ({ skill, onEdit, onDelete, disabled }: { skill: Skill, onEdit: () => void, onDelete: () => void, disabled?: boolean }) => (
   <div className="flex flex-col gap-4 rounded-2xl border border-[#0E7D96]/30 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:justify-between">
     <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
       <span className="wrap-break-words text-lg font-bold text-[#003A6C]">{skill.name}</span>
       {skill.level && (
         <span className="bg-[#F1F5F9] text-gray-500 text-xs px-3 py-1 rounded-full border border-gray-100 font-medium">
-          {skill.level}
+          {getLevelLabel(skill.level)}
         </span>
       )}
     </div>
     <div className="flex w-full gap-2 sm:w-auto">
-      <button onClick={onEdit} className="flex-1 rounded-lg border border-[#6dacbf]/30 bg-[#C2DBED]/50 p-2 text-[#003A6C] transition-colors hover:bg-[#C2DBED] sm:flex-none">
+      <button disabled={disabled} onClick={onEdit} className="flex-1 rounded-lg border border-[#6dacbf]/30 bg-[#C2DBED]/50 p-2 text-[#003A6C] transition-colors hover:bg-[#C2DBED] disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none">
         <Edit3 className="size-4" />
       </button>
-      <button onClick={onDelete} className="flex-1 rounded-lg border border-red-200 bg-red-50 p-2 text-red-500 transition-colors hover:bg-red-100 sm:flex-none">
+      <button disabled={disabled} onClick={onDelete} className="flex-1 rounded-lg border border-red-200 bg-red-50 p-2 text-red-500 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none">
         <Trash2 className="size-4" />
       </button>
     </div>

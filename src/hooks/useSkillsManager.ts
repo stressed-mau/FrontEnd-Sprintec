@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import {
-  createSkill,
-  getSkills,
+import {createSkill,  getSkills,
   removeSkill,
   updateSkill,
   type Skill,
@@ -12,10 +10,10 @@ import {
 export type { Skill };
 
 const technicalLevelPriority: Record<string, number> = {
-  Experto: 4,
-  Avanzado: 3,
-  Básico: 2,
-  Intermedio: 1,
+  experto: 4,
+  avanzado: 3,
+  intermedio: 2,
+  basico: 1,
 };
 
 export const useSkillsManager = () => {
@@ -30,6 +28,7 @@ export const useSkillsManager = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [pageError, setPageError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -93,6 +92,11 @@ export const useSkillsManager = () => {
 
   const handleSave = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (isSaving) {
+      return;
+    }
+
     setErrorMessage("");
     // Validación 1: Campo obligatorio
     if (!skillName.trim()) {
@@ -121,6 +125,8 @@ export const useSkillsManager = () => {
     };
 
     try {
+      setIsSaving(true);
+
       if (editingSkill) {
         const updatedSkill = await updateSkill(editingSkill.id, payload);
         setSkills((currentSkills) =>
@@ -143,6 +149,8 @@ export const useSkillsManager = () => {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo guardar la habilidad.';
       setErrorMessage(message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -161,14 +169,21 @@ export const useSkillsManager = () => {
     .sort((a, b) => {
       const aPriority = technicalLevelPriority[a.level ?? ''] ?? 0;
       const bPriority = technicalLevelPriority[b.level ?? ''] ?? 0;
-      return bPriority - aPriority;
+
+      if (bPriority !== aPriority) {
+        return bPriority - aPriority;
+      }
+
+      return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
     });
 
-  const softSkills = skills.filter((skill) => skill.type === "blanda");
+  const softSkills = skills
+    .filter((skill) => skill.type === "blanda")
+    .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
 
   return {
     // Estados
-    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,pageError,isLoading,
+    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,pageError,isLoading,isSaving,
     technicalSkills,softSkills,
     // Setters
     setSkillType,setSkillName, setSkillLevel, handleSkillNameChange,

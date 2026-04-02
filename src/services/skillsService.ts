@@ -65,15 +65,20 @@ function capitalizeLevel(level?: string | null): string | undefined {
     return undefined;
   }
 
-  // Mapeo de valores backend (minúscula) a display (capitalizado)
+  // Normaliza para que coincida con los value de los option del modal
+  const normalizedLevel = level
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
   const levelMap: Record<string, string> = {
-    basico: 'Básico',
-    intermedio: 'Intermedio',
-    avanzado: 'Avanzado',
-    experto: 'Experto',
+    basico: 'basico',
+    intermedio: 'intermedio',
+    avanzado: 'avanzado',
+    experto: 'experto',
   };
 
-  return levelMap[level.toLowerCase()] || level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+  return levelMap[normalizedLevel] ?? normalizedLevel;
 }
 
 function formatError(error: unknown): Error {
