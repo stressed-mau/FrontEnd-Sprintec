@@ -1,11 +1,29 @@
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { Plus, Code2, Lightbulb, X, Edit3, Trash2 } from 'lucide-react';
-import { useSkillsManager, type Skill } from '../hooks/useSkillsManager';
+import { useSkillsManager } from '../hooks/useSkillsManager';
 
 const UserSkills = () => {
-  const {    isModalOpen, technicalSkills, softSkills, skillType, skillName, skillLevel, errorMessage, successMessage,showSuccessModal,
-            setSkillType, setSkillLevel, openModal,  closeModal, handleSave, handleDelete, handleSkillNameChange, } = useSkillsManager();
+  const {
+    isModalOpen,
+    technicalSkills,
+    softSkills,
+    skillType,
+    skillName,
+    skillLevel,
+    errorMessage,
+    successMessage,
+    showSuccessModal,
+    pageError,
+    isLoading,
+    setSkillType,
+    setSkillLevel,
+    openModal,
+    closeModal,
+    handleSave,
+    handleDelete,
+    handleSkillNameChange,
+  } = useSkillsManager();
 
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
@@ -14,6 +32,12 @@ const UserSkills = () => {
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
           <div className="max-w-5xl mx-auto">
+            {pageError && (
+              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {pageError}
+              </div>
+            )}
+
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
               <div>
                 <h1 id="titulo-pagina-habilidades" className="mb-2 text-3xl font-bold text-[#003A6C] md:text-4xl">Mis Habilidades</h1>
@@ -30,6 +54,11 @@ const UserSkills = () => {
                 <h2 className="text-xl font-bold sm:text-2xl">Habilidades Técnicas</h2>
               </div>
               <div className="space-y-3">
+                {isLoading ? (
+                  <div className="rounded-3xl border border-[#6dacbf]/30 bg-white px-6 py-12 text-center shadow-sm">
+                    <p className="text-sm text-[#4B778D] sm:text-base">Cargando habilidades desde el backend...</p>
+                  </div>
+                ) : null}
                 {technicalSkills.length === 0 ? (
                   <div className="rounded-3xl border-2 border-dashed border-[#6dacbf] bg-white py-0 shadow-sm">
                     <div className="px-6 py-12 text-center sm:py-14">
@@ -49,6 +78,11 @@ const UserSkills = () => {
                 <h2 className="text-xl font-bold sm:text-2xl">Habilidades Blandas</h2>
               </div>
               <div className="space-y-3">
+                {isLoading ? (
+                  <div className="rounded-3xl border border-[#6dacbf]/30 bg-white px-6 py-12 text-center shadow-sm">
+                    <p className="text-sm text-[#4B778D] sm:text-base">Cargando habilidades desde el backend...</p>
+                  </div>
+                ) : null}
                 {softSkills.length === 0 ? (
                   <div className="rounded-3xl border-2 border-dashed border-[#6dacbf] bg-white py-0 shadow-sm">
                     <div className="px-6 py-12 text-center sm:py-14">
@@ -152,7 +186,7 @@ const UserSkills = () => {
 };
 
 // COMPONENTE PARA CADA TARJETA DE HABILIDAD
-const SkillCard = ({ skill, onEdit, onDelete }: { skill: Skill, onEdit: () => void, onDelete: () => void }) => (
+const SkillCard = ({ skill, onEdit, onDelete }: { skill: { id: string; name: string; type: string; level?: string }, onEdit: () => void, onDelete: () => void }) => (
   <div className="flex flex-col gap-4 rounded-2xl border border-[#0E7D96]/30 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-center sm:justify-between">
     <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
       <span className="wrap-break-words text-lg font-bold text-[#003A6C]">{skill.name}</span>
