@@ -221,7 +221,7 @@ const UserPersonalData = () => {
                   <button
                     id="btn-save"
                     type="submit"
-                    className="w-full sm:w-auto bg-[#003A6C] text-white px-8 py-2.5 rounded-lg font-semibold text-sm hover:bg-[#1a4f7a] transition-colors order-1 sm:order-none"
+                    className="w-full sm:w-auto bg-[#003A6C] text-white px-8 py-2.5 rounded-lg font-semibold text-sm hover:bg-[#1a4f7a] transition-colors order-1 sm:order-0"
                   >
                     Guardar cambios
                   </button>
