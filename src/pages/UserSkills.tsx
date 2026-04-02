@@ -4,7 +4,7 @@ import { Plus, Code2, Lightbulb, X, Edit3, Trash2 } from 'lucide-react';
 import { useSkillsManager, type Skill } from '../hooks/useSkillsManager';
 
 const UserSkills = () => {
-  const {    isModalOpen, technicalSkills, softSkills, skillType, skillName, skillLevel, errorMessage, successMessage,showSuccessModal,
+  const {    isModalOpen, technicalSkills, softSkills, skillType, skillName, skillLevel, errorMessage, successMessage,showSuccessModal, pageError, isLoading,
             setSkillType, setSkillLevel, openModal,  closeModal, handleSave, handleDelete, handleSkillNameChange, } = useSkillsManager();
 
   return (
@@ -14,6 +14,12 @@ const UserSkills = () => {
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
           <div className="max-w-5xl mx-auto">
+            {pageError && (
+              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {pageError}
+              </div>
+            )}
+
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
               <div>
                 <h1 id="titulo-pagina-habilidades" className="mb-2 text-3xl font-bold text-[#003A6C] md:text-4xl">Mis Habilidades</h1>
@@ -30,6 +36,13 @@ const UserSkills = () => {
                 <h2 className="text-xl font-bold sm:text-2xl">Habilidades Técnicas</h2>
               </div>
               <div className="space-y-3">
+                {isLoading && (
+                  <div className="rounded-3xl border border-[#6dacbf]/30 bg-white py-0 shadow-sm">
+                    <div className="px-6 py-8 text-center sm:py-10">
+                      <p className="text-sm text-[#4B778D] sm:text-base">Cargando habilidades...</p>
+                    </div>
+                  </div>
+                )}
                 {technicalSkills.length === 0 ? (
                   <div className="rounded-3xl border-2 border-dashed border-[#6dacbf] bg-white py-0 shadow-sm">
                     <div className="px-6 py-12 text-center sm:py-14">
@@ -49,6 +62,13 @@ const UserSkills = () => {
                 <h2 className="text-xl font-bold sm:text-2xl">Habilidades Blandas</h2>
               </div>
               <div className="space-y-3">
+                {isLoading && (
+                  <div className="rounded-3xl border border-[#6dacbf]/30 bg-white py-0 shadow-sm">
+                    <div className="px-6 py-8 text-center sm:py-10">
+                      <p className="text-sm text-[#4B778D] sm:text-base">Cargando habilidades...</p>
+                    </div>
+                  </div>
+                )}
                 {softSkills.length === 0 ? (
                   <div className="rounded-3xl border-2 border-dashed border-[#6dacbf] bg-white py-0 shadow-sm">
                     <div className="px-6 py-12 text-center sm:py-14">
@@ -89,8 +109,8 @@ const UserSkills = () => {
                   onChange={(e) => setSkillType(e.target.value as any)}
                   className="w-full py-2.5 px-4 border border-[#0E7D96]/20 rounded-xl bg-white text-[#003A6C] focus:ring-2 focus:ring-[#0E7D96]/40 outline-none"
                 >
-                  <option value="Habilidad técnica">Habilidad técnica</option>
-                  <option value="Habilidad blanda">Habilidad blanda</option>
+                  <option value="tecnica">Habilidad técnica</option>
+                  <option value="blanda">Habilidad blanda</option>
                 </select>
               </div>
 

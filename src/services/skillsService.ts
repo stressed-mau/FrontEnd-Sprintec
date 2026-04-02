@@ -98,16 +98,28 @@ function unwrapSkillList(data: unknown): SkillDto[] {
     return data as SkillDto[];
   }
 
-  if (data && typeof data === 'object' && 'data' in data && Array.isArray((data as { data: unknown }).data)) {
-    return (data as { data: SkillDto[] }).data;
+  if (data && typeof data === 'object') {
+    if ('data' in data && Array.isArray((data as { data: unknown }).data)) {
+      return (data as { data: SkillDto[] }).data;
+    }
+
+    if ('skills' in data && Array.isArray((data as { skills: unknown }).skills)) {
+      return (data as { skills: SkillDto[] }).skills;
+    }
   }
 
   return [];
 }
 
 function unwrapSkill(data: unknown): SkillDto {
-  if (data && typeof data === 'object' && 'data' in data && (data as { data?: unknown }).data) {
-    return (data as { data: SkillDto }).data;
+  if (data && typeof data === 'object') {
+    if ('data' in data && (data as { data?: unknown }).data) {
+      return (data as { data: SkillDto }).data;
+    }
+
+    if ('skill' in data && (data as { skill?: unknown }).skill) {
+      return (data as { skill: SkillDto }).skill;
+    }
   }
 
   return data as SkillDto;
