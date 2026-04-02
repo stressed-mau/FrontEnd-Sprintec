@@ -4,7 +4,7 @@ import ContactPage from '../pages/ContactPage'
 import HomeVisitor from '../pages/HomeVisitor'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
-import CreateProyect from '../pages/CreateProyect';
+import CreateProyect from '@/pages/CreateProyect';
 import UserSkills from "@/pages/UserSkills";
 import PublishPortfolio from '@/pages/PublishPortfolio'
 import ExperiencePage from '@/pages/ExperiencePage'

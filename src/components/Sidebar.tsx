@@ -8,7 +8,6 @@ const Sidebar = () => {
   const navItems = [
     { id: "personal", label: "Datos personales", icon: User, path: "/personal" },
     { id: "red-profesional", label: "Red profesional", icon: Globe, path: "/red-profesional" },
-    { id: "proyectos", label: "Proyectos", icon: FolderGit2, path: "/proyectos" },
     { id: "habilidades", label: "Habilidades", icon: Award, path: "/habilidades" },
     { id: "experiencia", label: "Experiencia", icon: Briefcase, path: "/experiencia" },
     { id: "publicar", label: "Publicar", icon: Upload, path: "/publicar" },
