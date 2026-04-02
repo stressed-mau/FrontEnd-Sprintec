@@ -193,7 +193,7 @@ export default function RegisterPage() {
                 disabled
                 className="flex h-11 w-full cursor-not-allowed items-center justify-center gap-3 opacity-50"
               >
-                Continuar con Google (aun pensando)
+                Continuar con Google (aun pensando..... pensando en sacar)
               </Button>
 
               <div className="flex flex-col items-center gap-3 text-center text-sm text-[#4F6F88]">
