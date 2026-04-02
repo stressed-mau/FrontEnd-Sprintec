@@ -16,28 +16,31 @@ export const useUserPersonalData = () => {
 
   const [errors, setErrors] = useState<any>({});
   const [success, setSuccess] = useState("");
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  useEffect(() => {
+
+    useEffect(() => {
+    console.log("USEEFFECT CORRIENDO");
         const fetchData = async () => {
             try {
             const res = await fetch("http://localhost:8000/api/user_information/1");
             const data = await res.json();
 
             if (res.ok) {
+                console.log("ANTES SETFORM", data);
                 setForm({
                 fullName: data.fullname || "",
                 occupation: data.occupation || "",
                 bio: data.biography || "",
                 location: data.nationality || "",
-                email: data.email || "", 
+                email: data.public_email || "", 
                 image: data.image_url || "" 
                 });
 
                 setPhoneNumber(
                 data.phone_number?.replace("+591", "") || ""
                 );
+                console.log("DESPUÉS SETFORM");
             }
             } catch (error) {
             console.error(error);
