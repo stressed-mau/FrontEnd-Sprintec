@@ -246,7 +246,7 @@ export const useUserPersonalData = () => {
       }
 
       const response = await fetch("http://localhost:8000/api/user_information/${session.user.id}", {
-        method: "PUT",
+        method: "POST",
         headers: {
         Authorization: `Bearer ${session.accessToken}`, 
         },
