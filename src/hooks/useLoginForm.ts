@@ -1,6 +1,6 @@
 ﻿import { useState } from "react"
 
-import { findUserByEmail } from "@/lib/auth-storage"
+import { AuthServiceError, loginUser, saveAuthSession } from "@/services/auth"
 
 export type LoginValues = {
   email: string
@@ -28,8 +28,9 @@ function validateLoginField(field: keyof LoginValues, values: LoginValues): stri
     }
   }
 
-  if (field === "password" && !password) {
-    return "El campo contraseña es obligatorio."
+  if (field === "password") {
+    if (!password) return "El campo contraseña es obligatorio."
+    if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres."
   }
 
   return ""
@@ -39,6 +40,7 @@ export function useLoginForm() {
   const [values, setValues] = useState<LoginValues>(INITIAL_VALUES)
   const [errors, setErrors] = useState<LoginErrors>({})
   const [successMessage, setSuccessMessage] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   function updateField(field: keyof LoginValues, value: string) {
     setValues((current) => ({ ...current, [field]: value }))
@@ -60,23 +62,13 @@ export function useLoginForm() {
     }))
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const nextErrors: LoginErrors = {
       email: validateLoginField("email", values),
       password: validateLoginField("password", values),
       form: "",
-    }
-
-    if (!nextErrors.email && !nextErrors.password) {
-      const user = findUserByEmail(values.email)
-
-      if (!user) {
-        nextErrors.form = "El correo electrónico no está registrado."
-      } else if (user.password !== values.password) {
-        nextErrors.form = "La contraseña ingresada es incorrecta."
-      }
     }
 
     setErrors(nextErrors)
@@ -86,16 +78,42 @@ export function useLoginForm() {
       return
     }
 
-    setSuccessMessage("Validación exitosa.")
+    setIsSubmitting(true)
+
+    try {
+      const response = await loginUser({
+        email: values.email.trim().toLowerCase(),
+        password: values.password,
+      })
+
+      saveAuthSession(response)
+      setErrors({})
+      setSuccessMessage(response.message || "Inicio de sesión exitoso")
+    } catch (error) {
+      setSuccessMessage("")
+
+      if (error instanceof AuthServiceError) {
+        setErrors({
+          email: error.validationErrors?.email?.[0] ?? "",
+          password: error.validationErrors?.password?.[0] ?? "",
+          form: error.message,
+        })
+        return
+      }
+
+      setErrors({ form: "No se pudo iniciar sesión." })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return {
     values,
     errors,
     successMessage,
+    isSubmitting,
     updateField,
     handleBlur,
     handleSubmit,
   }
 }
-

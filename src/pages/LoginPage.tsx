@@ -12,7 +12,7 @@ import { useLoginForm } from "@/hooks/useLoginForm"
 import { usePasswordVisibility } from "@/hooks/usePasswordVisibility"
 
 export default function LoginPage() {
-  const { values, errors, successMessage, updateField, handleBlur, handleSubmit } = useLoginForm()
+  const { values, errors, successMessage, isSubmitting, updateField, handleBlur, handleSubmit } = useLoginForm()
   const { isVisible: showPassword, toggleVisibility: togglePasswordVisibility } = usePasswordVisibility()
   const idEntradaCorreo = "inicio-sesion-correo"
   const idEntradaContrasena = "inicio-sesion-contrasena"
@@ -115,8 +115,12 @@ export default function LoginPage() {
                   </div>
                 ) : null}
 
-                <Button type="submit" className="h-11 w-full bg-[#003A6C] text-white transition hover:bg-[#4982AD]">
-                  Iniciar sesión
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="h-11 w-full bg-[#003A6C] text-white transition hover:bg-[#4982AD] disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
                 </Button>
               </form>
 
@@ -152,4 +156,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

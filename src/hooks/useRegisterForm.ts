@@ -5,7 +5,7 @@ import {
   registerUser,
   saveAuthSession,
   type ApiValidationErrors,
-} from "@/services/authService"
+} from "@/services/auth"
 
 export type RegisterValues = {
   name: string
@@ -25,6 +25,8 @@ const INITIAL_VALUES: RegisterValues = {
   password: "",
   confirmPassword: "",
 }
+
+const SPECIAL_CHARACTER_REGEX = /[^A-Za-z0-9]/
 
 export const WELCOME_MESSAGE = `¡Te damos la bienvenida a Portafolio Gen!
 
@@ -51,12 +53,12 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
 
   if (field === "password") {
     if (!password) return "El campo contraseña es obligatorio."
-    if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres"
+    if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres."
     if (password.length > 20) return "La contraseña permite un máximo de 20 caracteres."
     if (/\s/.test(password)) return "La contraseña no permite espacios en blanco."
     if (!/[A-Z]/.test(password)) return "La contraseña debe contener al menos una letra mayúscula."
     if (!/\d/.test(password)) return "La contraseña debe contener al menos un número."
-    if (!/[!@#$%^&*(),.?\":{}|<>_\-\\[\]/+=;'`~]/.test(password)) {
+    if (!SPECIAL_CHARACTER_REGEX.test(password)) {
       return "La contraseña debe contener al menos un carácter especial."
     }
   }
@@ -132,9 +134,10 @@ export function useRegisterForm() {
     setIsSubmitting(true)
 
     try {
+      const normalizedEmail = values.email.trim().toLowerCase()
       const response = await registerUser({
         username: values.name.trim(),
-        email: values.email.trim().toLowerCase(),
+        email: normalizedEmail,
         password: values.password,
         password_confirmation: values.confirmPassword,
       })
@@ -144,7 +147,7 @@ export function useRegisterForm() {
       window.localStorage.setItem(
         "portfolio_last_welcome_email",
         JSON.stringify({
-          to: values.email.trim().toLowerCase(),
+          to: normalizedEmail,
           subject: "¡Te damos la bienvenida a Portafolio Gen!",
           body: WELCOME_MESSAGE,
         }),
