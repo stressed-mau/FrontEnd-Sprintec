@@ -21,28 +21,30 @@ export const useUserPersonalData = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
-  useEffect(() => {
+ useEffect(() => {
   console.log("USEEFFECT CORRIENDO");
 
   const fetchData = async () => {
     try {
       const res = await fetch("http://localhost:8000/api/user_information/1");
-      const data = await res.json();
+      const response = await res.json();
 
-      console.log("DATA DEL BACKEND:", data);
+      console.log("DATA DEL BACKEND:", response);
 
-      if (!res.ok) {
+      if (!res.ok || !response.success) {
         console.error("Error en la respuesta del backend");
         return;
       }
 
+      const user = response.data; 
+
       const mappedForm = {
-        fullName: data.fullname || data.full_name || "",
-        occupation: data.occupation || "",
-        bio: data.biography || "",
-        location: data.nationality || "",
-        email: data.public_email || data.email || "",
-        image: data.image_url || ""
+        fullName: user.fullname || "",
+        occupation: user.occupation || "",
+        bio: user.biography || "",
+        location: user.nationality || "",
+        email: user.public_email || "",
+        image: user.image_url || ""
       };
 
       console.log("FORM MAPEADO:", mappedForm);
@@ -50,7 +52,9 @@ export const useUserPersonalData = () => {
       setForm(mappedForm);
 
       setPhoneNumber(
-        data.phone_number ? data.phone_number.replace("+591", "") : ""
+        user.phone_number
+          ? user.phone_number.replace("+591", "")
+          : ""
       );
 
     } catch (error) {
