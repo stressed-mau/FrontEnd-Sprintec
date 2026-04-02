@@ -1,6 +1,11 @@
 ﻿import { useState } from "react"
 
-import { findUserByEmail, registerStoredUser } from "@/lib/auth-storage"
+import {
+  AuthServiceError,
+  registerUser,
+  saveAuthSession,
+  type ApiValidationErrors,
+} from "@/services/authService"
 
 export type RegisterValues = {
   name: string
@@ -10,6 +15,9 @@ export type RegisterValues = {
 }
 
 export type RegisterErrors = Partial<Record<keyof RegisterValues, string>>
+type RegisterFormErrors = RegisterErrors & {
+  form?: string
+}
 
 const INITIAL_VALUES: RegisterValues = {
   name: "",
@@ -31,12 +39,6 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
   if (field === "name") {
     if (!name) return "El campo Nombre usuario es obligatorio."
     if (name.length > 30) return "El campo Nombre de usuario no permite un máximo de 30 caracteres."
-    if (/\d/.test(name)) {
-      return "El Nombre de Usuario contiene caracteres numéricos. Sólo se permiten letras."
-    }
-    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(name)) {
-      return "El Nombre de usuario contiene caracteres especiales. Solo se permiten letras."
-    }
   }
 
   if (field === "email") {
@@ -44,9 +46,6 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
     if (email.length > 60) return "El campo Correo electrónico permite un máximo de 60 caracteres."
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return "El Correo electrónico debe tener un formato válido (ej. usuario@gmail.com)."
-    }
-    if (findUserByEmail(email)) {
-      return "El correo electrónico ya está registrado."
     }
   }
 
@@ -70,18 +69,37 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
   return ""
 }
 
+function getValidationMessage(errorList?: string[]) {
+  return Array.isArray(errorList) && errorList.length > 0 ? errorList[0] : ""
+}
+
+function mapApiErrors(validationErrors?: ApiValidationErrors): RegisterFormErrors {
+  if (!validationErrors) {
+    return {}
+  }
+
+  return {
+    name: getValidationMessage(validationErrors.username),
+    email: getValidationMessage(validationErrors.email),
+    password: getValidationMessage(validationErrors.password),
+    confirmPassword: getValidationMessage(validationErrors.password_confirmation),
+  }
+}
+
 export function useRegisterForm() {
   const [values, setValues] = useState<RegisterValues>(INITIAL_VALUES)
-  const [errors, setErrors] = useState<RegisterErrors>({})
+  const [errors, setErrors] = useState<RegisterFormErrors>({})
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   function updateField(field: keyof RegisterValues, value: string) {
     setValues((current) => ({ ...current, [field]: value }))
 
-    if (errors[field]) {
+    if (errors[field] || errors.form) {
       const nextValues = { ...values, [field]: value }
       setErrors((current) => ({
         ...current,
+        form: "",
         [field]: validateRegisterField(field, nextValues),
       }))
     }
@@ -94,14 +112,15 @@ export function useRegisterForm() {
     }))
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const nextErrors: RegisterErrors = {
+    const nextErrors: RegisterFormErrors = {
       name: validateRegisterField("name", values),
       email: validateRegisterField("email", values),
       password: validateRegisterField("password", values),
       confirmPassword: validateRegisterField("confirmPassword", values),
+      form: "",
     }
 
     setErrors(nextErrors)
@@ -110,22 +129,41 @@ export function useRegisterForm() {
       return
     }
 
-    registerStoredUser({
-      name: values.name.trim(),
-      email: values.email.trim().toLowerCase(),
-      password: values.password,
-    })
+    setIsSubmitting(true)
 
-    window.localStorage.setItem(
-      "portfolio_last_welcome_email",
-      JSON.stringify({
-        to: values.email.trim().toLowerCase(),
-        subject: "¡Te damos la bienvenida a Portafolio Gen!",
-        body: WELCOME_MESSAGE,
-      }),
-    )
+    try {
+      const response = await registerUser({
+        username: values.name.trim(),
+        email: values.email.trim().toLowerCase(),
+        password: values.password,
+        password_confirmation: values.confirmPassword,
+      })
 
-    setShowSuccessModal(true)
+      saveAuthSession(response)
+
+      window.localStorage.setItem(
+        "portfolio_last_welcome_email",
+        JSON.stringify({
+          to: values.email.trim().toLowerCase(),
+          subject: "¡Te damos la bienvenida a Portafolio Gen!",
+          body: WELCOME_MESSAGE,
+        }),
+      )
+
+      setShowSuccessModal(true)
+    } catch (error) {
+      if (error instanceof AuthServiceError) {
+        setErrors({
+          ...mapApiErrors(error.validationErrors),
+          form: error.message,
+        })
+        return
+      }
+
+      setErrors({ form: "No se pudo completar el registro." })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   function closeSuccessModal() {
@@ -136,10 +174,10 @@ export function useRegisterForm() {
     values,
     errors,
     showSuccessModal,
+    isSubmitting,
     updateField,
     handleBlur,
     handleSubmit,
     closeSuccessModal,
   }
 }
-

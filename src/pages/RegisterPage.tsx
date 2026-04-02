@@ -12,7 +12,8 @@ import { WELCOME_MESSAGE, useRegisterForm } from "@/hooks/useRegisterForm"
 import { usePasswordVisibility } from "@/hooks/usePasswordVisibility"
 
 export default function RegisterPage() {
-  const { values, errors, showSuccessModal, updateField, handleBlur, handleSubmit, closeSuccessModal } = useRegisterForm()
+  const { values, errors, showSuccessModal, isSubmitting, updateField, handleBlur, handleSubmit, closeSuccessModal } =
+    useRegisterForm()
   const { isVisible: showPassword, toggleVisibility: togglePasswordVisibility } = usePasswordVisibility()
   const { isVisible: showConfirmPassword, toggleVisibility: toggleConfirmPasswordVisibility } = usePasswordVisibility()
   const idEntradaNombre = "registro-nombre-usuario"
@@ -24,6 +25,7 @@ export default function RegisterPage() {
   const idAyudaContrasena = "registro-ayuda-contrasena"
   const idErrorContrasena = "registro-error-contrasena"
   const idErrorConfirmarContrasena = "registro-error-confirmar-contrasena"
+  const idErrorFormulario = "registro-error-formulario"
   const idTituloModalExito = "registro-titulo-modal-exito"
 
   return (
@@ -157,9 +159,22 @@ export default function RegisterPage() {
                   ) : null}
                 </div>
 
+                {errors.form ? (
+                  <div
+                    id={idErrorFormulario}
+                    className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                  >
+                    {errors.form}
+                  </div>
+                ) : null}
+
                 <div className="flex gap-3">
-                  <Button type="submit" className="h-11 flex-1 bg-[#003A6C] text-white transition hover:bg-[#4982AD]">
-                    Crear cuenta
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="h-11 flex-1 bg-[#003A6C] text-white transition hover:bg-[#4982AD] disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
                   </Button>
                 </div>
               </form>
@@ -178,7 +193,7 @@ export default function RegisterPage() {
                 disabled
                 className="flex h-11 w-full cursor-not-allowed items-center justify-center gap-3 opacity-50"
               >
-                Continuar con Google (próximamente)
+                Continuar con Google (aun pensando)
               </Button>
 
               <div className="flex flex-col items-center gap-3 text-center text-sm text-[#4F6F88]">
@@ -221,4 +236,3 @@ export default function RegisterPage() {
     </div>
   )
 }
-
