@@ -4,6 +4,7 @@ import { allCountries } from 'country-telephone-data';
 import { useUserPersonalData } from '../hooks/useUserPersonalData';
 
 const UserPersonalData = () => {
+  console.log("COMPONENTE RENDERIZANDO");
   const {
     form,
     errors,

@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export const useUserPersonalData = () => {
+  console.log("HOOK useUserPersonalData CARGADO");
   const [countryCode, setCountryCode] = useState("591");
   const [phoneNumber, setPhoneNumber] = useState("");
 
@@ -17,7 +18,32 @@ export const useUserPersonalData = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  useEffect(() => {
+        const fetchData = async () => {
+            try {
+            const res = await fetch("http://localhost:8000/api/user_information/1");
+            const data = await res.json();
 
+            if (res.ok) {
+                setForm({
+                fullName: data.fullname || "",
+                occupation: data.occupation || "",
+                bio: data.biography || "",
+                location: data.nationality || "",
+                email: data.email || "" // ⚠️ solo si backend lo tiene
+                });
+
+                setPhoneNumber(
+                data.phone_number?.replace("+591", "") || ""
+                );
+            }
+            } catch (error) {
+            console.error(error);
+            }
+        };
+
+        fetchData();
+        }, []);
   // =========================
   // INPUTS
   // =========================
@@ -76,8 +102,11 @@ export const useUserPersonalData = () => {
   // =========================
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-
-    if (!validate()) return;
+    console.log("SUBMIT EJECUTADO");
+    if (!validate()) {
+        console.log("VALIDACIÓN FALLÓ");
+        return;
+    }
 
     try {
       const formData = new FormData();
@@ -103,7 +132,7 @@ export const useUserPersonalData = () => {
       if (!response.ok) {
         // Manejo de errores del backend
         if (result.errors?.public_email) {
-          setErrors({ email: result.errors.public_email[0] });
+          setErrors({ public_email: result.errors.public_email[0] });
         } else {
           setErrors({ server: "Error al guardar datos" });
         }
@@ -131,6 +160,7 @@ export const useUserPersonalData = () => {
     setPhoneNumber("");
     setPreview(null);
     setErrors({});
+    setSuccess("");
   };
 
   // =========================
@@ -165,9 +195,13 @@ export const useUserPersonalData = () => {
 
   return {
     form,
+    setForm,
     errors,
+    setErrors,
     success,
+    setSuccess,
     preview,
+    setPreview,
     countryCode,
     phoneNumber,
     fileInputRef,
