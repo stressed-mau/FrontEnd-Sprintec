@@ -245,8 +245,8 @@ export const useUserPersonalData = () => {
         formData.append("image_url", fileInputRef.current.files[0]);
       }
 
-      const response = await fetch("http://localhost:8000/api/user_information", {
-        method: "POST",
+      const response = await fetch("http://localhost:8000/api/user_information/${session.user.id}", {
+        method: "PUT",
         headers: {
         Authorization: `Bearer ${session.accessToken}`, 
         },
