@@ -34,6 +34,14 @@ export function getAuthSession() {
   }
 }
 
+export function getAuthToken() {
+  return getAuthSession()?.accessToken ?? null
+}
+
+export function isAuthenticated() {
+  return Boolean(getAuthToken())
+}
+
 export function clearAuthSession() {
   if (typeof window === "undefined") {
     return

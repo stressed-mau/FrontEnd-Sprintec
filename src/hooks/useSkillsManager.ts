@@ -1,17 +1,17 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
+import {createSkill,  getSkills, removeSkill, updateSkill,
+  type Skill,
+  type SkillType,
+} from '../services/skillsService';
 
-export interface Skill {
-  id: string;
-  name: string;
-  type: "Habilidad técnica" | "Habilidad blanda";
-  level?: string;
-}
+export type { Skill };
 
 const technicalLevelPriority: Record<string, number> = {
-  Experto: 4,
-  Avanzado: 3,
-  Básico: 2,
-  Intermedio: 1,
+  experto: 4,
+  avanzado: 3,
+  intermedio: 2,
+  basico: 1,
 };
 
 export const useSkillsManager = () => {
@@ -19,24 +19,52 @@ export const useSkillsManager = () => {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   // Estados del formulario del modal
-  const [skillType, setSkillType] = useState<"Habilidad técnica" | "Habilidad blanda">("Habilidad técnica");
+  const [skillType, setSkillType] = useState<SkillType>("tecnica");
   const [skillName, setSkillName] = useState("");
-  const [skillLevel, setSkillLevel] = useState("Intermedio");
+  const [skillLevel, setSkillLevel] = useState("basico");
   // Estados de validación y mensajes
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [pageError, setPageError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadSkills = useCallback(async () => {
+    setIsLoading(true);
+    setPageError("");
+    console.log('[loadSkills] Iniciando carga de habilidades');
+
+    try {
+      const remoteSkills = await getSkills();
+      console.log('[loadSkills] Habilidades cargadas exitosamente:', remoteSkills);
+      setSkills(remoteSkills);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudieron cargar las habilidades.';
+      console.error('[loadSkills] Error al cargar habilidades:', message);
+      setPageError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log('[useSkillsManager] Component montado, llamando loadSkills');
+    void loadSkills();
+  }, [loadSkills]);
+
   const openModal = (skill?: Skill) => {
     if (skill) {
       setEditingSkill(skill);
       setSkillType(skill.type);
       setSkillName(skill.name);
-      setSkillLevel(skill.level || "Intermedio");
+      setSkillLevel(skill.level || "basico");
     } else {
       setEditingSkill(null);
       setSkillName("");
-      setSkillType("Habilidad técnica");
-      setSkillLevel("Intermedio");
+      setSkillType("tecnica");
+      setSkillLevel("basico");
     }
     setErrorMessage("");
     setIsModalOpen(true);
@@ -60,8 +88,13 @@ export const useSkillsManager = () => {
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (isSaving) {
+      return;
+    }
+
     setErrorMessage("");
     // Validación 1: Campo obligatorio
     if (!skillName.trim()) {
@@ -83,50 +116,72 @@ export const useSkillsManager = () => {
       setErrorMessage("Ya existe una habilidad registrada con ese nombre.");
       return;
     }
-    // Guardar habilidad
-    if (editingSkill) {
-      setSkills(skills.map(s => s.id === editingSkill.id 
-        ? { ...s, name: skillName, type: skillType, level: skillType === "Habilidad técnica" ? skillLevel : undefined } 
-        : s
-      ));
-    } else {
-      const newSkill: Skill = {
-        id: crypto.randomUUID(),
-        name: skillName,
-        type: skillType,
-        level: skillType === "Habilidad técnica" ? skillLevel : undefined
-      };
-      setSkills([...skills, newSkill]);
-    }
-    // Mostrar mensaje de éxito y cerrar el formulario de edición
-    setIsModalOpen(false);
-    setEditingSkill(null);
-    setSuccessMessage("Habilidad agregada correctamente.");
-    setShowSuccessModal(true);
+    const payload = {
+      name: skillName.trim(),
+      type: skillType,
+      level: skillType === "tecnica" ? skillLevel.toLowerCase() : undefined,
+    };
 
-    // Cerrar modal de éxito después de 2 segundos
-    setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 2000);
+    try {
+      setIsSaving(true);
+
+      if (editingSkill) {
+        const updatedSkill = await updateSkill(editingSkill.id, payload);
+        setSkills((currentSkills) =>
+          currentSkills.map((currentSkill) => (currentSkill.id === editingSkill.id ? updatedSkill : currentSkill)),
+        );
+        setSuccessMessage("Habilidad actualizada correctamente.");
+      } else {
+        const createdSkill = await createSkill(payload);
+        setSkills((currentSkills) => [...currentSkills, createdSkill]);
+        setSuccessMessage("Habilidad agregada correctamente.");
+      }
+
+      setIsModalOpen(false);
+      setEditingSkill(null);
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 2000);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo guardar la habilidad.';
+      setErrorMessage(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setSkills(skills.filter(s => s.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await removeSkill(id);
+      setSkills((currentSkills) => currentSkills.filter((skill) => skill.id !== id));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo eliminar la habilidad.';
+      setPageError(message);
+    }
   };
 
   const technicalSkills = skills
-    .filter((skill) => skill.type === "Habilidad técnica")
+    .filter((skill) => skill.type === "tecnica")
     .sort((a, b) => {
       const aPriority = technicalLevelPriority[a.level ?? ''] ?? 0;
       const bPriority = technicalLevelPriority[b.level ?? ''] ?? 0;
-      return bPriority - aPriority;
+
+      if (bPriority !== aPriority) {
+        return bPriority - aPriority;
+      }
+
+      return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
     });
 
-  const softSkills = skills.filter((skill) => skill.type === "Habilidad blanda");
+  const softSkills = skills
+    .filter((skill) => skill.type === "blanda")
+    .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
 
   return {
     // Estados
-    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,
+    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,pageError,isLoading,isSaving,
     technicalSkills,softSkills,
     // Setters
     setSkillType,setSkillName, setSkillLevel, handleSkillNameChange,

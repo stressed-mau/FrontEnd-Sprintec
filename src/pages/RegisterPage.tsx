@@ -1,19 +1,21 @@
-﻿import { Link } from "react-router-dom"
-import { Eye, EyeOff, LockKeyhole, Mail, UserPlus, UserRound, X } from "lucide-react"
+import { useEffect } from "react"
+import { Eye, EyeOff, LockKeyhole, Mail, UserPlus, UserRound } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
 
 import { Footer } from "@/components/Footer"
 import { Header } from "@/components/Header"
+import { useRegisterForm } from "@/hooks/useRegisterForm"
+import { usePasswordVisibility } from "@/hooks/usePasswordVisibility"
+import { LOGIN_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+import { isAuthenticated } from "@/services/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-import { WELCOME_MESSAGE, useRegisterForm } from "@/hooks/useRegisterForm"
-import { usePasswordVisibility } from "@/hooks/usePasswordVisibility"
-
 export default function RegisterPage() {
-  const { values, errors, showSuccessModal, isSubmitting, updateField, handleBlur, handleSubmit, closeSuccessModal } =
-    useRegisterForm()
+  const navigate = useNavigate()
+  const { values, errors, isSubmitting, updateField, handleBlur, handleSubmit } = useRegisterForm()
   const { isVisible: showPassword, toggleVisibility: togglePasswordVisibility } = usePasswordVisibility()
   const { isVisible: showConfirmPassword, toggleVisibility: toggleConfirmPasswordVisibility } = usePasswordVisibility()
   const idEntradaNombre = "registro-nombre-usuario"
@@ -26,7 +28,12 @@ export default function RegisterPage() {
   const idErrorContrasena = "registro-error-contrasena"
   const idErrorConfirmarContrasena = "registro-error-confirmar-contrasena"
   const idErrorFormulario = "registro-error-formulario"
-  const idTituloModalExito = "registro-titulo-modal-exito"
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate(USER_HOME_ROUTE, { replace: true })
+    }
+  }, [navigate])
 
   return (
     <div className="flex min-h-screen flex-col bg-[#C2DBED]">
@@ -179,27 +186,10 @@ export default function RegisterPage() {
                 </div>
               </form>
 
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#D7E6F2]" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-white px-3 text-[#6B88A0]">O regístrate con</span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                disabled
-                className="flex h-11 w-full cursor-not-allowed items-center justify-center gap-3 opacity-50"
-              >
-                Continuar con Google (aun pensando..... pensando en sacar)
-              </Button>
-
               <div className="flex flex-col items-center gap-3 text-center text-sm text-[#4F6F88]">
                 <p>
                   ¿Ya tienes cuenta?{" "}
-                  <Link to="/login" className="font-medium text-[#4982AD] transition hover:text-[#003A6C]">
+                  <Link to={LOGIN_ROUTE} className="font-medium text-[#4982AD] transition hover:text-[#003A6C]">
                     Inicia sesión aquí
                   </Link>
                 </p>
@@ -209,30 +199,6 @@ export default function RegisterPage() {
         </div>
       </main>
       <Footer />
-
-      {showSuccessModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#003A6C]/45 px-4">
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={idTituloModalExito}
-            className="relative w-full max-w-lg rounded-3xl border border-[#C2DBED] bg-white p-6 shadow-2xl"
-          >
-            <button
-              type="button"
-              onClick={closeSuccessModal}
-              className="absolute right-4 top-4 rounded-full p-1 text-[#6B88A0] transition hover:bg-[#EEF4F8] hover:text-[#003A6C]"
-              aria-label="Cerrar modal"
-            >
-              <X className="size-5" />
-            </button>
-            <h2 id={idTituloModalExito} className="text-2xl font-bold text-[#003A6C]">
-              Registro exitoso. Tu cuenta ha sido creada correctamente.
-            </h2>
-            <p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#4F6F88]">{WELCOME_MESSAGE}</p>
-          </div>
-        </div>
-      ) : null}
     </div>
   )
 }
