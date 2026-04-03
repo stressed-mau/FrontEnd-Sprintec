@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import {createSkill,  getSkills,
-  removeSkill,
-  updateSkill,
+import {createSkill,  getSkills, removeSkill, updateSkill,
   type Skill,
   type SkillType,
 } from '../services/skillsService';

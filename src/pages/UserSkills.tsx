@@ -27,7 +27,7 @@ const UserSkills = () => {
           <div className="max-w-5xl mx-auto">
             {pageError && (
               <div className="mb-6 rounded-2xl border-2 border-red-400 bg-red-100 px-4 py-4 text-sm text-red-900 font-semibold shadow-md">
-                <p className="font-bold mb-1">⚠️ Error cargando habilidades:</p>
+                <p className="font-bold mb-1">Error cargando habilidades:</p>
                 <p>{pageError}</p>
               </div>
             )}
@@ -69,15 +69,11 @@ const UserSkills = () => {
 
             <section className="space-y-4">
               <div className="flex items-center gap-2 mb-4 text-[#003A6C]">
-                <Lightbulb className="size-5" />
-                <h2 className="text-xl font-bold sm:text-2xl">Habilidades Blandas</h2>
-              </div>
+                <Lightbulb className="size-5" /> <h2 className="text-xl font-bold sm:text-2xl">Habilidades Blandas</h2> </div>
               <div className="space-y-3">
                 {isLoading ? (
                   <div className="rounded-3xl border border-[#6dacbf]/30 bg-white py-0 shadow-sm">
-                    <div className="px-6 py-8 text-center sm:py-10">
-                      <p className="text-sm text-[#4B778D] sm:text-base">Cargando habilidades...</p>
-                    </div>
+                    <div className="px-6 py-8 text-center sm:py-10"> <p className="text-sm text-[#4B778D] sm:text-base">Cargando habilidades...</p>  </div>
                   </div>
                 ) : softSkills.length === 0 ? (
                   <div className="rounded-3xl border-2 border-dashed border-[#6dacbf] bg-white py-0 shadow-sm">
