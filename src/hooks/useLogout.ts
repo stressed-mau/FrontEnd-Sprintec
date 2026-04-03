@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom"
 
-import { LOGIN_ROUTE } from "@/routes/route-paths"
+import { HOME_VISITOR_ROUTE } from "@/routes/route-paths"
 import { clearAuthSession } from "@/services/auth"
 
 export function useLogout() {
@@ -8,6 +8,6 @@ export function useLogout() {
 
   return function logout() {
     clearAuthSession()
-    navigate(LOGIN_ROUTE, { replace: true })
+    navigate(HOME_VISITOR_ROUTE, { replace: true })
   }
 }
