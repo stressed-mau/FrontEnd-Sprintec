@@ -1,5 +1,8 @@
 ﻿import { useState } from "react"
 
+import { useNavigate } from "react-router-dom"
+
+import { USER_HOME_ROUTE } from "@/routes/route-paths"
 import {
   AuthServiceError,
   registerUser,
@@ -89,6 +92,7 @@ function mapApiErrors(validationErrors?: ApiValidationErrors): RegisterFormError
 }
 
 export function useRegisterForm() {
+  const navigate = useNavigate()
   const [values, setValues] = useState<RegisterValues>(INITIAL_VALUES)
   const [errors, setErrors] = useState<RegisterFormErrors>({})
   const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -153,7 +157,8 @@ export function useRegisterForm() {
         }),
       )
 
-      setShowSuccessModal(true)
+      setShowSuccessModal(false)
+      navigate(USER_HOME_ROUTE, { replace: true })
     } catch (error) {
       if (error instanceof AuthServiceError) {
         setErrors({
