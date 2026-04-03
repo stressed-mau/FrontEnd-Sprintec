@@ -7,7 +7,7 @@ import { Header } from "@/components/Header"
 import { useLoginForm } from "@/hooks/useLoginForm"
 import { usePasswordVisibility } from "@/hooks/usePasswordVisibility"
 import { REGISTER_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
-import { getAuthSession } from "@/services/auth"
+import { isAuthenticated } from "@/services/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -25,7 +25,7 @@ export default function LoginPage() {
   const idMensajeExito = "inicio-sesion-mensaje-exito"
 
   useEffect(() => {
-    if (getAuthSession()) {
+    if (isAuthenticated()) {
       navigate(USER_HOME_ROUTE, { replace: true })
     }
   }, [navigate])
