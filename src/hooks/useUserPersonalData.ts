@@ -233,7 +233,7 @@ export const useUserPersonalData = () => {
         return;
       }
       const formData = new FormData();
-
+      formData.append("_method", "PUT");
       formData.append("fullname", form.fullName);
       formData.append("occupation", form.occupation);
       formData.append("biography", form.bio);
@@ -244,11 +244,12 @@ export const useUserPersonalData = () => {
       if (fileInputRef.current?.files?.[0]) {
         formData.append("image_url", fileInputRef.current.files[0]);
       }
-
-      const response = await fetch("http://localhost:8000/api/user_information/${session.user.id}", {
+      //Conexión con backend
+      const response = await fetch("http://localhost:8000/api/user_information/${session.user.id}".replace(/\$/,""), {
         method: "POST",
         headers: {
         Authorization: `Bearer ${session.accessToken}`, 
+        "Accept": "application/json",
         },
         body: formData
       });
