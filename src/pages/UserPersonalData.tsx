@@ -350,7 +350,7 @@ const UserPersonalData = () => {
                     id="btn-cancel"
                     type="button"
                     onClick={handleCancel}
-                    className="w-full sm:w-auto bg-[#c2dbed] text-[#003A6C] px-8 py-2.5 rounded-lg font-semibold text-sm border border-[#6dacbf] hover:bg-[#C4A57C]/20 transition-colors order-2 sm:order-none"
+                    className="w-full sm:w-auto bg-[#c2dbed] text-[#003A6C] px-8 py-2.5 rounded-lg font-semibold text-sm border border-[#6dacbf] hover:bg-[#C4A57C]/20 transition-colors order-2 sm:order-0"
                   >
                     Cancelar
                   </button>
@@ -363,7 +363,7 @@ const UserPersonalData = () => {
               </form>
             </div>
 
-          </div>
+         </div>
         </main>
       </div>
     </div>
