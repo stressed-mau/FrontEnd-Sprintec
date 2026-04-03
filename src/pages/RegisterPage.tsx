@@ -7,7 +7,7 @@ import { Header } from "@/components/Header"
 import { useRegisterForm } from "@/hooks/useRegisterForm"
 import { usePasswordVisibility } from "@/hooks/usePasswordVisibility"
 import { LOGIN_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
-import { getAuthSession } from "@/services/auth"
+import { isAuthenticated } from "@/services/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -30,7 +30,7 @@ export default function RegisterPage() {
   const idErrorFormulario = "registro-error-formulario"
 
   useEffect(() => {
-    if (getAuthSession()) {
+    if (isAuthenticated()) {
       navigate(USER_HOME_ROUTE, { replace: true })
     }
   }, [navigate])
