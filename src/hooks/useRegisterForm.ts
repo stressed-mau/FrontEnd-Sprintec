@@ -55,7 +55,7 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
   }
 
   if (field === "password") {
-    if (!password) return "El campo contraseña es obligatorio."
+    if (!password) return "El campo Contraseña es obligatorio."
     if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres."
     if (password.length > 20) return "La contraseña permite un máximo de 20 caracteres."
     if (/\s/.test(password)) return "La contraseña no permite espacios en blanco."
@@ -67,7 +67,7 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
   }
 
   if (field === "confirmPassword") {
-    if (!confirmPassword) return "El campo confirmar contraseña es obligatorio."
+    if (!confirmPassword) return "El campo Confirmar contraseña es obligatorio."
     if (confirmPassword !== password) return "Las contraseñas no coinciden."
   }
 

@@ -32,7 +32,7 @@ function validateLoginField(field: keyof LoginValues, values: LoginValues): stri
   }
 
   if (field === "password") {
-    if (!password) return "El campo contraseña es obligatorio."
+    if (!password) return "El campo Contraseña es obligatorio."
     if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres."
   }
 
