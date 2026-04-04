@@ -104,7 +104,7 @@ export default function RegisterPage() {
                     Contraseña
                   </Label>
                   <p id={idAyudaContrasena} className="text-xs leading-5 text-[#5E7D95]">
-                    Debe tener entre 8 y 20 caracteres, incluir una mayúscula, un número y un carácter especial.
+                    La contraseña debe contener entre 8 y 20 caracteres, e incluir al menos una letra mayúscula, un número y un carácter especial.
                   </p>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
