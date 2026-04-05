@@ -35,6 +35,7 @@ export interface Skill {
 }
 
 const SKILLS_ENDPOINT = '/skills';
+const SKILL_MUTATION_TIMEOUT_MS = 5000;
 
 function mapApiTypeToUi(type?: SkillDto['type']): SkillType {
   if (type === 'tecnica') {
@@ -83,6 +84,10 @@ function capitalizeLevel(level?: string | null): string | undefined {
 
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {
+    if (error.code === 'ECONNABORTED') {
+      return new Error('La solicitud tardó más de 5 segundos. Intenta nuevamente.');
+    }
+
     if (error.code === 'ERR_NETWORK') {
       return new Error('No se pudo conectar con el backend en http://localhost:8000. Verifica que Laravel este levantado.');
     }
@@ -106,18 +111,42 @@ function normalizeSkill(dto: SkillDto): Skill {
   };
 }
 
-function unwrapSkillList(data: unknown): SkillDto[] {
-  if (Array.isArray(data)) {
-    return data as SkillDto[];
+function unwrapPayload(data: unknown): unknown {
+  if (!data || typeof data !== 'object') {
+    return data;
   }
 
-  if (data && typeof data === 'object') {
-    if ('data' in data && Array.isArray((data as { data: unknown }).data)) {
-      return (data as { data: SkillDto[] }).data;
+  const record = data as Record<string, unknown>;
+
+  if (Array.isArray(record.data) || Array.isArray(record.skills)) {
+    return record;
+  }
+
+  if ('data' in record && record.data && typeof record.data === 'object') {
+    return unwrapPayload(record.data);
+  }
+
+  if ('skill' in record && record.skill && typeof record.skill === 'object') {
+    return unwrapPayload(record.skill);
+  }
+
+  return data;
+}
+
+function unwrapSkillList(data: unknown): SkillDto[] {
+  const unwrapped = unwrapPayload(data);
+
+  if (Array.isArray(unwrapped)) {
+    return unwrapped as SkillDto[];
+  }
+
+  if (unwrapped && typeof unwrapped === 'object') {
+    if ('data' in unwrapped && Array.isArray((unwrapped as { data: unknown }).data)) {
+      return (unwrapped as { data: SkillDto[] }).data;
     }
 
-    if ('skills' in data && Array.isArray((data as { skills: unknown }).skills)) {
-      return (data as { skills: SkillDto[] }).skills;
+    if ('skills' in unwrapped && Array.isArray((unwrapped as { skills: unknown }).skills)) {
+      return (unwrapped as { skills: SkillDto[] }).skills;
     }
   }
 
@@ -125,17 +154,19 @@ function unwrapSkillList(data: unknown): SkillDto[] {
 }
 
 function unwrapSkill(data: unknown): SkillDto {
-  if (data && typeof data === 'object') {
-    if ('data' in data && (data as { data?: unknown }).data) {
-      return (data as { data: SkillDto }).data;
+  const unwrapped = unwrapPayload(data);
+
+  if (unwrapped && typeof unwrapped === 'object') {
+    if ('data' in unwrapped && (unwrapped as { data?: unknown }).data) {
+      return (unwrapped as { data: SkillDto }).data;
     }
 
-    if ('skill' in data && (data as { skill?: unknown }).skill) {
-      return (data as { skill: SkillDto }).skill;
+    if ('skill' in unwrapped && (unwrapped as { skill?: unknown }).skill) {
+      return (unwrapped as { skill: SkillDto }).skill;
     }
   }
 
-  return data as SkillDto;
+  return unwrapped as SkillDto;
 }
 
 export async function getSkills(): Promise<Skill[]> {
@@ -156,7 +187,9 @@ export async function createSkill(payload: SkillPayload): Promise<Skill> {
   try {
     const apiPayload = toApiPayload(payload);
     console.log('[createSkill] Enviando POST con payload:', apiPayload);
-    const response = await api.post(SKILLS_ENDPOINT, apiPayload);
+    const response = await api.post(SKILLS_ENDPOINT, apiPayload, {
+      timeout: SKILL_MUTATION_TIMEOUT_MS,
+    });
     console.log('[createSkill] Respuesta recibida:', response.data);
     return normalizeSkill(unwrapSkill(response.data));
   } catch (error) {
@@ -167,7 +200,9 @@ export async function createSkill(payload: SkillPayload): Promise<Skill> {
 
 export async function updateSkill(id: string, payload: SkillPayload): Promise<Skill> {
   try {
-    const response = await api.put(`${SKILLS_ENDPOINT}/${id}`, toApiPayload(payload));
+    const response = await api.put(`${SKILLS_ENDPOINT}/${id}`, toApiPayload(payload), {
+      timeout: SKILL_MUTATION_TIMEOUT_MS,
+    });
     return normalizeSkill(unwrapSkill(response.data));
   } catch (error) {
     throw formatError(error);

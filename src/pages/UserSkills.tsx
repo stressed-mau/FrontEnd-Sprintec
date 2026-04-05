@@ -15,8 +15,9 @@ function getLevelLabel(level: string): string {
 }
 
 const UserSkills = () => {
-  const {    isModalOpen, technicalSkills, softSkills, skillType, skillName, skillLevel, errorMessage, successMessage,showSuccessModal, pageError, isLoading, isSaving,
+  const {    isModalOpen, technicalSkills, softSkills, editingSkill, skillType, skillName, skillLevel, errorMessage, successMessage,showSuccessModal, pageError, isLoading, isSaving,
             setSkillType, setSkillLevel, openModal,  closeModal, handleSave, handleDelete, handleSkillNameChange, } = useSkillsManager();
+  const hasNameError = Boolean(errorMessage);
 
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
@@ -91,23 +92,17 @@ const UserSkills = () => {
         </main>
       </div>
 
-      {isModalOpen && ( <div className="fixed inset-0 z-100 flex items-end justify-center bg-black/30 px-3 backdrop-blur-[2px] sm:items-center sm:px-4">
+      {isModalOpen && ( <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/30 px-3 backdrop-blur-[2px] sm:items-center sm:px-4">
           <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/20 bg-[#D9EAF8] shadow-xl animate-in zoom-in-95 duration-200 sm:rounded-[2rem]">
             <div className="px-8 pt-8 pb-2 flex justify-between items-start">
               <div>
-                <h2 className="text-[#003A6C] text-2xl font-bold">Nueva habilidad</h2>
-                <p className="text-[#4982AD] text-sm">Agrega una habilidad a tu portafolio</p>
+                <h2 className="text-[#003A6C] text-2xl font-bold">{editingSkill ? 'Editar habilidad' : 'Nueva habilidad'}</h2>
+                <p className="text-[#4982AD] text-sm">{editingSkill ? 'Actualiza la habilidad seleccionada' : 'Agrega una habilidad a tu portafolio'}</p>
               </div>
               <button onClick={closeModal} className="text-[#003A6C] hover:bg-white/30 p-1 rounded-full"><X className="size-6" /></button>
             </div>
 
             <form onSubmit={handleSave} className="p-8 pt-4 space-y-5">
-              {errorMessage && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                  <p className="text-red-700 text-sm font-medium">{errorMessage}</p>
-                </div>
-              )}
-              
               <div>
                 <label className="block text-[#003A6C] font-semibold text-sm mb-1.5">Tipo de habilidad</label>
                 <select 
@@ -128,9 +123,17 @@ const UserSkills = () => {
                   type="text" 
                   value={skillName}
                   onChange={(e) => handleSkillNameChange(e.target.value)}
+                  maxLength={40}
+                  aria-invalid={hasNameError}
+                  aria-describedby={hasNameError ? 'skill-name-error' : undefined}
                   placeholder={skillType === 'tecnica' ? 'Ej: React, Python' : 'Ej: Trabajo en equipo'}
-                  className="w-full py-2.5 px-4 border border-[#0E7D96]/20 rounded-xl bg-white text-[#003A6C] focus:ring-2 focus:ring-[#0E7D96]/40 outline-none placeholder:text-[#0E7D96]/40"
+                  className={`w-full py-2.5 px-4 rounded-xl bg-white text-[#003A6C] outline-none placeholder:text-[#0E7D96]/40 focus:ring-2 ${hasNameError ? 'border border-red-400 focus:ring-red-200' : 'border border-[#0E7D96]/20 focus:ring-[#0E7D96]/40'}`}
                 />
+                {errorMessage && (
+                  <p id="skill-name-error" className="mt-1.5 text-sm font-medium text-red-600">
+                    {errorMessage}
+                  </p>
+                )}
               </div>
 
               {skillType === "tecnica" && (
@@ -161,7 +164,7 @@ const UserSkills = () => {
       )}
 
       {showSuccessModal && (
-        <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
           <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl p-8 text-center animate-in zoom-in-95 duration-200">
             <div className="flex justify-center mb-4">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -191,10 +194,10 @@ const SkillCard = ({ skill, onEdit, onDelete, disabled }: { skill: Skill, onEdit
       )}
     </div>
     <div className="flex w-full gap-2 sm:w-auto">
-      <button disabled={disabled} onClick={onEdit} className="flex-1 rounded-lg border border-[#6dacbf]/30 bg-[#C2DBED]/50 p-2 text-[#003A6C] transition-colors hover:bg-[#C2DBED] disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none">
+      <button type="button" disabled={disabled} onClick={onEdit} className="flex-1 rounded-lg border border-[#6dacbf]/30 bg-[#C2DBED]/50 p-2 text-[#003A6C] transition-colors hover:bg-[#C2DBED] disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none">
         <Edit3 className="size-4" />
       </button>
-      <button disabled={disabled} onClick={onDelete} className="flex-1 rounded-lg border border-red-200 bg-red-50 p-2 text-red-500 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none">
+      <button type="button" disabled={disabled} onClick={onDelete} className="flex-1 rounded-lg border border-red-200 bg-red-50 p-2 text-red-500 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none">
         <Trash2 className="size-4" />
       </button>
     </div>
