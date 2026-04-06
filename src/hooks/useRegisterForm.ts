@@ -87,6 +87,10 @@ function normalizeRegisterApiMessage(message: string) {
   return message
 }
 
+function isDuplicateRegisterError(message: string) {
+  return /(exist|registrad|taken|used|duplicate|unique)/i.test(message)
+}
+
 function mapApiErrors(validationErrors?: ApiValidationErrors): RegisterFormErrors {
   if (!validationErrors) {
     return {}
@@ -197,15 +201,15 @@ export function useRegisterForm() {
         }),
       )
 
-      setShowSuccessModal(false)
-      navigate(USER_HOME_ROUTE, { replace: true })
+      setShowSuccessModal(true)
     } catch (error) {
       if (error instanceof AuthServiceError) {
         const fieldErrors = mapApiErrors(error.validationErrors)
+        const hasSpecificDuplicateError = Boolean(fieldErrors.email || fieldErrors.name)
 
         setErrors({
           ...fieldErrors,
-          form: fieldErrors.email || fieldErrors.name ? "" : error.message,
+          form: hasSpecificDuplicateError || isDuplicateRegisterError(error.message) ? "" : error.message,
         })
         return
       }
@@ -218,6 +222,7 @@ export function useRegisterForm() {
 
   function closeSuccessModal() {
     setShowSuccessModal(false)
+    navigate(USER_HOME_ROUTE, { replace: true })
   }
 
   function applyEmailSuggestion(suggestedEmail: string) {
