@@ -43,11 +43,13 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
 
   if (field === "name") {
     if (!name) return "El campo Nombre usuario es obligatorio."
+    if (/\s/.test(values.name)) return "El nombre de usuario no permite espacios."
     if (name.length > 30) return "El campo Nombre de usuario no permite un máximo de 30 caracteres."
   }
 
   if (field === "email") {
     if (!email) return "El campo Correo electrónico es obligatorio."
+    if (/\s/.test(values.email)) return "El correo electrónico no permite espacios."
     if (email.length > 60) return "El campo Correo electrónico permite un máximo de 60 caracteres."
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return "El Correo electrónico debe tener un formato válido (ej. usuario@gmail.com)."
@@ -78,16 +80,28 @@ function getValidationMessage(errorList?: string[]) {
   return Array.isArray(errorList) && errorList.length > 0 ? errorList[0] : ""
 }
 
+function normalizeRegisterApiMessage(message: string) {
+  if (/(username|user name|nombre).*(taken|used|exist|duplicate|unique)/i.test(message)) {
+    return "El nombre de usuario ya está registrado, elige otro."
+  }
+
+  if (/email.*(taken|used|exist|duplicate|unique)/i.test(message)) {
+    return "El correo electrónico ya está registrado, elige otro."
+  }
+
+  return message
+}
+
 function mapApiErrors(validationErrors?: ApiValidationErrors): RegisterFormErrors {
   if (!validationErrors) {
     return {}
   }
 
   return {
-    name: getValidationMessage(validationErrors.username),
-    email: getValidationMessage(validationErrors.email),
-    password: getValidationMessage(validationErrors.password),
-    confirmPassword: getValidationMessage(validationErrors.password_confirmation),
+    name: normalizeRegisterApiMessage(getValidationMessage(validationErrors.username)),
+    email: normalizeRegisterApiMessage(getValidationMessage(validationErrors.email)),
+    password: normalizeRegisterApiMessage(getValidationMessage(validationErrors.password)),
+    confirmPassword: normalizeRegisterApiMessage(getValidationMessage(validationErrors.password_confirmation)),
   }
 }
 
@@ -99,10 +113,15 @@ export function useRegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   function updateField(field: keyof RegisterValues, value: string) {
-    setValues((current) => ({ ...current, [field]: value }))
+    const sanitizedValue =
+      field === "name" || field === "email"
+        ? value.replace(/\s+/g, "")
+        : value
+
+    setValues((current) => ({ ...current, [field]: sanitizedValue }))
 
     if (errors[field] || errors.form) {
-      const nextValues = { ...values, [field]: value }
+      const nextValues = { ...values, [field]: sanitizedValue }
       setErrors((current) => ({
         ...current,
         form: "",
@@ -161,9 +180,11 @@ export function useRegisterForm() {
       navigate(USER_HOME_ROUTE, { replace: true })
     } catch (error) {
       if (error instanceof AuthServiceError) {
+        const fieldErrors = mapApiErrors(error.validationErrors)
+
         setErrors({
-          ...mapApiErrors(error.validationErrors),
-          form: error.message,
+          ...fieldErrors,
+          form: fieldErrors.email || fieldErrors.name ? "" : error.message,
         })
         return
       }
