@@ -15,7 +15,8 @@ import { Label } from "@/components/ui/label"
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const { values, errors, isSubmitting, updateField, handleBlur, handleSubmit } = useRegisterForm()
+  const { values, errors, emailSuggestion, isSubmitting, updateField, handleBlur, handleSubmit, applyEmailSuggestion } =
+    useRegisterForm()
   const { isVisible: showPassword, toggleVisibility: togglePasswordVisibility } = usePasswordVisibility()
   const { isVisible: showConfirmPassword, toggleVisibility: toggleConfirmPasswordVisibility } = usePasswordVisibility()
   const idEntradaNombre = "registro-nombre-usuario"
@@ -97,6 +98,22 @@ export default function RegisterPage() {
                     />
                   </div>
                   {errors.email ? <p id={idErrorCorreo} className="text-sm text-red-600">{errors.email}</p> : null}
+                  {!errors.email && emailSuggestion ? (
+                    <p className="text-sm text-amber-700">
+                      ¿Quisiste decir{" "}
+                      <a
+                        href={`mailto:${emailSuggestion.full}`}
+                        className="font-medium underline underline-offset-2 transition hover:text-amber-900"
+                        onClick={(event) => {
+                          event.preventDefault()
+                          applyEmailSuggestion(emailSuggestion.full)
+                        }}
+                      >
+                        {emailSuggestion.full}
+                      </a>
+                      ?
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="space-y-2">

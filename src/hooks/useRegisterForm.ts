@@ -2,6 +2,7 @@
 
 import { useNavigate } from "react-router-dom"
 
+import { useEmailValidation } from "@/hooks/useEmailValidation"
 import { USER_HOME_ROUTE } from "@/routes/route-paths"
 import {
   AuthServiceError,
@@ -37,7 +38,6 @@ Tu registro se ha completado exitosamente. Ya puedes acceder a tu cuenta y comen
 
 function validateRegisterField(field: keyof RegisterValues, values: RegisterValues): string {
   const name = values.name.trim()
-  const email = values.email.trim()
   const password = values.password
   const confirmPassword = values.confirmPassword
 
@@ -48,12 +48,7 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
   }
 
   if (field === "email") {
-    if (!email) return "El campo Correo electrónico es obligatorio."
-    if (/\s/.test(values.email)) return "El correo electrónico no permite espacios."
-    if (email.length > 60) return "El campo Correo electrónico permite un máximo de 60 caracteres."
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return "El Correo electrónico debe tener un formato válido (ej. usuario@gmail.com)."
-    }
+    return ""
   }
 
   if (field === "password") {
@@ -111,26 +106,42 @@ export function useRegisterForm() {
   const [errors, setErrors] = useState<RegisterFormErrors>({})
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(INITIAL_VALUES.email)
 
   function updateField(field: keyof RegisterValues, value: string) {
     const sanitizedValue =
-      field === "name" || field === "email"
-        ? value.replace(/\s+/g, "")
-        : value
+      field === "name" ? value.replace(/\s+/g, "") : field === "email" ? sanitizeEmailInput(value) : value
+    const emailValidation = field === "email" ? validateEmail(sanitizedValue) : null
 
     setValues((current) => ({ ...current, [field]: sanitizedValue }))
 
     if (errors[field] || errors.form) {
       const nextValues = { ...values, [field]: sanitizedValue }
+      const nextFieldError = field === "email" ? emailValidation?.error ?? "" : validateRegisterField(field, nextValues)
+
       setErrors((current) => ({
         ...current,
         form: "",
-        [field]: validateRegisterField(field, nextValues),
+        [field]: nextFieldError,
       }))
     }
   }
 
   function handleBlur(field: keyof RegisterValues) {
+    if (field === "email") {
+      const { normalizedEmail, error } = validateEmail(values.email)
+
+      if (normalizedEmail !== values.email) {
+        setValues((current) => ({ ...current, email: normalizedEmail }))
+      }
+
+      setErrors((current) => ({
+        ...current,
+        email: error,
+      }))
+      return
+    }
+
     setErrors((current) => ({
       ...current,
       [field]: validateRegisterField(field, values),
@@ -140,11 +151,21 @@ export function useRegisterForm() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
+    const emailValidation = validateEmail(values.email)
+    const normalizedValues: RegisterValues = {
+      ...values,
+      email: emailValidation.normalizedEmail,
+    }
+
+    if (normalizedValues.email !== values.email) {
+      setValues(normalizedValues)
+    }
+
     const nextErrors: RegisterFormErrors = {
-      name: validateRegisterField("name", values),
-      email: validateRegisterField("email", values),
-      password: validateRegisterField("password", values),
-      confirmPassword: validateRegisterField("confirmPassword", values),
+      name: validateRegisterField("name", normalizedValues),
+      email: emailValidation.error,
+      password: validateRegisterField("password", normalizedValues),
+      confirmPassword: validateRegisterField("confirmPassword", normalizedValues),
       form: "",
     }
 
@@ -157,12 +178,12 @@ export function useRegisterForm() {
     setIsSubmitting(true)
 
     try {
-      const normalizedEmail = values.email.trim().toLowerCase()
+      const normalizedEmail = emailValidation.normalizedEmail.toLowerCase()
       const response = await registerUser({
-        username: values.name.trim(),
+        username: normalizedValues.name.trim(),
         email: normalizedEmail,
-        password: values.password,
-        password_confirmation: values.confirmPassword,
+        password: normalizedValues.password,
+        password_confirmation: normalizedValues.confirmPassword,
       })
 
       saveAuthSession(response)
@@ -199,14 +220,32 @@ export function useRegisterForm() {
     setShowSuccessModal(false)
   }
 
+  function applyEmailSuggestion(suggestedEmail: string) {
+    const sanitizedEmail = sanitizeEmailInput(suggestedEmail)
+    const { error } = validateEmail(sanitizedEmail)
+
+    setValues((current) => ({
+      ...current,
+      email: sanitizedEmail,
+    }))
+
+    setErrors((current) => ({
+      ...current,
+      email: error,
+      form: "",
+    }))
+  }
+
   return {
     values,
     errors,
+    emailSuggestion: suggestion,
     showSuccessModal,
     isSubmitting,
     updateField,
     handleBlur,
     handleSubmit,
+    applyEmailSuggestion,
     closeSuccessModal,
   }
 }
