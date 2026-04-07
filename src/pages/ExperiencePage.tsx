@@ -41,10 +41,10 @@ const ExperiencePage = () => {
             <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
               <div className="text-center sm:text-left">
                 <h1 id="titulo-pagina-experiencia" className="mb-2 text-3xl font-bold text-[#003A6C] md:text-4xl">
-                  Registro de experiencia
+                  Mi Experiencia
                 </h1>
                 <p id="descripcion-pagina-experiencia" className="text-sm text-[#4B778D] md:text-base">
-                  Gestiona tu experiencia laboral y académica desde una sola vista.
+                  Gestiona tu experiencia laboral y académica
                 </p>
               </div>
 
