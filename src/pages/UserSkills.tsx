@@ -4,10 +4,10 @@ import { Plus, Code2, Lightbulb, X, Edit3, Trash2 } from 'lucide-react';
 import { useSkillsManager, type Skill } from '../hooks/useSkillsManager';
 
 const LEVEL_LABELS: Record<string, string> = {
-  experto: 'Experto',
+  experto: 'Experto',  
   avanzado: 'Avanzado',
   intermedio: 'Intermedio',
-  basico: 'Basico',
+   basico: 'Basico',
 };
 
 function getLevelLabel(level: string): string {
@@ -144,10 +144,11 @@ const UserSkills = () => {
                     onChange={(e) => setSkillLevel(e.target.value)}
                     className="w-full py-2.5 px-4 border border-[#0E7D96]/20 rounded-xl bg-white text-[#003A6C] focus:ring-2 focus:ring-[#0E7D96]/40 outline-none"
                   >
-                    <option value="experto">Experto</option>
-                    <option value="avanzado">Avanzado</option>
-                    <option value="intermedio">Intermedio</option>
                     <option value="basico">Basico</option>
+                    <option value="intermedio">Intermedio</option>
+                    <option value="avanzado">Avanzado</option>
+                    <option value="experto">Experto</option>
+
                   </select>
                 </div>
               )}
