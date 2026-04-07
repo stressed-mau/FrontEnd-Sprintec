@@ -1,169 +1,26 @@
-import { useState } from 'react';
+// components/CreateProyect.tsx
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import ProjectCard from '../components/ProjectCard';
 import { Plus } from 'lucide-react';
-
-interface Project {
-  nombre: string;
-  descripcion: string;
-  tecnologias: string[];
-  rol: string;
-  fecha: string;
-  github?: string;
-  demo?: string;
-  image?: string;
-}
+import { useCreateProyect } from "../hooks/useCreateProyect";
 
 const CreateProyect = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [errors, setErrors] = useState<any>({});
-  const [success, setSuccess] = useState("");
-  const [preview, setPreview] = useState<string | null>(null);
-
-  // ✅ ELIMINAR
-  const handleDelete = (index: number) => {
-    const updated = projects.filter((_, i) => i !== index);
-    setProjects(updated);
-  };
-
-  // ✅ EDITAR
-  const handleEdit = (index: number) => {
-    setEditingIndex(index);
-    setIsModalOpen(true);
-  };
-
-  // ✅ SUBMIT
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-
-  const formData = new FormData(e.currentTarget);
-
-  const file = formData.get('image') as File;
-  const github = formData.get('github') as string;
-  const demo = formData.get('demo') as string;
-
-  const nombre = formData.get('nombre') as string;
-  const descripcion = formData.get('descripcion') as string;
-  const tecnologiasRaw = formData.get('tecnologias') as string;
-  const rol = formData.get('rol') as string;
-  const fecha = formData.get('fecha') as string;
-
-  const urlRegex = /^https?:\/\/.+/;
-
-  let newErrors: any = {};
-
-  // =========================
-  // VALIDACIONES
-  // =========================
-
-  // Nombre
-  if (!nombre || !nombre.trim()) {
-    newErrors.nombre = "El nombre del proyecto es obligatorio.";
-  } else if (nombre.length > 100) {
-    newErrors.nombre = "Máximo 100 caracteres.";
-  }
-
-  // Descripción
-  if (descripcion && descripcion.length > 300) {
-    newErrors.descripcion = "La descripción no puede exceder 300 caracteres.";
-  }
-
-  // Tecnologías
-  const tecnologias = tecnologiasRaw
-    ?.split(',')
-    .map(t => t.trim())
-    .filter(t => t.length > 0);
-
-  if (!tecnologias || tecnologias.length === 0) {
-    newErrors.tecnologias = "Debes ingresar al menos una tecnología.";
-  }
-
-  // Rol
-  if (rol && rol.length > 80) {
-    newErrors.rol = "El rol no puede exceder 80 caracteres.";
-  }
-
-  // Fecha
-  if (!fecha) {
-    newErrors.fecha = "La fecha es obligatoria.";
-  }
-
-  // URLs
-  if (github && !urlRegex.test(github)) {
-    newErrors.github = "El enlace de GitHub no es válido.";
-  }
-
-  if (demo && !urlRegex.test(demo)) {
-    newErrors.demo = "El enlace de la demo no es válido.";
-  }
-
-  // Imagen
-  if (file && file.size > 0) {
-    if (!["image/jpeg", "image/png", "image/gif"].includes(file.type)) {
-      newErrors.image = "Formato de imagen no válido.";
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      newErrors.image = "La imagen no debe superar los 2MB.";
-    }
-  }
-
-  // =========================
-  // SETEAR ERRORES
-  // =========================
-  setErrors(newErrors);
-
-  if (Object.keys(newErrors).length > 0) return;
-
-  // =========================
-  // CREAR OBJETO
-  // =========================
-  const newProject: Project = {
-    nombre,
-    descripcion,
-    tecnologias,
-    rol,
-    fecha,
-    github,
-    demo,
-
-    image:
-      file && file.size > 0
-        ? URL.createObjectURL(file)
-        : editingIndex !== null
-        ? projects[editingIndex].image
-        : undefined
-  };
-
-  // =========================
-  // EDITAR O CREAR
-  // =========================
-  if (editingIndex !== null) {
-    const updated = [...projects];
-    updated[editingIndex] = newProject;
-    setProjects(updated);
-  } else {
-    setProjects([...projects, newProject]);
-  }
-
-  // =========================
-  // FEEDBACK + RESET
-  // =========================
-  setSuccess("Proyecto guardado correctamente.");
-
-  setTimeout(() => {
-    setSuccess("");
-  }, 3000);
-
-  (e.target as HTMLFormElement).reset();
-  setPreview(null);
-  setEditingIndex(null);
-  setIsModalOpen(false);
-};
-
+  const {
+    projects,
+    isModalOpen,
+    editingIndex,
+    errors,
+    success,
+    preview,
+    setPreview,
+    handleDelete,
+    handleEdit,
+    handleSubmit,
+    handleChange,
+    openModal,
+    closeModal
+  } = useCreateProyect();
 
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
@@ -181,10 +38,7 @@ const CreateProyect = () => {
               </div>
               <button 
                 id="btn-add-project"
-                onClick={() => {
-                  setEditingIndex(null);
-                  setIsModalOpen(true);
-                }}
+                onClick={() => openModal()}
                 className="bg-[#003A6C] text-white text-sm px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-[#002d54] transition-all font-normal"
               >
                 <Plus size={20} /> Agregar proyecto
@@ -197,7 +51,7 @@ const CreateProyect = () => {
                 <p className="text-gray-500 mb-6 text-lg">Tu portafolio aún no tiene proyectos. Agrega tu primer proyecto.</p>
                 <button 
                   id="btn-add-first-project"
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => openModal()}
                   className="bg-[#003A6C] text-white text-sm px-5 py-2 rounded-lg flex items-center gap-2 font-normal shadow-md hover:scale-105 transition-transform"
                 >
                   <Plus size={20} /> Agregar primer proyecto
@@ -228,60 +82,61 @@ const CreateProyect = () => {
                 <h2 className="text-[#003A6C] text-lg font-semibold">Nuevo proyecto</h2>
                 <p className="text-[#4982AD] text-sm">Agrega la información de tu proyecto</p>
               </div>
-              <button id="btn-close-modal" onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+              <button id="btn-close-modal" onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Nombre del proyecto *</label>
-                <input required id="nombre" name="nombre" defaultValue={editingIndex !== null ? projects[editingIndex].nombre : ""} type="text" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input id="nombre" name="nombre" maxLength={60} defaultValue={editingIndex !== null ? projects[editingIndex].nombre : ""} type="text" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
                 {errors.nombre && (
                   <p id="error-nombre" className="text-red-500 text-xs mt-1">{errors.nombre}</p>
                 )}
               </div>
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Descripción</label>
-                <textarea id="descripcion" name="descripcion" defaultValue={editingIndex !== null ? projects[editingIndex].descripcion : ""} rows={3} className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                <textarea id="descripcion" name="descripcion" onChange={handleChange} maxLength={250} defaultValue={editingIndex !== null ? projects[editingIndex].descripcion : ""} rows={3} className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
                 {errors.descripcion && (
                 <p id="error-descripcion" className="text-red-500 text-xs mt-1">{errors.descripcion}</p>
               )}
               </div>
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Tecnologías (separadas por comas)</label>
-                <input id="tecnologias" name="tecnologias" defaultValue={editingIndex !== null ? projects[editingIndex].tecnologias.join(', ') : ""} type="text" placeholder="React, Node.js, PostgreSQL" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input id="tecnologias" name="tecnologias" maxLength={100} defaultValue={editingIndex !== null ? projects[editingIndex].tecnologias.join(', ') : ""} type="text" placeholder="React, Node.js, PostgreSQL" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                 {errors.tecnologias && (
                   <p id="error-tecnologias" className="text-red-500 text-xs mt-1">{errors.tecnologias}</p>
                 )}
               </div>
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Tu rol en el proyecto</label>
-                <input id="rol" name="rol" defaultValue={editingIndex !== null ? projects[editingIndex].rol : ""} type="text" placeholder="Full Stack Developer" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input id="rol" name="rol" onChange={handleChange} maxLength={50} defaultValue={editingIndex !== null ? projects[editingIndex].rol : ""} type="text" placeholder="Full Stack Developer" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                 {errors.rol && (
                   <p id="error-rol" className="text-red-500 text-xs mt-1">{errors.rol}</p>
                 )}
               </div>
               <div>
+                  <label className="block text-sm font-normal text-[#003A6C] mb-1">Fecha de realización</label>
+                  <input id="fecha" name="fecha" onChange={handleChange} defaultValue={editingIndex !== null ? projects[editingIndex].fecha : ""} type="date" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  {errors.fecha && (
+                    <p id="error-fecha" className="text-red-500 text-xs mt-1">{errors.fecha}</p>
+                  )}
+              </div>
+              <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Enlace a GitHub</label>
-                <input id="github" name="github" defaultValue={editingIndex !== null ? projects[editingIndex].github : ""} type="text" placeholder="https://github.com/usuario/proyecto" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input id="github" name="github" maxLength={50} defaultValue={editingIndex !== null ? projects[editingIndex].github : ""} type="text" placeholder="https://github.com/usuario/proyecto" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                 {errors.github && (
                   <p id="error-github" className="text-red-500 text-xs mt-1">{errors.github}</p>
                 )}
               </div>
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Enlace a la demo</label>
-                <input id="demo" name="demo" defaultValue={editingIndex !== null ? projects[editingIndex].demo : ""} type="text" placeholder="https://demo.com" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input id="demo" name="demo" maxLength={100} defaultValue={editingIndex !== null ? projects[editingIndex].demo : ""} type="text" placeholder="https://demo.com" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                 {errors.demo && (
                   <p id="error-demo" className="text-red-500 text-xs mt-1">{errors.demo}</p>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-normal text-[#003A6C] mb-1">Fecha de realización</label>
-                  <input id="fecha" name="fecha" defaultValue={editingIndex !== null ? projects[editingIndex].fecha : ""} type="date" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                  {errors.fecha && (
-                    <p id="error-fecha" className="text-red-500 text-xs mt-1">{errors.fecha}</p>
-                  )}
-                </div>
+              <div>
+              <label className="block text-sm font-normal text-[#003A6C] mb-1">Imagen del proyecto</label>
               </div>
               {preview && (
                 <img 
@@ -289,6 +144,17 @@ const CreateProyect = () => {
                   className="w-full h-40 object-cover rounded-lg mb-2"
                 />
               )}
+
+              {preview && (
+                <button 
+                  type="button"
+                  onClick={() => setPreview(null)}
+                  className="text-red-500 text-sm hover:underline mb-2"
+                >
+                  Eliminar imagen
+                </button>
+              )}
+
               <div className="flex items-center gap-3">
               <label className="cursor-pointer bg-[#003A6C] text-white px-4 py-1.5 text-sm rounded-lg hover:bg-[#002d54] transition">
                 Seleccionar archivo
@@ -306,7 +172,7 @@ const CreateProyect = () => {
                   const label = document.getElementById("file-name");
                   if (label) label.textContent = fileName;
 
-                  // 🔥 PREVIEW
+                  
                   if (file) {
                     setPreview(URL.createObjectURL(file));
                   }
@@ -331,7 +197,7 @@ const CreateProyect = () => {
                 <button 
                   id="btn-submit"
                   type="submit" 
-                  className="bg-[#003A6C] text-white px-4 py-2 text-sm rounded-lg font-medium hover:bg-[#002d54]"
+                  className="bg-[#003A6C] text-white px-4 py-2 text-sm rounded-lg font-medium hover:bg-[#1a4f85]"
                 >
                   Guardar proyecto
                 </button>
@@ -339,7 +205,7 @@ const CreateProyect = () => {
                 <button 
                   id="btn-cancel"
                   type="button" 
-                  onClick={() => setIsModalOpen(false)} 
+                  onClick={closeModal}
                   className="bg-[#C2DBED] text-[#003A6C] px-4 py-2 text-sm rounded-lg border border-[#4982AD] font-medium hover:bg-[#C4A57C]"
                 >
                   Cancelar
