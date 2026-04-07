@@ -28,14 +28,16 @@ function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route path={USER_HOME_ROUTE} element={<UserHome />} />
         <Route path={LEGACY_DASHBOARD_ROUTE} element={<Navigate to={USER_HOME_ROUTE} replace />} />
-        <Route path="/personal" element={<UserPersonalData />} />
+        
         <Route path="/perfil" element={<ProfilePage />} />
-        <Route path="/proyectos" element={<CreateProyect />} />
+        
         <Route path="/habilidades" element={<UserSkills />} />
         <Route path="/red-profesional" element={<NetworksPage />} />
         <Route path="/experiencia" element={<ExperiencePage />} />
         <Route path="/publicar" element={<PublishPortfolio />} />
       </Route>
+      <Route path="/personal" element={<UserPersonalData />} />
+      <Route path="/proyectos" element={<CreateProyect />} />
     </Routes>
   )
 }
