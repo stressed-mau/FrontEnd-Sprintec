@@ -77,9 +77,11 @@ export default function LoginPage() {
                     <Label htmlFor={idEntradaContrasena} className="text-[#003A6C]">
                       Contraseña
                     </Label>
+                    {/*
                     <button type="button" className="text-xs font-medium text-[#4982AD] transition hover:text-[#003A6C]">
                       ¿La olvidaste?
                     </button>
+                    */}
                   </div>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
