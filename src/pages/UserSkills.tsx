@@ -92,7 +92,7 @@ const UserSkills = () => {
         </main>
       </div>
 
-      {isModalOpen && ( <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/30 px-3 backdrop-blur-[2px] sm:items-center sm:px-4">
+      {isModalOpen && ( <div className="fixed inset-0 z-100 flex items-end justify-center bg-black/30 px-3 backdrop-blur-[2px] sm:items-center sm:px-4">
           <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/20 bg-[#D9EAF8] shadow-xl animate-in zoom-in-95 duration-200 sm:rounded-[2rem]">
             <div className="px-8 pt-8 pb-2 flex justify-between items-start">
               <div>
@@ -165,7 +165,7 @@ const UserSkills = () => {
       )}
 
       {showSuccessModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
+        <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
           <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl p-8 text-center animate-in zoom-in-95 duration-200">
             <div className="flex justify-center mb-4">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
