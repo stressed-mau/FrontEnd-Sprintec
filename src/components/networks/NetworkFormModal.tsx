@@ -25,20 +25,18 @@ export function NetworkFormModal({
   onSubmit,
 }: NetworkFormModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#003A6C]/45 px-3 sm:items-center sm:px-4">
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-[#A5D7E8] bg-white shadow-2xl sm:rounded-3xl">
-        <div className="flex items-start justify-between gap-4 border-b border-[#D7E6F2] px-5 py-5 sm:px-6">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-3 backdrop-blur-sm sm:items-center sm:px-4">
+      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-[#6EAED6] bg-[#C2DBED] shadow-2xl sm:rounded-3xl">
+        <div className="flex items-start justify-between gap-4 px-5 py-5 sm:px-6">
           <div>
             <h2 className="text-2xl font-bold text-[#003A6C]">{isEditing ? "Editar enlace" : "Nuevo enlace"}</h2>
-            <p className="mt-1 text-sm text-[#4B778D]">
-              Completa los campos para mostrar esta red en tu perfil.
-            </p>
+            <p className="mt-1 text-sm text-[#4982AD]">Agrega enlaces a tus redes profesionales</p>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-1 text-[#003A6C] transition hover:bg-[#EEF5F9]"
+            className="rounded-full p-1 text-[#4982AD] transition hover:bg-white/40 hover:text-[#003A6C]"
             aria-label="Cerrar modal"
           >
             <X className="size-5" />
@@ -57,7 +55,7 @@ export function NetworkFormModal({
               onBlur={() => onBlur("name")}
               onChange={(event) => onFieldChange("name", event.target.value)}
               placeholder="LinkedIn, GitHub, Portafolio..."
-              className="h-11 border-[#A5D7E8] bg-white text-[#003A6C] placeholder:text-[#7B98AF]"
+              className="h-12 rounded-2xl border-[#6EAED6] bg-white text-[#003A6C] placeholder:text-[#4982AD] focus-visible:ring-[#6EAED6]"
               aria-invalid={Boolean(errors.name)}
               aria-labelledby="network-name-label"
               aria-describedby={errors.name ? "network-name-error" : undefined}
@@ -77,7 +75,7 @@ export function NetworkFormModal({
               onBlur={() => onBlur("url")}
               onChange={(event) => onFieldChange("url", event.target.value)}
               placeholder="https://..."
-              className="h-11 border-[#A5D7E8] bg-white text-[#003A6C] placeholder:text-[#7B98AF]"
+              className="h-12 rounded-2xl border-[#6EAED6] bg-white text-[#003A6C] placeholder:text-[#4982AD] focus-visible:ring-[#6EAED6]"
               aria-invalid={Boolean(errors.url)}
               aria-labelledby="network-url-label"
               aria-describedby={errors.url ? "network-url-error" : undefined}
@@ -86,14 +84,14 @@ export function NetworkFormModal({
           </div>
 
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-            <Button type="submit" className="h-11 flex-1 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
+            <Button type="submit" className="h-11 flex-1 rounded-xl bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
               Guardar
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
-              className="h-11 flex-1 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
+              className="h-11 flex-1 rounded-xl border-[#6EAED6] bg-transparent text-[#003A6C] hover:bg-white/30"
             >
               Cancelar
             </Button>

@@ -15,7 +15,18 @@ import { Label } from "@/components/ui/label"
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const { values, errors, isSubmitting, updateField, handleBlur, handleSubmit } = useRegisterForm()
+  const {
+    values,
+    errors,
+    emailSuggestion,
+    showSuccessModal,
+    isSubmitting,
+    updateField,
+    handleBlur,
+    handleSubmit,
+    applyEmailSuggestion,
+    closeSuccessModal,
+  } = useRegisterForm()
   const { isVisible: showPassword, toggleVisibility: togglePasswordVisibility } = usePasswordVisibility()
   const { isVisible: showConfirmPassword, toggleVisibility: toggleConfirmPasswordVisibility } = usePasswordVisibility()
   const idEntradaNombre = "registro-nombre-usuario"
@@ -97,6 +108,22 @@ export default function RegisterPage() {
                     />
                   </div>
                   {errors.email ? <p id={idErrorCorreo} className="text-sm text-red-600">{errors.email}</p> : null}
+                  {!errors.email && emailSuggestion ? (
+                    <p className="text-sm text-amber-700">
+                      ¿Quisiste decir{" "}
+                      <a
+                        href={`mailto:${emailSuggestion.full}`}
+                        className="font-medium underline underline-offset-2 transition hover:text-amber-900"
+                        onClick={(event) => {
+                          event.preventDefault()
+                          applyEmailSuggestion(emailSuggestion.full)
+                        }}
+                      >
+                        {emailSuggestion.full}
+                      </a>
+                      ?
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="space-y-2">
@@ -104,7 +131,7 @@ export default function RegisterPage() {
                     Contraseña
                   </Label>
                   <p id={idAyudaContrasena} className="text-xs leading-5 text-[#5E7D95]">
-                    Debe tener entre 8 y 20 caracteres, incluir una mayúscula, un número y un carácter especial.
+                    La contraseña debe contener entre 8 y 20 caracteres, e incluir al menos una letra mayúscula, un número y un carácter especial.
                   </p>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
@@ -199,6 +226,23 @@ export default function RegisterPage() {
         </div>
       </main>
       <Footer />
+
+      {showSuccessModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl">
+            <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full bg-green-100 text-green-600">
+              <svg className="size-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-[#003A6C]">Registro exitoso</h2>
+            <p className="mt-3 text-sm leading-6 text-[#4F6F88]">Tu cuenta ha sido creada correctamente.</p>
+            <Button onClick={closeSuccessModal} className="mt-6 h-11 w-full bg-[#003A6C] text-white hover:bg-[#4982AD]">
+              Continuar
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

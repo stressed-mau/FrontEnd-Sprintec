@@ -31,14 +31,14 @@ export function NetworksList({ networks, onEdit, onDelete }: NetworksListProps) 
     <div className="grid gap-4 md:grid-cols-2">
       {networks.map((network) => (
         <Card key={network.id} className="rounded-3xl border border-[#A5D7E8] bg-white py-0 shadow-sm">
-          <CardHeader className="px-5 pt-5 sm:px-6 sm:pt-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex min-w-0 items-start gap-3">
+          <CardHeader className="px-5 py-5 sm:px-6 sm:py-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
                 <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#D9EAF4] text-[#003A6C]">
                   <Globe className="size-5" />
                 </div>
 
-                <div className="min-w-0">
+                <div className="min-w-0 self-center">
                   <CardTitle className="text-lg font-semibold text-[#003A6C]">{network.name}</CardTitle>
                   <a
                     href={network.url}
@@ -52,7 +52,7 @@ export function NetworksList({ networks, onEdit, onDelete }: NetworksListProps) 
                 </div>
               </div>
 
-              <div className="flex gap-2 self-end sm:self-start">
+              <div className="flex gap-2 self-end sm:self-center">
                 <Button
                   type="button"
                   variant="outline"

@@ -73,17 +73,24 @@ function validateNetworkField(field: keyof NetworkFormValues, values: NetworkFor
 export function useNetworksManager() {
   const [networks, setNetworks] = useState<NetworkItem[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [formData, setFormData] = useState<NetworkFormValues>(EMPTY_FORM)
   const [errors, setErrors] = useState<NetworkFormErrors>({})
   const [feedbackMessage, setFeedbackMessage] = useState("")
   const [feedbackType, setFeedbackType] = useState<"success" | "error" | "">("")
+  const [successMessage, setSuccessMessage] = useState("")
 
   const isEditing = useMemo(() => editingId !== null, [editingId])
 
   function showFeedback(message: string, type: "success" | "error") {
     setFeedbackMessage(message)
     setFeedbackType(type)
+  }
+
+  function showSuccessModal(message: string) {
+    setSuccessMessage(message)
+    setIsSuccessModalOpen(true)
   }
 
   function clearFeedback() {
@@ -170,7 +177,7 @@ export function useNetworksManager() {
             : network,
         ),
       )
-      showFeedback("Red actualizada correctamente.", "success")
+      showSuccessModal("Red actualizada correctamente.")
     } else {
       setNetworks((current) => [
         {
@@ -180,7 +187,7 @@ export function useNetworksManager() {
         },
         ...current,
       ])
-      showFeedback("Red agregada correctamente.", "success")
+      showSuccessModal("Red agregada correctamente.")
     }
 
     closeModal()
@@ -191,6 +198,11 @@ export function useNetworksManager() {
     setNetworks((current) => current.filter((network) => network.id !== id))
   }
 
+  function closeSuccessModal() {
+    setIsSuccessModalOpen(false)
+    setSuccessMessage("")
+  }
+
   return {
     networks,
     formData,
@@ -198,10 +210,13 @@ export function useNetworksManager() {
     feedbackMessage,
     feedbackType,
     isModalOpen,
+    isSuccessModalOpen,
     isEditing,
+    successMessage,
     openCreateModal,
     openEditModal,
     closeModal,
+    closeSuccessModal,
     updateField,
     handleBlur,
     handleSubmit,

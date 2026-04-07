@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo} from 'react';
 import type { FormEvent } from 'react';
 import {createSkill,  getSkills, removeSkill, updateSkill,
   type Skill,
@@ -8,10 +8,10 @@ import {createSkill,  getSkills, removeSkill, updateSkill,
 export type { Skill };
 
 const technicalLevelPriority: Record<string, number> = {
-  experto: 4,
-  avanzado: 3,
-  intermedio: 2,
   basico: 1,
+  intermedio: 2,
+  avanzado: 3,
+  experto: 4,
 };
 
 export const useSkillsManager = () => {
@@ -73,17 +73,13 @@ export const useSkillsManager = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingSkill(null);
+    setErrorMessage('');
   };
 
   const handleSkillNameChange = (value: string) => {
     setSkillName(value);
 
-    if (value.length > 40) {
-      setErrorMessage("El nombre de la habilidad no puede exceder los 40 caracteres.");
-      return;
-    }
-
-    if (errorMessage === "El nombre de la habilidad no puede exceder los 40 caracteres.") {
+    if (errorMessage) {
       setErrorMessage("");
     }
   };
@@ -101,12 +97,7 @@ export const useSkillsManager = () => {
       setErrorMessage("El campo Nombre de habilidad es obligatorio.");
       return;
     }
-    // Validación 2: Máximo 40 caracteres
-    if (skillName.length > 40) {
-      setErrorMessage("El nombre de la habilidad no puede exceder los 40 caracteres.");
-      return;
-    }
-    // Validación 3: No permitir duplicados
+    // Validación 2: No permitir duplicados
     const skillNameLower = skillName.trim().toLowerCase();
     const exists = skills.some(s => 
       s.name.toLowerCase() === skillNameLower && 
@@ -156,36 +147,36 @@ export const useSkillsManager = () => {
     try {
       await removeSkill(id);
       setSkills((currentSkills) => currentSkills.filter((skill) => skill.id !== id));
+      setPageError('');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo eliminar la habilidad.';
       setPageError(message);
     }
   };
 
-  const technicalSkills = skills
+const technicalSkills = useMemo(() => {
+  console.log('[useMemo] Recalculando habilidades técnicas');
+  return skills
     .filter((skill) => skill.type === "tecnica")
     .sort((a, b) => {
-      const aPriority = technicalLevelPriority[a.level ?? ''] ?? 0;
-      const bPriority = technicalLevelPriority[b.level ?? ''] ?? 0;
-
-      if (bPriority !== aPriority) {
-        return bPriority - aPriority;
-      }
-
+      const aP = technicalLevelPriority[a.level?.toLowerCase() ?? ''] ?? 0;
+      const bP = technicalLevelPriority[b.level?.toLowerCase() ?? ''] ?? 0;
+      // Si tienen distinto nivel, ordena por nivel (Experto a Basico)
+      if (bP !== aP) return aP - bP; 
       return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
     });
+}, [skills]);
 
-  const softSkills = skills
+const softSkills = useMemo(() => {
+  return skills
     .filter((skill) => skill.type === "blanda")
     .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+}, [skills]);
 
   return {
-    // Estados
-    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,pageError,isLoading,isSaving,
-    technicalSkills,softSkills,
-    // Setters
-    setSkillType,setSkillName, setSkillLevel, handleSkillNameChange,
-    // Métodos
-    openModal,closeModal,handleSave,handleDelete,
+    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,pageError,isLoading,isSaving,technicalSkills,softSkills,// Estados
+    setSkillType,setSkillName, setSkillLevel, handleSkillNameChange,// Setters
+    openModal,closeModal,handleSave,handleDelete,// Métodos
   };
+  
 };

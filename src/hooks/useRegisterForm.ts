@@ -2,6 +2,7 @@
 
 import { useNavigate } from "react-router-dom"
 
+import { useEmailValidation } from "@/hooks/useEmailValidation"
 import { USER_HOME_ROUTE } from "@/routes/route-paths"
 import {
   AuthServiceError,
@@ -37,25 +38,21 @@ Tu registro se ha completado exitosamente. Ya puedes acceder a tu cuenta y comen
 
 function validateRegisterField(field: keyof RegisterValues, values: RegisterValues): string {
   const name = values.name.trim()
-  const email = values.email.trim()
   const password = values.password
   const confirmPassword = values.confirmPassword
 
   if (field === "name") {
     if (!name) return "El campo Nombre usuario es obligatorio."
+    if (/\s/.test(values.name)) return "El nombre de usuario no permite espacios."
     if (name.length > 30) return "El campo Nombre de usuario no permite un máximo de 30 caracteres."
   }
 
   if (field === "email") {
-    if (!email) return "El campo Correo electrónico es obligatorio."
-    if (email.length > 60) return "El campo Correo electrónico permite un máximo de 60 caracteres."
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return "El Correo electrónico debe tener un formato válido (ej. usuario@gmail.com)."
-    }
+    return ""
   }
 
   if (field === "password") {
-    if (!password) return "El campo contraseña es obligatorio."
+    if (!password) return "El campo Contraseña es obligatorio."
     if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres."
     if (password.length > 20) return "La contraseña permite un máximo de 20 caracteres."
     if (/\s/.test(password)) return "La contraseña no permite espacios en blanco."
@@ -67,7 +64,7 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
   }
 
   if (field === "confirmPassword") {
-    if (!confirmPassword) return "El campo confirmar contraseña es obligatorio."
+    if (!confirmPassword) return "El campo Confirmar contraseña es obligatorio."
     if (confirmPassword !== password) return "Las contraseñas no coinciden."
   }
 
@@ -78,16 +75,32 @@ function getValidationMessage(errorList?: string[]) {
   return Array.isArray(errorList) && errorList.length > 0 ? errorList[0] : ""
 }
 
+function normalizeRegisterApiMessage(message: string) {
+  if (/(username|user name|nombre).*(taken|used|exist|duplicate|unique)/i.test(message)) {
+    return "El nombre de usuario ya está registrado, elige otro."
+  }
+
+  if (/email.*(taken|used|exist|duplicate|unique)/i.test(message)) {
+    return "El correo electrónico ya está registrado, elige otro."
+  }
+
+  return message
+}
+
+function isDuplicateRegisterError(message: string) {
+  return /(exist|registrad|taken|used|duplicate|unique)/i.test(message)
+}
+
 function mapApiErrors(validationErrors?: ApiValidationErrors): RegisterFormErrors {
   if (!validationErrors) {
     return {}
   }
 
   return {
-    name: getValidationMessage(validationErrors.username),
-    email: getValidationMessage(validationErrors.email),
-    password: getValidationMessage(validationErrors.password),
-    confirmPassword: getValidationMessage(validationErrors.password_confirmation),
+    name: normalizeRegisterApiMessage(getValidationMessage(validationErrors.username)),
+    email: normalizeRegisterApiMessage(getValidationMessage(validationErrors.email)),
+    password: normalizeRegisterApiMessage(getValidationMessage(validationErrors.password)),
+    confirmPassword: normalizeRegisterApiMessage(getValidationMessage(validationErrors.password_confirmation)),
   }
 }
 
@@ -97,21 +110,42 @@ export function useRegisterForm() {
   const [errors, setErrors] = useState<RegisterFormErrors>({})
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(INITIAL_VALUES.email)
 
   function updateField(field: keyof RegisterValues, value: string) {
-    setValues((current) => ({ ...current, [field]: value }))
+    const sanitizedValue =
+      field === "name" ? value.replace(/\s+/g, "") : field === "email" ? sanitizeEmailInput(value) : value
+    const emailValidation = field === "email" ? validateEmail(sanitizedValue) : null
+
+    setValues((current) => ({ ...current, [field]: sanitizedValue }))
 
     if (errors[field] || errors.form) {
-      const nextValues = { ...values, [field]: value }
+      const nextValues = { ...values, [field]: sanitizedValue }
+      const nextFieldError = field === "email" ? emailValidation?.error ?? "" : validateRegisterField(field, nextValues)
+
       setErrors((current) => ({
         ...current,
         form: "",
-        [field]: validateRegisterField(field, nextValues),
+        [field]: nextFieldError,
       }))
     }
   }
 
   function handleBlur(field: keyof RegisterValues) {
+    if (field === "email") {
+      const { normalizedEmail, error } = validateEmail(values.email)
+
+      if (normalizedEmail !== values.email) {
+        setValues((current) => ({ ...current, email: normalizedEmail }))
+      }
+
+      setErrors((current) => ({
+        ...current,
+        email: error,
+      }))
+      return
+    }
+
     setErrors((current) => ({
       ...current,
       [field]: validateRegisterField(field, values),
@@ -121,11 +155,21 @@ export function useRegisterForm() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
+    const emailValidation = validateEmail(values.email)
+    const normalizedValues: RegisterValues = {
+      ...values,
+      email: emailValidation.normalizedEmail,
+    }
+
+    if (normalizedValues.email !== values.email) {
+      setValues(normalizedValues)
+    }
+
     const nextErrors: RegisterFormErrors = {
-      name: validateRegisterField("name", values),
-      email: validateRegisterField("email", values),
-      password: validateRegisterField("password", values),
-      confirmPassword: validateRegisterField("confirmPassword", values),
+      name: validateRegisterField("name", normalizedValues),
+      email: emailValidation.error,
+      password: validateRegisterField("password", normalizedValues),
+      confirmPassword: validateRegisterField("confirmPassword", normalizedValues),
       form: "",
     }
 
@@ -138,12 +182,12 @@ export function useRegisterForm() {
     setIsSubmitting(true)
 
     try {
-      const normalizedEmail = values.email.trim().toLowerCase()
+      const normalizedEmail = emailValidation.normalizedEmail.toLowerCase()
       const response = await registerUser({
-        username: values.name.trim(),
+        username: normalizedValues.name.trim(),
         email: normalizedEmail,
-        password: values.password,
-        password_confirmation: values.confirmPassword,
+        password: normalizedValues.password,
+        password_confirmation: normalizedValues.confirmPassword,
       })
 
       saveAuthSession(response)
@@ -157,13 +201,15 @@ export function useRegisterForm() {
         }),
       )
 
-      setShowSuccessModal(false)
-      navigate(USER_HOME_ROUTE, { replace: true })
+      setShowSuccessModal(true)
     } catch (error) {
       if (error instanceof AuthServiceError) {
+        const fieldErrors = mapApiErrors(error.validationErrors)
+        const hasSpecificDuplicateError = Boolean(fieldErrors.email || fieldErrors.name)
+
         setErrors({
-          ...mapApiErrors(error.validationErrors),
-          form: error.message,
+          ...fieldErrors,
+          form: hasSpecificDuplicateError || isDuplicateRegisterError(error.message) ? "" : error.message,
         })
         return
       }
@@ -176,16 +222,35 @@ export function useRegisterForm() {
 
   function closeSuccessModal() {
     setShowSuccessModal(false)
+    navigate(USER_HOME_ROUTE, { replace: true })
+  }
+
+  function applyEmailSuggestion(suggestedEmail: string) {
+    const sanitizedEmail = sanitizeEmailInput(suggestedEmail)
+    const { error } = validateEmail(sanitizedEmail)
+
+    setValues((current) => ({
+      ...current,
+      email: sanitizedEmail,
+    }))
+
+    setErrors((current) => ({
+      ...current,
+      email: error,
+      form: "",
+    }))
   }
 
   return {
     values,
     errors,
+    emailSuggestion: suggestion,
     showSuccessModal,
     isSubmitting,
     updateField,
     handleBlur,
     handleSubmit,
+    applyEmailSuggestion,
     closeSuccessModal,
   }
 }
