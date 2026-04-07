@@ -31,9 +31,33 @@ const EMPTY_FORM: ExperienceFormValues = {
 }
 
 const DATE_PATTERN = /^(\d{2})\/(\d{2})\/(\d{4})$/
+const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
+const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"]
 
 function parseDate(value: string) {
   const trimmedValue = value.trim()
+  const isoMatches = ISO_DATE_PATTERN.exec(trimmedValue)
+
+  if (isoMatches) {
+    const year = Number(isoMatches[1])
+    const month = Number(isoMatches[2])
+    const day = Number(isoMatches[3])
+    const parsedDate = new Date(year, month - 1, day)
+
+    const isSameDate =
+      parsedDate.getFullYear() === year &&
+      parsedDate.getMonth() === month - 1 &&
+      parsedDate.getDate() === day
+
+    if (!isSameDate) {
+      return null
+    }
+
+    parsedDate.setHours(0, 0, 0, 0)
+    return parsedDate
+  }
+
   const matches = DATE_PATTERN.exec(trimmedValue)
 
   if (!matches) {
@@ -85,6 +109,10 @@ export function formatExperienceDate(value: string) {
   })
 }
 
+function isIsoDate(value: string) {
+  return ISO_DATE_PATTERN.test(value.trim())
+}
+
 function validateExperienceField(
   field: keyof ExperienceFormValues,
   values: ExperienceFormValues,
@@ -124,8 +152,8 @@ function validateExperienceField(
       return "El campo Fecha de inicio es obligatorio."
     }
 
-    if (!parseDate(startDate)) {
-      return "La fecha debe tener un formato válido (dd/mm/aaaa)."
+    if (!isIsoDate(startDate) || !parseDate(startDate)) {
+      return "Seleccione una fecha válida."
     }
 
     if (isFutureDate(startDate)) {
@@ -142,8 +170,8 @@ function validateExperienceField(
       return "El campo Fecha de fin es obligatorio."
     }
 
-    if (!parseDate(endDate)) {
-      return "La fecha debe tener un formato válido (dd/mm/aaaa)."
+    if (!isIsoDate(endDate) || !parseDate(endDate)) {
+      return "Seleccione una fecha válida."
     }
 
     if (isFutureDate(endDate)) {
@@ -156,6 +184,10 @@ function validateExperienceField(
     if (parsedStartDate && parsedEndDate && parsedEndDate < parsedStartDate) {
       return "La fecha de fin no puede ser anterior a la fecha de inicio."
     }
+  }
+
+  if (field === "image" && values.image.length > 0 && values.image.length > 10_000_000) {
+    return "La imagen seleccionada no es válida."
   }
 
   return ""
@@ -286,11 +318,41 @@ export function useExperienceManager() {
       return
     }
 
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        image: "El logo solo permite archivos JPG o PNG.",
+      }))
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+
+      return
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        image: "El logo permite archivos de hasta 2 MB.",
+      }))
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+
+      return
+    }
+
     const reader = new FileReader()
     reader.onload = () => {
       setFormData((current) => ({
         ...current,
         image: typeof reader.result === "string" ? reader.result : "",
+      }))
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        image: "",
       }))
     }
     reader.readAsDataURL(file)
@@ -298,6 +360,10 @@ export function useExperienceManager() {
 
   function removeImage() {
     setFormData((current) => ({ ...current, image: "" }))
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      image: "",
+    }))
 
     if (fileInputRef.current) {
       fileInputRef.current.value = ""

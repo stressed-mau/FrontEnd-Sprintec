@@ -15,10 +15,13 @@ const NetworksPage = () => {
     feedbackMessage,
     feedbackType,
     isModalOpen,
+    isSuccessModalOpen,
     isEditing,
+    successMessage,
     openCreateModal,
     openEditModal,
     closeModal,
+    closeSuccessModal,
     updateField,
     handleBlur,
     handleSubmit,
@@ -79,6 +82,23 @@ const NetworksPage = () => {
           onBlur={handleBlur}
           onSubmit={handleSubmit}
         />
+      ) : null}
+
+      {isSuccessModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
+            <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-[#D9EAF4] text-[#003A6C]">
+              <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-[#003A6C]">Éxito</h2>
+            <p className="mt-2 text-sm text-[#4B778D]">{successMessage}</p>
+            <Button onClick={closeSuccessModal} className="mt-6 h-11 w-full bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
+              Continuar
+            </Button>
+          </div>
+        </div>
       ) : null}
     </div>
   )
