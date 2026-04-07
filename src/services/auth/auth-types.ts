@@ -6,7 +6,7 @@
 }
 
 export type LoginRequest = {
-  email: string
+  user: string
   password: string
 }
 
