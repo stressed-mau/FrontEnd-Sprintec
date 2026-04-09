@@ -1,35 +1,19 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  getPortfolioVisibilityData,
+  savePortfolioVisibilitySection,
+  type PortfolioVisibilityData,
+  type SectionKey,
+  type VisibilityItem,
+} from '../services/portfolioVisibilityService';
 
-export type SectionKey = 'projects' | 'skills' | 'experience' | 'networks';
-
-export interface VisibilityItem {
-  id: number;
-  label: string;
-  sublabel: string;
-  checked: boolean;
-}
-
-type PortfolioVisibilityData = Record<SectionKey, VisibilityItem[]>;
 type OpenSections = Record<SectionKey, boolean>;
 
 const initialData: PortfolioVisibilityData = {
-  projects: [
-    { id: 1, label: 'E-Commerce Platform', sublabel: 'Full Stack Developer', checked: true },
-    { id: 2, label: 'Task Management App', sublabel: 'Frontend Developer', checked: true },
-  ],
-  skills: [
-    { id: 1, label: 'React', sublabel: 'Experto', checked: true },
-    { id: 2, label: 'Node.js', sublabel: 'Avanzado', checked: true },
-    { id: 3, label: 'PostgreSQL', sublabel: 'Intermedio', checked: true },
-  ],
-  experience: [
-    { id: 1, label: 'Full Stack Developer', sublabel: 'Tech Solutions SA - Laboral', checked: true },
-    { id: 2, label: 'Ingeniería Informática', sublabel: 'Universidad Politécnica - Académica', checked: true },
-  ],
-  networks: [
-    { id: 1, label: 'GitHub', sublabel: 'https://github.com/mariagarcia', checked: true },
-    { id: 2, label: 'LinkedIn', sublabel: 'https://linkedin.com/in/mariagarcia', checked: true },
-  ],
+  projects: [],
+  skills: [],
+  experience: [],
+  networks: [],
 };
 
 const initialOpenSections: OpenSections = {
@@ -49,25 +33,66 @@ const sectionsArray: { key: SectionKey; title: string }[] = [
 export const usePortfolioVisibility = () => {
   const [data, setData] = useState<PortfolioVisibilityData>(initialData);
   const [openSections, setOpenSections] = useState<OpenSections>(initialOpenSections);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [pageError, setPageError] = useState('');
+
+  const loadVisibilityData = useCallback(async () => {
+    setIsLoading(true);
+    setPageError('');
+
+    try {
+      const remoteData = await getPortfolioVisibilityData();
+      setData(remoteData);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo cargar la visibilidad del portafolio.';
+      setPageError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadVisibilityData();
+  }, [loadVisibilityData]);
 
   const toggleSection = (sectionKey: SectionKey) => {
     setOpenSections((prev) => ({ ...prev, [sectionKey]: !prev[sectionKey] }));
   };
 
-  const handleItemCheck = (sectionKey: SectionKey, itemId: number) => {
-    setData((prev) => ({
-      ...prev,
-      [sectionKey]: prev[sectionKey].map((item) =>
-        item.id === itemId ? { ...item, checked: !item.checked } : item,
-      ),
-    }));
+  const persistSection = useCallback(
+    async (sectionKey: SectionKey, nextItems: VisibilityItem[], previousItems: VisibilityItem[]) => {
+      try {
+        setIsSaving(true);
+        setPageError('');
+        await savePortfolioVisibilitySection(sectionKey, nextItems);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'No se pudo guardar la configuración de visibilidad.';
+        setPageError(message);
+        setData((prev) => ({ ...prev, [sectionKey]: previousItems }));
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [],
+  );
+
+  const handleItemCheck = async (sectionKey: SectionKey, itemId: number) => {
+    const previousItems = data[sectionKey];
+    const nextItems = previousItems.map((item) =>
+      item.id === itemId ? { ...item, checked: !item.checked } : item,
+    );
+
+    setData((prev) => ({ ...prev, [sectionKey]: nextItems }));
+    await persistSection(sectionKey, nextItems, previousItems);
   };
 
-  const handleBulkSelect = (sectionKey: SectionKey, selectAll: boolean) => {
-    setData((prev) => ({
-      ...prev,
-      [sectionKey]: prev[sectionKey].map((item) => ({ ...item, checked: selectAll })),
-    }));
+  const handleBulkSelect = async (sectionKey: SectionKey, selectAll: boolean) => {
+    const previousItems = data[sectionKey];
+    const nextItems = previousItems.map((item) => ({ ...item, checked: selectAll }));
+
+    setData((prev) => ({ ...prev, [sectionKey]: nextItems }));
+    await persistSection(sectionKey, nextItems, previousItems);
   };
 
   const getVisibleCountText = (sectionKey: SectionKey): string => {
@@ -76,7 +101,17 @@ export const usePortfolioVisibility = () => {
     return `${visibleCount} de ${items.length} visibles`;
   };
 
-  return { data,openSections,sectionsArray,
-    toggleSection,handleItemCheck, handleBulkSelect, getVisibleCountText,
+  return {
+    data,
+    openSections,
+    sectionsArray,
+    isLoading,
+    isSaving,
+    pageError,
+    toggleSection,
+    handleItemCheck,
+    handleBulkSelect,
+    getVisibleCountText,
+    reloadVisibilityData: loadVisibilityData,
   };
 };

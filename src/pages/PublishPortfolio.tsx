@@ -7,10 +7,14 @@ const PublishPortfolio = () => {
     data,
     openSections,
     sectionsArray,
+    isLoading,
+    isSaving,
+    pageError,
     toggleSection,
     handleItemCheck,
     handleBulkSelect,
     getVisibleCountText,
+    reloadVisibilityData,
   } = usePortfolioVisibility();
 
   return (
@@ -26,10 +30,30 @@ const PublishPortfolio = () => {
               <h1 className="text-[#003A6C] text-3xl md:text-4xl font-bold mb-2">Publicar Portafolio</h1>
               <p className="text-gray-600 text-sm md:text-base">Configura tu portafolio, elige una plantilla y publícalo</p>
             </div>
+
+            {pageError && (
+              <div className="mb-6 rounded-2xl border-2 border-red-400 bg-red-100 px-4 py-4 text-sm text-red-900 font-semibold shadow-md">
+                <p className="font-bold mb-2">Error cargando visibilidad:</p>
+                <p className="mb-3">{pageError}</p>
+                <button
+                  type="button"
+                  onClick={() => void reloadVisibilityData()}
+                  className="rounded-lg bg-red-700 px-3 py-1.5 text-white transition-colors hover:bg-red-800"
+                >
+                  Reintentar
+                </button>
+              </div>
+            )}
      
             <section className="bg-white rounded-2xl border border-[#C9E1F0] p-6 shadow-sm" aria-labelledby="visibility-config-title">
               <h2 id="visibility-config-title" className="text-[#003A6C] text-xl font-bold mb-1">Configuración de Visibilidad</h2>
               <p className="text-gray-500 text-sm mb-6">Elige qué elementos específicos mostrar en tu portafolio</p>
+
+              {(isLoading || isSaving) && (
+                <div className="mb-4 rounded-lg bg-[#F1F7FC] px-4 py-2 text-sm text-[#003A6C]">
+                  {isLoading ? 'Cargando datos...' : 'Guardando cambios de visibilidad...'}
+                </div>
+              )}
 
               <div className="space-y-6">
                 {sectionsArray.map((sectionConfig) => {
@@ -49,7 +73,8 @@ const PublishPortfolio = () => {
                               type="checkbox" 
                               className="sr-only peer" 
                               checked={sectionEnabled}
-                              onChange={() => handleBulkSelect(sectionKey, !sectionEnabled)}
+                              disabled={isLoading || isSaving}
+                              onChange={() => void handleBulkSelect(sectionKey, !sectionEnabled)}
                             />
                             <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#003A6C]"></div>
                           </label>
@@ -59,6 +84,7 @@ const PublishPortfolio = () => {
                         
                         <button 
                           onClick={() => toggleSection(sectionKey)}
+                          disabled={isLoading}
                           className="text-gray-400 p-1 hover:bg-gray-100 rounded-full transition-colors"
                           aria-label={isOpen ? "Cerrar sección" : "Abrir sección"}>
                           <svg className={`w-5 h-5 transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,12 +98,14 @@ const PublishPortfolio = () => {
                           
                           <div className="flex gap-2 mb-4">
                             <button 
-                              onClick={() => handleBulkSelect(sectionKey, true)}
+                              disabled={isLoading || isSaving}
+                              onClick={() => void handleBulkSelect(sectionKey, true)}
                               className="px-4 py-1.5 text-sm bg-[#C9E1F0] text-[#003A6C] hover:bg-[#C4A57C] rounded-md font-medium hover:bg-opacity-80 transition-colors" >
                               Seleccionar todos
                             </button>
                             <button 
-                              onClick={() => handleBulkSelect(sectionKey, false)}
+                              disabled={isLoading || isSaving}
+                              onClick={() => void handleBulkSelect(sectionKey, false)}
                               className="px-4 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md font-medium hover:bg-[#C4A57C] transition-colors" >
                               Deseleccionar todos
                             </button>
@@ -90,7 +118,8 @@ const PublishPortfolio = () => {
                                 <input 
                                   type="checkbox" 
                                   checked={item.checked} 
-                                  onChange={() => handleItemCheck(sectionKey, item.id)}
+                                  disabled={isLoading || isSaving}
+                                  onChange={() => void handleItemCheck(sectionKey, item.id)}
                                   className="w-5 h-5 text-[#003A6C] border-gray-300 rounded focus:ring-[#003A6C] focus:ring-2 cursor-pointer"
                                 />
                                 <div className="flex flex-col md:flex-row md:items-baseline md:gap-2">
