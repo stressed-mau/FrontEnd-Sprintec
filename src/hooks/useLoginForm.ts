@@ -6,7 +6,7 @@ import { USER_HOME_ROUTE } from "@/routes/route-paths"
 import { AuthServiceError, loginUser, saveAuthSession } from "@/services/auth"
 
 export type LoginValues = {
-  email: string
+  user: string
   password: string
 }
 
@@ -15,20 +15,17 @@ export type LoginErrors = Partial<Record<keyof LoginValues, string>> & {
 }
 
 const INITIAL_VALUES: LoginValues = {
-  email: "",
+  user: "",
   password: "",
 }
 
 function validateLoginField(field: keyof LoginValues, values: LoginValues): string {
-  const email = values.email.trim()
+  const user = values.user.trim()
   const password = values.password
 
-  if (field === "email") {
-    if (!email) return "El campo Correo electrónico es obligatorio."
-    if (email.length > 60) return "El campo Correo electrónico permite un máximo de 60 caracteres."
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return "El Correo electrónico debe tener un formato válido (ej. usuario@gmail.com)."
-    }
+  if (field === "user") {
+    if (!user) return "El campo Usuario o correo electrónico es obligatorio."
+    if (user.length > 60) return "El campo Usuario o correo electrónico permite un máximo de 60 caracteres."
   }
 
   if (field === "password") {
@@ -70,14 +67,14 @@ export function useLoginForm() {
     event.preventDefault()
 
     const nextErrors: LoginErrors = {
-      email: validateLoginField("email", values),
+      user: validateLoginField("user", values),
       password: validateLoginField("password", values),
       form: "",
     }
 
     setErrors(nextErrors)
 
-    if (nextErrors.email || nextErrors.password || nextErrors.form) {
+    if (nextErrors.user || nextErrors.password || nextErrors.form) {
       setSuccessMessage("")
       return
     }
@@ -86,7 +83,7 @@ export function useLoginForm() {
 
     try {
       const response = await loginUser({
-        email: values.email.trim().toLowerCase(),
+        user: values.user.trim(),
         password: values.password,
       })
 
@@ -99,7 +96,7 @@ export function useLoginForm() {
 
       if (error instanceof AuthServiceError) {
         setErrors({
-          email: error.validationErrors?.email?.[0] ?? "",
+          user: error.validationErrors?.user?.[0] ?? error.validationErrors?.email?.[0] ?? "",
           password: error.validationErrors?.password?.[0] ?? "",
           form: error.message,
         })

@@ -52,24 +52,24 @@ export default function LoginPage() {
               <form noValidate onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor={idEntradaCorreo} className="text-[#003A6C]">
-                    Correo electrónico
+                    Tu usuario o Correo electrónico
                   </Label>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
                       id={idEntradaCorreo}
-                      type="email"
-                      placeholder="tu@email.com"
+                      type="text"
+                      placeholder="Tu usuario o tu correo electrónico registrado"
                       maxLength={60}
-                      value={values.email}
-                      onBlur={() => handleBlur("email")}
-                      onChange={(event) => updateField("email", event.target.value)}
+                      value={values.user}
+                      onBlur={() => handleBlur("user")}
+                      onChange={(event) => updateField("user", event.target.value)}
                       className="h-11 border-[#C2DBED] bg-white pl-10 text-[#003A6C] placeholder:text-[#7B98AF]"
-                      aria-invalid={Boolean(errors.email)}
-                      aria-describedby={errors.email ? idErrorCorreo : undefined}
+                      aria-invalid={Boolean(errors.user)}
+                      aria-describedby={errors.user ? idErrorCorreo : undefined}
                     />
                   </div>
-                  {errors.email ? <p id={idErrorCorreo} className="text-sm text-red-600">{errors.email}</p> : null}
+                  {errors.user ? <p id={idErrorCorreo} className="text-sm text-red-600">{errors.user}</p> : null}
                 </div>
 
                 <div className="space-y-2">
