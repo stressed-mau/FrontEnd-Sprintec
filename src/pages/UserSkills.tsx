@@ -62,7 +62,7 @@ const UserSkills = () => {
                     </div>
                   </div>
                 ) : (  technicalSkills.map(skill => (
-                    <SkillCard key={skill.id} skill={skill} disabled={isLoading} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
+                    <SkillCard key={skill.id} skill={skill} disabled={isLoading || isSaving} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
                   ))
                 )}
               </div>
@@ -83,7 +83,7 @@ const UserSkills = () => {
                     </div>
                   </div>
                 ) : ( softSkills.map(skill => (
-                    <SkillCard key={skill.id} skill={skill} disabled={isLoading} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
+                    <SkillCard key={skill.id} skill={skill} disabled={isLoading || isSaving} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
                   ))
                 )}
               </div>

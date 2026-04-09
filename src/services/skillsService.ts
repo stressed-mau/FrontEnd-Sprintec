@@ -38,11 +38,19 @@ const SKILLS_ENDPOINT = '/skills';
 const SKILL_MUTATION_TIMEOUT_MS = 5000;
 
 function mapApiTypeToUi(type?: SkillDto['type']): SkillType {
-  if (type === 'tecnica') {
+  const normalizedType = typeof type === 'string'
+    ? type
+        .toLowerCase()
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+    : '';
+
+  if (normalizedType === 'tecnica') {
     return 'tecnica';
   }
 
-  if (type === 'blanda') {
+  if (normalizedType === 'blanda') {
     return 'blanda';
   }
 
@@ -169,16 +177,36 @@ function unwrapSkill(data: unknown): SkillDto {
   return unwrapped as SkillDto;
 }
 
+function parseResponseData(data: unknown): unknown {
+  if (data == null || data === '') {
+    return [];
+  }
+
+  if (typeof data !== 'string') {
+    return data;
+  }
+
+  try {
+    return JSON.parse(data);
+  } catch {
+    return data;
+  }
+}
+
 export async function getSkills(): Promise<Skill[]> {
   try {
-    console.log('[getSkills] Iniciando GET a', SKILLS_ENDPOINT);
-    const response = await api.get(SKILLS_ENDPOINT);
-    console.log('[getSkills] Respuesta recibida:', response.data);
-    const unwrapped = unwrapSkillList(response.data);
-    console.log('[getSkills] Skills después de unwrap:', unwrapped);
+    const response = await api.get(SKILLS_ENDPOINT, {
+      responseType: 'text',
+      transformResponse: (value) => value,
+    });
+
+    if (response.status === 204) {
+      return [];
+    }
+
+    const unwrapped = unwrapSkillList(parseResponseData(response.data));
     return unwrapped.map(normalizeSkill);
   } catch (error) {
-    console.error('[getSkills] Error en GET:', error);
     throw formatError(error);
   }
 }
@@ -186,14 +214,11 @@ export async function getSkills(): Promise<Skill[]> {
 export async function createSkill(payload: SkillPayload): Promise<Skill> {
   try {
     const apiPayload = toApiPayload(payload);
-    console.log('[createSkill] Enviando POST con payload:', apiPayload);
     const response = await api.post(SKILLS_ENDPOINT, apiPayload, {
       timeout: SKILL_MUTATION_TIMEOUT_MS,
     });
-    console.log('[createSkill] Respuesta recibida:', response.data);
     return normalizeSkill(unwrapSkill(response.data));
   } catch (error) {
-    console.error('[createSkill] Error en POST:', error);
     throw formatError(error);
   }
 }
@@ -211,7 +236,9 @@ export async function updateSkill(id: string, payload: SkillPayload): Promise<Sk
 
 export async function removeSkill(id: string): Promise<void> {
   try {
-    await api.delete(`${SKILLS_ENDPOINT}/${id}`);
+    await api.delete(`${SKILLS_ENDPOINT}/${id}`, {
+      timeout: SKILL_MUTATION_TIMEOUT_MS,
+    });
   } catch (error) {
     throw formatError(error);
   }
