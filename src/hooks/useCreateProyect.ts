@@ -6,7 +6,8 @@ export interface Project {
   descripcion: string;
   tecnologias: string[];
   rol: string;
-  fecha: string;
+  fechaInicio: string;
+  fechaFin: string;
   github?: string;
   demo?: string;
   image?: string;
@@ -52,22 +53,45 @@ export const useCreateProyect = () => {
         error = "El rol no puede exceder 50 caracteres.";
         }
     }
-    if (name === "fecha") {
-        if (value) {
-            const selectedDate = new Date(value);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+    if (name === "fechaInicio" || name === "fechaFin") {
+      const selectedDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-            if (selectedDate > today) {
-            error = "La fecha no puede ser mayor a la fecha actual.";
-            }
+      if (selectedDate > today) {
+        error = "La fecha no puede ser mayor a la fecha actual.";
+      }
+
+      // Validación cruzada
+      const form = e.target.form;
+      const fechaInicio = form?.fechaInicio?.value;
+      const fechaFin = form?.fechaFin?.value;
+
+      if (fechaInicio && fechaFin) {
+        const inicio = new Date(fechaInicio);
+        const fin = new Date(fechaFin);
+
+        if (inicio >= fin) {
+          error = "La fecha de inicio debe ser menor que la fecha final.";
         }
+      }
     }
-    setErrors((prev: any) => ({
-        ...prev,
-        [name]: error
-    }));
-    };
+    setErrors((prev: any) => {
+      const updated = { ...prev };
+
+      if (name === "fechaInicio" || name === "fechaFin") {
+        delete updated.fechaInicio;
+        delete updated.fechaFin;
+
+        if (error) updated.fechaError = error;
+        else delete updated.fechaError;
+      } else {
+        updated[name] = error;
+      }
+
+    return updated;
+    });
+  };
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -76,7 +100,8 @@ export const useCreateProyect = () => {
     const descripcion = (formData.get('descripcion') as string) || "";
     const tecnologiasRaw = (formData.get('tecnologias') as string) || "";
     const rol = (formData.get('rol') as string) || "";
-    const fecha = formData.get('fecha') as string;
+    const fechaInicio = formData.get('fechaInicio') as string;
+    const fechaFin = formData.get('fechaFin') as string;
     const github = (formData.get('github') as string) || "";
     const demo = (formData.get('demo') as string) || "";
     const file = formData.get('image') as File;
@@ -103,18 +128,26 @@ export const useCreateProyect = () => {
         }
     }
     // --- VALIDACIÓN: FECHA ---
-    if (!fecha) {
-      newErrors.fecha = "El campo Fecha de realización es obligatorio.";
-    } else {
-      const selectedDate = new Date(fecha);
+    if (!fechaInicio) {
+      newErrors.fechaInicio = "La fecha de inicio es obligatoria.";
+    }
+
+    if (!fechaFin) {
+      newErrors.fechaFin = "La fecha final es obligatoria.";
+    }
+
+    if (fechaInicio && fechaFin) {
+      const inicio = new Date(fechaInicio);
+      const fin = new Date(fechaFin);
       const today = new Date();
-      // Eliminar horas para comparar solo fechas
       today.setHours(0, 0, 0, 0);
 
-      if (isNaN(selectedDate.getTime())) {
-        newErrors.fecha = "La fecha debe tener un formato válido (dd/mm/aaaa).";
-      } else if (selectedDate > today) {
-        newErrors.fecha = "La fecha no puede ser mayor a la fecha actual.";
+      if (inicio > today || fin > today) {
+        newErrors.fechaInicio = "Las fechas no pueden ser futuras.";
+      }
+
+      if (inicio >= fin) {
+        newErrors.fechaError = "La fecha de inicio debe ser menor que la fecha final.";
       }
     }
 
@@ -154,7 +187,8 @@ export const useCreateProyect = () => {
     // Lógica de guardado...
     const tecnologias = tecnologiasRaw.split(',').map(t => t.trim());
     const newProject: Project = {
-      nombre, descripcion, tecnologias, rol, fecha, github, demo,
+      nombre, descripcion, tecnologias, rol, fechaInicio,
+      fechaFin, github, demo,
       image: file && file.size > 0 ? URL.createObjectURL(file) : (editingIndex !== null ? projects[editingIndex].image : undefined)
     };
 

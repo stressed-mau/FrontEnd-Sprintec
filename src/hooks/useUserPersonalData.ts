@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { getAuthSession } from "@/services/auth/auth-storage";
 import { allCountries } from 'country-telephone-data';
+import { useEmailValidation } from "@/hooks/useEmailValidation";
+import { api } from "@/services/api";
 type FormErrors = {
   fullName?: string;
   occupation?: string;
@@ -65,6 +67,7 @@ export const useUserPersonalData = () => {
   const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(form.email);
   const validateField = (id: string, value: string) => {
   switch (id) {
     case "fullName":
@@ -82,12 +85,27 @@ export const useUserPersonalData = () => {
     case "location":
       return value.length >= 100 ? "La ubicación no puede exceder los 100 caracteres." : "";
 
-    case "email":
-      if (!value.trim()) return "El correo electrónico es obligatorio.";
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Formato de correo inválido.";
-      if (value.length >= 60) return "El correo no puede exceder los 60 caracteres.";
-      return "";
-      case "phone": {
+    case "email": {
+      const cleanValue = value.trim();
+
+      if (!cleanValue) return "El correo electrónico es obligatorio.";
+
+      if (cleanValue.length >= 60) {
+        return "El correo no puede exceder los 60 caracteres.";
+      }
+
+      // Validación básica (rápida)
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanValue)) {
+        // Aquí usamos mailcheck para sugerencia aunque sea inválido
+        validateEmail(cleanValue);
+        return "Formato de correo inválido.";
+      }
+      // Validación completa (usa validator + mailcheck)
+      const result = validateEmail(cleanValue);
+
+      return result.error;
+    }
+    case "phone": {
       const cleanValue = value.trim();
 
       if (!cleanValue) {
@@ -121,20 +139,11 @@ export const useUserPersonalData = () => {
         return;
       }
 
-      const res = await fetch(
-        `http://localhost:8000/api/user_information/${session.user.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        }
-      );
+      const res = await api.get(`/user_information/${session.user.id}`);
+      const response = res.data;
 
-      const response = await res.json();
-
-      console.log("DATA DEL BACKEND:", response);
-
-      if (!res.ok || !response.success) {
+      // solo valida esto si tu backend usa success
+      if (!response.success) {
         console.error("Error en la respuesta del backend");
         return;
       }
@@ -211,16 +220,16 @@ const handleChange = (e: any) => {
     }));
   }
 
-  // FORM UPDATE
+  const newValue = id === "email" ? sanitizeEmailInput(value) : value;
   setForm(prev => ({
     ...prev,
-    [id]: value
+    [id]: newValue
   }));
 
   // VALIDACIÓN
   setErrors((prev: any) => ({
     ...prev,
-    [id]: validateField(id, value)
+    [id]: validateField(id, newValue)
   }));
 };
 
@@ -232,12 +241,14 @@ const handleChange = (e: any) => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     console.log("SUBMIT EJECUTADO");
+
     const newErrors: any = {};
 
     Object.keys(form).forEach((key) => {
       const error = validateField(key, (form as any)[key]);
       if (error) newErrors[key] = error;
     });
+
     const phoneError = validateField("phone", phoneNumber);
     if (phoneError) newErrors.phone = phoneError;
 
@@ -255,8 +266,9 @@ const handleChange = (e: any) => {
         setErrors({ server: "Sesión expirada. Inicia sesión nuevamente." });
         return;
       }
+
       const formData = new FormData();
-      formData.append("_method", "PUT");
+      formData.append("_method", "PUT"); // ← déjalo si usas Laravel
       formData.append("fullname", form.fullName);
       formData.append("occupation", form.occupation);
       formData.append("biography", form.bio);
@@ -267,32 +279,28 @@ const handleChange = (e: any) => {
       if (fileInputRef.current?.files?.[0]) {
         formData.append("image_url", fileInputRef.current.files[0]);
       }
-      //Conexión con backend
-      const response = await fetch(`http://localhost:8000/api/user_information/${session.user.id}`.replace(/\$/, ""), {
-        method: "POST",
-        headers: {
-        Authorization: `Bearer ${session.accessToken}`, 
-        "Accept": "application/json",
-        },
-        body: formData
-      });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        // Manejo de errores del backend
-        if (result.errors?.public_email) {
-          setErrors({ email: result.errors.public_email[0] });
-        } else {
-          setErrors({ server: "Error al guardar datos" });
+      
+      await api.post(
+        `/user_information/${session.user.id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
         }
-        return;
-      }
+      );
 
       setSuccess("Información guardada correctamente ");
 
-    } catch (error) {
-      setErrors({ server: "Error de conexión con el servidor" });
+    } catch (error: any) {
+      if (error.response?.data?.errors?.public_email) {
+        setErrors({ email: error.response.data.errors.public_email[0] });
+      } else {
+        setErrors({
+          server: error.response?.data?.message || "Error al guardar datos"
+        });
+      }
     }
   };
 
@@ -377,6 +385,21 @@ const handleChange = (e: any) => {
     removeImage,
     loading,
     charLimitWarning,
-    setCharLimitWarning
+    setCharLimitWarning,
+    emailSuggestion: suggestion,
+    applyEmailSuggestion: (email: string) => {
+      const sanitized = sanitizeEmailInput(email);
+      const { error } = validateEmail(sanitized);
+
+      setForm(prev => ({
+        ...prev,
+        email: sanitized
+      }));
+
+      setErrors(prev => ({
+        ...prev,
+        email: error
+      }));
+    }
   };
 };

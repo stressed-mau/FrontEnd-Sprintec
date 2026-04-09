@@ -12,6 +12,7 @@ const CreateProyect = () => {
     editingIndex,
     errors,
     success,
+    setSuccess, 
     preview,
     setPreview,
     handleDelete,
@@ -115,11 +116,46 @@ const CreateProyect = () => {
                 )}
               </div>
               <div>
-                  <label className="block text-sm font-normal text-[#003A6C] mb-1">Fecha de realización</label>
-                  <input id="fecha" name="fecha" onChange={handleChange} defaultValue={editingIndex !== null ? projects[editingIndex].fecha : ""} type="date" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                  {errors.fecha && (
-                    <p id="error-fecha" className="text-red-500 text-xs mt-1">{errors.fecha}</p>
-                  )}
+                <div className="flex gap-3">
+                  
+                  {/* FECHA INICIO */}
+                  <div className="w-1/2">
+                    <label className="block text-sm font-normal text-[#003A6C] mb-1">
+                      Fecha de inicio
+                    </label>
+                    <input
+                      id="fechaInicio"
+                      name="fechaInicio"
+                      type="date"
+                      max={new Date().toISOString().split("T")[0]}
+                      onChange={handleChange}
+                      className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                    
+                  </div>
+
+                  {/* FECHA FIN */}
+                  <div className="w-1/2">
+                    <label className="block text-sm font-normal text-[#003A6C] mb-1">
+                      Fecha de finalización
+                    </label>
+                    <input
+                      id="fechaFin"
+                      name="fechaFin"
+                      type="date"
+                      max={new Date().toISOString().split("T")[0]}
+                      onChange={handleChange}
+                      className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  
+                  </div>
+
+                </div>
+                {errors.fechaError && (
+                  <p className="text-red-500 text-xs mt-1 text-left w-full">
+                    {errors.fechaError}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Enlace a GitHub</label>
@@ -220,6 +256,28 @@ const CreateProyect = () => {
           </div>
         </div>
       )}
+      {success && ( 
+      <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
+        <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl p-8 text-center">
+          
+          <h3 className="text-[#003A6C] text-xl font-bold mb-2">
+            El proyecto ha sido registrado exitosamente.
+          </h3>
+
+          <p className="text-gray-600 text-sm">
+            {success}
+          </p>
+
+          <button 
+            onClick={() => setSuccess("")}
+            className="mt-4 px-4 py-2 bg-[#003A6C] text-white rounded-lg"
+          >
+            Cerrar
+          </button>
+
+        </div>
+      </div>
+    )}
     </div>
   );
 };

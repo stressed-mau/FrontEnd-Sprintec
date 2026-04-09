@@ -3,7 +3,6 @@ import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { allCountries } from 'country-telephone-data';
 import { useUserPersonalData } from '../hooks/useUserPersonalData';
-// Importamos Plus y X para el modal y los botones
 import { Edit3, Mail, Phone, MapPin, Briefcase, User, X, Upload } from 'lucide-react';
 
 const UserPersonalData = () => {
@@ -28,7 +27,8 @@ const UserPersonalData = () => {
     removeImage,
     loading,
     charLimitWarning,
-    setCharLimitWarning
+    emailSuggestion,
+    applyEmailSuggestion,
   } = useUserPersonalData();
 
   // Función para cerrar y limpiar cambios no guardados
@@ -245,15 +245,25 @@ const UserPersonalData = () => {
                             <div>
                               <label className="block text-sm font-medium text-[#003A6C] mb-1">Correo público</label>
                               <input id="email" value={form.email} onChange={handleChange} type="email" maxLength={60} placeholder="Ej: juan.perez@example.com" className="w-full px-3 py-2 rounded-lg border border-[#4982AD] bg-white text-sm outline-none text-[#003A6C] placeholder:text-[#4982AD]" />
+                              
                               {errors.email ? (
                                 <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-                              ) : (
-                                charLimitWarning.email && (
-                                  <p className="text-red-500 text-xs mt-1">
-                                    {charLimitWarning.email}
-                                  </p>
-                                )
-                              )}
+                              ) : charLimitWarning.email ? (
+                                <p className="text-yellow-600 text-xs mt-1">
+                                  {charLimitWarning.email}
+                                </p>
+                              ) : emailSuggestion ? (
+                                <p className="text-amber-700 text-xs mt-1">
+                                  ¿Quisiste decir{" "}
+                                  <span
+                                    className="underline cursor-pointer font-medium"
+                                    onClick={() => applyEmailSuggestion(emailSuggestion.full)}
+                                  >
+                                    {emailSuggestion.full}
+                                  </span>
+                                  ?
+                                </p>
+                              ) : null}
                             </div>
                           </div>
 
