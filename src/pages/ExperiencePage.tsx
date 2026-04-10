@@ -16,6 +16,10 @@ const ExperiencePage = () => {
     isEditing,
     feedbackMessage,
     feedbackType,
+    pageError,
+    isLoading,
+    isSaving,
+    canRemoveImage,
     laboralExperiences,
     academicExperiences,
     fileInputRef,
@@ -53,6 +57,7 @@ const ExperiencePage = () => {
                 id="boton-agregar-experiencia"
                 type="button"
                 onClick={openCreateModal}
+                disabled={isLoading}
                 className="h-11 bg-[#003A6C] px-5 text-white hover:bg-[#1a4f7a]"
               >
                 <Plus className="mr-2 size-4" />
@@ -73,24 +78,38 @@ const ExperiencePage = () => {
               </div>
             ) : null}
 
-            <div className="space-y-8">
-              <ExperienceSection
-                title="Experiencia laboral"
-                emptyMessage="No hay experiencia laboral registrada."
-                icon={<Briefcase className="size-5" />}
-                items={laboralExperiences}
-                onEdit={openEditModal}
-                onDelete={handleDelete}
-              />
+            {pageError ? (
+              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {pageError}
+              </div>
+            ) : null}
 
-              <ExperienceSection
-                title="Experiencia académica"
-                emptyMessage="No hay experiencia académica registrada."
-                icon={<GraduationCap className="size-5" />}
-                items={academicExperiences}
-                onEdit={openEditModal}
-                onDelete={handleDelete}
-              />
+            <div className="space-y-8">
+              {isLoading ? (
+                <div className="rounded-3xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
+                  Cargando experiencias...
+                </div>
+              ) : (
+                <>
+                  <ExperienceSection
+                    title="Experiencia laboral"
+                    emptyMessage="No hay experiencia laboral registrada."
+                    icon={<Briefcase className="size-5" />}
+                    items={laboralExperiences}
+                    onEdit={openEditModal}
+                    onDelete={handleDelete}
+                  />
+
+                  <ExperienceSection
+                    title="Experiencia académica"
+                    emptyMessage="No hay experiencia académica registrada."
+                    icon={<GraduationCap className="size-5" />}
+                    items={academicExperiences}
+                    onEdit={openEditModal}
+                    onDelete={handleDelete}
+                  />
+                </>
+              )}
             </div>
           </div>
         </main>
@@ -103,6 +122,8 @@ const ExperiencePage = () => {
           formData={formData}
           errors={errors}
           isEditing={isEditing}
+          isSaving={isSaving}
+          canRemoveImage={canRemoveImage}
           fileInputRef={fileInputRef}
           onClose={closeModal}
           onFieldChange={updateField}

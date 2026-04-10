@@ -10,6 +10,8 @@ type ExperienceFormModalProps = {
   formData: ExperienceFormValues
   errors: ExperienceFormErrors
   isEditing: boolean
+  isSaving: boolean
+  canRemoveImage: boolean
   fileInputRef: React.RefObject<HTMLInputElement | null>
   onClose: () => void
   onFieldChange: (field: keyof ExperienceFormValues, value: string | boolean) => void
@@ -23,6 +25,8 @@ export function ExperienceFormModal({
   formData,
   errors,
   isEditing,
+  isSaving,
+  canRemoveImage,
   fileInputRef,
   onClose,
   onFieldChange,
@@ -72,6 +76,7 @@ export function ExperienceFormModal({
             <select
               id="experience-type"
               value={formData.type}
+              disabled={isSaving}
               onChange={(event) => onFieldChange("type", event.target.value)}
               className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8]"
               aria-labelledby="experience-type-label"
@@ -89,6 +94,7 @@ export function ExperienceFormModal({
               id="experience-company"
               maxLength={100}
               value={formData.company}
+              disabled={isSaving}
               onBlur={() => onBlur("company")}
               onChange={(event) => onFieldChange("company", event.target.value)}
               className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -108,6 +114,7 @@ export function ExperienceFormModal({
                 type="email"
                 maxLength={60}
                 value={formData.email}
+                disabled={isSaving}
                 onBlur={() => onBlur("email")}
                 onChange={(event) => onFieldChange("email", event.target.value)}
                 placeholder="Ej: contacto@empresa.com"
@@ -127,6 +134,7 @@ export function ExperienceFormModal({
               id="experience-position"
               maxLength={80}
               value={formData.position}
+              disabled={isSaving}
               onBlur={() => onBlur("position")}
               onChange={(event) => onFieldChange("position", event.target.value)}
               className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -146,6 +154,7 @@ export function ExperienceFormModal({
               rows={3}
               maxLength={300}
               value={formData.description}
+              disabled={isSaving}
               onBlur={() => onBlur("description")}
               onChange={(event) => onFieldChange("description", event.target.value)}
               className="resize-none border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -167,6 +176,7 @@ export function ExperienceFormModal({
                 id="experience-start-date"
                 type="date"
                 value={formData.startDate}
+                disabled={isSaving}
                 onBlur={() => onBlur("startDate")}
                 onChange={(event) => onFieldChange("startDate", event.target.value)}
                 className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -185,7 +195,7 @@ export function ExperienceFormModal({
                 id="experience-end-date"
                 type="date"
                 value={formData.endDate}
-                disabled={formData.current}
+                disabled={formData.current || isSaving}
                 onBlur={() => onBlur("endDate")}
                 onChange={(event) => onFieldChange("endDate", event.target.value)}
                 className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -202,6 +212,7 @@ export function ExperienceFormModal({
               id="experience-current"
               type="checkbox"
               checked={formData.current}
+              disabled={isSaving}
               onChange={(event) => onFieldChange("current", event.target.checked)}
               className="size-4 rounded border-[#A5D7E8] text-[#003A6C] focus:ring-[#A5D7E8]"
             />
@@ -220,6 +231,7 @@ export function ExperienceFormModal({
               ref={fileInputRef}
               type="file"
               accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              disabled={isSaving}
               onChange={onImageChange}
               className="hidden"
             />
@@ -229,6 +241,7 @@ export function ExperienceFormModal({
                 id="boton-subir-logo"
                 type="button"
                 variant="outline"
+                disabled={isSaving}
                 onClick={() => fileInputRef.current?.click()}
                 className="h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
               >
@@ -236,11 +249,12 @@ export function ExperienceFormModal({
                 Subir imagen
               </Button>
 
-              {formData.image ? (
+              {canRemoveImage ? (
                 <Button
                   id="boton-eliminar-logo"
                   type="button"
                   variant="outline"
+                  disabled={isSaving}
                   onClick={onRemoveImage}
                   className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
                 >
@@ -261,13 +275,14 @@ export function ExperienceFormModal({
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button id="boton-guardar-experiencia" type="submit" className="h-11 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
-              Guardar
+            <Button id="boton-guardar-experiencia" type="submit" disabled={isSaving} className="h-11 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
+              {isSaving ? "Guardando..." : "Guardar"}
             </Button>
             <Button
               id="boton-cancelar-experiencia"
               type="button"
               variant="outline"
+              disabled={isSaving}
               onClick={onClose}
               className="h-11 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
             >

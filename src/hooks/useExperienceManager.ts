@@ -1,22 +1,17 @@
-import { useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 
 import { useEmailValidation } from "@/hooks/useEmailValidation"
+import {
+  createExperience,
+  getExperiences,
+  removeExperience,
+  updateExperience,
+  type ExperienceItem,
+  type ExperiencePayload,
+} from "@/services/experienceService"
 
-export type ExperienceType = "laboral" | "academica"
-
-export type ExperienceItem = {
-  id: number
-  type: ExperienceType
-  company: string
-  email: string
-  position: string
-  description: string
-  startDate: string
-  endDate: string
-  current: boolean
-  image: string
-}
+export type { ExperienceItem, ExperienceType } from "@/services/experienceService"
 
 export type ExperienceFormValues = Omit<ExperienceItem, "id">
 
@@ -214,16 +209,21 @@ function validateExperienceField(
 
 export function useExperienceManager() {
   const { sanitizeEmailInput, validateEmail } = useEmailValidation()
+
   const [experiences, setExperiences] = useState<ExperienceItem[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingExperience, setEditingExperience] = useState<ExperienceItem | null>(null)
   const [formData, setFormData] = useState<ExperienceFormValues>(EMPTY_FORM)
   const [errors, setErrors] = useState<ExperienceFormErrors>({})
   const [feedbackMessage, setFeedbackMessage] = useState("")
   const [feedbackType, setFeedbackType] = useState<"success" | "error" | "">("")
+  const [pageError, setPageError] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-  const isEditing = useMemo(() => editingId !== null, [editingId])
+  const isEditing = useMemo(() => editingExperience !== null, [editingExperience])
   const laboralExperiences = useMemo(
     () => experiences.filter((experience) => experience.type === "laboral"),
     [experiences],
@@ -232,6 +232,29 @@ export function useExperienceManager() {
     () => experiences.filter((experience) => experience.type === "academica"),
     [experiences],
   )
+  const canRemoveImage = useMemo(
+    () => Boolean(selectedImageFile) || (!isEditing && Boolean(formData.image)),
+    [formData.image, isEditing, selectedImageFile],
+  )
+
+  const loadExperiences = useCallback(async () => {
+    setIsLoading(true)
+    setPageError("")
+
+    try {
+      const remoteExperiences = await getExperiences()
+      setExperiences(remoteExperiences)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudieron cargar las experiencias."
+      setPageError(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadExperiences()
+  }, [loadExperiences])
 
   function showFeedback(message: string, type: "success" | "error") {
     setFeedbackMessage(message)
@@ -244,7 +267,8 @@ export function useExperienceManager() {
   }
 
   function resetForm() {
-    setEditingId(null)
+    setEditingExperience(null)
+    setSelectedImageFile(null)
     setFormData(EMPTY_FORM)
     setErrors({})
 
@@ -266,7 +290,8 @@ export function useExperienceManager() {
 
   function openEditModal(experience: ExperienceItem) {
     clearFeedback()
-    setEditingId(experience.id)
+    setEditingExperience(experience)
+    setSelectedImageFile(null)
     setFormData({
       type: experience.type,
       company: experience.company,
@@ -279,6 +304,11 @@ export function useExperienceManager() {
       image: experience.image,
     })
     setErrors({})
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+
     setIsModalOpen(true)
   }
 
@@ -372,6 +402,8 @@ export function useExperienceManager() {
       return
     }
 
+    setSelectedImageFile(file)
+
     const reader = new FileReader()
     reader.onload = () => {
       setFormData((current) => ({
@@ -387,10 +419,11 @@ export function useExperienceManager() {
   }
 
   function removeImage() {
+    setSelectedImageFile(null)
     setFormData((current) => ({ ...current, image: "" }))
     setErrors((currentErrors) => ({
-        ...currentErrors,
-        image: "",
+      ...currentErrors,
+      image: "",
     }))
 
     if (fileInputRef.current) {
@@ -398,9 +431,14 @@ export function useExperienceManager() {
     }
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     clearFeedback()
+    setPageError("")
+
+    if (isSaving) {
+      return
+    }
 
     const nextErrors: ExperienceFormErrors = {
       company: validateExperienceField("company", formData),
@@ -417,8 +455,7 @@ export function useExperienceManager() {
       return
     }
 
-    const payload: ExperienceItem = {
-      id: editingId ?? Date.now(),
+    const payload: ExperiencePayload = {
       type: formData.type,
       company: formData.company.trim(),
       email: formData.email.trim(),
@@ -427,24 +464,49 @@ export function useExperienceManager() {
       startDate: formData.startDate.trim(),
       endDate: formData.current ? "" : formData.endDate.trim(),
       current: formData.current,
-      image: formData.image,
+      logoFile: selectedImageFile,
     }
 
-    if (isEditing) {
-      setExperiences((current) =>
-        current.map((experience) => (experience.id === editingId ? payload : experience)),
-      )
-    } else {
-      setExperiences((current) => [payload, ...current])
-    }
+    try {
+      setIsSaving(true)
 
-    showFeedback("Experiencia registrada correctamente.", "success")
-    closeModal()
+      if (editingExperience) {
+        await updateExperience(editingExperience.id, payload)
+        showFeedback("Experiencia actualizada correctamente.", "success")
+      } else {
+        await createExperience(payload)
+        showFeedback("Experiencia registrada correctamente.", "success")
+      }
+
+      await loadExperiences()
+      closeModal()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo guardar la experiencia."
+      showFeedback(message, "error")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  function handleDelete(id: number) {
+  async function handleDelete(id: string) {
     clearFeedback()
-    setExperiences((current) => current.filter((experience) => experience.id !== id))
+    setPageError("")
+
+    const targetExperience = experiences.find((experience) => experience.id === id)
+
+    if (!targetExperience) {
+      setPageError("No se encontró la experiencia seleccionada.")
+      return
+    }
+
+    try {
+      await removeExperience(id, targetExperience.type)
+      await loadExperiences()
+      showFeedback("Experiencia eliminada correctamente.", "success")
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo eliminar la experiencia."
+      setPageError(message)
+    }
   }
 
   return {
@@ -454,6 +516,10 @@ export function useExperienceManager() {
     isEditing,
     feedbackMessage,
     feedbackType,
+    pageError,
+    isLoading,
+    isSaving,
+    canRemoveImage,
     laboralExperiences,
     academicExperiences,
     fileInputRef,
@@ -466,5 +532,6 @@ export function useExperienceManager() {
     removeImage,
     handleSubmit,
     handleDelete,
+    reloadExperiences: loadExperiences,
   }
 }

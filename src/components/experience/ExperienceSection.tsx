@@ -11,7 +11,7 @@ type ExperienceSectionProps = {
   icon: ReactNode
   items: ExperienceItem[]
   onEdit: (experience: ExperienceItem) => void
-  onDelete: (id: number) => void
+  onDelete: (id: string) => void
 }
 
 export function ExperienceSection({
