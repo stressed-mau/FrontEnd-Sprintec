@@ -37,6 +37,7 @@ export function ExperienceFormModal({
 }: ExperienceFormModalProps) {
   const companyLabel = formData.type === "laboral" ? "Empresa" : "Institución"
   const positionLabel = formData.type === "laboral" ? "Cargo" : "Título"
+  const isLaboralExperience = formData.type === "laboral"
 
   return (
     <div
@@ -105,10 +106,14 @@ export function ExperienceFormModal({
             {errors.company ? <p id="experience-company-error" className="text-sm text-red-600">{errors.company}</p> : null}
           </div>
 
-          <div className="space-y-2">
+          {isLaboralExperience ? (
+            <div className="space-y-2 rounded-2xl border border-[#A5D7E8] bg-white/60 p-4">
               <Label id="experience-email-label" htmlFor="experience-email" className="text-[#003A6C]">
-                Correo electrónico
+                Correo electrónico *
               </Label>
+              <p className="text-xs text-[#4B778D]">
+                Completa este correo para la experiencia laboral.
+              </p>
               <Input
                 id="experience-email"
                 type="email"
@@ -124,7 +129,8 @@ export function ExperienceFormModal({
                 aria-describedby={errors.email ? "experience-email-error" : undefined}
               />
               {errors.email ? <p id="experience-email-error" className="text-sm text-red-600">{errors.email}</p> : null}
-          </div>
+            </div>
+          ) : null}
 
           <div className="space-y-2">
             <Label id="experience-position-label" htmlFor="experience-position" className="text-[#003A6C]">
@@ -246,7 +252,7 @@ export function ExperienceFormModal({
                 className="h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
               >
                 <ImagePlus className="mr-2 size-4" />
-                Subir imagen
+                {formData.image ? "Cambiar imagen" : "Subir imagen"}
               </Button>
 
               {canRemoveImage ? (
@@ -265,8 +271,11 @@ export function ExperienceFormModal({
             </div>
 
             {formData.image ? (
-              <div className="mt-2">
+              <div className="mt-2 space-y-2">
                 <img src={formData.image} alt="Vista previa" className="size-24 rounded-lg object-cover shadow-sm" />
+                <p className="text-xs text-[#4B778D]">
+                  Puedes mantener la imagen actual, subir otra o eliminarla.
+                </p>
               </div>
             ) : null}
 

@@ -29,6 +29,7 @@ export type ExperiencePayload = {
   endDate: string
   current: boolean
   logoFile?: File | null
+  removeLogo?: boolean
 }
 
 type ExperienceDto = {
@@ -231,6 +232,28 @@ function asBoolean(value: unknown): boolean | null {
   return null
 }
 
+function normalizeDateValue(value: unknown): string {
+  const rawValue = asString(value)
+
+  if (!rawValue) {
+    return ""
+  }
+
+  const isoDateMatch = rawValue.match(/^(\d{4}-\d{2}-\d{2})/)
+
+  if (isoDateMatch) {
+    return isoDateMatch[1]
+  }
+
+  const slashDateMatch = rawValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+
+  if (slashDateMatch) {
+    return `${slashDateMatch[3]}-${slashDateMatch[2]}-${slashDateMatch[1]}`
+  }
+
+  return rawValue
+}
+
 function toAbsoluteAssetUrl(value: unknown): string {
   const rawValue = asString(value)
 
@@ -253,7 +276,7 @@ function toAbsoluteAssetUrl(value: unknown): string {
 }
 
 function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: ExperienceType): ExperienceItem {
-  const endDate = asString(dto.end_date ?? dto.endDate ?? dto.fecha_fin)
+  const endDate = normalizeDateValue(dto.end_date ?? dto.endDate ?? dto.fecha_fin)
   const explicitCurrent = asBoolean(dto.current ?? dto.is_current)
 
   return {
@@ -263,7 +286,7 @@ function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: Exper
     email: asString(dto.company_email ?? dto.correo_empresa ?? dto.email),
     position: asString(dto.title ?? dto.titulo ?? dto.position ?? dto.cargo),
     description: asString(dto.description ?? dto.descripcion),
-    startDate: asString(dto.start_date ?? dto.startDate ?? dto.fecha_inicio),
+    startDate: normalizeDateValue(dto.start_date ?? dto.startDate ?? dto.fecha_inicio),
     endDate,
     current: explicitCurrent ?? !endDate,
     image: toAbsoluteAssetUrl(dto.logo_url ?? dto.logo_path ?? dto.logo ?? dto.image_url ?? dto.image),
@@ -300,6 +323,10 @@ function buildFormData(payload: ExperiencePayload, options?: { methodOverride?: 
 
   if (payload.logoFile) {
     formData.append("logo", payload.logoFile)
+  }
+
+  if (payload.removeLogo) {
+    formData.append("remove_logo", "1")
   }
 
   return formData
