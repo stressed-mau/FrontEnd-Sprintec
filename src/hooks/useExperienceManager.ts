@@ -146,6 +146,22 @@ function hasAllowedImageFormat(file: File) {
   return ALLOWED_IMAGE_TYPES.includes(file.type.toLowerCase())
 }
 
+function validateImageFile(file: File | null): string {
+  if (!file) {
+    return ""
+  }
+
+  if (!hasAllowedImageFormat(file)) {
+    return "La imagen solo permite archivos JPG, JPEG o PNG."
+  }
+
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+    return "La imagen permite archivos de hasta 2 MB."
+  }
+
+  return ""
+}
+
 function validateExperienceField(
   field: keyof ExperienceFormValues,
   values: ExperienceFormValues,
@@ -427,23 +443,14 @@ export function useExperienceManager() {
       return
     }
 
-    if (!hasAllowedImageFormat(file)) {
+    const imageError = validateImageFile(file)
+
+    if (imageError) {
+      setSelectedImageFile(null)
+      setFormData((current) => ({ ...current, image: editingExperience?.image ?? "" }))
       setErrors((currentErrors) => ({
         ...currentErrors,
-        image: "La imagen solo permite archivos JPG, JPEG o PNG.",
-      }))
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
-
-      return
-    }
-
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      setErrors((currentErrors) => ({
-        ...currentErrors,
-        image: "La imagen permite archivos de hasta 2 MB.",
+        image: imageError,
       }))
 
       if (fileInputRef.current) {
@@ -500,6 +507,7 @@ export function useExperienceManager() {
       description: validateExperienceField("description", formData),
       startDate: validateExperienceField("startDate", formData),
       endDate: validateExperienceField("endDate", formData),
+      image: validateImageFile(selectedImageFile),
     }
 
     setErrors(nextErrors)
