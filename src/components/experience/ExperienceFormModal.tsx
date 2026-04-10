@@ -10,6 +10,8 @@ type ExperienceFormModalProps = {
   formData: ExperienceFormValues
   errors: ExperienceFormErrors
   isEditing: boolean
+  isSaving: boolean
+  canRemoveImage: boolean
   fileInputRef: React.RefObject<HTMLInputElement | null>
   onClose: () => void
   onFieldChange: (field: keyof ExperienceFormValues, value: string | boolean) => void
@@ -23,6 +25,8 @@ export function ExperienceFormModal({
   formData,
   errors,
   isEditing,
+  isSaving,
+  canRemoveImage,
   fileInputRef,
   onClose,
   onFieldChange,
@@ -33,6 +37,8 @@ export function ExperienceFormModal({
 }: ExperienceFormModalProps) {
   const companyLabel = formData.type === "laboral" ? "Empresa" : "Institución"
   const positionLabel = formData.type === "laboral" ? "Cargo" : "Título"
+  const isLaboralExperience = formData.type === "laboral"
+  const isCurrentActive = formData.current
 
   return (
     <div
@@ -72,6 +78,7 @@ export function ExperienceFormModal({
             <select
               id="experience-type"
               value={formData.type}
+              disabled={isSaving}
               onChange={(event) => onFieldChange("type", event.target.value)}
               className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8]"
               aria-labelledby="experience-type-label"
@@ -89,6 +96,7 @@ export function ExperienceFormModal({
               id="experience-company"
               maxLength={100}
               value={formData.company}
+              disabled={isSaving}
               onBlur={() => onBlur("company")}
               onChange={(event) => onFieldChange("company", event.target.value)}
               className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -99,6 +107,32 @@ export function ExperienceFormModal({
             {errors.company ? <p id="experience-company-error" className="text-sm text-red-600">{errors.company}</p> : null}
           </div>
 
+          {isLaboralExperience ? (
+            <div className="space-y-2 rounded-2xl border border-[#A5D7E8] bg-white/60 p-4">
+              <Label id="experience-email-label" htmlFor="experience-email" className="text-[#003A6C]">
+                Correo electrónico *
+              </Label>
+              <p className="text-xs text-[#4B778D]">
+                Completa este correo para la experiencia laboral.
+              </p>
+              <Input
+                id="experience-email"
+                type="email"
+                maxLength={60}
+                value={formData.email}
+                disabled={isSaving}
+                onBlur={() => onBlur("email")}
+                onChange={(event) => onFieldChange("email", event.target.value)}
+                placeholder="Ej: contacto@empresa.com"
+                className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+                aria-invalid={Boolean(errors.email)}
+                aria-labelledby="experience-email-label"
+                aria-describedby={errors.email ? "experience-email-error" : undefined}
+              />
+              {errors.email ? <p id="experience-email-error" className="text-sm text-red-600">{errors.email}</p> : null}
+            </div>
+          ) : null}
+
           <div className="space-y-2">
             <Label id="experience-position-label" htmlFor="experience-position" className="text-[#003A6C]">
               {positionLabel} *
@@ -107,6 +141,7 @@ export function ExperienceFormModal({
               id="experience-position"
               maxLength={80}
               value={formData.position}
+              disabled={isSaving}
               onBlur={() => onBlur("position")}
               onChange={(event) => onFieldChange("position", event.target.value)}
               className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -126,6 +161,7 @@ export function ExperienceFormModal({
               rows={3}
               maxLength={300}
               value={formData.description}
+              disabled={isSaving}
               onBlur={() => onBlur("description")}
               onChange={(event) => onFieldChange("description", event.target.value)}
               className="resize-none border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -147,6 +183,7 @@ export function ExperienceFormModal({
                 id="experience-start-date"
                 type="date"
                 value={formData.startDate}
+                disabled={isSaving}
                 onBlur={() => onBlur("startDate")}
                 onChange={(event) => onFieldChange("startDate", event.target.value)}
                 className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -165,7 +202,7 @@ export function ExperienceFormModal({
                 id="experience-end-date"
                 type="date"
                 value={formData.endDate}
-                disabled={formData.current}
+                disabled={isCurrentActive || isSaving}
                 onBlur={() => onBlur("endDate")}
                 onChange={(event) => onFieldChange("endDate", event.target.value)}
                 className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -182,6 +219,7 @@ export function ExperienceFormModal({
               id="experience-current"
               type="checkbox"
               checked={formData.current}
+              disabled={isSaving}
               onChange={(event) => onFieldChange("current", event.target.checked)}
               className="size-4 rounded border-[#A5D7E8] text-[#003A6C] focus:ring-[#A5D7E8]"
             />
@@ -200,6 +238,7 @@ export function ExperienceFormModal({
               ref={fileInputRef}
               type="file"
               accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              disabled={isSaving}
               onChange={onImageChange}
               className="hidden"
             />
@@ -209,18 +248,20 @@ export function ExperienceFormModal({
                 id="boton-subir-logo"
                 type="button"
                 variant="outline"
+                disabled={isSaving}
                 onClick={() => fileInputRef.current?.click()}
                 className="h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
               >
                 <ImagePlus className="mr-2 size-4" />
-                Subir imagen
+                {formData.image ? "Cambiar imagen" : "Subir imagen"}
               </Button>
 
-              {formData.image ? (
+              {canRemoveImage ? (
                 <Button
                   id="boton-eliminar-logo"
                   type="button"
                   variant="outline"
+                  disabled={isSaving}
                   onClick={onRemoveImage}
                   className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
                 >
@@ -231,23 +272,27 @@ export function ExperienceFormModal({
             </div>
 
             {formData.image ? (
-              <div className="mt-2">
+              <div className="mt-2 space-y-2">
                 <img src={formData.image} alt="Vista previa" className="size-24 rounded-lg object-cover shadow-sm" />
+                <p className="text-xs text-[#4B778D]">
+                  Puedes mantener la imagen actual, subir otra o eliminarla.
+                </p>
               </div>
             ) : null}
 
             {errors.image ? <p className="text-sm text-red-600">{errors.image}</p> : null}
-            <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG y PNG. Tamaño máximo: 2 MB.</p>
+            <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG y PNG. Tamaño máximo: 2 MB.</p>
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button id="boton-guardar-experiencia" type="submit" className="h-11 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
-              Guardar
+            <Button id="boton-guardar-experiencia" type="submit" disabled={isSaving} className="h-11 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
+              {isSaving ? "Guardando..." : "Guardar"}
             </Button>
             <Button
               id="boton-cancelar-experiencia"
               type="button"
               variant="outline"
+              disabled={isSaving}
               onClick={onClose}
               className="h-11 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
             >

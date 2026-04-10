@@ -11,7 +11,7 @@ type ExperienceSectionProps = {
   icon: ReactNode
   items: ExperienceItem[]
   onEdit: (experience: ExperienceItem) => void
-  onDelete: (id: number) => void
+  onDelete: (id: string) => void
 }
 
 export function ExperienceSection({
@@ -63,6 +63,11 @@ export function ExperienceSection({
                         {experience.position}
                       </CardTitle>
                       <p className="mt-1 text-[#4B778D]">{experience.company}</p>
+                      {experience.email ? (
+                        <div className="mt-2 flex flex-col gap-1 text-sm text-[#6B7E8E]">
+                          {experience.email ? <p>{experience.email}</p> : null}
+                        </div>
+                      ) : null}
                       <p className="mt-1 text-sm text-[#6B7E8E]">
                         {formatExperienceDate(experience.startDate)} - {experience.current ? "Actual" : formatExperienceDate(experience.endDate)}
                       </p>
