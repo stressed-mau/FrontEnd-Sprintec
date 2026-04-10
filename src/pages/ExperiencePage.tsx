@@ -2,6 +2,7 @@
 
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
+import { Footer } from "@/components/Footer"
 import { ExperienceFormModal } from "@/components/experience/ExperienceFormModal"
 import { ExperienceSection } from "@/components/experience/ExperienceSection"
 import { Button } from "@/components/ui/button"
@@ -94,6 +95,8 @@ const ExperiencePage = () => {
           </div>
         </main>
       </div>
+
+      <Footer />
 
       {isModalOpen ? (
         <ExperienceFormModal

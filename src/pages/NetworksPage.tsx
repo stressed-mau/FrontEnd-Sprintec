@@ -13,6 +13,7 @@ import {
 
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
+import { Footer } from "@/components/Footer"
 import { NetworkFormModal } from "@/components/networks/NetworkFormModal"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -332,6 +333,8 @@ const NetworksPage = () => {
           </div>
         </main>
       </div>
+
+      <Footer />
 
       {isModalOpen ? (
         <NetworkFormModal

@@ -1,5 +1,7 @@
-﻿import { useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
+
+import { useEmailValidation } from "@/hooks/useEmailValidation"
 
 export type ExperienceType = "laboral" | "academica"
 
@@ -7,6 +9,9 @@ export type ExperienceItem = {
   id: number
   type: ExperienceType
   company: string
+  phoneCountryCode: string
+  phone: string
+  email: string
   position: string
   description: string
   startDate: string
@@ -22,6 +27,9 @@ export type ExperienceFormErrors = Partial<Record<keyof ExperienceFormValues, st
 const EMPTY_FORM: ExperienceFormValues = {
   type: "laboral",
   company: "",
+  phoneCountryCode: "591",
+  phone: "",
+  email: "",
   position: "",
   description: "",
   startDate: "",
@@ -118,6 +126,9 @@ function validateExperienceField(
   values: ExperienceFormValues,
 ): string {
   const company = values.company.trim()
+  const phoneCountryCode = values.phoneCountryCode.trim()
+  const phone = values.phone.trim()
+  const email = values.email.trim()
   const position = values.position.trim()
   const description = values.description.trim()
   const startDate = values.startDate.trim()
@@ -130,6 +141,40 @@ function validateExperienceField(
 
     if (company.length > 100) {
       return "El nombre de la empresa no puede exceder los 100 caracteres."
+    }
+  }
+
+  if (field === "phoneCountryCode") {
+    if (!phoneCountryCode) {
+      return "Selecciona un código de país."
+    }
+
+    if (!/^\d+$/.test(phoneCountryCode)) {
+      return "El código de país no es válido."
+    }
+  }
+
+  if (field === "phone") {
+    if (phone && !/^\d+$/.test(phone)) {
+      return "El número de teléfono solo puede contener números."
+    }
+
+    if (phone.length > 20) {
+      return "El número de teléfono no puede exceder los 20 caracteres."
+    }
+  }
+
+  if (field === "email") {
+    if (!email) {
+      return ""
+    }
+
+    if (email.length > 60) {
+      return "El correo electrónico no puede exceder los 60 caracteres."
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return "El correo electrónico debe tener un formato válido."
     }
   }
 
@@ -194,6 +239,7 @@ function validateExperienceField(
 }
 
 export function useExperienceManager() {
+  const { sanitizeEmailInput, validateEmail } = useEmailValidation()
   const [experiences, setExperiences] = useState<ExperienceItem[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -250,6 +296,9 @@ export function useExperienceManager() {
     setFormData({
       type: experience.type,
       company: experience.company,
+      phoneCountryCode: experience.phoneCountryCode,
+      phone: experience.phone,
+      email: experience.email,
       position: experience.position,
       description: experience.description,
       startDate: experience.startDate,
@@ -262,9 +311,16 @@ export function useExperienceManager() {
   }
 
   function updateField(field: keyof ExperienceFormValues, value: string | boolean) {
+    const normalizedValue =
+      field === "email" && typeof value === "string"
+        ? sanitizeEmailInput(value)
+        : field === "phone" && typeof value === "string"
+          ? value.replace(/\D+/g, "")
+          : value
+
     const nextValues: ExperienceFormValues = {
       ...formData,
-      [field]: value,
+      [field]: normalizedValue,
     } as ExperienceFormValues
 
     if (field === "current" && value === true) {
@@ -279,6 +335,10 @@ export function useExperienceManager() {
         endDate: validateExperienceField("endDate", nextValues),
       }))
       return
+    }
+
+    if (field === "email" && typeof normalizedValue === "string") {
+      validateEmail(normalizedValue)
     }
 
     if (errors[field]) {
@@ -376,6 +436,9 @@ export function useExperienceManager() {
 
     const nextErrors: ExperienceFormErrors = {
       company: validateExperienceField("company", formData),
+      phoneCountryCode: validateExperienceField("phoneCountryCode", formData),
+      phone: validateExperienceField("phone", formData),
+      email: validateExperienceField("email", formData),
       position: validateExperienceField("position", formData),
       description: validateExperienceField("description", formData),
       startDate: validateExperienceField("startDate", formData),
@@ -392,6 +455,9 @@ export function useExperienceManager() {
       id: editingId ?? Date.now(),
       type: formData.type,
       company: formData.company.trim(),
+      phoneCountryCode: formData.phoneCountryCode.trim(),
+      phone: formData.phone.trim(),
+      email: formData.email.trim(),
       position: formData.position.trim(),
       description: formData.description.trim(),
       startDate: formData.startDate.trim(),
