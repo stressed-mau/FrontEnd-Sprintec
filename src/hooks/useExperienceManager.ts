@@ -168,16 +168,8 @@ function validateExperienceField(
   }
 
   if (field === "email") {
-    if (values.type !== "laboral" && !email) {
-      return ""
-    }
-
     if (!email) {
-      if (values.type !== "laboral") {
-        return ""
-      }
-
-      return "El correo electrónico es obligatorio para una experiencia laboral."
+      return ""
     }
 
     if (email.length > 60) {
@@ -242,10 +234,6 @@ function validateExperienceField(
     }
   }
 
-  if (field === "image" && values.image.length > 0 && values.image.length > 10_000_000) {
-    return "La imagen seleccionada no es válida."
-  }
-
   return ""
 }
 
@@ -254,12 +242,12 @@ export function useExperienceManager() {
 
   const [experiences, setExperiences] = useState<ExperienceItem[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [editingExperience, setEditingExperience] = useState<ExperienceItem | null>(null)
   const [formData, setFormData] = useState<ExperienceFormValues>(EMPTY_FORM)
   const [errors, setErrors] = useState<ExperienceFormErrors>({})
   const [feedbackMessage, setFeedbackMessage] = useState("")
   const [feedbackType, setFeedbackType] = useState<"success" | "error" | "">("")
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
   const [pageError, setPageError] = useState("")
   const [isLoading, setIsLoading] = useState(true)
@@ -311,7 +299,7 @@ export function useExperienceManager() {
     setFeedbackType("")
   }
 
-  function openSuccessModal(message: string) {
+  function showSuccessModal(message: string) {
     setSuccessMessage(message)
     setIsSuccessModalOpen(true)
   }
@@ -390,13 +378,6 @@ export function useExperienceManager() {
 
     setFormData(nextValues)
 
-    if (field === "type") {
-      setErrors((currentErrors) => ({
-        ...currentErrors,
-        email: validateExperienceField("email", nextValues),
-      }))
-    }
-
     if (field === "current") {
       setErrors((currentErrors) => ({
         ...currentErrors,
@@ -409,10 +390,6 @@ export function useExperienceManager() {
       validateEmail(normalizedValue)
     }
 
-    if (field === "type") {
-      validateEmail(nextValues.email)
-    }
-
     if (errors[field]) {
       setErrors((currentErrors) => ({
         ...currentErrors,
@@ -420,7 +397,7 @@ export function useExperienceManager() {
       }))
     }
 
-    if ((field === "startDate" || field === "endDate") && errors.endDate) {
+    if ((field === "startDate" || field === "endDate" || field === "type") && errors.endDate) {
       setErrors((currentErrors) => ({
         ...currentErrors,
         endDate: validateExperienceField("endDate", nextValues),
@@ -550,11 +527,11 @@ export function useExperienceManager() {
       if (editingExperience) {
         await updateExperience(editingExperience.id, payload)
         closeModal()
-        openSuccessModal("Experiencia actualizada correctamente.")
+        showSuccessModal("Experiencia actualizada correctamente.")
       } else {
         await createExperience(payload)
         closeModal()
-        openSuccessModal("Experiencia registrada correctamente.")
+        showSuccessModal("Experiencia registrada correctamente.")
       }
 
       await loadExperiences()
