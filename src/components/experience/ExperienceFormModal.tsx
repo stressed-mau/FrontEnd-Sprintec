@@ -38,6 +38,10 @@ export function ExperienceFormModal({
   const companyLabel = formData.type === "laboral" ? "Empresa" : "Institución"
   const positionLabel = formData.type === "laboral" ? "Cargo" : "Título"
   const isLaboralExperience = formData.type === "laboral"
+  const emailLabel = isLaboralExperience ? "Correo electrónico *" : "Correo electrónico"
+  const emailHelperText = isLaboralExperience
+    ? "Completa este correo para la experiencia laboral."
+    : "Puedes registrar también un correo para la experiencia académica."
 
   return (
     <div
@@ -106,31 +110,29 @@ export function ExperienceFormModal({
             {errors.company ? <p id="experience-company-error" className="text-sm text-red-600">{errors.company}</p> : null}
           </div>
 
-          {isLaboralExperience ? (
-            <div className="space-y-2 rounded-2xl border border-[#A5D7E8] bg-white/60 p-4">
-              <Label id="experience-email-label" htmlFor="experience-email" className="text-[#003A6C]">
-                Correo electrónico *
-              </Label>
-              <p className="text-xs text-[#4B778D]">
-                Completa este correo para la experiencia laboral.
-              </p>
-              <Input
-                id="experience-email"
-                type="email"
-                maxLength={60}
-                value={formData.email}
-                disabled={isSaving}
-                onBlur={() => onBlur("email")}
-                onChange={(event) => onFieldChange("email", event.target.value)}
-                placeholder="Ej: contacto@empresa.com"
-                className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
-                aria-invalid={Boolean(errors.email)}
-                aria-labelledby="experience-email-label"
-                aria-describedby={errors.email ? "experience-email-error" : undefined}
-              />
-              {errors.email ? <p id="experience-email-error" className="text-sm text-red-600">{errors.email}</p> : null}
-            </div>
-          ) : null}
+          <div className="space-y-2 rounded-2xl border border-[#A5D7E8] bg-white/60 p-4">
+            <Label id="experience-email-label" htmlFor="experience-email" className="text-[#003A6C]">
+              {emailLabel}
+            </Label>
+            <p className="text-xs text-[#4B778D]">
+              {emailHelperText}
+            </p>
+            <Input
+              id="experience-email"
+              type="email"
+              maxLength={60}
+              value={formData.email}
+              disabled={isSaving}
+              onBlur={() => onBlur("email")}
+              onChange={(event) => onFieldChange("email", event.target.value)}
+              placeholder="Ej: contacto@empresa.com"
+              className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+              aria-invalid={Boolean(errors.email)}
+              aria-labelledby="experience-email-label"
+              aria-describedby={errors.email ? "experience-email-error" : undefined}
+            />
+            {errors.email ? <p id="experience-email-error" className="text-sm text-red-600">{errors.email}</p> : null}
+          </div>
 
           <div className="space-y-2">
             <Label id="experience-position-label" htmlFor="experience-position" className="text-[#003A6C]">
