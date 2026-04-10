@@ -36,18 +36,33 @@ type ExperienceDto = {
   id?: string | number
   experience_id?: string | number
   type?: string
+  category?: string
+  experience_type?: string
   name?: string
   nombre?: string
   company?: string
+  company_name?: string
   empresa?: string
+  organization?: string
   institution?: string
+  institution_name?: string
   institucion?: string
+  school?: string
+  university?: string
+  college?: string
   title?: string
+  degree?: string
+  role?: string
+  job_title?: string
   titulo?: string
   position?: string
   cargo?: string
+  puesto?: string
   description?: string | null
   descripcion?: string | null
+  summary?: string | null
+  details?: string | null
+  content?: string | null
   start_date?: string | null
   startDate?: string | null
   fecha_inicio?: string | null
@@ -188,7 +203,20 @@ function normalizeType(value: unknown): ExperienceType {
         .replace(/[\u0300-\u036f]/g, "")
     : ""
 
-  return normalizedValue === "academica" ? "academica" : "laboral"
+  if ([
+    "academica",
+    "academico",
+    "academic",
+    "education",
+    "educacion",
+    "formacion",
+    "study",
+    "estudio",
+  ].includes(normalizedValue)) {
+    return "academica"
+  }
+
+  return "laboral"
 }
 
 function asString(value: unknown): string {
@@ -278,14 +306,37 @@ function toAbsoluteAssetUrl(value: unknown): string {
 function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: ExperienceType): ExperienceItem {
   const endDate = normalizeDateValue(dto.end_date ?? dto.endDate ?? dto.fecha_fin)
   const explicitCurrent = asBoolean(dto.current ?? dto.is_current)
+  const normalizedType = typeHint ?? normalizeType(dto.type ?? dto.category ?? dto.experience_type)
 
   return {
     id: asId(dto.id ?? dto.experience_id, `experience-${index + 1}`),
-    type: typeHint ?? normalizeType(dto.type),
-    company: asString(dto.name ?? dto.nombre ?? dto.company ?? dto.empresa ?? dto.institution ?? dto.institucion),
+    type: normalizedType,
+    company: asString(
+      dto.name ??
+      dto.nombre ??
+      dto.company ??
+      dto.company_name ??
+      dto.empresa ??
+      dto.organization ??
+      dto.institution ??
+      dto.institution_name ??
+      dto.institucion ??
+      dto.school ??
+      dto.university ??
+      dto.college,
+    ),
     email: asString(dto.company_email ?? dto.correo_empresa ?? dto.email),
-    position: asString(dto.title ?? dto.titulo ?? dto.position ?? dto.cargo),
-    description: asString(dto.description ?? dto.descripcion),
+    position: asString(
+      dto.title ??
+      dto.degree ??
+      dto.role ??
+      dto.job_title ??
+      dto.titulo ??
+      dto.position ??
+      dto.cargo ??
+      dto.puesto,
+    ),
+    description: asString(dto.description ?? dto.descripcion ?? dto.summary ?? dto.details ?? dto.content),
     startDate: normalizeDateValue(dto.start_date ?? dto.startDate ?? dto.fecha_inicio),
     endDate,
     current: explicitCurrent ?? !endDate,
@@ -302,7 +353,11 @@ function buildFormData(payload: ExperiencePayload, options?: { methodOverride?: 
 
   formData.append("type", payload.type)
   formData.append("name", payload.company.trim())
+  formData.append("company", payload.company.trim())
+  formData.append(payload.type === "academica" ? "institution" : "company_name", payload.company.trim())
   formData.append("title", payload.position.trim())
+  formData.append("position", payload.position.trim())
+  formData.append(payload.type === "academica" ? "degree" : "job_title", payload.position.trim())
   formData.append("start_date", payload.startDate.trim())
 
   const description = payload.description.trim()
@@ -311,10 +366,12 @@ function buildFormData(payload: ExperiencePayload, options?: { methodOverride?: 
 
   if (description) {
     formData.append("description", description)
+    formData.append("summary", description)
   }
 
   if (email) {
     formData.append("company_email", email)
+    formData.append("email", email)
   }
 
   if (endDate) {
