@@ -353,11 +353,7 @@ function buildFormData(payload: ExperiencePayload, options?: { methodOverride?: 
 
   formData.append("type", payload.type)
   formData.append("name", payload.company.trim())
-  formData.append("company", payload.company.trim())
-  formData.append(payload.type === "academica" ? "institution" : "company_name", payload.company.trim())
   formData.append("title", payload.position.trim())
-  formData.append("position", payload.position.trim())
-  formData.append(payload.type === "academica" ? "degree" : "job_title", payload.position.trim())
   formData.append("start_date", payload.startDate.trim())
 
   const description = payload.description.trim()
@@ -366,12 +362,10 @@ function buildFormData(payload: ExperiencePayload, options?: { methodOverride?: 
 
   if (description) {
     formData.append("description", description)
-    formData.append("summary", description)
   }
 
   if (email) {
     formData.append("company_email", email)
-    formData.append("email", email)
   }
 
   if (endDate) {
