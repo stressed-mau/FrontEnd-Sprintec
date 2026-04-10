@@ -1,4 +1,3 @@
-import { allCountries } from "country-telephone-data"
 import { ImagePlus, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -100,46 +99,7 @@ export function ExperienceFormModal({
             {errors.company ? <p id="experience-company-error" className="text-sm text-red-600">{errors.company}</p> : null}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label id="experience-phone-label" htmlFor="experience-phone" className="text-[#003A6C]">
-                Número de teléfono
-              </Label>
-              <div className="flex gap-2">
-                <select
-                  id="experience-phone-country-code"
-                  value={formData.phoneCountryCode}
-                  onChange={(event) => onFieldChange("phoneCountryCode", event.target.value)}
-                  className="h-11 w-28 rounded-md border border-[#A5D7E8] bg-white px-2 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8]"
-                  aria-label="Código de país"
-                >
-                  {allCountries.map((country) => (
-                    <option key={`${country.iso2}-${country.dialCode}`} value={country.dialCode}>
-                      +{country.dialCode}
-                    </option>
-                  ))}
-                </select>
-
-                <Input
-                  id="experience-phone"
-                  type="tel"
-                  maxLength={15}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={formData.phone}
-                  onBlur={() => onBlur("phone")}
-                  onChange={(event) => onFieldChange("phone", event.target.value)}
-                  placeholder="Ej: 71234567"
-                  className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
-                  aria-invalid={Boolean(errors.phone)}
-                  aria-labelledby="experience-phone-label"
-                  aria-describedby={errors.phone ? "experience-phone-error" : undefined}
-                />
-              </div>
-              {errors.phone ? <p id="experience-phone-error" className="text-sm text-red-600">{errors.phone}</p> : null}
-            </div>
-
-            <div className="space-y-2">
+          <div className="space-y-2">
               <Label id="experience-email-label" htmlFor="experience-email" className="text-[#003A6C]">
                 Correo electrónico
               </Label>
@@ -157,7 +117,6 @@ export function ExperienceFormModal({
                 aria-describedby={errors.email ? "experience-email-error" : undefined}
               />
               {errors.email ? <p id="experience-email-error" className="text-sm text-red-600">{errors.email}</p> : null}
-            </div>
           </div>
 
           <div className="space-y-2">

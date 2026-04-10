@@ -63,9 +63,8 @@ export function ExperienceSection({
                         {experience.position}
                       </CardTitle>
                       <p className="mt-1 text-[#4B778D]">{experience.company}</p>
-                      {experience.phone || experience.email ? (
+                      {experience.email ? (
                         <div className="mt-2 flex flex-col gap-1 text-sm text-[#6B7E8E]">
-                          {experience.phone ? <p>Tel: +{experience.phoneCountryCode} {experience.phone}</p> : null}
                           {experience.email ? <p>{experience.email}</p> : null}
                         </div>
                       ) : null}

@@ -9,8 +9,6 @@ export type ExperienceItem = {
   id: number
   type: ExperienceType
   company: string
-  phoneCountryCode: string
-  phone: string
   email: string
   position: string
   description: string
@@ -27,8 +25,6 @@ export type ExperienceFormErrors = Partial<Record<keyof ExperienceFormValues, st
 const EMPTY_FORM: ExperienceFormValues = {
   type: "laboral",
   company: "",
-  phoneCountryCode: "591",
-  phone: "",
   email: "",
   position: "",
   description: "",
@@ -126,8 +122,6 @@ function validateExperienceField(
   values: ExperienceFormValues,
 ): string {
   const company = values.company.trim()
-  const phoneCountryCode = values.phoneCountryCode.trim()
-  const phone = values.phone.trim()
   const email = values.email.trim()
   const position = values.position.trim()
   const description = values.description.trim()
@@ -141,26 +135,6 @@ function validateExperienceField(
 
     if (company.length > 100) {
       return "El nombre de la empresa no puede exceder los 100 caracteres."
-    }
-  }
-
-  if (field === "phoneCountryCode") {
-    if (!phoneCountryCode) {
-      return "Selecciona un código de país."
-    }
-
-    if (!/^\d+$/.test(phoneCountryCode)) {
-      return "El código de país no es válido."
-    }
-  }
-
-  if (field === "phone") {
-    if (phone && !/^\d+$/.test(phone)) {
-      return "El número de teléfono solo puede contener números."
-    }
-
-    if (phone.length > 20) {
-      return "El número de teléfono no puede exceder los 20 caracteres."
     }
   }
 
@@ -296,8 +270,6 @@ export function useExperienceManager() {
     setFormData({
       type: experience.type,
       company: experience.company,
-      phoneCountryCode: experience.phoneCountryCode,
-      phone: experience.phone,
       email: experience.email,
       position: experience.position,
       description: experience.description,
@@ -312,11 +284,7 @@ export function useExperienceManager() {
 
   function updateField(field: keyof ExperienceFormValues, value: string | boolean) {
     const normalizedValue =
-      field === "email" && typeof value === "string"
-        ? sanitizeEmailInput(value)
-        : field === "phone" && typeof value === "string"
-          ? value.replace(/\D+/g, "")
-          : value
+      field === "email" && typeof value === "string" ? sanitizeEmailInput(value) : value
 
     const nextValues: ExperienceFormValues = {
       ...formData,
@@ -421,8 +389,8 @@ export function useExperienceManager() {
   function removeImage() {
     setFormData((current) => ({ ...current, image: "" }))
     setErrors((currentErrors) => ({
-      ...currentErrors,
-      image: "",
+        ...currentErrors,
+        image: "",
     }))
 
     if (fileInputRef.current) {
@@ -436,8 +404,6 @@ export function useExperienceManager() {
 
     const nextErrors: ExperienceFormErrors = {
       company: validateExperienceField("company", formData),
-      phoneCountryCode: validateExperienceField("phoneCountryCode", formData),
-      phone: validateExperienceField("phone", formData),
       email: validateExperienceField("email", formData),
       position: validateExperienceField("position", formData),
       description: validateExperienceField("description", formData),
@@ -455,8 +421,6 @@ export function useExperienceManager() {
       id: editingId ?? Date.now(),
       type: formData.type,
       company: formData.company.trim(),
-      phoneCountryCode: formData.phoneCountryCode.trim(),
-      phone: formData.phone.trim(),
       email: formData.email.trim(),
       position: formData.position.trim(),
       description: formData.description.trim(),
