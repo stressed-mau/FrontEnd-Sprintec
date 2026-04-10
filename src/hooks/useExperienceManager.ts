@@ -156,6 +156,10 @@ function validateExperienceField(
   }
 
   if (field === "email") {
+    if (values.type !== "laboral" && !email) {
+      return ""
+    }
+
     if (!email) {
       if (values.type !== "laboral") {
         return ""
@@ -364,6 +368,11 @@ export function useExperienceManager() {
       [field]: normalizedValue,
     } as ExperienceFormValues
 
+    if (field === "type" && value === "academica") {
+      nextValues.email = ""
+      nextValues.current = false
+    }
+
     if (field === "current" && value === true) {
       nextValues.endDate = ""
     }
@@ -514,7 +523,7 @@ export function useExperienceManager() {
     const payload: ExperiencePayload = {
       type: formData.type,
       company: formData.company.trim(),
-      email: formData.email.trim(),
+      email: formData.type === "laboral" ? formData.email.trim() : "",
       position: formData.position.trim(),
       description: formData.description.trim(),
       startDate: formData.startDate.trim(),
