@@ -17,6 +17,8 @@ const PublishPortfolio = () => {
     reloadVisibilityData,
   } = usePortfolioVisibility();
 
+  const visibleSections = sectionsArray.filter((sectionConfig) => data[sectionConfig.key].length > 0);
+
   return (
     <div id="publishportfolio-page" className="min-h-screen bg-[#F7F0E1]">
       <Header />
@@ -56,7 +58,13 @@ const PublishPortfolio = () => {
               )}
 
               <div className="space-y-6">
-                {sectionsArray.map((sectionConfig) => {
+                {visibleSections.length === 0 && !isLoading ? (
+                  <div className="rounded-xl border border-dashed border-[#C9E1F0] bg-[#F8FBFE] px-4 py-8 text-center text-sm text-gray-500">
+                    No hay elementos para mostrar en este momento.
+                  </div>
+                ) : null}
+
+                {visibleSections.map((sectionConfig) => {
                   const sectionKey = sectionConfig.key;
                   const isOpen = openSections[sectionKey];
                   const items = data[sectionKey];

@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { api } from './api';
-import { getSkills } from './skillsService';
 
 export type SectionKey = 'projects' | 'skills' | 'experience' | 'networks';
 
@@ -13,16 +12,21 @@ export interface VisibilityItem {
 
 type UnknownRecord = Record<string, unknown>;
 
-interface VisibilityPreferencePayload {
-  section: SectionKey;
-  visible_item_ids: string[];
+interface UserInformationDto {
+  id: number;
+  fullname: string;
+  occupation: string;
+  image_url: string;
 }
 
-const PROJECTS_ENDPOINT = '/projects';
-const EXPERIENCE_ENDPOINT = '/experiences';
-const NETWORKS_ENDPOINT = '/networks';
-const VISIBILITY_ENDPOINT = '/portfolio/visibility';
-const VISIBILITY_TIMEOUT_MS = 5000;
+const USER_INFORMATION_ENDPOINT = '/user_information';
+
+const EMPTY_VISIBILITY_DATA: PortfolioVisibilityData = {
+  projects: [],
+  skills: [],
+  experience: [],
+  networks: [],
+};
 
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {
@@ -82,6 +86,24 @@ function unwrapList(data: unknown, collectionKey?: string): unknown[] {
   return [];
 }
 
+function unwrapUserInformationList(data: unknown): UserInformationDto[] {
+  const unwrapped = unwrapPayload(data);
+
+  if (Array.isArray(unwrapped)) {
+    return unwrapped as UserInformationDto[];
+  }
+
+  if (unwrapped && typeof unwrapped === 'object') {
+    const record = unwrapped as UnknownRecord;
+
+    if ('data' in record && Array.isArray(record.data)) {
+      return record.data as UserInformationDto[];
+    }
+  }
+
+  return [];
+}
+
 function asString(value: unknown): string {
   if (typeof value === 'string') {
     return value;
@@ -110,130 +132,31 @@ function asId(value: unknown, fallback: number): number {
 }
 
 function normalizeProjects(data: unknown): VisibilityItem[] {
-  const list = unwrapList(data, 'projects');
+  const list = unwrapUserInformationList(data);
 
   return list.map((item, index) => {
-    const record = (item ?? {}) as UnknownRecord;
+    const record = (item ?? {}) as UserInformationDto;
     return {
-      id: asId(record.id ?? record.project_id, index + 1),
-      label: asString(record.name ?? record.nombre ?? record.title) || `Proyecto ${index + 1}`,
-      sublabel: asString(record.role ?? record.rol ?? record.position),
+      id: asId(record.id, index + 1),
+      label: asString(record.fullname) || `Usuario ${index + 1}`,
+      sublabel: asString(record.occupation),
       checked: true,
     };
   });
-}
-
-function normalizeExperience(data: unknown): VisibilityItem[] {
-  const list = unwrapList(data, 'experiences');
-
-  return list.map((item, index) => {
-    const record = (item ?? {}) as UnknownRecord;
-    const position = asString(record.position ?? record.cargo ?? record.title);
-    const company = asString(record.company ?? record.empresa ?? record.institution);
-    const type = asString(record.type ?? record.tipo);
-
-    return {
-      id: asId(record.id ?? record.experience_id, index + 1),
-      label: position || `Experiencia ${index + 1}`,
-      sublabel: [company, type].filter(Boolean).join(' - '),
-      checked: true,
-    };
-  });
-}
-
-function normalizeNetworks(data: unknown): VisibilityItem[] {
-  const list = unwrapList(data, 'networks');
-
-  return list.map((item, index) => {
-    const record = (item ?? {}) as UnknownRecord;
-    return {
-      id: asId(record.id ?? record.network_id, index + 1),
-      label: asString(record.name ?? record.nombre ?? record.network_name) || `Red ${index + 1}`,
-      sublabel: asString(record.url ?? record.enlace ?? record.link),
-      checked: true,
-    };
-  });
-}
-
-function normalizeVisibilityPreference(data: unknown): Record<SectionKey, Set<string>> {
-  const empty = {
-    projects: new Set<string>(),
-    skills: new Set<string>(),
-    experience: new Set<string>(),
-    networks: new Set<string>(),
-  };
-
-  const source = unwrapPayload(data);
-
-  if (!source || typeof source !== 'object') {
-    return empty;
-  }
-
-  const record = source as UnknownRecord;
-
-  const candidates: Array<[SectionKey, unknown[]]> = [
-    ['projects', (record.projects as unknown[]) ?? []],
-    ['skills', (record.skills as unknown[]) ?? []],
-    ['experience', (record.experience as unknown[]) ?? []],
-    ['networks', (record.networks as unknown[]) ?? []],
-  ];
-
-  candidates.forEach(([section, list]) => {
-    if (!Array.isArray(list)) {
-      return;
-    }
-
-    list.forEach((value) => {
-      const normalized = asString(value);
-      if (normalized) {
-        empty[section].add(normalized);
-      }
-    });
-  });
-
-  return empty;
-}
-
-function applyPreferences(
-  items: VisibilityItem[],
-  visibleIds: Set<string>,
-): VisibilityItem[] {
-  if (visibleIds.size === 0) {
-    return items;
-  }
-
-  return items.map((item) => ({
-    ...item,
-    checked: visibleIds.has(String(item.id)),
-  }));
 }
 
 export type PortfolioVisibilityData = Record<SectionKey, VisibilityItem[]>;
 
 export async function getPortfolioVisibilityData(): Promise<PortfolioVisibilityData> {
   try {
-    const [projectsResponse, skillsResponse, experienceResponse, networksResponse, visibilityResponse] = await Promise.all([
-      api.get(PROJECTS_ENDPOINT),
-      getSkills(),
-      api.get(EXPERIENCE_ENDPOINT),
-      api.get(NETWORKS_ENDPOINT),
-      api.get(VISIBILITY_ENDPOINT).catch(() => ({ data: {} })),
-    ]);
-
-    const skills = skillsResponse.map((skill, index) => ({
-      id: asId(skill.id, index + 1),
-      label: skill.name,
-      sublabel: skill.level ?? '',
-      checked: true,
-    }));
-
-    const preferences = normalizeVisibilityPreference(visibilityResponse.data);
+    const response = await api.get(USER_INFORMATION_ENDPOINT);
+    const users = unwrapList(response.data, 'data');
 
     return {
-      projects: applyPreferences(normalizeProjects(projectsResponse.data), preferences.projects),
-      skills: applyPreferences(skills, preferences.skills),
-      experience: applyPreferences(normalizeExperience(experienceResponse.data), preferences.experience),
-      networks: applyPreferences(normalizeNetworks(networksResponse.data), preferences.networks),
+      projects: normalizeProjects(users),
+      skills: EMPTY_VISIBILITY_DATA.skills,
+      experience: EMPTY_VISIBILITY_DATA.experience,
+      networks: EMPTY_VISIBILITY_DATA.networks,
     };
   } catch (error) {
     throw formatError(error);
@@ -244,16 +167,8 @@ export async function savePortfolioVisibilitySection(
   section: SectionKey,
   items: VisibilityItem[],
 ): Promise<void> {
-  const payload: VisibilityPreferencePayload = {
-    section,
-    visible_item_ids: items.filter((item) => item.checked).map((item) => String(item.id)),
-  };
+  void section;
+  void items;
 
-  try {
-    await api.put(VISIBILITY_ENDPOINT, payload, {
-      timeout: VISIBILITY_TIMEOUT_MS,
-    });
-  } catch (error) {
-    throw formatError(error);
-  }
+  return Promise.resolve();
 }
