@@ -80,7 +80,7 @@ function formatError(error: unknown): Error {
     }
 
     if (error.code === "ERR_NETWORK") {
-      return new Error("No se pudo conectar con el backend en http://localhost:8000. Verifica que Laravel esté levantado.")
+      return new Error("No se pudo conectar con el backend")
     }
 
     const backendMessage =
