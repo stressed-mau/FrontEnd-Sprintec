@@ -38,6 +38,7 @@ export function ExperienceFormModal({
   const companyLabel = formData.type === "laboral" ? "Empresa" : "Institución"
   const positionLabel = formData.type === "laboral" ? "Cargo" : "Título"
   const isLaboralExperience = formData.type === "laboral"
+  const isCurrentActive = isLaboralExperience && formData.current
 
   return (
     <div
@@ -201,7 +202,7 @@ export function ExperienceFormModal({
                 id="experience-end-date"
                 type="date"
                 value={formData.endDate}
-                disabled={formData.current || isSaving}
+                disabled={isCurrentActive || isSaving}
                 onBlur={() => onBlur("endDate")}
                 onChange={(event) => onFieldChange("endDate", event.target.value)}
                 className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"

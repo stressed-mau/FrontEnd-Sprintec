@@ -206,7 +206,7 @@ function validateExperienceField(
   }
 
   if (field === "endDate") {
-    if (values.current) {
+    if (values.type === "laboral" && values.current) {
       return ""
     }
 
@@ -370,10 +370,9 @@ export function useExperienceManager() {
 
     if (field === "type" && value === "academica") {
       nextValues.email = ""
-      nextValues.current = false
     }
 
-    if (field === "current" && value === true) {
+    if (field === "current" && value === true && nextValues.type === "laboral") {
       nextValues.endDate = ""
     }
 
@@ -527,7 +526,7 @@ export function useExperienceManager() {
       position: formData.position.trim(),
       description: formData.description.trim(),
       startDate: formData.startDate.trim(),
-      endDate: formData.current ? "" : formData.endDate.trim(),
+      endDate: formData.type === "laboral" && formData.current ? "" : formData.endDate.trim(),
       current: formData.current,
       logoFile: selectedImageFile,
       removeLogo: hasRemovedExistingImage && !selectedImageFile,
