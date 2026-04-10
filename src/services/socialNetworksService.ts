@@ -96,9 +96,27 @@ function normalizeSocialNetwork(dto: SocialNetworkDto): SocialNetwork {
   }
 }
 
-export function getSocialConnectUrl(provider: string) {
-  const baseURL = api.defaults.baseURL ?? ""
-  return `${baseURL.replace(/\/+$/, "")}/social/connect/${provider}`
+export async function fetchOAuthUrl(provider: string): Promise<string> {
+  try {
+    const response = await api.get<{ url: string }>(`/social/connect/${provider}`, {
+      maxRedirects: 0,
+    })
+    return response.data.url
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response?.status) {
+      if (error.response.status >= 300 && error.response.status < 400) {
+        const locationHeader = error.response.headers?.location
+        const responseData = error.response.data as { url?: string } | undefined
+        const url = locationHeader || responseData?.url
+
+        if (url) {
+          return url
+        }
+      }
+    }
+
+    throw formatError(error)
+  }
 }
 
 export async function getUserSocialNetworks(): Promise<SocialNetwork[]> {
