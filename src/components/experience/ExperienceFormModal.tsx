@@ -38,7 +38,7 @@ export function ExperienceFormModal({
   const companyLabel = formData.type === "laboral" ? "Empresa" : "Institución"
   const positionLabel = formData.type === "laboral" ? "Cargo" : "Título"
   const isLaboralExperience = formData.type === "laboral"
-  const isCurrentActive = isLaboralExperience && formData.current
+  const isCurrentActive = formData.current
 
   return (
     <div
@@ -281,7 +281,7 @@ export function ExperienceFormModal({
             ) : null}
 
             {errors.image ? <p className="text-sm text-red-600">{errors.image}</p> : null}
-            <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG y PNG. Tamaño máximo: 2 MB.</p>
+            <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG y PNG. Tamaño máximo: 2 MB.</p>
           </div>
 
           <div className="flex gap-3 pt-4">

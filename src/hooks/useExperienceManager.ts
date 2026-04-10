@@ -32,7 +32,8 @@ const EMPTY_FORM: ExperienceFormValues = {
 const DATE_PATTERN = /^(\d{2})\/(\d{2})\/(\d{4})$/
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"]
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
+const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 
 function normalizeFormDate(value: string) {
   const trimmedValue = value.trim()
@@ -134,6 +135,17 @@ function isIsoDate(value: string) {
   return ISO_DATE_PATTERN.test(value.trim())
 }
 
+function hasAllowedImageFormat(file: File) {
+  const normalizedFileName = file.name.trim().toLowerCase()
+  const hasAllowedExtension = ALLOWED_IMAGE_EXTENSIONS.some((extension) => normalizedFileName.endsWith(extension))
+
+  if (hasAllowedExtension) {
+    return true
+  }
+
+  return ALLOWED_IMAGE_TYPES.includes(file.type.toLowerCase())
+}
+
 function validateExperienceField(
   field: keyof ExperienceFormValues,
   values: ExperienceFormValues,
@@ -206,7 +218,7 @@ function validateExperienceField(
   }
 
   if (field === "endDate") {
-    if (values.type === "laboral" && values.current) {
+    if (values.current) {
       return ""
     }
 
@@ -372,7 +384,7 @@ export function useExperienceManager() {
       nextValues.email = ""
     }
 
-    if (field === "current" && value === true && nextValues.type === "laboral") {
+    if (field === "current" && value === true) {
       nextValues.endDate = ""
     }
 
@@ -438,10 +450,10 @@ export function useExperienceManager() {
       return
     }
 
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    if (!hasAllowedImageFormat(file)) {
       setErrors((currentErrors) => ({
         ...currentErrors,
-        image: "El logo solo permite archivos JPG o PNG.",
+        image: "La imagen solo permite archivos JPG, JPEG o PNG.",
       }))
 
       if (fileInputRef.current) {
@@ -454,7 +466,7 @@ export function useExperienceManager() {
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
       setErrors((currentErrors) => ({
         ...currentErrors,
-        image: "El logo permite archivos de hasta 2 MB.",
+        image: "La imagen permite archivos de hasta 2 MB.",
       }))
 
       if (fileInputRef.current) {
@@ -526,7 +538,7 @@ export function useExperienceManager() {
       position: formData.position.trim(),
       description: formData.description.trim(),
       startDate: formData.startDate.trim(),
-      endDate: formData.type === "laboral" && formData.current ? "" : formData.endDate.trim(),
+      endDate: formData.current ? "" : formData.endDate.trim(),
       current: formData.current,
       logoFile: selectedImageFile,
       removeLogo: hasRemovedExistingImage && !selectedImageFile,
