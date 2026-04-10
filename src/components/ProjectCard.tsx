@@ -31,7 +31,20 @@ const ProjectCard = ({ project, onEdit, onDelete }: ProjectProps) => {
 
         <div className="text-sm text-gray-700 space-y-1 mb-6">
           <p><span className="font-bold">Rol:</span> {project.rol}</p>
-          <p><span className="font-bold">Fecha:</span> {project.fecha}</p>
+          {project.fechaInicio && project.fechaFin && (
+            <p>
+              <span className="font-bold">Período:</span>{" "}
+              {new Date(project.fechaInicio).toLocaleDateString("es-ES", {
+                month: "short",
+                year: "numeric"
+              })}{" "}
+              -{" "}
+              {new Date(project.fechaFin).toLocaleDateString("es-ES", {
+                month: "short",
+                year: "numeric"
+              })}
+            </p>
+          )}
         </div>
 
         {(project.github || project.demo) && (

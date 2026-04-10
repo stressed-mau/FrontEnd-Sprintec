@@ -1,10 +1,52 @@
 import { useState, useRef, useEffect } from "react";
 import { getAuthSession } from "@/services/auth/auth-storage";
 import { allCountries } from 'country-telephone-data';
+import { useEmailValidation } from "@/hooks/useEmailValidation";
+import { api } from "@/services/api";
+type FormErrors = {
+  fullName?: string;
+  occupation?: string;
+  bio?: string;
+  location?: string;
+  email?: string;
+  phone?: string;
+  image?: string;
+  server?: string;
+};
 export const useUserPersonalData = () => {
   console.log("HOOK useUserPersonalData CARGADO");
   const [countryCode, setCountryCode] = useState("591");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [charLimitWarning, setCharLimitWarning] = useState({
+    fullName: "",
+    occupation: "",
+    bio: "",
+    location: "",
+    email: "",
+    phone: ""
+  });
+  const handlePhoneChange = (value: string) => { 
+  setPhoneNumber(value);
+
+  // warning visual (UI)
+  if (value.length === 8) {
+    setCharLimitWarning(prev => ({
+      ...prev,
+      phone: "Has alcanzado el máximo de 8 dígitos."
+    }));
+  } else {
+    setCharLimitWarning(prev => ({
+      ...prev,
+      phone: ""
+    }));
+  }
+
+  // validación real
+  setErrors((prev: any) => ({
+    ...prev,
+    phone: validateField("phone", value)
+  }));
+  };
 
   const [form, setForm] = useState({
     fullName: "",
@@ -20,13 +62,72 @@ export const useUserPersonalData = () => {
   }, [form]);
 
 
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(form.email);
+  const validateField = (id: string, value: string) => {
+  switch (id) {
+    case "fullName":
+      if (!value.trim()) return "El nombre completo es obligatorio.";
+      if (!/^[a-zA-Z\s]+$/.test(value)) return "El nombre solo puede contener letras.";
+      if (value.length > 100) return "El nombre no puede exceder los 100 caracteres.";
+      return "";
 
- useEffect(() => {
+    case "occupation":
+      return value.length >= 80 ? "La ocupación no puede exceder los 80 caracteres." : "";
+
+    case "bio":
+      return value.length >= 300 ? "La biografía no puede exceder los 300 caracteres." : "";
+
+    case "location":
+      return value.length >= 100 ? "La ubicación no puede exceder los 100 caracteres." : "";
+
+    case "email": {
+      const cleanValue = value.trim();
+
+      if (!cleanValue) return "El correo electrónico es obligatorio.";
+
+      if (cleanValue.length >= 60) {
+        return "El correo no puede exceder los 60 caracteres.";
+      }
+
+      // Validación básica (rápida)
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanValue)) {
+        // Aquí usamos mailcheck para sugerencia aunque sea inválido
+        validateEmail(cleanValue);
+        return "Formato de correo inválido.";
+      }
+      // Validación completa (usa validator + mailcheck)
+      const result = validateEmail(cleanValue);
+
+      return result.error;
+    }
+    case "phone": {
+      const cleanValue = value.trim();
+
+      if (!cleanValue) {
+        return "El número de contacto es obligatorio";
+      }
+
+      if (!/^[0-9]+$/.test(cleanValue)) {
+        return "El número de contacto solo puede contener números.";
+      }
+
+      if (cleanValue.length !== 8) {
+        return "El número de contacto debe tener 8 dígitos";
+      }
+      
+      return "";
+    }
+
+    default:
+      return "";
+  }
+  };
+  useEffect(() => {
   console.log("USEEFFECT CORRIENDO");
 
   const fetchData = async () => {
@@ -38,20 +139,11 @@ export const useUserPersonalData = () => {
         return;
       }
 
-      const res = await fetch(
-        `http://localhost:8000/api/user_information/${session.user.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        }
-      );
+      const res = await api.get(`/user_information/${session.user.id}`);
+      const response = res.data;
 
-      const response = await res.json();
-
-      console.log("DATA DEL BACKEND:", response);
-
-      if (!res.ok || !response.success) {
+      // solo valida esto si tu backend usa success
+      if (!response.success) {
         console.error("Error en la respuesta del backend");
         return;
       }
@@ -100,129 +192,71 @@ export const useUserPersonalData = () => {
   // =========================
   // INPUTS
   // =========================
-  const handleChange = (e: any) => {
-  const { id, value } = e.target;
-
-  const updatedForm = {
-    ...form,
-    [id]: value
-  };
-
-  setForm(updatedForm);
-
-  // 🔥 VALIDACIÓN EN TIEMPO REAL
-  setErrors((prev: any) => {
-    const newErrors = { ...prev };
-
-    // FULL NAME
-    if (id === "fullName") {
-      if (!value.trim()) {
-        newErrors.fullName = "El nombre completo es obligatorio.";
-      } else if (!/^[a-zA-Z\s]+$/.test(value)) {
-        newErrors.fullName = "El nombre solo puede contener letras.";
-      } else if (value.length > 100) {
-        newErrors.fullName = "El nombre no puede exceder los 100 caracteres.";
-      } else {
-        newErrors.fullName = "";
-      }
-    }
-
-    // OCCUPATION
-    if (id === "occupation") {
-      if (value.length > 80) {
-        newErrors.occupation = "La ocupación no puede exceder los 80 caracteres.";
-      } else {
-        newErrors.occupation = "";
-      }
-    }
-
-    // BIO
-    if (id === "bio") {
-      if (value.length > 300) {
-        newErrors.bio = "La biografía no puede exceder los 300 caracteres.";
-      } else {
-        newErrors.bio = "";
-      }
-    }
-
-    // LOCATION
-    if (id === "location") {
-      if (value.length > 100) {
-        newErrors.location = "La ubicación no puede exceder los 100 caracteres.";
-      } else {
-        newErrors.location = "";
-      }
-    }
-
-    // EMAIL
-    if (id === "email") {
-      if (!value.trim()) {
-        newErrors.email = "El correo electrónico es obligatorio.";
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        newErrors.email = "Formato de correo inválido.";
-      } else if (value.length > 60) {
-        newErrors.email = "El correo no puede exceder los 60 caracteres.";
-      } else {
-        newErrors.email = "";
-      }
-    }
-
-    return newErrors;
-  });
+  const LIMITS: Record<string, number> = {
+  fullName: 100,
+  location: 100,
+  occupation: 80,
+  bio: 300,
+  email: 60
 };
 
-  // =========================
-  // VALIDACIONES
-  // =========================
-  const validate = () => {
-    let newErrors: any = {};
+const handleChange = (e: any) => {
+  const { id, value } = e.target;
 
-    if (!form.fullName.trim()) {
-      newErrors.fullName = "El nombre completo es obligatorio.";
-    } else if (!/^[a-zA-Z\s]+$/.test(form.fullName)) {
-      newErrors.fullName = "El nombre solo puede contener letras.";
-    } else if (form.fullName.length > 100) {
-      newErrors.fullName = "El nombre no puede exceder los 100 caracteres.";
-    }
+  const limit = LIMITS[id];
 
-    if (form.occupation.length > 80) {
-      newErrors.occupation = "La ocupación no puede exceder los 80 caracteres.";
-    }
+  // WARNING POR CAMPO
+  if (limit && value.length >= limit) {
+    const errorMessage = validateField(id, value);
 
-    if (form.bio.length > 300) {
-      newErrors.bio = "La biografía no puede exceder los 300 caracteres.";
-    }
+    setCharLimitWarning(prev => ({
+      ...prev,
+      [id]: errorMessage
+    }));
+  } else {
+    setCharLimitWarning(prev => ({
+      ...prev,
+      [id]: ""
+    }));
+  }
 
-    if (form.location.length > 100) {
-      newErrors.location = "La ubicación no puede exceder los 100 caracteres.";
-    }
+  const newValue = id === "email" ? sanitizeEmailInput(value) : value;
+  setForm(prev => ({
+    ...prev,
+    [id]: newValue
+  }));
 
-    if (!form.email.trim()) {
-      newErrors.email = "El correo electrónico es obligatorio.";
-    } else if (form.email.length > 60) {
-      newErrors.email = "El correo no puede exceder los 60 caracteres.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      newErrors.email =
-        "El Correo electrónico debe tener un formato válido (ej. usuario@uno.com).";
-    }
+  // VALIDACIÓN
+  setErrors((prev: any) => ({
+    ...prev,
+    [id]: validateField(id, newValue)
+  }));
+};
 
-    if (phoneNumber && !/^[0-9]+$/.test(phoneNumber)) {
-      newErrors.phone = "El teléfono solo debe contener números.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
+  
+  
   // =========================
   // SUBMIT
   // =========================
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     console.log("SUBMIT EJECUTADO");
-    if (!validate()) {
-        console.log("VALIDACIÓN FALLÓ");
-        return;
+
+    const newErrors: any = {};
+
+    Object.keys(form).forEach((key) => {
+      const error = validateField(key, (form as any)[key]);
+      if (error) newErrors[key] = error;
+    });
+
+    const phoneError = validateField("phone", phoneNumber);
+    if (phoneError) newErrors.phone = phoneError;
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      console.log("VALIDACIÓN FALLÓ");
+      return;
     }
 
     try {
@@ -232,8 +266,9 @@ export const useUserPersonalData = () => {
         setErrors({ server: "Sesión expirada. Inicia sesión nuevamente." });
         return;
       }
+
       const formData = new FormData();
-      formData.append("_method", "PUT");
+      formData.append("_method", "PUT"); // ← déjalo si usas Laravel
       formData.append("fullname", form.fullName);
       formData.append("occupation", form.occupation);
       formData.append("biography", form.bio);
@@ -244,32 +279,28 @@ export const useUserPersonalData = () => {
       if (fileInputRef.current?.files?.[0]) {
         formData.append("image_url", fileInputRef.current.files[0]);
       }
-      //Conexión con backend
-      const response = await fetch(`http://localhost:8000/api/user_information/${session.user.id}`.replace(/\$/, ""), {
-        method: "POST",
-        headers: {
-        Authorization: `Bearer ${session.accessToken}`, 
-        "Accept": "application/json",
-        },
-        body: formData
-      });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        // Manejo de errores del backend
-        if (result.errors?.public_email) {
-          setErrors({ public_email: result.errors.public_email[0] });
-        } else {
-          setErrors({ server: "Error al guardar datos" });
+      
+      await api.post(
+        `/user_information/${session.user.id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
         }
-        return;
-      }
+      );
 
       setSuccess("Información guardada correctamente ");
 
-    } catch (error) {
-      setErrors({ server: "Error de conexión con el servidor" });
+    } catch (error: any) {
+      if (error.response?.data?.errors?.public_email) {
+        setErrors({ email: error.response.data.errors.public_email[0] });
+      } else {
+        setErrors({
+          server: error.response?.data?.message || "Error al guardar datos"
+        });
+      }
     }
   };
 
@@ -303,22 +334,32 @@ export const useUserPersonalData = () => {
     if (!file) return;
 
     if (!["image/jpeg", "image/png"].includes(file.type)) {
-      setErrors({ ...errors, image: "Formato de imagen no válido." });
+      setErrors(prev => ({
+        ...prev,
+        image: "Formato de imagen no válido."
+      }));
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      setErrors({ ...errors, image: "El tamaño de la imagen no debe superar los 2 MB." });
+      setErrors(prev => ({
+        ...prev,
+        image: "El tamaño de la imagen no debe superar los 2 MB."
+      }));
       return;
     }
 
     const imageUrl = URL.createObjectURL(file);
     setPreview(imageUrl);
-    setErrors({ ...errors, image: "" });
+    setErrors(prev => ({ ...prev, image: "" }));
   };
 
   const removeImage = () => {
-    setPreview(null);
+  setPreview(null);
+
+  if (fileInputRef.current) {
+    fileInputRef.current.value = "";
+  }
   };
 
   return {
@@ -336,11 +377,29 @@ export const useUserPersonalData = () => {
     setCountryCode,
     setPhoneNumber,
     handleChange,
+    handlePhoneChange,
     handleSubmit,
     handleCancel,
     handleClick,
     handleFileChange,
     removeImage,
-    loading
+    loading,
+    charLimitWarning,
+    setCharLimitWarning,
+    emailSuggestion: suggestion,
+    applyEmailSuggestion: (email: string) => {
+      const sanitized = sanitizeEmailInput(email);
+      const { error } = validateEmail(sanitized);
+
+      setForm(prev => ({
+        ...prev,
+        email: sanitized
+      }));
+
+      setErrors(prev => ({
+        ...prev,
+        email: error
+      }));
+    }
   };
 };
