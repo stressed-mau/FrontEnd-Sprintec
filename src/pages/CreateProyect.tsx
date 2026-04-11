@@ -257,7 +257,7 @@ const CreateProyect = () => {
         </div>
       )}
       {success && ( 
-      <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
+      <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
         <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl p-8 text-center">
           
           <h3 className="text-[#003A6C] text-xl font-bold mb-2">
