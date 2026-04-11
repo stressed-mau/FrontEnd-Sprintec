@@ -1,5 +1,4 @@
 import {
-  BriefcaseBusiness,
   Edit,
   ExternalLink,
   FolderGit2,
@@ -40,13 +39,13 @@ function getNetworkVisual(name: string, url: string): NetworkVisual {
     }
   }
 
-  if (normalizedValue.includes("linkedin")) {
+  if (normalizedValue.includes("gitlab")) {
     return {
-      icon: BriefcaseBusiness,
-      badge: "Profesional",
-      iconClassName: "text-[#0A66C2]",
-      surfaceClassName: "bg-[#E8F1FB]",
-      buttonClassName: "border-[#B8D5F3] text-[#0A66C2] hover:bg-[#F2F8FE]",
+      icon: FolderGit2,
+      badge: "Repositorio",
+      iconClassName: "text-[#E24329]",
+      surfaceClassName: "bg-[#FFF1EA]",
+      buttonClassName: "border-[#FFD0BD] text-[#C2410C] hover:bg-[#FFF7F2]",
     }
   }
 

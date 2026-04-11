@@ -34,10 +34,10 @@ function GithubIcon({ className }: { className?: string }) {
   )
 }
 
-function LinkedinIcon({ className }: { className?: string }) {
+function GitlabIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
-      <path d="M19 3A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19ZM8.339 10.339H5.667V18.667H8.339V10.339ZM7.003 5.667A1.56 1.56 0 0 0 5.444 7.225c0 .861.697 1.559 1.559 1.559s1.558-.698 1.558-1.559A1.558 1.558 0 0 0 7.003 5.667ZM18.667 13.583c0-2.51-1.602-3.578-3.115-3.578-1.219 0-1.946.671-2.273 1.143h-.034v-.809H10.67c.034.536 0 8.328 0 8.328h2.672v-4.65c0-.249.018-.498.091-.676.199-.498.653-1.014 1.416-1.014 1 0 1.401.765 1.401 1.886v4.454h2.417v-5.084Z" />
+      <path d="m22.84 14.73-.93-2.86-1.85-5.67a.48.48 0 0 0-.91 0l-1.57 4.84H6.42L4.85 6.2a.48.48 0 0 0-.91 0L2.09 11.87l-.93 2.86a.97.97 0 0 0 .35 1.08l10.14 7.37a.6.6 0 0 0 .7 0l10.14-7.37a.97.97 0 0 0 .35-1.08Z" />
     </svg>
   )
 }
@@ -62,14 +62,14 @@ const PROFESSIONAL_NETWORKS: ProfessionalNetwork[] = [
     matchKeys: ["github"],
   },
   {
-    id: "linkedin",
-    name: "LinkedIn",
-    icon: LinkedinIcon,
-    color: "bg-[#0A66C2] hover:bg-[#004182]",
-    lightColor: "bg-blue-100",
-    textColor: "text-[#0A66C2]",
-    description: "Muestra tu perfil profesional",
-    matchKeys: ["linkedin"],
+    id: "gitlab",
+    name: "GitLab",
+    icon: GitlabIcon,
+    color: "bg-[#FC6D26] hover:bg-[#E24329]",
+    lightColor: "bg-orange-100",
+    textColor: "text-[#E24329]",
+    description: "Conecta tu repositorio y perfil de desarrollo",
+    matchKeys: ["gitlab"],
   },
   {
     id: "google",

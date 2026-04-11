@@ -54,7 +54,7 @@ export function NetworkFormModal({
               value={formData.name}
               onBlur={() => onBlur("name")}
               onChange={(event) => onFieldChange("name", event.target.value)}
-              placeholder="LinkedIn, GitHub, Portafolio..."
+              placeholder="GitLab, GitHub, Portafolio..."
               className="h-12 rounded-2xl border-[#6EAED6] bg-white text-[#003A6C] placeholder:text-[#4982AD] focus-visible:ring-[#6EAED6]"
               aria-invalid={Boolean(errors.name)}
               aria-labelledby="network-name-label"
