@@ -10,4 +10,21 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rolldownOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) {
+              return 'react'
+            }
+            if (id.includes('axios') || id.includes('lodash')) {
+              return 'vendor'
+            }
+          }
+        },
+      },
+    },
+  },
 })

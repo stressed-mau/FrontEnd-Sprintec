@@ -61,11 +61,16 @@ export const usePortfolioVisibility = () => {
   };
 
   const persistSection = useCallback(
-    async (sectionKey: SectionKey, nextItems: VisibilityItem[], previousItems: VisibilityItem[]) => {
+    async (
+      sectionKey: SectionKey,
+      nextItems: VisibilityItem[],
+      previousItems: VisibilityItem[],
+      itemId?: number,
+    ) => {
       try {
         setIsSaving(true);
         setPageError('');
-        await savePortfolioVisibilitySection(sectionKey, nextItems);
+        await savePortfolioVisibilitySection(sectionKey, nextItems, itemId);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'No se pudo guardar la configuración de visibilidad.';
         setPageError(message);
@@ -84,7 +89,7 @@ export const usePortfolioVisibility = () => {
     );
 
     setData((prev) => ({ ...prev, [sectionKey]: nextItems }));
-    await persistSection(sectionKey, nextItems, previousItems);
+    await persistSection(sectionKey, nextItems, previousItems, itemId);
   };
 
   const handleBulkSelect = async (sectionKey: SectionKey, selectAll: boolean) => {
@@ -102,16 +107,7 @@ export const usePortfolioVisibility = () => {
   };
 
   return {
-    data,
-    openSections,
-    sectionsArray,
-    isLoading,
-    isSaving,
-    pageError,
-    toggleSection,
-    handleItemCheck,
-    handleBulkSelect,
-    getVisibleCountText,
-    reloadVisibilityData: loadVisibilityData,
+    data, openSections, sectionsArray, isLoading, isSaving, pageError, 
+    toggleSection, handleItemCheck, handleBulkSelect, getVisibleCountText, reloadVisibilityData: loadVisibilityData,
   };
 };
