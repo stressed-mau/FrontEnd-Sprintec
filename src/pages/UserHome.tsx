@@ -6,10 +6,9 @@ const UserHome = () => {
     <div id="userhome-page" className="min-h-screen bg-[#F7F0E1]">
       <Header />
 
-      {/* En móvil usamos flex-col para que el Sidebar (Grid) salga arriba del contenido */}
       <div className="flex flex-col md:flex-row">
         
-        {/* En móvil este componente será el Grid, en escritorio será la barra lateral */}
+
         <Sidebar />
 
         <main id="userhome-main" className="flex-1 p-4 md:p-10">

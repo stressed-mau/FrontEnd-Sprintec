@@ -1,13 +1,15 @@
 
 import { useState } from 'react';
-
+import { createProject, getProjects } from "@/services/ProjectService";
+import { useEffect } from "react";
 export interface Project {
   nombre: string;
   descripcion: string;
-  tecnologias: string[];
+  tecnologias: { id: number; name: string }[];
   rol: string;
   fechaInicio: string;
-  fechaFin: string;
+  fechaFin?: string;
+  is_current: boolean; 
   github?: string;
   demo?: string;
   image?: string;
@@ -20,7 +22,32 @@ export const useCreateProyect = () => {
   const [errors, setErrors] = useState<any>({});
   const [success, setSuccess] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const data = await getProjects();
 
+        const mapped = data.map((p: any) => ({
+          nombre: p.title,
+          descripcion: p.description,
+          tecnologias: p.technologies || [],
+          rol: p.role,
+          fechaInicio: p.initial_date,
+          fechaFin: p.final_date,
+          is_current: p.is_current,
+          github: p.url_to_project,
+          demo: p.url_to_deploy,
+          image: p.image_url || ""
+        }));
+
+        setProjects(mapped);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
   const openModal = (index: number | null = null) => {
     setEditingIndex(index);
     setErrors({});
@@ -34,6 +61,7 @@ export const useCreateProyect = () => {
     setEditingIndex(null);
     setErrors({});
   };
+  
   const handleChange = (e: any) => {
     const { name, value } = e.target;
 
@@ -92,16 +120,19 @@ export const useCreateProyect = () => {
     return updated;
     });
   };
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>,
+    selectedTechs: { id: number; name: string }[]
+  ) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
     const nombre = (formData.get('nombre') as string) || "";
     const descripcion = (formData.get('descripcion') as string) || "";
-    const tecnologiasRaw = (formData.get('tecnologias') as string) || "";
     const rol = (formData.get('rol') as string) || "";
     const fechaInicio = formData.get('fechaInicio') as string;
     const fechaFin = formData.get('fechaFin') as string;
+    const is_current = formData.get('is_current') === 'on';
     const github = (formData.get('github') as string) || "";
     const demo = (formData.get('demo') as string) || "";
     const file = formData.get('image') as File;
@@ -118,7 +149,9 @@ export const useCreateProyect = () => {
             newErrors.descripcion = "El campo Descripción contiene caracteres especiales. Solo se permiten letras.";
         } 
     }
-    if (!tecnologiasRaw.trim()) newErrors.tecnologias = "El campo Tecnologías es obligatorio.";
+    if (selectedTechs.length === 0) {
+      newErrors.tecnologias = "Debes seleccionar al menos una tecnología.";
+    }
     if (!rol.trim()) newErrors.rol = "El campo Tu rol en el proyecto es obligatorio.";
     if (rol) {
         if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(rol)) {
@@ -132,8 +165,8 @@ export const useCreateProyect = () => {
       newErrors.fechaInicio = "La fecha de inicio es obligatoria.";
     }
 
-    if (!fechaFin) {
-      newErrors.fechaFin = "La fecha final es obligatoria.";
+    if (!is_current && !fechaFin) {
+      newErrors.fechaFin = "La fecha final es obligatoria si no estás trabajando actualmente.";
     }
 
     if (fechaInicio && fechaFin) {
@@ -183,23 +216,38 @@ export const useCreateProyect = () => {
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
+    const technologyIds = selectedTechs.map(t => t.id);
 
-    // Lógica de guardado...
-    const tecnologias = tecnologiasRaw.split(',').map(t => t.trim());
-    const newProject: Project = {
-      nombre, descripcion, tecnologias, rol, fechaInicio,
-      fechaFin, github, demo,
-      image: file && file.size > 0 ? URL.createObjectURL(file) : (editingIndex !== null ? projects[editingIndex].image : undefined)
+    const payload = {
+      title: nombre,
+      description: descripcion,
+      initial_date: fechaInicio,
+      final_date: is_current ? null : fechaFin,
+      url_to_project: github || null,
+      url_to_deploy: demo || null,
+      role: rol,
+      is_current,
+      technologies: technologyIds,
+      image_url: "https://via.placeholder.com/300" 
     };
 
-    if (editingIndex !== null) {
-      const updated = [...projects];
-      updated[editingIndex] = newProject;
-      setProjects(updated);
-    } else {
-      setProjects([...projects, newProject]);
-    }
+    await createProject(payload);
+    const data = await getProjects();
 
+    const mapped = data.map((p: any) => ({
+      nombre: p.title,
+      descripcion: p.description,
+      tecnologias: p.technologies || [],
+      rol: p.role,
+      fechaInicio: p.initial_date,
+      fechaFin: p.final_date,
+      is_current: p.is_current,
+      github: p.url_to_project,
+      demo: p.url_to_deploy,
+      image: p.image_url || ""
+    }));
+
+    setProjects(mapped);
     setSuccess("Proyecto guardado correctamente.");
     setTimeout(() => {
       setSuccess("");

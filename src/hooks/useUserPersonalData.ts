@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { getAuthSession } from "@/services/auth/auth-storage";
 import { allCountries } from 'country-telephone-data';
 import { useEmailValidation } from "@/hooks/useEmailValidation";
-import { api } from "@/services/api";
+import { getUserInformation, updateUserInformation } from "@/services/PersonalDataService";
+
 type FormErrors = {
   fullName?: string;
   occupation?: string;
@@ -128,9 +129,9 @@ export const useUserPersonalData = () => {
   }
   };
   useEffect(() => {
-  console.log("USEEFFECT CORRIENDO");
+    console.log("USEEFFECT CORRIENDO");
 
-  const fetchData = async () => {
+    const fetchData = async () => {
     try {
       const session = getAuthSession();
 
@@ -139,16 +140,7 @@ export const useUserPersonalData = () => {
         return;
       }
 
-      const res = await api.get(`/user_information/${session.user.id}`);
-      const response = res.data;
-
-      // solo valida esto si tu backend usa success
-      if (!response.success) {
-        console.error("Error en la respuesta del backend");
-        return;
-      }
-
-      const user = response.data;
+      const user = await getUserInformation(String(session.user.id));
 
       const mappedForm = {
         fullName: user.fullname || "",
@@ -189,6 +181,7 @@ export const useUserPersonalData = () => {
 
   fetchData();
 }, []);
+
   // =========================
   // INPUTS
   // =========================
@@ -281,15 +274,7 @@ const handleChange = (e: any) => {
       }
 
       
-      await api.post(
-        `/user_information/${session.user.id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data"
-          }
-        }
-      );
+      await updateUserInformation(String(session.user.id), formData);
 
       setSuccess("Información guardada correctamente ");
 

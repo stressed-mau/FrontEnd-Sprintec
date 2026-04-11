@@ -17,8 +17,30 @@ const ProjectCard = ({ project, onEdit, onDelete }: ProjectProps) => {
       )}
 
       <div className="p-5 flex-1 flex flex-col">
-        <h3 className="text-[#003A6C] font-bold text-xl mb-2">{project.nombre}</h3>
+        <h3 className="text-[#003A6C] font-bold text-xl mb-1 flex items-center justify-between">
+          {project.nombre}
 
+          <span
+            className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
+              project.is_current
+                ? "bg-green-50 text-green-600"
+                : "bg-gray-100 text-gray-500"
+            }`}
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                project.is_current ? "bg-green-500" : "bg-gray-400"
+              }`}
+            ></span>
+
+            {project.is_current ? "Activo" : "Finalizado"}
+          </span>
+        </h3>
+        {project.is_current && (
+          <p className="text-green-600 text-sm mb-2 font-medium">
+            Actualmente trabajo en este proyecto
+          </p>
+        )}
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{project.descripcion}</p>
 
         <div className="flex flex-wrap gap-2 mb-4">
@@ -31,18 +53,23 @@ const ProjectCard = ({ project, onEdit, onDelete }: ProjectProps) => {
 
         <div className="text-sm text-gray-700 space-y-1 mb-6">
           <p><span className="font-bold">Rol:</span> {project.rol}</p>
-          {project.fechaInicio && project.fechaFin && (
+          {project.fechaInicio && (
             <p>
               <span className="font-bold">Período:</span>{" "}
               {new Date(project.fechaInicio).toLocaleDateString("es-ES", {
                 month: "short",
                 year: "numeric"
-              })}{" "}
-              -{" "}
-              {new Date(project.fechaFin).toLocaleDateString("es-ES", {
-                month: "short",
-                year: "numeric"
               })}
+
+              {" - "}
+
+              {project.is_current
+                ? "Actualidad"
+                : new Date(project.fechaFin).toLocaleDateString("es-ES", {
+                    month: "short",
+                    year: "numeric"
+                  })
+              }
             </p>
           )}
         </div>
