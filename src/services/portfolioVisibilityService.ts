@@ -258,6 +258,7 @@ export async function savePortfolioVisibilitySection(
         api.put(
           `${USER_INFORMATION_ENDPOINT}/${item.id}`,
           {
+            id: item.id,
             section,
             is_public: item.checked,
           },
