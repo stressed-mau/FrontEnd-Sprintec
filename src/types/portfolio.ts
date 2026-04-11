@@ -130,6 +130,8 @@ export interface Portfolio {
   skills: Skill[];
   experiences: Experience[];
   socialNetworks: SocialNetwork[];
+  isPublished?: boolean;
+  portfolioUrl?: string;
 }
 
 // =========================

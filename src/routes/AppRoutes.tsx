@@ -28,7 +28,7 @@ function AppRoutes() {
       <Route path={REGISTER_ROUTE} element={<RegisterPage />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route path={USER_HOME_ROUTE} element={<UserHome />} />
+        
         <Route path={LEGACY_DASHBOARD_ROUTE} element={<Navigate to={USER_HOME_ROUTE} replace />} />
         
         <Route path="/perfil" element={<ProfilePage />} />
@@ -38,6 +38,7 @@ function AppRoutes() {
         <Route path="/experiencia" element={<ExperiencePage />} />
         
       </Route>
+      <Route path={USER_HOME_ROUTE} element={<UserHome />} />
       <Route path="/personal" element={<UserPersonalData />} />
       <Route path="/proyectos" element={<CreateProyect />} />
       <Route path="/publicar" element={<PublishPortfolio />} />
