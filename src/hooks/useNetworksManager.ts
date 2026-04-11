@@ -1,10 +1,13 @@
-﻿import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
-export type NetworkItem = {
-  id: number
-  name: string
-  url: string
-}
+import {
+  getUserSocialNetworks,
+  removeSocialNetwork,
+  updateSocialNetwork,
+  type SocialNetwork,
+} from "@/services/socialNetworksService"
+
+export type NetworkItem = SocialNetwork
 
 export type NetworkFormValues = {
   name: string
@@ -17,8 +20,6 @@ const EMPTY_FORM: NetworkFormValues = {
   name: "",
   url: "",
 }
-
-const MAX_NETWORKS = 10
 
 function validateNetworkField(field: keyof NetworkFormValues, values: NetworkFormValues): string {
   const name = values.name.trim()
@@ -43,8 +44,8 @@ function validateNetworkField(field: keyof NetworkFormValues, values: NetworkFor
       return "El campo URL es obligatorio."
     }
 
-    if (url.length > 100) {
-      return "El campo URL permite un máximo de 100 caracteres."
+    if (url.length > 255) {
+      return "El campo URL permite un máximo de 255 caracteres."
     }
 
     let parsedUrl: URL
@@ -58,13 +59,6 @@ function validateNetworkField(field: keyof NetworkFormValues, values: NetworkFor
     if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
       return "Ingrese una URL válida."
     }
-
-    const hostname = parsedUrl.hostname.trim()
-    const hasValidDomain = /^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(hostname)
-
-    if (!hasValidDomain) {
-      return "La URL ingresada no es válida."
-    }
   }
 
   return ""
@@ -74,23 +68,39 @@ export function useNetworksManager() {
   const [networks, setNetworks] = useState<NetworkItem[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<NetworkFormValues>(EMPTY_FORM)
   const [errors, setErrors] = useState<NetworkFormErrors>({})
   const [feedbackMessage, setFeedbackMessage] = useState("")
   const [feedbackType, setFeedbackType] = useState<"success" | "error" | "">("")
   const [successMessage, setSuccessMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
 
   const isEditing = useMemo(() => editingId !== null, [editingId])
+
+  const loadNetworks = useCallback(async () => {
+    setIsLoading(true)
+
+    try {
+      const remoteNetworks = await getUserSocialNetworks()
+      setNetworks(remoteNetworks)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudieron cargar las redes sociales."
+      setFeedbackMessage(message)
+      setFeedbackType("error")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadNetworks()
+  }, [loadNetworks])
 
   function showFeedback(message: string, type: "success" | "error") {
     setFeedbackMessage(message)
     setFeedbackType(type)
-  }
-
-  function showSuccessModal(message: string) {
-    setSuccessMessage(message)
-    setIsSuccessModalOpen(true)
   }
 
   function clearFeedback() {
@@ -98,22 +108,15 @@ export function useNetworksManager() {
     setFeedbackType("")
   }
 
+  function showSuccessModal(message: string) {
+    setSuccessMessage(message)
+    setIsSuccessModalOpen(true)
+  }
+
   function resetForm() {
     setEditingId(null)
     setFormData(EMPTY_FORM)
     setErrors({})
-  }
-
-  function openCreateModal() {
-    clearFeedback()
-
-    if (networks.length >= MAX_NETWORKS) {
-      showFeedback("Ha alcanzado el límite máximo de 10 redes profesionales registradas.", "error")
-      return
-    }
-
-    resetForm()
-    setIsModalOpen(true)
   }
 
   function openEditModal(network: NetworkItem) {
@@ -148,7 +151,7 @@ export function useNetworksManager() {
     }))
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     clearFeedback()
 
@@ -159,43 +162,42 @@ export function useNetworksManager() {
 
     setErrors(nextErrors)
 
-    if (nextErrors.name || nextErrors.url) {
+    if (nextErrors.name || nextErrors.url || !editingId) {
       return
     }
 
-    if (!isEditing && networks.length >= MAX_NETWORKS) {
-      showFeedback("Ha alcanzado el límite máximo de 10 redes profesionales registradas.", "error")
-      closeModal()
-      return
-    }
+    try {
+      setIsSaving(true)
+      const updatedNetwork = await updateSocialNetwork(editingId, {
+        name: formData.name.trim().toLowerCase(),
+        url: formData.url.trim(),
+      })
 
-    if (isEditing) {
       setNetworks((current) =>
-        current.map((network) =>
-          network.id === editingId
-            ? { ...network, name: formData.name.trim(), url: formData.url.trim() }
-            : network,
-        ),
+        current.map((network) => (network.id === editingId ? updatedNetwork : network)),
       )
-      showSuccessModal("Red actualizada correctamente.")
-    } else {
-      setNetworks((current) => [
-        {
-          id: Date.now(),
-          name: formData.name.trim(),
-          url: formData.url.trim(),
-        },
-        ...current,
-      ])
-      showSuccessModal("Red agregada correctamente.")
-    }
 
-    closeModal()
+      closeModal()
+      showSuccessModal("Red actualizada correctamente.")
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo actualizar la red."
+      showFeedback(message, "error")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  function handleDelete(id: number) {
+  async function handleDelete(id: string) {
     clearFeedback()
-    setNetworks((current) => current.filter((network) => network.id !== id))
+
+    try {
+      await removeSocialNetwork(id)
+      setNetworks((current) => current.filter((network) => network.id !== id))
+      showFeedback("Red desconectada correctamente.", "success")
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo eliminar la red."
+      showFeedback(message, "error")
+    }
   }
 
   function closeSuccessModal() {
@@ -213,7 +215,8 @@ export function useNetworksManager() {
     isSuccessModalOpen,
     isEditing,
     successMessage,
-    openCreateModal,
+    isLoading,
+    isSaving,
     openEditModal,
     closeModal,
     closeSuccessModal,
@@ -221,5 +224,7 @@ export function useNetworksManager() {
     handleBlur,
     handleSubmit,
     handleDelete,
+    loadNetworks,
+    showFeedback,
   }
 }

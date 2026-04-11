@@ -1,19 +1,17 @@
-﻿import { useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 
-export type ExperienceType = "laboral" | "academica"
+import { useEmailValidation } from "@/hooks/useEmailValidation"
+import {
+  createExperience,
+  getExperiences,
+  removeExperience,
+  updateExperience,
+  type ExperienceItem,
+  type ExperiencePayload,
+} from "@/services/experienceService"
 
-export type ExperienceItem = {
-  id: number
-  type: ExperienceType
-  company: string
-  position: string
-  description: string
-  startDate: string
-  endDate: string
-  current: boolean
-  image: string
-}
+export type { ExperienceItem, ExperienceType } from "@/services/experienceService"
 
 export type ExperienceFormValues = Omit<ExperienceItem, "id">
 
@@ -22,6 +20,7 @@ export type ExperienceFormErrors = Partial<Record<keyof ExperienceFormValues, st
 const EMPTY_FORM: ExperienceFormValues = {
   type: "laboral",
   company: "",
+  email: "",
   position: "",
   description: "",
   startDate: "",
@@ -33,7 +32,30 @@ const EMPTY_FORM: ExperienceFormValues = {
 const DATE_PATTERN = /^(\d{2})\/(\d{2})\/(\d{4})$/
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"]
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
+const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
+
+function normalizeFormDate(value: string) {
+  const trimmedValue = value.trim()
+
+  if (!trimmedValue) {
+    return ""
+  }
+
+  const isoDateMatch = trimmedValue.match(/^(\d{4}-\d{2}-\d{2})/)
+
+  if (isoDateMatch) {
+    return isoDateMatch[1]
+  }
+
+  const slashDateMatch = trimmedValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+
+  if (slashDateMatch) {
+    return `${slashDateMatch[3]}-${slashDateMatch[2]}-${slashDateMatch[1]}`
+  }
+
+  return trimmedValue
+}
 
 function parseDate(value: string) {
   const trimmedValue = value.trim()
@@ -113,11 +135,39 @@ function isIsoDate(value: string) {
   return ISO_DATE_PATTERN.test(value.trim())
 }
 
+function hasAllowedImageFormat(file: File) {
+  const normalizedFileName = file.name.trim().toLowerCase()
+  const hasAllowedExtension = ALLOWED_IMAGE_EXTENSIONS.some((extension) => normalizedFileName.endsWith(extension))
+
+  if (hasAllowedExtension) {
+    return true
+  }
+
+  return ALLOWED_IMAGE_TYPES.includes(file.type.toLowerCase())
+}
+
+function validateImageFile(file: File | null): string {
+  if (!file) {
+    return ""
+  }
+
+  if (!hasAllowedImageFormat(file)) {
+    return "La imagen solo permite archivos JPG, JPEG o PNG."
+  }
+
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+    return "La imagen permite archivos de hasta 2 MB."
+  }
+
+  return ""
+}
+
 function validateExperienceField(
   field: keyof ExperienceFormValues,
   values: ExperienceFormValues,
 ): string {
   const company = values.company.trim()
+  const email = values.email.trim()
   const position = values.position.trim()
   const description = values.description.trim()
   const startDate = values.startDate.trim()
@@ -130,6 +180,20 @@ function validateExperienceField(
 
     if (company.length > 100) {
       return "El nombre de la empresa no puede exceder los 100 caracteres."
+    }
+  }
+
+  if (field === "email") {
+    if (!email) {
+      return ""
+    }
+
+    if (email.length > 60) {
+      return "El correo electrónico no puede exceder los 60 caracteres."
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return "El correo electrónico debe tener un formato válido."
     }
   }
 
@@ -186,24 +250,29 @@ function validateExperienceField(
     }
   }
 
-  if (field === "image" && values.image.length > 0 && values.image.length > 10_000_000) {
-    return "La imagen seleccionada no es válida."
-  }
-
   return ""
 }
 
 export function useExperienceManager() {
+  const { sanitizeEmailInput, validateEmail } = useEmailValidation()
+
   const [experiences, setExperiences] = useState<ExperienceItem[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
+  const [editingExperience, setEditingExperience] = useState<ExperienceItem | null>(null)
   const [formData, setFormData] = useState<ExperienceFormValues>(EMPTY_FORM)
   const [errors, setErrors] = useState<ExperienceFormErrors>({})
   const [feedbackMessage, setFeedbackMessage] = useState("")
   const [feedbackType, setFeedbackType] = useState<"success" | "error" | "">("")
+  const [successMessage, setSuccessMessage] = useState("")
+  const [pageError, setPageError] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+  const [hasRemovedExistingImage, setHasRemovedExistingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-  const isEditing = useMemo(() => editingId !== null, [editingId])
+  const isEditing = useMemo(() => editingExperience !== null, [editingExperience])
   const laboralExperiences = useMemo(
     () => experiences.filter((experience) => experience.type === "laboral"),
     [experiences],
@@ -212,6 +281,29 @@ export function useExperienceManager() {
     () => experiences.filter((experience) => experience.type === "academica"),
     [experiences],
   )
+  const canRemoveImage = useMemo(
+    () => Boolean(selectedImageFile) || Boolean(formData.image),
+    [formData.image, selectedImageFile],
+  )
+
+  const loadExperiences = useCallback(async () => {
+    setIsLoading(true)
+    setPageError("")
+
+    try {
+      const remoteExperiences = await getExperiences()
+      setExperiences(remoteExperiences)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudieron cargar las experiencias."
+      setPageError(message)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadExperiences()
+  }, [loadExperiences])
 
   function showFeedback(message: string, type: "success" | "error") {
     setFeedbackMessage(message)
@@ -223,8 +315,20 @@ export function useExperienceManager() {
     setFeedbackType("")
   }
 
+  function showSuccessModal(message: string) {
+    setSuccessMessage(message)
+    setIsSuccessModalOpen(true)
+  }
+
+  function closeSuccessModal() {
+    setIsSuccessModalOpen(false)
+    setSuccessMessage("")
+  }
+
   function resetForm() {
-    setEditingId(null)
+    setEditingExperience(null)
+    setSelectedImageFile(null)
+    setHasRemovedExistingImage(false)
     setFormData(EMPTY_FORM)
     setErrors({})
 
@@ -240,32 +344,49 @@ export function useExperienceManager() {
 
   function openCreateModal() {
     clearFeedback()
+    closeSuccessModal()
     resetForm()
     setIsModalOpen(true)
   }
 
   function openEditModal(experience: ExperienceItem) {
     clearFeedback()
-    setEditingId(experience.id)
+    closeSuccessModal()
+    setEditingExperience(experience)
+    setSelectedImageFile(null)
+    setHasRemovedExistingImage(false)
     setFormData({
       type: experience.type,
       company: experience.company,
+      email: experience.email,
       position: experience.position,
       description: experience.description,
-      startDate: experience.startDate,
-      endDate: experience.endDate,
+      startDate: normalizeFormDate(experience.startDate),
+      endDate: normalizeFormDate(experience.endDate),
       current: experience.current,
       image: experience.image,
     })
     setErrors({})
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+
     setIsModalOpen(true)
   }
 
   function updateField(field: keyof ExperienceFormValues, value: string | boolean) {
+    const normalizedValue =
+      field === "email" && typeof value === "string" ? sanitizeEmailInput(value) : value
+
     const nextValues: ExperienceFormValues = {
       ...formData,
-      [field]: value,
+      [field]: normalizedValue,
     } as ExperienceFormValues
+
+    if (field === "type" && value === "academica") {
+      nextValues.email = ""
+    }
 
     if (field === "current" && value === true) {
       nextValues.endDate = ""
@@ -281,6 +402,10 @@ export function useExperienceManager() {
       return
     }
 
+    if (field === "email" && typeof normalizedValue === "string") {
+      validateEmail(normalizedValue)
+    }
+
     if (errors[field]) {
       setErrors((currentErrors) => ({
         ...currentErrors,
@@ -288,7 +413,7 @@ export function useExperienceManager() {
       }))
     }
 
-    if ((field === "startDate" || field === "endDate") && errors.endDate) {
+    if ((field === "startDate" || field === "endDate" || field === "type") && errors.endDate) {
       setErrors((currentErrors) => ({
         ...currentErrors,
         endDate: validateExperienceField("endDate", nextValues),
@@ -318,10 +443,14 @@ export function useExperienceManager() {
       return
     }
 
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    const imageError = validateImageFile(file)
+
+    if (imageError) {
+      setSelectedImageFile(null)
+      setFormData((current) => ({ ...current, image: editingExperience?.image ?? "" }))
       setErrors((currentErrors) => ({
         ...currentErrors,
-        image: "El logo solo permite archivos JPG o PNG.",
+        image: imageError,
       }))
 
       if (fileInputRef.current) {
@@ -331,18 +460,8 @@ export function useExperienceManager() {
       return
     }
 
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      setErrors((currentErrors) => ({
-        ...currentErrors,
-        image: "El logo permite archivos de hasta 2 MB.",
-      }))
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
-
-      return
-    }
+    setSelectedImageFile(file)
+    setHasRemovedExistingImage(false)
 
     const reader = new FileReader()
     reader.onload = () => {
@@ -359,6 +478,8 @@ export function useExperienceManager() {
   }
 
   function removeImage() {
+    setSelectedImageFile(null)
+    setHasRemovedExistingImage(Boolean(editingExperience?.image))
     setFormData((current) => ({ ...current, image: "" }))
     setErrors((currentErrors) => ({
       ...currentErrors,
@@ -370,16 +491,23 @@ export function useExperienceManager() {
     }
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     clearFeedback()
+    setPageError("")
+
+    if (isSaving) {
+      return
+    }
 
     const nextErrors: ExperienceFormErrors = {
       company: validateExperienceField("company", formData),
+      email: validateExperienceField("email", formData),
       position: validateExperienceField("position", formData),
       description: validateExperienceField("description", formData),
       startDate: validateExperienceField("startDate", formData),
       endDate: validateExperienceField("endDate", formData),
+      image: validateImageFile(selectedImageFile),
     }
 
     setErrors(nextErrors)
@@ -388,33 +516,60 @@ export function useExperienceManager() {
       return
     }
 
-    const payload: ExperienceItem = {
-      id: editingId ?? Date.now(),
+    const payload: ExperiencePayload = {
       type: formData.type,
       company: formData.company.trim(),
+      email: formData.type === "laboral" ? formData.email.trim() : "",
       position: formData.position.trim(),
       description: formData.description.trim(),
       startDate: formData.startDate.trim(),
       endDate: formData.current ? "" : formData.endDate.trim(),
       current: formData.current,
-      image: formData.image,
+      logoFile: selectedImageFile,
+      removeLogo: hasRemovedExistingImage && !selectedImageFile,
     }
 
-    if (isEditing) {
-      setExperiences((current) =>
-        current.map((experience) => (experience.id === editingId ? payload : experience)),
-      )
-    } else {
-      setExperiences((current) => [payload, ...current])
-    }
+    try {
+      setIsSaving(true)
 
-    showFeedback("Experiencia registrada correctamente.", "success")
-    closeModal()
+      if (editingExperience) {
+        await updateExperience(editingExperience.id, payload)
+        closeModal()
+        showSuccessModal("Experiencia actualizada correctamente.")
+      } else {
+        await createExperience(payload)
+        closeModal()
+        showSuccessModal("Experiencia registrada correctamente.")
+      }
+
+      await loadExperiences()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo guardar la experiencia."
+      showFeedback(message, "error")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  function handleDelete(id: number) {
+  async function handleDelete(id: string) {
     clearFeedback()
-    setExperiences((current) => current.filter((experience) => experience.id !== id))
+    setPageError("")
+
+    const targetExperience = experiences.find((experience) => experience.id === id)
+
+    if (!targetExperience) {
+      setPageError("No se encontró la experiencia seleccionada.")
+      return
+    }
+
+    try {
+      await removeExperience(id, targetExperience.type)
+      await loadExperiences()
+      showFeedback("Experiencia eliminada correctamente.", "success")
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo eliminar la experiencia."
+      setPageError(message)
+    }
   }
 
   return {
@@ -424,17 +579,25 @@ export function useExperienceManager() {
     isEditing,
     feedbackMessage,
     feedbackType,
+    isSuccessModalOpen,
+    successMessage,
+    pageError,
+    isLoading,
+    isSaving,
+    canRemoveImage,
     laboralExperiences,
     academicExperiences,
     fileInputRef,
     openCreateModal,
     openEditModal,
     closeModal,
+    closeSuccessModal,
     updateField,
     handleBlur,
     handleImageChange,
     removeImage,
     handleSubmit,
     handleDelete,
+    reloadExperiences: loadExperiences,
   }
 }

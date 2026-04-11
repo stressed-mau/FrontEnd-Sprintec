@@ -96,7 +96,12 @@ export function useLoginForm() {
 
       if (error instanceof AuthServiceError) {
         setErrors({
-          user: error.validationErrors?.user?.[0] ?? error.validationErrors?.email?.[0] ?? "",
+          user:
+            error.validationErrors?.user?.[0] ??
+            error.validationErrors?.email?.[0] ??
+            error.validationErrors?.username?.[0] ??
+            error.validationErrors?.login?.[0] ??
+            "",
           password: error.validationErrors?.password?.[0] ?? "",
           form: error.message,
         })

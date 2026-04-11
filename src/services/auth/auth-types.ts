@@ -8,6 +8,9 @@
 export type LoginRequest = {
   user: string
   password: string
+  email?: string
+  username?: string
+  login?: string
 }
 
 export type AuthUser = {

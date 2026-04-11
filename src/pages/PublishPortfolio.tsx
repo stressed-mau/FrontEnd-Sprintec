@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { Palette } from "lucide-react";
