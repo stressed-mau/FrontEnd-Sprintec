@@ -3,25 +3,16 @@ import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { Palette } from "lucide-react";
 import { usePortfolioVisibility } from '../hooks/usePortfolioVisibility';
+import ModernTemplate from '../components/templates/ModernTemplate';
+
 
 const PublishPortfolio = () => {
   const {
-    data,
-    openSections,
-    sectionsArray,
-    isLoading,
-    isSaving,
-    pageError,
-    toggleSection,
-    handleItemCheck,
-    handleBulkSelect,
-    getVisibleCountText,
-    reloadVisibilityData,
-  } = usePortfolioVisibility();
+    data, openSections, sectionsArray, isLoading, isSaving, pageError,
+    toggleSection, handleItemCheck, handleBulkSelect, getVisibleCountText, reloadVisibilityData, } = usePortfolioVisibility();
 
   const visibleSections = sectionsArray.filter((sectionConfig) => data[sectionConfig.key].length > 0);
-  
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+
 
   const templates = [
     {
@@ -47,6 +38,8 @@ const PublishPortfolio = () => {
     }
   ];
 
+ const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
   return (
     <div id="publishportfolio-page" className="min-h-screen bg-[#F7F0E1]">
       <Header />
@@ -110,7 +103,8 @@ const PublishPortfolio = () => {
                         ))}
                       </ul>
 
-                      <button className="w-full py-2.5 border border-[#77B6E6] bg-[#C2DBED] rounded-lg text-sm font-semibold text-[#003A6C] hover:bg-[#C4A57C] transition-colors flex items-center justify-center gap-2">
+                      <button onClick={(e) => { e.stopPropagation(); // Evita seleccionar la plantilla
+                        setShowPreview(true); }} className="w-full py-2.5 border border-[#77B6E6] bg-[#C2DBED] rounded-lg text-sm font-semibold text-[#003A6C] hover:bg-[#C4A57C] transition-colors flex items-center justify-center gap-2">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -243,6 +237,39 @@ const PublishPortfolio = () => {
                 })}
               </div>
             </section>
+           // MODAL DE VISTA PREVIA 
+      {showPreview && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-6xl h-[90vh] bg-white rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+            // Cabecera del Modal
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-white">
+              <div>
+                <h3 className="font-bold text-[#003A6C] text-lg">
+                  Vista Previa: <span className="text-purple-600">{selectedTemplate || 'Moderna'}</span>
+                </h3> <p className="text-xs text-gray-500">Así es como los visitantes verán tu portafolio</p>
+              </div>
+              <button 
+                onClick={() => setShowPreview(false)}
+                className="px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 font-bold transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+            
+            {/* Contenido: Renderizado de la Plantilla */}
+            <div className="flex-1 overflow-y-auto bg-gray-50">
+              {selectedTemplate === 'Moderna' ? (
+                <ModernTemplate data={data} />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4">
+                  <Palette size={48} className="opacity-20" />
+                  <p>Selecciona la plantilla "Moderna" para ver la previsualización.</p>
+                </div>
+              )}
+              </div>
+          </div>
+        </div>
+      )}
           </div>
         </main>
       </div>

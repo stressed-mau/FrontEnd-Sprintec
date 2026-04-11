@@ -102,16 +102,7 @@ export const usePortfolioVisibility = () => {
   };
 
   return {
-    data,
-    openSections,
-    sectionsArray,
-    isLoading,
-    isSaving,
-    pageError,
-    toggleSection,
-    handleItemCheck,
-    handleBulkSelect,
-    getVisibleCountText,
-    reloadVisibilityData: loadVisibilityData,
+    data, openSections, sectionsArray, isLoading, isSaving, pageError, 
+    toggleSection, handleItemCheck, handleBulkSelect, getVisibleCountText, reloadVisibilityData: loadVisibilityData,
   };
 };
