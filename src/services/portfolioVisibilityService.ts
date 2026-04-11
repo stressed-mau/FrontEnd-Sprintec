@@ -19,7 +19,7 @@ interface UserInformationDto {
   image_url: string;
 }
 
-const USER_INFORMATION_ENDPOINT = '/user_information';
+const USER_INFORMATION_ENDPOINT = '/visibility';
 
 const EMPTY_VISIBILITY_DATA: PortfolioVisibilityData = {
   projects: [],
