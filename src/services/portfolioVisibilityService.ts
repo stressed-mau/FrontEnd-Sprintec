@@ -20,6 +20,7 @@ interface UserInformationDto {
 }
 
 const USER_INFORMATION_ENDPOINT = '/visibility';
+const VISIBILITY_MUTATION_TIMEOUT_MS = 5000;
 
 const EMPTY_VISIBILITY_DATA: PortfolioVisibilityData = {
   projects: [],
@@ -166,9 +167,28 @@ export async function getPortfolioVisibilityData(): Promise<PortfolioVisibilityD
 export async function savePortfolioVisibilitySection(
   section: SectionKey,
   items: VisibilityItem[],
+  itemId?: number,
 ): Promise<void> {
-  void section;
-  void items;
+  const targetItems = itemId != null ? items.filter((item) => item.id === itemId) : items;
+
+  try {
+    await Promise.all(
+      targetItems.map((item) =>
+        api.put(
+          `${USER_INFORMATION_ENDPOINT}/${item.id}`,
+          {
+            section,
+            checked: item.checked,
+          },
+          {
+            timeout: VISIBILITY_MUTATION_TIMEOUT_MS,
+          },
+        ),
+      ),
+    );
+  } catch (error) {
+    throw formatError(error);
+  }
 
   return Promise.resolve();
 }
