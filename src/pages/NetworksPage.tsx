@@ -90,14 +90,14 @@ const PROFESSIONAL_NETWORKS: ProfessionalNetwork[] = [
     matchKeys: ["youtube", "google"],
   },
   {
-    id: "stackoverflow",
-    name: "Stack Overflow",
+    id: "stackexchange",
+    name: "Stack Exchange",
     icon: StackOverflowIcon,
     color: "bg-[#F48024] hover:bg-[#DA670B]",
     lightColor: "bg-orange-100",
     textColor: "text-[#F48024]",
     description: "Conecta tu perfil tÃ©cnico y reputaciÃ³n en la comunidad",
-    matchKeys: ["stackoverflow", "stack overflow"],
+    matchKeys: ["stackexchange", "stack exchange", "stackoverflow", "stack overflow"],
   },
 ]
 

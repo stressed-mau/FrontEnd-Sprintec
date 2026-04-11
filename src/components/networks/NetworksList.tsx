@@ -69,7 +69,12 @@ function getNetworkVisual(name: string, url: string): NetworkVisual {
     }
   }
 
-  if (normalizedValue.includes("stackoverflow") || normalizedValue.includes("stack overflow")) {
+  if (
+    normalizedValue.includes("stackexchange") ||
+    normalizedValue.includes("stack exchange") ||
+    normalizedValue.includes("stackoverflow") ||
+    normalizedValue.includes("stack overflow")
+  ) {
     return {
       icon: MessageSquare,
       badge: "Comunidad",
