@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar';
 import { Palette, Upload, CheckCircle2, Copy} from "lucide-react";
 import { usePortfolioVisibility } from '../hooks/usePortfolioVisibility';
 import ModernTemplate from '../components/templates/ModernTemplate';
-
+import { usePublishPortfolio } from '../hooks/usePublishPortfolio';
 
 const PublishPortfolio = () => {
   const {
@@ -38,13 +38,19 @@ const PublishPortfolio = () => {
     }
   ];
 
+  const {
+    isPublished,
+    portfolioUrl,
+    handlePublish,
+    handleUnpublish,
+    loading
+  } = usePublishPortfolio();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [isPublished, setIsPublished] = useState(false);
-  const portfolioUrl = "https://3650be49-7310-441b-aa8a-7f25df16ce08-v2-figmaframepreview.figma.site/portfolio/user-2";
-
-  const handlePublish = () => setIsPublished(true);
-  const handleUnpublish = () => setIsPublished(false);
-
+  const selected = templates.find(t => t.id === selectedTemplate);
+  const templateNumber =
+    selected?.id === "Moderna" ? 1 :
+    selected?.id === "Minimalista" ? 2 :
+    selected?.id === "Corporativa" ? 3 : null;
   const copyToClipboard = () => {
     navigator.clipboard.writeText(portfolioUrl);
     alert("¡Enlace copiado!");
@@ -263,7 +269,14 @@ const PublishPortfolio = () => {
             </div>
           </div>
           <button 
-            onClick={handlePublish}
+            onClick={() => {
+              if (!templateNumber) {
+                alert("Selecciona una plantilla");
+                return;
+              }
+
+              handlePublish(templateNumber);
+            }}
             className="bg-[#003A6C] text-white px-5 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 hover:bg-[#002a4d] transition-all shadow-md active:scale-95"
           >
             <Upload className="w-5 h-5" />
@@ -284,7 +297,10 @@ const PublishPortfolio = () => {
               </div>
             </div>
             <button 
-              onClick={handleUnpublish}
+              onClick={() => {
+              if (!templateNumber) return;
+              handleUnpublish(templateNumber);
+            }}
               className="border-1 border-[#4982ad] bg-[#C2DBED] text-[#003A6C] px-6 py-2 rounded-lg font-semibold text-sm hover:bg-[#c4a57c] hover:text-[#003A6C] transition-all"
             >
               Despublicar
