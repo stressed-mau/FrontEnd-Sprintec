@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { createProject, getProjects } from "@/services/ProjectService";
+import { createProject, getProjects, uploadImage } from "@/services/ProjectService";
+
 import { useEffect } from "react";
 export interface Project {
   nombre: string;
@@ -31,13 +32,13 @@ export const useCreateProyect = () => {
           nombre: p.title,
           descripcion: p.description,
           tecnologias: p.technologies || [],
-          rol: p.role,
+          rol: p.project_rol,
           fechaInicio: p.initial_date,
           fechaFin: p.final_date,
           is_current: p.is_current,
           github: p.url_to_project,
           demo: p.url_to_deploy,
-          image: p.image_url || ""
+          image: p.photoghaph || ""
         }));
 
         setProjects(mapped);
@@ -131,11 +132,12 @@ export const useCreateProyect = () => {
     const descripcion = (formData.get('descripcion') as string) || "";
     const rol = (formData.get('rol') as string) || "";
     const fechaInicio = formData.get('fechaInicio') as string;
-    const fechaFin = formData.get('fechaFin') as string;
+    const fechaFinRaw = formData.get('fechaFin') as string;
+    const fechaFin = fechaFinRaw ? fechaFinRaw : null;
     const is_current = formData.get('is_current') === 'on';
     const github = (formData.get('github') as string) || "";
     const demo = (formData.get('demo') as string) || "";
-    const file = formData.get('image') as File;
+    const file = formData.get('image') as File | null;
 
     let newErrors: any = {};
     const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
@@ -217,18 +219,22 @@ export const useCreateProyect = () => {
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
     const technologyIds = selectedTechs.map(t => t.id);
+    let imageUrl = null;
 
+    if (file && file.size > 0) {
+      imageUrl = await uploadImage(file);
+    }
     const payload = {
       title: nombre,
       description: descripcion,
       initial_date: fechaInicio,
       final_date: is_current ? null : fechaFin,
       url_to_project: github || null,
-      url_to_deploy: demo || null,
-      role: rol,
-      is_current,
+      url_to_deploy: demo || null, 
+      photoghaph: imageUrl,
       technologies: technologyIds,
-      image_url: "https://via.placeholder.com/300" 
+      project_rol: rol, 
+      is_current,
     };
 
     await createProject(payload);
@@ -238,13 +244,13 @@ export const useCreateProyect = () => {
       nombre: p.title,
       descripcion: p.description,
       tecnologias: p.technologies || [],
-      rol: p.role,
+      rol: p.project_rol,
       fechaInicio: p.initial_date,
       fechaFin: p.final_date,
       is_current: p.is_current,
       github: p.url_to_project,
       demo: p.url_to_deploy,
-      image: p.image_url || ""
+      image: p.photoghaph || ""
     }));
 
     setProjects(mapped);

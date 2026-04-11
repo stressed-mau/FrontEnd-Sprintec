@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
-import { Palette } from "lucide-react";
+import { Palette, Upload, CheckCircle2, Copy, Globe } from "lucide-react";
 import { usePortfolioVisibility } from '../hooks/usePortfolioVisibility';
 
 const PublishPortfolio = () => {
@@ -21,7 +21,16 @@ const PublishPortfolio = () => {
 
   
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [isPublished, setIsPublished] = useState(false);
+  const portfolioUrl = "https://3650be49-7310-441b-aa8a-7f25df16ce08-v2-figmaframepreview.figma.site/portfolio/user-2";
 
+  const handlePublish = () => setIsPublished(true);
+  const handleUnpublish = () => setIsPublished(false);
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(portfolioUrl);
+    alert("¡Enlace copiado!");
+  };
   const templates = [
     {
       id: 'Moderna',
@@ -236,6 +245,7 @@ const PublishPortfolio = () => {
                 })}
               </div>
             </section>
+            
           </div>
         </main>
       </div>

@@ -38,3 +38,15 @@ export const getProjects = async () => {
 
   return res.data.data;
 };
+export const uploadImage = async (file: File) => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const res = await api.post("/images", formData);
+
+  if (!res.data.success) {
+    throw new Error("Error al subir imagen");
+  }
+
+  return res.data.url;
+};
