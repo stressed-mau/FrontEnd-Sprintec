@@ -1,13 +1,17 @@
 import axios from 'axios';
 import { api } from './api';
+import { getAuthSession } from '@/services/auth/auth-storage';
 
 export type SectionKey = 'projects' | 'skills' | 'experience' | 'networks';
+
+type VisibilityTable = 'skills' | 'projects' | 'educations' | 'social_networks' | 'work_experiences';
 
 export interface VisibilityItem {
   id: number;
   label: string;
   sublabel: string;
   checked: boolean;
+  sourceTable?: VisibilityTable;
 }
 
 type UnknownRecord = Record<string, unknown>;
@@ -167,7 +171,8 @@ function normalizeProjects(data: unknown): VisibilityItem[] {
       label: asString(record.name ?? record.title) || `Proyecto ${index + 1}`,
       sublabel: asString(record.role ?? record.description),
       checked: asBoolean(record.is_public),
-    };
+      sourceTable: 'projects',
+    } as VisibilityItem;
   });
 }
 
@@ -181,7 +186,8 @@ function normalizeSkills(data: unknown): VisibilityItem[] {
       label: asString(record.name) || `Habilidad ${index + 1}`,
       sublabel: asString(record.level_of_domain),
       checked: asBoolean(record.is_public),
-    };
+      sourceTable: 'skills',
+    } as VisibilityItem;
   });
 }
 
@@ -196,7 +202,8 @@ function normalizeExperience(data: unknown): VisibilityItem[] {
       label: asString(record.role) || `Experiencia laboral ${index + 1}`,
       sublabel: asString(record.company_name),
       checked: asBoolean(record.is_public),
-    };
+      sourceTable: 'work_experiences',
+    } as VisibilityItem;
   });
 
   const educationItems = educationList.map((item, index) => {
@@ -206,7 +213,8 @@ function normalizeExperience(data: unknown): VisibilityItem[] {
       label: asString(record.degree ?? record.career) || `Educación ${index + 1}`,
       sublabel: asString(record.institution),
       checked: asBoolean(record.is_public),
-    };
+      sourceTable: 'educations',
+    } as VisibilityItem;
   });
 
   return [...workItems, ...educationItems];
@@ -222,7 +230,8 @@ function normalizeNetworks(data: unknown): VisibilityItem[] {
       label: asString(record.name ?? record.platform) || `Red ${index + 1}`,
       sublabel: asString(record.url ?? record.link),
       checked: asBoolean(record.is_public),
-    };
+      sourceTable: 'social_networks',
+    } as VisibilityItem;
   });
 }
 
@@ -230,7 +239,13 @@ export type PortfolioVisibilityData = Record<SectionKey, VisibilityItem[]>;
 
 export async function getPortfolioVisibilityData(): Promise<PortfolioVisibilityData> {
   try {
-    const response = await api.get(USER_INFORMATION_ENDPOINT);
+    const session = getAuthSession();
+
+    if (!session?.user?.id) {
+      throw new Error('No se pudo obtener el id del usuario autenticado.');
+    }
+
+    const response = await api.get(`${USER_INFORMATION_ENDPOINT}/${session.user.id}`);
     const payload = unwrapPayload(response.data);
 
     return {
@@ -249,9 +264,27 @@ export async function savePortfolioVisibilitySection(
   items: VisibilityItem[],
   itemId?: number,
 ): Promise<void> {
-  void section;
-  void items;
-  void itemId;
+  const session = getAuthSession();
 
-  return Promise.resolve();
+  if (!session?.user?.id) {
+    throw new Error('No se pudo obtener el id del usuario autenticado.');
+  }
+
+  const targetItems = itemId != null ? items.filter((item) => item.id === itemId) : items;
+
+  try {
+    await Promise.all(
+      targetItems.map((item) =>
+        api.put(
+          `${USER_INFORMATION_ENDPOINT}/${item.id}?table=${item.sourceTable ?? section}`,
+          {
+            id: item.id,
+            is_public: item.checked,
+          },
+        ),
+      ),
+    );
+  } catch (error) {
+    throw formatError(error);
+  }
 }
