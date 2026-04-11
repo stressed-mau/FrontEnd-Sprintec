@@ -50,6 +50,14 @@ function YoutubeIcon({ className }: { className?: string }) {
   )
 }
 
+function StackOverflowIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M18.58 20.75v-6h1.98v7.98H4.44v-7.98h1.98v6h12.16Zm-10.5-1.98h8.52v1.98H8.08v-1.98Zm.42-4.51 8.35 1.74-.4 1.94-8.35-1.74.4-1.94Zm1.1-4.08 7.73 3.61-.84 1.8-7.73-3.61.84-1.8Zm2.16-3.82 6.56 5.48-1.27 1.52-6.56-5.48 1.27-1.52Zm4.23-4.09 1.59 1.18-4.59 6.19-1.59-1.18 4.59-6.19Z" />
+    </svg>
+  )
+}
+
 const PROFESSIONAL_NETWORKS: ProfessionalNetwork[] = [
   {
     id: "github",
@@ -80,6 +88,16 @@ const PROFESSIONAL_NETWORKS: ProfessionalNetwork[] = [
     textColor: "text-[#FF0000]",
     description: "Comparte tu canal de YouTube",
     matchKeys: ["youtube", "google"],
+  },
+  {
+    id: "stackoverflow",
+    name: "Stack Overflow",
+    icon: StackOverflowIcon,
+    color: "bg-[#F48024] hover:bg-[#DA670B]",
+    lightColor: "bg-orange-100",
+    textColor: "text-[#F48024]",
+    description: "Conecta tu perfil tÃ©cnico y reputaciÃ³n en la comunidad",
+    matchKeys: ["stackoverflow", "stack overflow"],
   },
 ]
 

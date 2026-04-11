@@ -69,6 +69,16 @@ function getNetworkVisual(name: string, url: string): NetworkVisual {
     }
   }
 
+  if (normalizedValue.includes("stackoverflow") || normalizedValue.includes("stack overflow")) {
+    return {
+      icon: MessageSquare,
+      badge: "Comunidad",
+      iconClassName: "text-[#F48024]",
+      surfaceClassName: "bg-[#FFF4EC]",
+      buttonClassName: "border-[#F7C9A7] text-[#C25C10] hover:bg-[#FFF8F3]",
+    }
+  }
+
   return {
     icon: Globe,
     badge: "Enlace",
