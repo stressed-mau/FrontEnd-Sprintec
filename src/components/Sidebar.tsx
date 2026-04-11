@@ -17,7 +17,7 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* --- VISTA MÓVIL (LOS CUADRITOS) --- */}
+      {/* --- VISTA MÓVIL --- */}
       {/* Se muestra solo en pantallas pequeñas (block md:hidden) */}
       <div className="block lg:hidden w-full p-4">
         <section className="bg-white border-2 border-[#6dacbf] rounded-2xl p-6 shadow-sm">

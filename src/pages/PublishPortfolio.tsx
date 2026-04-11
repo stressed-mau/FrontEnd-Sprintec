@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Palette, X } from "lucide-react"
+import { CheckCircle2, Copy, Palette, Upload, X } from "lucide-react"
 
 import Header from "../components/HeaderUser"
 import Sidebar from "../components/Sidebar"
@@ -55,28 +55,31 @@ const templates = [
   {
     id: "Moderna",
     title: "Moderna",
-    description: "Diseño vibrante con gradientes y animaciones",
-    features: ["Gradientes dinámicos", "Efectos glassmorphism", "Animaciones suaves"],
+    description: "Diseno vibrante con gradientes y animaciones",
+    features: ["Gradientes dinamicos", "Efectos glassmorphism", "Animaciones suaves"],
     colorClass: "from-blue-500 to-pink-500",
     previewEnabled: true,
   },
   {
     id: "Minimalista",
     title: "Minimalista",
-    description: "Diseño limpio enfocado en contenido",
-    features: ["Diseño limpio", "Tipografía elegante", "Máxima legibilidad"],
+    description: "Diseno limpio enfocado en contenido",
+    features: ["Diseno limpio", "Tipografia elegante", "Maxima legibilidad"],
     colorClass: "from-gray-200 to-gray-300",
     previewEnabled: false,
   },
   {
     id: "Corporativa",
     title: "Corporativa",
-    description: "Diseño profesional y formal",
+    description: "Diseno profesional y formal",
     features: ["Aspecto profesional", "Estructura formal", "Perfecto para empresas"],
     colorClass: "from-blue-600 to-blue-900",
     previewEnabled: true,
   },
 ] as const
+
+const DEMO_PORTFOLIO_URL =
+  "https://3650be49-7310-441b-aa8a-7f25df16ce08-v2-figmaframepreview.figma.site/portfolio/user-2"
 
 const PublishPortfolio = () => {
   const {
@@ -97,6 +100,8 @@ const PublishPortfolio = () => {
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null)
+  const [isPublished, setIsPublished] = useState(false)
+  const [copiedLink, setCopiedLink] = useState(false)
 
   function handlePreview(templateId: string) {
     setSelectedTemplate(templateId)
@@ -105,6 +110,16 @@ const PublishPortfolio = () => {
 
   function closePreview() {
     setPreviewTemplate(null)
+  }
+
+  async function copyToClipboard() {
+    try {
+      await navigator.clipboard.writeText(DEMO_PORTFOLIO_URL)
+      setCopiedLink(true)
+      window.setTimeout(() => setCopiedLink(false), 2000)
+    } catch {
+      setCopiedLink(false)
+    }
   }
 
   function renderPreviewContent() {
@@ -117,7 +132,7 @@ const PublishPortfolio = () => {
     }
 
     return (
-      <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-4 text-center text-gray-400">
+      <div className="flex min-h-[420px] flex-col items-center justify-center gap-4 text-center text-gray-400">
         <Palette size={48} className="opacity-20" />
         <p>No hay vista previa disponible para esta plantilla.</p>
       </div>
@@ -136,7 +151,7 @@ const PublishPortfolio = () => {
             <div className="mb-8 text-center md:text-left">
               <h1 className="mb-2 text-3xl font-bold text-[#003A6C] md:text-4xl">Publicar Portafolio</h1>
               <p className="text-sm text-gray-600 md:text-base">
-                Configura tu portafolio, elige una plantilla y publícalo
+                Configura tu portafolio, elige una plantilla y publicalo
               </p>
             </div>
 
@@ -146,7 +161,7 @@ const PublishPortfolio = () => {
                 <h2 className="text-base font-semibold text-[#003A6C]">Selecciona tu Plantilla</h2>
               </div>
               <p className="mb-6 text-base text-[#4982ad]">
-                Elige el diseño que mejor represente tu estilo profesional
+                Elige el diseno que mejor represente tu estilo profesional
               </p>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -239,7 +254,7 @@ const PublishPortfolio = () => {
                             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                           />
                         </svg>
-                        {template.previewEnabled ? "Vista Previa" : "Próximamente"}
+                        {template.previewEnabled ? "Vista Previa" : "Proximamente"}
                       </button>
                     </div>
                   </div>
@@ -275,10 +290,10 @@ const PublishPortfolio = () => {
               aria-labelledby="visibility-config-title"
             >
               <h2 id="visibility-config-title" className="mb-1 text-xl font-bold text-[#003A6C]">
-                Configuración de Visibilidad
+                Configuracion de Visibilidad
               </h2>
               <p className="mb-6 text-sm text-gray-500">
-                Elige qué elementos específicos mostrar en tu portafolio
+                Elige que elementos especificos mostrar en tu portafolio
               </p>
 
               {isLoading || isSaving ? (
@@ -313,17 +328,18 @@ const PublishPortfolio = () => {
                               disabled={isLoading || isSaving}
                               onChange={() => void handleBulkSelect(sectionKey, !sectionEnabled)}
                             />
-                            <div className="after:content-[''] peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all peer-checked:bg-[#003A6C] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none" />
+                            <div className="h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-[#003A6C] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none" />
                           </label>
                           <span className="font-semibold text-[#003A6C]">{sectionConfig.title}</span>
                           <span className="ml-2 text-sm text-gray-400">{countText}</span>
                         </div>
 
                         <button
+                          type="button"
                           onClick={() => toggleSection(sectionKey)}
                           disabled={isLoading}
                           className="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100"
-                          aria-label={isOpen ? "Cerrar sección" : "Abrir sección"}
+                          aria-label={isOpen ? "Cerrar seccion" : "Abrir seccion"}
                         >
                           <svg
                             className={`h-5 w-5 transform transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
@@ -342,6 +358,7 @@ const PublishPortfolio = () => {
                         <div className="border-t border-[#C9E1F0] bg-white p-4">
                           <div className="mb-4 flex gap-2">
                             <button
+                              type="button"
                               disabled={isLoading || isSaving}
                               onClick={() => void handleBulkSelect(sectionKey, true)}
                               className="rounded-md bg-[#C9E1F0] px-4 py-1.5 text-sm font-medium text-[#003A6C] transition-colors hover:bg-[#C4A57C] hover:bg-opacity-80"
@@ -349,11 +366,12 @@ const PublishPortfolio = () => {
                               Seleccionar todos
                             </button>
                             <button
+                              type="button"
                               disabled={isLoading || isSaving}
                               onClick={() => void handleBulkSelect(sectionKey, false)}
                               className="rounded-md bg-gray-100 px-4 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-[#C4A57C]"
                             >
-                              Deseleccionar todos 
+                              Deseleccionar todos
                             </button>
                           </div>
 
@@ -381,6 +399,71 @@ const PublishPortfolio = () => {
                 })}
               </div>
             </section>
+
+            {!isPublished ? (
+              <section className="mt-8 flex flex-col items-center justify-between gap-6 rounded-2xl border border-[#C9E1F0] bg-white p-8 shadow-sm md:flex-row">
+                <div className="flex items-center gap-4">
+                  <div className="rounded-full bg-gray-100 p-4">
+                    <Upload className="h-6 w-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-[#003A6C]">Portafolio no publicado</h3>
+                    <p className="text-sm text-gray-500">Tu portafolio no es visible publicamente</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPublished(true)}
+                  className="flex items-center gap-2 rounded-lg bg-[#003A6C] px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#002a4d] active:scale-95"
+                >
+                  <Upload className="h-5 w-5" />
+                  Publicar portafolio
+                </button>
+              </section>
+            ) : (
+              <section className="mt-8 space-y-6">
+                <div className="flex items-center justify-between rounded-2xl border border-[#34A853] bg-[#E7F6EC] p-6 shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <div className="rounded-full bg-[#34A853] p-2">
+                      <CheckCircle2 className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-[#003A6C]">Portafolio publicado</h3>
+                      <p className="text-sm text-gray-500">Tu portafolio es visible para todos</p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsPublished(false)}
+                    className="rounded-lg border border-[#4982ad] bg-[#C2DBED] px-6 py-2 text-sm font-semibold text-[#003A6C] transition-all hover:bg-[#c4a57c]"
+                  >
+                    Despublicar
+                  </button>
+                </div>
+
+                <div className="rounded-2xl border border-[#C9E1F0] bg-[#F1F7FC] p-8 text-center shadow-inner">
+                  <h4 className="mb-2 text-lg font-bold text-[#003A6C]">Tu portafolio esta en linea</h4>
+                  <p className="mb-6 text-sm text-gray-500">Comparte tu enlace para que otros vean tu trabajo</p>
+
+                  <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
+                    <div className="w-full break-all rounded-xl border border-[#C9E1F0] bg-white px-4 py-3 text-left text-sm font-medium text-blue-500">
+                      {DEMO_PORTFOLIO_URL}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => void copyToClipboard()}
+                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#77B6E6] bg-[#C2DBED] px-6 py-1.5 text-sm font-semibold text-[#003A6C] transition-all hover:bg-[#b0cfeb] md:w-auto"
+                    >
+                      <Copy className="h-4 w-4" />
+                      {copiedLink ? "Enlace copiado" : "Copiar enlace"}
+                    </button>
+                  </div>
+                </div>
+              </section>
+            )}
           </div>
         </main>
       </div>
@@ -394,7 +477,7 @@ const PublishPortfolio = () => {
                 <p className="text-sm text-gray-600">
                   {previewTemplate === "Corporativa"
                     ? "Esta vista usa datos ficticios."
-                    : `Así es como los visitantes verán tu portafolio en ${previewTemplate}.`}
+                    : `Asi es como los visitantes veran tu portafolio en ${previewTemplate}.`}
                 </p>
               </div>
 

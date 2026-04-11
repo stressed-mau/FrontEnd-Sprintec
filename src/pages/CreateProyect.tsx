@@ -4,7 +4,8 @@ import Sidebar from '../components/Sidebar';
 import ProjectCard from '../components/ProjectCard';
 import { Plus } from 'lucide-react';
 import { useCreateProyect } from "../hooks/useCreateProyect";
-
+import { useEffect, useState, useRef  } from 'react';
+import { createLanguage, getLanguages, getProjects } from "@/services/ProjectService";
 const CreateProyect = () => {
   const {
     projects,
@@ -22,6 +23,44 @@ const CreateProyect = () => {
     openModal,
     closeModal
   } = useCreateProyect();
+  const [isCurrent, setIsCurrent] = useState(false);
+  const [techSearch, setTechSearch] = useState("");
+  const [techList, setTechList] = useState<{ id: number; name: string }[]>([]);
+
+  const [selectedTechs, setSelectedTechs] = useState<any[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (editingIndex !== null) {
+      const project = projects[editingIndex];
+
+      setSelectedTechs(project.tecnologias || []);
+      setIsCurrent(project.is_current || false);
+    }
+  },  [editingIndex, projects]);
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+    useEffect(() => {
+    const fetchTechs = async () => {
+      try {
+        const data = await getLanguages();
+        setTechList(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchTechs();
+  }, []);
+  
 
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
@@ -79,14 +118,26 @@ const CreateProyect = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <div className="bg-[#C2DBED] rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
             <div className="flex justify-between items-center p-6 pb-0">
-              <div>
-                <h2 className="text-[#003A6C] text-lg font-semibold">Nuevo proyecto</h2>
-                <p className="text-[#4982AD] text-sm">Agrega la información de tu proyecto</p>
-              </div>
-              <button id="btn-close-modal" onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            <div>
+              <h2 className="text-[#003A6C] text-lg font-semibold">Nuevo proyecto</h2>
+              <p className="text-[#4982AD] text-sm">Agrega la información de tu proyecto</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <button
+              id="btn-close-modal"
+              onClick={() => {
+                closeModal();
+                setSelectedTechs([]);
+                setTechSearch("");
+              }}
+              className="text-gray-400 hover:text-gray-600 text-2xl"
+            >
+              &times;
+            </button>  
+              
+            </div>
+
+            <form onSubmit={(e) => handleSubmit(e, selectedTechs)} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Nombre del proyecto *</label>
                 <input id="nombre" name="nombre" maxLength={60} defaultValue={editingIndex !== null ? projects[editingIndex].nombre : ""} type="text" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
@@ -101,13 +152,103 @@ const CreateProyect = () => {
                 <p id="error-descripcion" className="text-red-500 text-xs mt-1">{errors.descripcion}</p>
               )}
               </div>
-              <div>
-                <label className="block text-sm font-normal text-[#003A6C] mb-1">Tecnologías (separadas por comas)</label>
-                <input id="tecnologias" name="tecnologias" maxLength={100} defaultValue={editingIndex !== null ? projects[editingIndex].tecnologias.join(', ') : ""} type="text" placeholder="React, Node.js, PostgreSQL" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              
+              <div ref={dropdownRef} className="relative">
+                <label className="block text-sm font-normal text-[#003A6C] mb-1">
+                  Tecnologías
+                </label>
+
+                {/* Buscador */}
+                <div className="flex flex-wrap items-center gap-2 border border-[#4982AD] rounded-lg px-2 py-1 bg-white mb-2">
+  
+                {selectedTechs.map(t => (
+                  <span
+                    key={t.id}
+                    className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs"
+                  >
+                    {t.name}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedTechs(prev => prev.filter(s => s.id !== t.id))
+                      }
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
+
+                <input
+                  type="text"
+                  placeholder="Buscar o agregar tecnología..."
+                  value={techSearch}
+                  onChange={(e) => setTechSearch(e.target.value)}
+                  onFocus={() => setShowDropdown(true)}
+                  className="flex-1 outline-none text-sm"
+                />
+              </div>
+
+                {/* Lista filtrada */}
+                {showDropdown && (
+                <div className="max-h-32 overflow-y-auto border rounded-lg bg-white mb-2">
+                  {(() => {
+                    const filtered = techList.filter(t => 
+                      t.name.toLowerCase().includes(techSearch.toLowerCase()) &&
+                      !selectedTechs.some(s => s.id === t.id)
+                    );
+
+                    return (
+                      <>
+                        {filtered.map(t => (
+                          <div
+                            key={t.id}
+                            onClick={() => {
+                              setSelectedTechs(prev => [...prev, t]);
+                              setTechSearch("");
+                              setShowDropdown(false);
+                            }}
+                            className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                          >
+                            {t.name}
+                          </div>
+                        ))}
+
+                        {filtered.length === 0 && (
+                          <p className="text-xs text-gray-400 px-3 py-2">
+                            No hay resultados
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+                )}
+                {/* Crear nueva tecnología */}
+                {techSearch && !techList.some(t => t.name.toLowerCase() === techSearch.toLowerCase()) && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                    try {
+                      const newTech = await createLanguage(techSearch);
+
+                      setTechList(prev => [...prev, newTech]);
+                      setSelectedTechs(prev => [...prev, newTech]);
+                      setTechSearch("");
+                    } catch (error) {
+                      console.error(error);
+                    }
+                  }}
+                    className="text-blue-600 text-xs mb-2"
+                  >
+                    + Agregar "{techSearch}"
+                  </button>
+                )}
+
                 {errors.tecnologias && (
-                  <p id="error-tecnologias" className="text-red-500 text-xs mt-1">{errors.tecnologias}</p>
+                  <p className="text-red-500 text-xs mt-1">{errors.tecnologias}</p>
                 )}
               </div>
+              
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Tu rol en el proyecto</label>
                 <input id="rol" name="rol" onChange={handleChange} maxLength={50} defaultValue={editingIndex !== null ? projects[editingIndex].rol : ""} type="text" placeholder="Full Stack Developer" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
@@ -145,6 +286,7 @@ const CreateProyect = () => {
                       type="date"
                       max={new Date().toISOString().split("T")[0]}
                       onChange={handleChange}
+                      disabled={isCurrent}
                       className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                     />
                   
@@ -156,6 +298,26 @@ const CreateProyect = () => {
                     {errors.fechaError}
                   </p>
                 )}
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  type="checkbox"
+                  id="is_current"
+                  name="is_current"
+                  checked={isCurrent}
+                  onChange={(e) => {
+                    setIsCurrent(e.target.checked);
+
+                    if (e.target.checked) {
+                      const fechaFinInput = document.getElementById("fechaFin") as HTMLInputElement;
+                      if (fechaFinInput) fechaFinInput.value = "";
+                    }
+                  }}
+                  className="w-4 h-4"
+                />
+                <label htmlFor="is_current" className="text-sm text-[#003A6C]">
+                  Actualmente trabajo en este proyecto
+                </label>
               </div>
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Enlace a GitHub</label>
@@ -241,7 +403,11 @@ const CreateProyect = () => {
                 <button 
                   id="btn-cancel"
                   type="button" 
-                  onClick={closeModal}
+                  onClick={() => {
+                    closeModal();
+                    setSelectedTechs([]);
+                    setTechSearch("");
+                  }}
                   className="bg-[#C2DBED] text-[#003A6C] px-4 py-2 text-sm rounded-lg border border-[#4982AD] font-medium hover:bg-[#C4A57C]"
                 >
                   Cancelar

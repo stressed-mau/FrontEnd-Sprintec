@@ -9,7 +9,7 @@ export const api = axios.create({
   baseURL: baseURL.replace(/\/+$/, ""), 
   timeout: 50000,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json', //borrar
     'Accept': 'application/json',
   },
 });
