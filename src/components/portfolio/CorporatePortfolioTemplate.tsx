@@ -1,16 +1,11 @@
 import {
   ArrowLeft,
   ArrowRight,
-  BriefcaseBusiness,
-  GraduationCap,
-  LayoutGrid,
   Link as LinkIcon,
   Mail,
   MapPin,
-  Rocket,
-  UserRound,
 } from "lucide-react"
-import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 
 type CorporatePortfolioLink = {
   id: string
@@ -56,7 +51,6 @@ type CorporatePortfolioTemplateProps = {
 type Sheet = {
   id: string
   label: string
-  icon: ComponentType<{ className?: string }>
   content: ReactNode
 }
 
@@ -116,7 +110,6 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
       {
         id: "corporate-intro",
         label: "Introduccion",
-        icon: UserRound,
         content: (
           <section className="grid gap-6 rounded-[2rem] border border-[#D7C3A4] bg-[#E7D3B3] p-6 text-[#111111] lg:grid-cols-[0.74fr_1.26fr] lg:items-stretch">
             <div className="rounded-[1.75rem] border border-black/10 bg-white/35 p-6 lg:p-7">
@@ -199,7 +192,6 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
       nextSheets.push({
         id: "corporate-experience",
         label: "Experiencia",
-        icon: BriefcaseBusiness,
         content: (
           <section>
             <h3 className="text-3xl font-bold">Experiencia</h3>
@@ -234,7 +226,6 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
       nextSheets.push({
         id: "corporate-education",
         label: "Formacion",
-        icon: GraduationCap,
         content: (
           <section>
             <h3 className="text-3xl font-bold text-white">Formacion</h3>
@@ -263,7 +254,6 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
       nextSheets.push({
         id: "corporate-projects",
         label: "Proyectos",
-        icon: LayoutGrid,
         content: (
           <section>
             <h3 className="text-3xl font-bold">Proyectos</h3>
@@ -303,7 +293,6 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
       nextSheets.push({
         id: "corporate-skills",
         label: "Skills",
-        icon: Rocket,
         content: (
           <section>
             <div>
@@ -333,11 +322,11 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
   const [activeSheetIndex, setActiveSheetIndex] = useState(0)
   const sheetsViewportRef = useRef<HTMLDivElement | null>(null)
   const sheetRefs = useRef<Array<HTMLElement | null>>([])
-  const totalMobileSheets = sheets.length + 1
+  const totalMobileSheets = sheets.length
 
   useEffect(() => {
     setActiveSheetIndex(0)
-    setActiveSectionId(null)
+    setActiveSectionId(sheets[0]?.id ?? null)
   }, [sheets])
 
   function scrollToSheet(index: number) {
@@ -355,7 +344,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
     })
 
     setActiveSheetIndex(index)
-    setActiveSectionId(index === 0 ? null : sheets[index - 1]?.id ?? null)
+    setActiveSectionId(sheets[index]?.id ?? null)
   }
 
   function handlePreviousSheet() {
@@ -399,7 +388,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
       })
 
       setActiveSheetIndex(closestIndex)
-      setActiveSectionId(closestIndex === 0 ? null : sheets[closestIndex - 1]?.id ?? null)
+      setActiveSectionId(sheets[closestIndex]?.id ?? null)
     }
 
     handleScroll()
@@ -434,7 +423,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                 className={`h-2.5 rounded-full transition-all ${
                   activeSheetIndex === index ? "w-5 bg-[#D6A96B]" : "w-2.5 bg-white/25"
                 }`}
-                aria-label={index === 0 ? "Ir a navigation" : `Ir a ${sheets[index - 1]?.label ?? "seccion"}`}
+                aria-label={`Ir a ${sheets[index]?.label ?? "seccion"}`}
               />
             ))}
           </div>
@@ -466,40 +455,6 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
           className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           <div className="flex min-w-full gap-4 pr-1 pt-1 snap-x snap-mandatory touch-pan-x">
-            <section
-              ref={(element) => {
-                sheetRefs.current[0] = element
-              }}
-              className="min-h-[520px] w-full shrink-0 snap-start rounded-[2rem] border border-white/10 bg-[#181818] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.18)]"
-            >
-              <p className="text-xs uppercase tracking-[0.35em] text-white/45">Navigation</p>
-              <h3 className="mt-2 text-3xl font-bold text-white">Table of Contents</h3>
-
-              <div className="mt-8 grid gap-3">
-                {sheets.slice(1).map((sheet, index) => {
-                  const Icon = sheet.icon
-
-                  return (
-                    <button
-                      key={sheet.id}
-                      type="button"
-                      onClick={() => scrollToSheet(index + 1)}
-                      className="group flex items-center border border-white/12 bg-white/[0.03] px-3 py-3 text-left transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B] hover:bg-white/[0.08] sm:px-4 sm:py-4"
-                    >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-white/15 bg-white/[0.03] text-white/80 transition group-hover:border-[#D6A96B] group-hover:text-[#F4D8AE]">
-                          <Icon className="h-4 w-4" />
-                        </span>
-                        <span className="min-w-0 break-words text-sm font-semibold uppercase tracking-[0.12em] leading-5 text-white/86">
-                          {sheet.label}
-                        </span>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
-
             {sheets.map((sheet, index) => {
               const isIntro = sheet.id === "corporate-intro"
               const lightSheet = sheet.id === "corporate-experience" || sheet.id === "corporate-projects"
@@ -508,7 +463,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                 <section
                   key={sheet.id}
                   ref={(element) => {
-                    sheetRefs.current[index + 1] = element
+                    sheetRefs.current[index] = element
                   }}
                   className={`min-h-[620px] w-full shrink-0 snap-start rounded-[2rem] border p-5 shadow-[0_24px_60px_rgba(0,0,0,0.18)] transition-colors duration-300 ${
                     lightSheet
@@ -530,32 +485,6 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
         </div>
       </div>
 
-      <section className="hidden border-t border-white/10 bg-[#181818] px-8 py-10 lg:block">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          {sheets.map((sheet) => {
-            const Icon = sheet.icon
-
-            return (
-              <a
-                key={sheet.id}
-                href={`#${sheet.id}`}
-                onClick={() => setActiveSectionId(sheet.id)}
-                className="group flex items-center border border-white/12 bg-white/[0.03] px-4 py-4 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B] hover:bg-white/[0.08]"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center border border-white/15 bg-white/[0.03] text-white/80 transition group-hover:border-[#D6A96B] group-hover:text-[#F4D8AE]">
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className="text-sm font-semibold uppercase tracking-[0.16em] text-white/86">
-                    {sheet.label}
-                  </span>
-                </div>
-              </a>
-            )
-          })}
-        </div>
-      </section>
-
       <div className="hidden lg:block">
         <section className="border-t border-white/10 bg-[linear-gradient(180deg,#111111_0%,#181512_100%)] px-8 py-10 text-white">
           <div className="flex items-start justify-between gap-8">
@@ -572,47 +501,6 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
 
             <div className="flex h-14 w-14 shrink-0 items-center justify-center border border-[#D2B082]/45 bg-[#D2B082]/10 text-[#F3E3C9] shadow-[0_12px_30px_rgba(214,169,107,0.12)]">
               <span className="text-lg font-black tracking-[-0.06em]">{initials}</span>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid border-t border-white/10 bg-[linear-gradient(180deg,#171717_0%,#141414_100%)] px-8 py-10 text-white lg:grid-cols-[0.65fr_1.35fr]">
-          <div className="pr-10">
-            <p className="text-xs uppercase tracking-[0.35em] text-white/45">Navigation</p>
-            <h3 className="mt-3 text-6xl font-black leading-[0.9] tracking-[-0.06em] text-[#F8F4EC]">
-              Table of Contents
-            </h3>
-          </div>
-
-          <div className="grid gap-8">
-            <div className="max-w-3xl text-sm leading-7 text-white/58">
-              {data.summary?.trim()
-                ? data.summary
-                : "Diseno editorial corporativo preparado para mostrar informacion real proveniente del backend, manteniendo una estructura limpia y adaptable segun los datos disponibles."}
-            </div>
-
-            <div className="grid gap-3 xl:grid-cols-2 2xl:grid-cols-3">
-              {sheets.map((sheet) => {
-                const Icon = sheet.icon
-
-                return (
-                  <a
-                    key={sheet.id}
-                    href={`#${sheet.id}`}
-                    onClick={() => setActiveSectionId(sheet.id)}
-                    className="group flex min-h-[72px] items-center border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-3 py-3 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B] hover:bg-[#1D1A17]"
-                  >
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-white/15 bg-white/[0.03] text-white/80 transition group-hover:border-[#D6A96B] group-hover:bg-[#D6A96B]/10 group-hover:text-[#F4D8AE]">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <span className="min-w-0 whitespace-normal break-words text-[12px] font-semibold uppercase tracking-[0.04em] leading-4 text-white/86">
-                        {sheet.label}
-                      </span>
-                    </div>
-                  </a>
-                )
-              })}
             </div>
           </div>
         </section>
