@@ -104,12 +104,14 @@ const PublishPortfolio = () => {
                       </ul>
 
                       <button onClick={(e) => { e.stopPropagation(); // Evita seleccionar la plantilla
-                        setShowPreview(true); }} className="w-full py-2.5 border border-[#77B6E6] bg-[#C2DBED] rounded-lg text-sm font-semibold text-[#003A6C] hover:bg-[#C4A57C] transition-colors flex items-center justify-center gap-2">
+                        if (template.id === 'Moderna') {
+                          setShowPreview(true);
+                        } }} disabled={template.id !== 'Moderna'} className={`w-full py-2.5 border rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${template.id === 'Moderna' ? 'border-[#77B6E6] bg-[#C2DBED] text-[#003A6C] hover:bg-[#C4A57C]' : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'}`}>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
-                        Vista Previa
+                        {template.id === 'Moderna' ? 'Vista Previa' : 'Próximamente'}
                       </button>
                     </div>
                   </div>
@@ -237,11 +239,10 @@ const PublishPortfolio = () => {
                 })}
               </div>
             </section>
-           // MODAL DE VISTA PREVIA 
+    
       {showPreview && (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-6xl h-[90vh] bg-white rounded-3xl overflow-hidden flex flex-col shadow-2xl">
-            // Cabecera del Modal
             <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-white">
               <div>
                 <h3 className="font-bold text-[#003A6C] text-lg">
@@ -250,13 +251,11 @@ const PublishPortfolio = () => {
               </div>
               <button 
                 onClick={() => setShowPreview(false)}
-                className="px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 font-bold transition-colors"
-              >
+                className="px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 font-bold transition-colors" >
                 Cerrar
               </button>
             </div>
             
-            {/* Contenido: Renderizado de la Plantilla */}
             <div className="flex-1 overflow-y-auto bg-gray-50">
               {selectedTemplate === 'Moderna' ? (
                 <ModernTemplate data={data} />
