@@ -12,22 +12,43 @@ export interface VisibilityItem {
 
 type UnknownRecord = Record<string, unknown>;
 
-interface UserInformationDto {
-  id: number;
-  fullname: string;
-  occupation: string;
-  image_url: string;
+interface BaseVisibilityDto {
+  id?: number | string;
+  is_public?: boolean;
+}
+
+interface SkillDto extends BaseVisibilityDto {
+  name?: string;
+  level_of_domain?: string;
+}
+
+interface ProjectDto extends BaseVisibilityDto {
+  name?: string;
+  title?: string;
+  role?: string;
+  description?: string;
+}
+
+interface WorkExperienceDto extends BaseVisibilityDto {
+  company_name?: string;
+  role?: string;
+}
+
+interface EducationDto extends BaseVisibilityDto {
+  institution?: string;
+  degree?: string;
+  career?: string;
+}
+
+interface SocialNetworkDto extends BaseVisibilityDto {
+  name?: string;
+  platform?: string;
+  url?: string;
+  link?: string;
 }
 
 const USER_INFORMATION_ENDPOINT = '/visibility';
 const VISIBILITY_MUTATION_TIMEOUT_MS = 5000;
-
-const EMPTY_VISIBILITY_DATA: PortfolioVisibilityData = {
-  projects: [],
-  skills: [],
-  experience: [],
-  networks: [],
-};
 
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {
@@ -87,24 +108,6 @@ function unwrapList(data: unknown, collectionKey?: string): unknown[] {
   return [];
 }
 
-function unwrapUserInformationList(data: unknown): UserInformationDto[] {
-  const unwrapped = unwrapPayload(data);
-
-  if (Array.isArray(unwrapped)) {
-    return unwrapped as UserInformationDto[];
-  }
-
-  if (unwrapped && typeof unwrapped === 'object') {
-    const record = unwrapped as UnknownRecord;
-
-    if ('data' in record && Array.isArray(record.data)) {
-      return record.data as UserInformationDto[];
-    }
-  }
-
-  return [];
-}
-
 function asString(value: unknown): string {
   if (typeof value === 'string') {
     return value;
@@ -132,16 +135,94 @@ function asId(value: unknown, fallback: number): number {
   return fallback;
 }
 
+function asBoolean(value: unknown, fallback = true): boolean {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    return value === 1;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true' || normalized === '1') {
+      return true;
+    }
+
+    if (normalized === 'false' || normalized === '0') {
+      return false;
+    }
+  }
+
+  return fallback;
+}
+
 function normalizeProjects(data: unknown): VisibilityItem[] {
-  const list = unwrapUserInformationList(data);
+  const list = unwrapList(data, 'projects');
 
   return list.map((item, index) => {
-    const record = (item ?? {}) as UserInformationDto;
+    const record = (item ?? {}) as ProjectDto;
     return {
       id: asId(record.id, index + 1),
-      label: asString(record.fullname) || `Usuario ${index + 1}`,
-      sublabel: asString(record.occupation),
-      checked: true,
+      label: asString(record.name ?? record.title) || `Proyecto ${index + 1}`,
+      sublabel: asString(record.role ?? record.description),
+      checked: asBoolean(record.is_public),
+    };
+  });
+}
+
+function normalizeSkills(data: unknown): VisibilityItem[] {
+  const list = unwrapList(data, 'skills');
+
+  return list.map((item, index) => {
+    const record = (item ?? {}) as SkillDto;
+    return {
+      id: asId(record.id, index + 1),
+      label: asString(record.name) || `Habilidad ${index + 1}`,
+      sublabel: asString(record.level_of_domain),
+      checked: asBoolean(record.is_public),
+    };
+  });
+}
+
+function normalizeExperience(data: unknown): VisibilityItem[] {
+  const workList = unwrapList(data, 'work_experiences');
+  const educationList = unwrapList(data, 'educations');
+
+  const workItems = workList.map((item, index) => {
+    const record = (item ?? {}) as WorkExperienceDto;
+    return {
+      id: asId(record.id, index + 1),
+      label: asString(record.role) || `Experiencia laboral ${index + 1}`,
+      sublabel: asString(record.company_name),
+      checked: asBoolean(record.is_public),
+    };
+  });
+
+  const educationItems = educationList.map((item, index) => {
+    const record = (item ?? {}) as EducationDto;
+    return {
+      id: asId(record.id, workItems.length + index + 1),
+      label: asString(record.degree ?? record.career) || `Educación ${index + 1}`,
+      sublabel: asString(record.institution),
+      checked: asBoolean(record.is_public),
+    };
+  });
+
+  return [...workItems, ...educationItems];
+}
+
+function normalizeNetworks(data: unknown): VisibilityItem[] {
+  const list = unwrapList(data, 'social_networks');
+
+  return list.map((item, index) => {
+    const record = (item ?? {}) as SocialNetworkDto;
+    return {
+      id: asId(record.id, index + 1),
+      label: asString(record.name ?? record.platform) || `Red ${index + 1}`,
+      sublabel: asString(record.url ?? record.link),
+      checked: asBoolean(record.is_public),
     };
   });
 }
@@ -151,13 +232,13 @@ export type PortfolioVisibilityData = Record<SectionKey, VisibilityItem[]>;
 export async function getPortfolioVisibilityData(): Promise<PortfolioVisibilityData> {
   try {
     const response = await api.get(USER_INFORMATION_ENDPOINT);
-    const users = unwrapList(response.data, 'data');
+    const payload = unwrapPayload(response.data);
 
     return {
-      projects: normalizeProjects(users),
-      skills: EMPTY_VISIBILITY_DATA.skills,
-      experience: EMPTY_VISIBILITY_DATA.experience,
-      networks: EMPTY_VISIBILITY_DATA.networks,
+      projects: normalizeProjects(payload),
+      skills: normalizeSkills(payload),
+      experience: normalizeExperience(payload),
+      networks: normalizeNetworks(payload),
     };
   } catch (error) {
     throw formatError(error);
@@ -178,7 +259,7 @@ export async function savePortfolioVisibilitySection(
           `${USER_INFORMATION_ENDPOINT}/${item.id}`,
           {
             section,
-            checked: item.checked,
+            is_public: item.checked,
           },
           {
             timeout: VISIBILITY_MUTATION_TIMEOUT_MS,
