@@ -406,6 +406,9 @@ export async function createExperience(payload: ExperiencePayload): Promise<Expe
   try {
     const response = await api.post(EXPERIENCES_ENDPOINT, buildFormData(payload), {
       timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     })
 
     return normalizeExperience(unwrapExperience(response.data), 0)
@@ -418,6 +421,9 @@ export async function updateExperience(id: string, payload: ExperiencePayload): 
   try {
     const response = await api.post(`${EXPERIENCES_ENDPOINT}/${id}`, buildFormData(payload, { methodOverride: "PUT" }), {
       timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     })
 
     return normalizeExperience(unwrapExperience(response.data), 0)
