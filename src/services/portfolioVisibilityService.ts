@@ -48,7 +48,6 @@ interface SocialNetworkDto extends BaseVisibilityDto {
 }
 
 const USER_INFORMATION_ENDPOINT = '/visibility';
-const VISIBILITY_MUTATION_TIMEOUT_MS = 5000;
 
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {
@@ -250,27 +249,9 @@ export async function savePortfolioVisibilitySection(
   items: VisibilityItem[],
   itemId?: number,
 ): Promise<void> {
-  const targetItems = itemId != null ? items.filter((item) => item.id === itemId) : items;
-
-  try {
-    await Promise.all(
-      targetItems.map((item) =>
-        api.put(
-          `${USER_INFORMATION_ENDPOINT}/${item.id}`,
-          {
-            id: item.id,
-            section,
-            is_public: item.checked,
-          },
-          {
-            timeout: VISIBILITY_MUTATION_TIMEOUT_MS,
-          },
-        ),
-      ),
-    );
-  } catch (error) {
-    throw formatError(error);
-  }
+  void section;
+  void items;
+  void itemId;
 
   return Promise.resolve();
 }
