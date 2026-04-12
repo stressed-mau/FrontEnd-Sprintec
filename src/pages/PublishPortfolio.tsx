@@ -9,6 +9,7 @@ import {
 } from "@/components/portfolio/CorporatePortfolioTemplate"
 import ModernTemplate from "../components/templates/ModernTemplate"
 import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility"
+import { usePublishPortfolio } from "../hooks/usePublishPortfolio"
 
 const CORPORATE_PREVIEW_DATA: CorporatePortfolioData = {
   fullName: "Maria Victoria Grageda Vallejos",
@@ -78,8 +79,11 @@ const templates = [
   },
 ] as const
 
-const DEMO_PORTFOLIO_URL =
-  "https://3650be49-7310-441b-aa8a-7f25df16ce08-v2-figmaframepreview.figma.site/portfolio/user-2"
+const TEMPLATE_IDS = {
+  Moderna: 1,
+  Minimalista: 2,
+  Corporativa: 3,
+} as const
 
 const PublishPortfolio = () => {
   const {
@@ -96,12 +100,24 @@ const PublishPortfolio = () => {
     reloadVisibilityData,
   } = usePortfolioVisibility()
 
-  const visibleSections = sectionsArray.filter((sectionConfig) => data[sectionConfig.key].length > 0)
+  const {
+    isPublished,
+    portfolioUrl,
+    loading: publishLoading,
+    error: publishError,
+    handlePublish,
+    handleUnpublish,
+  } = usePublishPortfolio()
 
+  const visibleSections = sectionsArray.filter((sectionConfig) => data[sectionConfig.key].length > 0)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null)
-  const [isPublished, setIsPublished] = useState(false)
   const [copiedLink, setCopiedLink] = useState(false)
+
+  const selectedTemplateNumber =
+    selectedTemplate != null
+      ? TEMPLATE_IDS[selectedTemplate as keyof typeof TEMPLATE_IDS] ?? null
+      : null
 
   function handlePreview(templateId: string) {
     setSelectedTemplate(templateId)
@@ -113,13 +129,33 @@ const PublishPortfolio = () => {
   }
 
   async function copyToClipboard() {
+    if (!portfolioUrl) {
+      return
+    }
+
     try {
-      await navigator.clipboard.writeText(DEMO_PORTFOLIO_URL)
+      await navigator.clipboard.writeText(portfolioUrl)
       setCopiedLink(true)
       window.setTimeout(() => setCopiedLink(false), 2000)
     } catch {
       setCopiedLink(false)
     }
+  }
+
+  async function handlePublishClick() {
+    if (!selectedTemplateNumber) {
+      return
+    }
+
+    await handlePublish(selectedTemplateNumber)
+  }
+
+  async function handleUnpublishClick() {
+    if (!selectedTemplateNumber) {
+      return
+    }
+
+    await handleUnpublish(selectedTemplateNumber)
   }
 
   function renderPreviewContent() {
@@ -285,6 +321,13 @@ const PublishPortfolio = () => {
               </div>
             ) : null}
 
+            {publishError ? (
+              <div className="mb-6 rounded-2xl border-2 border-red-400 bg-red-100 px-4 py-4 text-sm font-semibold text-red-900 shadow-md">
+                <p className="mb-2 font-bold">Error publicando el portafolio:</p>
+                <p>{publishError}</p>
+              </div>
+            ) : null}
+
             <section
               className="rounded-2xl border border-[#C9E1F0] bg-white p-6 shadow-sm"
               aria-labelledby="visibility-config-title"
@@ -414,11 +457,12 @@ const PublishPortfolio = () => {
 
                 <button
                   type="button"
-                  onClick={() => setIsPublished(true)}
-                  className="flex items-center gap-2 rounded-lg bg-[#003A6C] px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#002a4d] active:scale-95"
+                  onClick={() => void handlePublishClick()}
+                  disabled={!selectedTemplateNumber || publishLoading}
+                  className="flex items-center gap-2 rounded-lg bg-[#003A6C] px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-[#002a4d] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Upload className="h-5 w-5" />
-                  Publicar portafolio
+                  {publishLoading ? "Publicando..." : "Publicar portafolio"}
                 </button>
               </section>
             ) : (
@@ -436,10 +480,11 @@ const PublishPortfolio = () => {
 
                   <button
                     type="button"
-                    onClick={() => setIsPublished(false)}
-                    className="rounded-lg border border-[#4982ad] bg-[#C2DBED] px-6 py-2 text-sm font-semibold text-[#003A6C] transition-all hover:bg-[#c4a57c]"
+                    onClick={() => void handleUnpublishClick()}
+                    disabled={!selectedTemplateNumber || publishLoading}
+                    className="rounded-lg border border-[#4982ad] bg-[#C2DBED] px-6 py-2 text-sm font-semibold text-[#003A6C] transition-all hover:bg-[#c4a57c] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    Despublicar
+                    {publishLoading ? "Despublicando..." : "Despublicar"}
                   </button>
                 </div>
 
@@ -449,13 +494,14 @@ const PublishPortfolio = () => {
 
                   <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
                     <div className="w-full break-all rounded-xl border border-[#C9E1F0] bg-white px-4 py-3 text-left text-sm font-medium text-blue-500">
-                      {DEMO_PORTFOLIO_URL}
+                      {portfolioUrl}
                     </div>
 
                     <button
                       type="button"
                       onClick={() => void copyToClipboard()}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#77B6E6] bg-[#C2DBED] px-6 py-1.5 text-sm font-semibold text-[#003A6C] transition-all hover:bg-[#b0cfeb] md:w-auto"
+                      disabled={!portfolioUrl}
+                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#77B6E6] bg-[#C2DBED] px-6 py-1.5 text-sm font-semibold text-[#003A6C] transition-all hover:bg-[#b0cfeb] disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
                     >
                       <Copy className="h-4 w-4" />
                       {copiedLink ? "Enlace copiado" : "Copiar enlace"}

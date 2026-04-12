@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import type { Portfolio } from "@/types/portfolio";
-import { portfolioMock } from "@/mocks/portfolio.mock";
 
 import { getAuthSession } from "@/services/auth/auth-storage";
 import { getUserInformation } from "@/services/PersonalDataService";
@@ -9,7 +8,6 @@ import { getSkills } from "@/services/skillsService";
 import { getUserSocialNetworks } from "@/services/socialNetworksService";
 import { getExperiences } from "@/services/experienceService";
 
-const USE_MOCK = true;
 
 const mapProject = (p: any) => ({
   nombre: p.title,
@@ -60,13 +58,6 @@ export const usePortfolio = () => {
       try {
         setLoading(true);
 
-        // MOCK MODE
-        if (USE_MOCK) {
-          await new Promise((r) => setTimeout(r, 500));
-          setPortfolio(portfolioMock as Portfolio);
-          return;
-        }
-
         const session = getAuthSession();
 
         if (!session?.user?.id) {
@@ -96,7 +87,9 @@ export const usePortfolio = () => {
           projects: mappedProjects,
           skills: mappedSkills,
           experiences: mappedExperiences,
-          socialNetworks: mappedSocialNetworks
+          socialNetworks: mappedSocialNetworks,
+          isPublished: user.is_published, 
+          portfolioUrl: user.portfolio_url
         });
 
       } catch (error) {
