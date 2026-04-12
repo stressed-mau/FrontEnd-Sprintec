@@ -1,4 +1,3 @@
-// components/CreateProyect.tsx
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import ProjectCard from '../components/ProjectCard';
@@ -21,7 +20,8 @@ const CreateProyect = () => {
     handleSubmit,
     handleChange,
     openModal,
-    closeModal
+    closeModal,
+    isSubmitting
   } = useCreateProyect();
   const [isCurrent, setIsCurrent] = useState(false);
   const [techSearch, setTechSearch] = useState("");
@@ -38,6 +38,14 @@ const CreateProyect = () => {
       setIsCurrent(project.is_current || false);
     }
   },  [editingIndex, projects]);
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      setSelectedTechs([]);
+      setTechSearch("");
+      setIsCurrent(false);
+    }
+  }, [isModalOpen]);
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -137,7 +145,7 @@ const CreateProyect = () => {
               
             </div>
 
-            <form onSubmit={(e) => handleSubmit(e, selectedTechs)} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <form onSubmit={(e) => void handleSubmit(e, selectedTechs, isCurrent)} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Nombre del proyecto *</label>
                 <input id="nombre" name="nombre" maxLength={60} defaultValue={editingIndex !== null ? projects[editingIndex].nombre : ""} type="text" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
@@ -390,14 +398,21 @@ const CreateProyect = () => {
               <p id="error-image" className="text-red-500 text-xs mt-1">{errors.image}</p>
             )}
 
+              {errors.form && (
+                <p id="error-form-submit" className="text-red-600 text-sm" role="alert">
+                  {errors.form}
+                </p>
+              )}
+
               <div className="flex gap-3 pt-4 justify-start">
                 
                 <button 
                   id="btn-submit"
-                  type="submit" 
-                  className="bg-[#003A6C] text-white px-4 py-2 text-sm rounded-lg font-medium hover:bg-[#1a4f85]"
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-[#003A6C] text-white px-4 py-2 text-sm rounded-lg font-medium hover:bg-[#1a4f85] disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Guardar proyecto
+                  {isSubmitting ? "Guardando…" : "Guardar proyecto"}
                 </button>
 
                 <button 
@@ -423,7 +438,7 @@ const CreateProyect = () => {
         </div>
       )}
       {success && ( 
-      <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
         <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl p-8 text-center">
           
           <h3 className="text-[#003A6C] text-xl font-bold mb-2">
