@@ -2,11 +2,12 @@ import Header from "../components/HeaderUser";
 import Sidebar from "../components/Sidebar";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { Mail, Globe, MapPin, Briefcase, Code } from "lucide-react";
+import MinimalistTemplate from "@/components/templates/MinimalistTemplate";
 
 const MyPortfolio = () => {
   const { portfolio, loading } = usePortfolio();
 
-  if (loading) {
+  if (loading || !portfolio) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         Cargando portafolio...
@@ -14,13 +15,7 @@ const MyPortfolio = () => {
     );
   }
 
-  if (!portfolio) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        No hay datos disponibles
-      </div>
-    );
-  }
+  const isMinimalist = Number(portfolio.template) === 2;
 
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
@@ -30,10 +25,13 @@ const MyPortfolio = () => {
         <Sidebar />
 
         <main className="flex-1 p-4 md:p-10">
+          {isMinimalist ? (
+            <MinimalistTemplate
+                portfolio={portfolio}
+                isPreview={false}
+            />
+          ) : (
           <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">
-
-            {/* HEADER */}
-            {/* HEADER */}
               <header className="text-center border-b pb-6 mb-8">
 
                 {/* FOTO DE PERFIL */}
@@ -195,6 +193,7 @@ const MyPortfolio = () => {
               </section>
             </div>
           </div>
+          )}
         </main>
       </div>
     </div>
