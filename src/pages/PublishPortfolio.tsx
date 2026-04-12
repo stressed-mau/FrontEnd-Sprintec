@@ -13,6 +13,16 @@ import { usePublishPortfolio } from "../hooks/usePublishPortfolio"
 import { getUserInformation } from "@/services/PersonalDataService"
 import { getAuthSession } from "@/services/auth/auth-storage"
 
+type UserInformationResponse = {
+  fullname?: string
+  occupation?: string
+  image_url?: string
+  nationality?: string
+  public_email?: string
+  phone_number?: string
+  biography?: string
+}
+
 const CORPORATE_PREVIEW_DATA: CorporatePortfolioData = {
   fullName: "Maria Victoria Grageda Vallejos",
   role: "Ing. en Informatica",
@@ -122,15 +132,6 @@ const PublishPortfolio = () => {
       ? TEMPLATE_IDS[selectedTemplate as keyof typeof TEMPLATE_IDS] ?? null
       : null
 
-  function handlePreview(templateId: string) {
-    setSelectedTemplate(templateId)
-    setPreviewTemplate(templateId)
-  }
-
-  function closePreview() {
-    setPreviewTemplate(null)
-  }
-
   useEffect(() => {
     async function loadProfile() {
       const session = getAuthSession()
@@ -140,7 +141,7 @@ const PublishPortfolio = () => {
       }
 
       try {
-        const profile = await getUserInformation(session.user.id)
+        const profile = (await getUserInformation(session.user.id)) as UserInformationResponse
 
         setProfileData({
           fullname: profile?.fullname ?? "",
@@ -158,6 +159,15 @@ const PublishPortfolio = () => {
 
     void loadProfile()
   }, [])
+
+  function handlePreview(templateId: string) {
+    setSelectedTemplate(templateId)
+    setPreviewTemplate(templateId)
+  }
+
+  function closePreview() {
+    setPreviewTemplate(null)
+  }
 
   async function copyToClipboard() {
     if (!portfolioUrl) {
@@ -213,10 +223,10 @@ const PublishPortfolio = () => {
       <div className="flex flex-col md:flex-row">
         <Sidebar />
 
-        <main id="publishportfolio-main" className="flex-1 p-4 md:p-10">
+        <main id="publishportfolio-main" className="flex-1 p-3 sm:p-4 md:p-10">
           <div className="mx-auto max-w-5xl">
             <div className="mb-8 text-center md:text-left">
-              <h1 className="mb-2 text-3xl font-bold text-[#003A6C] md:text-4xl">Publicar Portafolio</h1>
+              <h1 className="mb-2 text-2xl font-bold text-[#003A6C] sm:text-3xl md:text-4xl">Publicar Portafolio</h1>
               <p className="text-sm text-gray-600 md:text-base">
                 Configura tu portafolio, elige una plantilla y publicalo
               </p>
@@ -392,8 +402,8 @@ const PublishPortfolio = () => {
 
                   return (
                     <div key={sectionKey} className="overflow-hidden rounded-xl border border-[#C9E1F0] bg-white">
-                      <div className="flex items-center justify-between border-b border-[#C9E1F0] p-4">
-                        <div className="flex items-center gap-3">
+                      <div className="flex flex-col gap-3 border-b border-[#C9E1F0] p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex flex-wrap items-center gap-3">
                           <label className="relative inline-flex cursor-pointer items-center">
                             <input
                               type="checkbox"
@@ -405,7 +415,7 @@ const PublishPortfolio = () => {
                             <div className="h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-[#003A6C] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none" />
                           </label>
                           <span className="font-semibold text-[#003A6C]">{sectionConfig.title}</span>
-                          <span className="ml-2 text-sm text-gray-400">{countText}</span>
+                          <span className="text-sm text-gray-400">{countText}</span>
                         </div>
 
                         <button
@@ -430,7 +440,7 @@ const PublishPortfolio = () => {
                         className={`transition-all duration-300 ease-in-out ${isOpen ? "max-h-250 opacity-100" : "max-h-0 opacity-0"}`}
                       >
                         <div className="border-t border-[#C9E1F0] bg-white p-4">
-                          <div className="mb-4 flex gap-2">
+                          <div className="mb-4 flex flex-col gap-2 sm:flex-row">
                             <button
                               type="button"
                               disabled={isLoading || isSaving}
@@ -451,7 +461,7 @@ const PublishPortfolio = () => {
 
                           <div className="ml-2 space-y-4">
                             {items.map((item) => (
-                              <div key={item.id} className="flex items-center gap-3">
+                              <div key={item.id} className="flex items-start gap-3 sm:items-center">
                                 <input
                                   type="checkbox"
                                   checked={item.checked}
@@ -498,7 +508,7 @@ const PublishPortfolio = () => {
               </section>
             ) : (
               <section className="mt-8 space-y-6">
-                <div className="flex items-center justify-between rounded-2xl border border-[#34A853] bg-[#E7F6EC] p-6 shadow-sm">
+                <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-[#34A853] bg-[#E7F6EC] p-6 shadow-sm md:flex-row md:items-center">
                   <div className="flex items-center gap-4">
                     <div className="rounded-full bg-[#34A853] p-2">
                       <CheckCircle2 className="h-6 w-6 text-white" />

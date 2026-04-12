@@ -1,11 +1,11 @@
 import React from 'react';
 import type { PortfolioVisibilityData } from '@/services/portfolioVisibilityService';
-import { Briefcase, Code, MapPin, Mail, Phone, BookOpen, Heart, ThumbsUp, LayoutGrid, Globe } from 'lucide-react';
+import { MapPin, Mail, Phone, Heart, Globe, GraduationCap, Award } from 'lucide-react';
 
 interface ModernTemplateProps {
   data: PortfolioVisibilityData;
+  profile?: ModernTemplateProfile | null;
   isPreview?: boolean;
-    profile?: ModernTemplateProfile | null;
 }
 
 export interface ModernTemplateProfile {
@@ -18,7 +18,8 @@ export interface ModernTemplateProfile {
   biography: string;
 }
 
-const emptyProfile: ModernTemplateProfile = {
+const ModernTemplate: React.FC<ModernTemplateProps> = ({ data, profile, isPreview = false }) => {
+  const userProfile = profile ?? {
     fullname: '',
     occupation: '',
     image_url: '',
@@ -26,215 +27,242 @@ const emptyProfile: ModernTemplateProfile = {
     public_email: '',
     phone: '',
     biography: '',
-};
+  };
 
-const ModernTemplate: React.FC<ModernTemplateProps> = ({ data, isPreview = false, profile }) => {
-    const userProfile = profile ?? emptyProfile;
+  const displayName = userProfile.fullname.trim() || 'Sin nombre disponible';
+  const displayOccupation = userProfile.occupation.trim() || 'Sin ocupación disponible';
+  const displayBiography = userProfile.biography.trim() || 'Sin biografía disponible';
+  const displayResidence = userProfile.residence.trim() || 'Sin ubicación disponible';
+  const displayEmail = userProfile.public_email.trim() || 'Sin correo público disponible';
+  const displayPhone = userProfile.phone.trim() || 'Sin teléfono disponible';
+  const userInitial = displayName.slice(0, 1).toUpperCase() || '?';
 
   const visibleProjects = data.projects.filter(p => p.checked);
-    const visibleSkills = data.skills.filter(s => s.checked);
+  const visibleSkills = data.skills.filter(s => s.checked);
   const visibleExperience = data.experience.filter(e => e.checked);
-    const visibleNetworks = data.networks.filter(n => n.checked);
-    const workExperience = visibleExperience.filter((exp) => exp.sourceTable === 'work_experiences');
-    const academicExperience = visibleExperience.filter((exp) => exp.sourceTable === 'educations');
-    const highlightedSkills = visibleSkills.slice(0, 4);
+  const visibleNetworks = data.networks.filter(n => n.checked);
 
+  const workExperience = visibleExperience.filter((exp) => exp.sourceTable === 'work_experiences');
+  const academicExperience = visibleExperience.filter((exp) => exp.sourceTable === 'educations');
 
-  // --- COMPONENTE PRINCIPAL ---
+  const highlightedSkills = visibleSkills.slice(0, 4);
+
   return (
-    <div className={`w-full min-h-screen font-sans ${isPreview ? 'scale-[0.8] origin-top-left border-[6px] border-[#77B6E6] rounded-[30px] shadow-2xl overflow-hidden' : 'bg-white'} overflow-x-hidden text-[#003A6C]`}>
+    <div className={`w-full min-h-screen font-sans bg-[#fcecd4] ${isPreview ? 'scale-[0.8] origin-top-left border-8 border-[#173b61] rounded-[40px] shadow-2xl overflow-hidden' : ''} text-[#173b61]`}>
       
-        {/* --- CABECERA (Imagen 0) --- */}
-        <header className="relative border-b border-[#C9E1F0] px-5 py-14 text-center sm:px-8 sm:py-20 lg:px-10 lg:py-24">
-            <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
-                <div className="flex gap-1.5 items-center">
-                    <Heart size={20} className="text-[#003A6C] fill-current"/>
-                    <ThumbsUp size={24} className="text-[#003A6C] fill-current" />
-                </div>
-                
-                {/* PORTAFOLIO - Letra Grande (Imagen 0) */}
-                <h1 className="text-[58px] font-extrabold leading-none tracking-tighter text-[#003A6C] sm:text-[88px] lg:text-[120px]">
-                    PORTA
-                    <span className="-mt-4 block sm:-mt-6 lg:-mt-10">TA</span>
-                    <span className="-mt-4 block sm:-mt-6 lg:-mt-10">FOLIO</span>
-                </h1>
-                
-                {/* Ocupación (Imagen 0) */}
-                <p className="mt-6 text-lg font-semibold text-[#003A6C] sm:text-xl md:text-2xl">
-                    {(userProfile.occupation || 'Perfil profesional').toUpperCase()}
-                </p>
-                <div className="w-24 h-0.5 bg-[#003A6C] mt-2"></div>
-            </div>
+      {/* --- HEADER CON DEGRADADO --- */}
+      <header className="relative pt-32 pb-20 px-10 text-center overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-full bg-linear-to-b from-[#173b61]/10 to-transparent opacity-50 -z-10"></div>
+        
+        <div className="max-w-5xl mx-auto">
+          <div className="flex justify-center gap-3 mb-8">
+            <Heart size={28} className="text-[#ee8e3b] fill-[#ee8e3b] animate-pulse" />
+            <Award size={28} className="text-[#2f606b]" />
+          </div>
+          
+          <h1 className="text-[90px] md:text-[140px] font-black leading-[0.85] tracking-tighter drop-shadow-sm">
+            PORTA<br/>
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#173b61] to-[#ee8e3b]">FOLIO</span>
+          </h1>
+          
+          <div className="mt-10 inline-block bg-[#173b61] px-6 py-2 rounded-full">
+            <p className="text-sm md:text-lg font-bold tracking-[0.2em] text-[#fcecd4]">
+              {displayOccupation.toUpperCase()}
+            </p>
+          </div>
+        </div>
+
+        {/* Elemento Decorativo: Puntos */}
+        <div className="absolute top-10 right-10 grid grid-cols-4 gap-2 opacity-20">
+          {[...Array(12)].map((_, i) => <div key={i} className="w-2 h-2 bg-[#2f606b] rounded-full"></div>)}
+        </div>
+      </header>
+
+      {/* --- PERFIL Y BIO --- */}
+      <section className="py-20 px-6 md:px-20 bg-white/40 backdrop-blur-md border-y border-[#7d959e]/20">
+        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+          <div className="relative group">
+            <div className="absolute -inset-4 bg-linear-to-tr from-[#ee8e3b] to-[#2f606b] rounded-full opacity-30 group-hover:opacity-50 transition-opacity blur-lg"></div>
+            {userProfile.image_url ? (
+              <img 
+                src={userProfile.image_url} 
+                alt={displayName} 
+                className="relative w-64 h-64 rounded-full border-12 border-white shadow-2xl object-cover z-10" 
+              />
+            ) : (
+              <div className="relative w-64 h-64 rounded-full border-12 border-white shadow-2xl bg-[#173b61] text-[#fcecd4] flex items-center justify-center text-6xl font-black z-10">
+                {userInitial}
+              </div>
+            )}
+          </div>
+          
+          <div className="flex-1">
+            <span className="text-[#ee8e3b] font-bold tracking-widest text-sm uppercase">Sobre mí</span>
+            <h2 className="text-5xl font-black mt-2 mb-6 tracking-tight">{displayName}</h2>
+            <p className="text-xl text-[#2f606b] leading-relaxed mb-8 italic">
+              "{displayBiography}"
+            </p>
             
-            {/* Adorno de puntos de Canva (Imagen 0) */}
-            <div className="absolute right-4 top-10 hidden grid-cols-5 gap-2 opacity-30 md:grid">
-                {[...Array(15)].map((_, i) => <div key={i} className="w-1 h-1 bg-[#003A6C] rounded-full"></div>)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { icon: MapPin, text: displayResidence },
+                { icon: Mail, text: displayEmail },
+                { icon: Phone, text: displayPhone }
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center gap-3 p-3 bg-white/60 rounded-xl shadow-sm border border-white/80">
+                  <item.icon size={18} className="text-[#ee8e3b]" />
+                  <span className="text-sm font-semibold">{item.text}</span>
+                </div>
+              ))}
             </div>
-        </header>
+          </div>
+        </div>
+      </section>
 
-
-        {/* --- DATOS DE USUARIO Y BIOGRAFÍA (Imagen 0) --- */}
-        <section className="border-b border-[#C9E1F0] px-5 py-12 sm:px-8 sm:py-16 lg:px-10">
-            <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12">
-                {/* Foto y Nombre */}
-                <div className="flex flex-col items-center gap-6 text-center">
-                    <img src={userProfile.image_url || "https://via.placeholder.com/150"} alt={userProfile.fullname || 'Usuario'} className="h-36 w-36 rounded-full border-10 border-white object-cover shadow-xl sm:h-44 sm:w-44 md:h-48 md:w-48" />
-                    <div>
-                        <p className="text-xl text-[#003A6C]">Hola, mi nombre es</p>
-                        <h2 className="text-3xl font-extrabold tracking-tight text-[#003A6C] sm:text-4xl md:text-5xl">{(userProfile.fullname || 'Usuario').toUpperCase()}</h2>
-                    </div>
+      {/* --- HABILIDADES --- */}
+      <section className="py-24 px-6 md:px-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col lg:flex-row gap-20">
+            {/* Soft Skills */}
+            <div className="lg:w-1/3">
+              <div className="sticky top-10">
+                <div className="bg-[#173b61] text-[#fcecd4] p-8 rounded-[2rem] shadow-xl">
+                  <h3 className="text-3xl font-black mb-8 border-b border-[#fcecd4]/20 pb-4">Habilidades</h3>
+                  <div className="grid grid-cols-2 gap-6">
+                    {highlightedSkills.length > 0 ? highlightedSkills.map((skill, i) => (
+                      <div key={i} className="flex flex-col items-center text-center gap-3">
+                        <div className="w-14 h-14 rounded-2xl bg-[#2f606b] flex items-center justify-center text-[#ee8e3b] text-lg font-black">
+                          {skill.label.slice(0, 1).toUpperCase()}
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter">{skill.label}</span>
+                      </div>
+                    )) : (
+                      <p className="col-span-2 text-center text-xs text-[#fcecd4]/80">No hay habilidades visibles.</p>
+                    )}
+                  </div>
                 </div>
-                
-                {/* Biografía y Contacto */}
-                <div className="flex-1 space-y-8 bg-gray-50/50 p-8 rounded-2xl border border-[#C9E1F0]">
-                    <div className="prose prose-blue text-[#003A6C] text-lg leading-relaxed">
-                        <p>{userProfile.biography || 'Este perfil aun no tiene una biografia publicada.'}</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-[#003A6C]">
-                        <div className="flex items-center gap-3"><MapPin className="text-[#77B6E6]" />{userProfile.residence || 'Residencia no disponible'}</div>
-                        <div className="flex items-center gap-3"><Mail className="text-[#77B6E6]" />{userProfile.public_email || 'Correo no disponible'}</div>
-                        <div className="flex items-center gap-3"><Phone className="text-[#77B6E6]" />{userProfile.phone || 'Telefono no disponible'}</div>
-                    </div>
-                </div>
+              </div>
             </div>
-        </section>
 
-
-        {/* --- HABILIDADES (Imagen 0) --- */}
-        {visibleSkills.length > 0 && (
-            <section className="border-b border-[#C9E1F0] px-5 py-12 sm:px-8 sm:py-16 lg:px-10">
-                <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-16">
-                    {/* Habilidades Blandas (Estilo Imagen 0 top right) */}
-                    <div className="md:w-1/3 flex flex-col items-center text-center">
-                        <Code size={40} className="text-[#77B6E6] mb-8" />
-                        <h3 className="text-3xl font-bold mb-10">Habilidades Destacadas</h3>
-                        <div className="flex flex-wrap gap-x-12 gap-y-12 justify-center">
-                            {highlightedSkills.map((skill, index) => {
-                                return (
-                                    <div key={index} className="flex flex-col items-center gap-3 w-120px">
-                                        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center border border-[#C9E1F0] text-[#77B6E6] text-xl font-bold">{skill.label.slice(0, 1).toUpperCase()}</div>
-                                        <p className="font-semibold text-sm">{skill.label.toUpperCase()}</p>
-                                    </div>
-                                );
-                            })}
-                        </div>
+            {/* Technical Skills */}
+            <div className="flex-1">
+              <h3 className="text-[100px] font-black leading-none text-[#173b61]/10 select-none">SKILLS</h3>
+              <div className="-mt-10 space-y-4">
+                {visibleSkills.length > 0 ? visibleSkills.map((skill) => (
+                  <div key={skill.id} className="group flex items-center justify-between p-5 bg-white rounded-2xl shadow-sm border-l-8 border-[#ee8e3b] hover:shadow-md transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-full bg-[#fcecd4] flex items-center justify-center text-[#173b61] font-bold">✓</div>
+                      <p className="text-xl font-bold">{skill.label}</p>
                     </div>
-                    
-                    {/* Habilidades Técnicas (Estilo Imagen 0 bottom with checks) */}
-                    <div className="flex-1">
-                        <h3 className="mb-4 ml-2.5 text-[56px] font-extrabold leading-none tracking-tighter text-[#003A6C] sm:text-[84px] lg:text-[120px]">HABI</h3>
-                        <span className="block text-[56px] font-extrabold leading-none tracking-tighter text-[#003A6C] sm:text-[84px] lg:text-[120px]">LIDA</span>
-                        <span className="-mt-2 block text-[56px] font-extrabold leading-none tracking-tighter text-[#003A6C] sm:-mt-4 sm:text-[84px] lg:-mt-10 lg:text-[120px]">DES</span>
-                        <p className="-mt-2 text-2xl font-semibold text-[#003A6C] sm:-mt-4 sm:text-3xl">y aptitudes</p>
+                    <span className="text-xs font-bold text-[#7d959e] uppercase tracking-widest">{skill.sublabel}</span>
+                  </div>
+                )) : (
+                  <div className="p-5 bg-white rounded-2xl shadow-sm border-l-8 border-[#7d959e]/40">
+                    <p className="text-[#2f606b]">No hay habilidades visibles para mostrar.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-                        <div className="mt-16 bg-white p-8 rounded-2xl border-2 border-dashed border-[#C9E1F0] space-y-5">
-                            {visibleSkills.map((skill) => (
-                                <div key={skill.id} className="flex items-center justify-between gap-4">
-                                    <div className="flex items-center gap-4 flex-1">
-                                        <div className="w-6 h-6 rounded-full border-2 border-[#C9E1F0] text-[#77B6E6] flex items-center justify-center p-0.5">✓</div>
-                                        <p className="text-xl font-medium text-[#003A6C]">{skill.label}</p>
-                                    </div>
-                                    <p className="text-gray-400 text-sm whitespace-nowrap">{skill.sublabel}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+      {/* --- PROYECTOS (FEED STYLE) --- */}
+      <section className="py-24 px-6 md:px-20 bg-[#173b61]">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div>
+              <h2 className="text-6xl font-black text-[#fcecd4]">PROYECTOS</h2>
+              <p className="text-[#ee8e3b] font-bold mt-2 uppercase tracking-[0.3em]">Muestra de trabajo</p>
+            </div>
+            <div className="px-6 py-2 bg-[#2f606b] rounded-full text-[#fcecd4] font-bold text-sm">
+              SOCIAL MEDIA FEED
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {visibleProjects.length > 0 ? visibleProjects.map((project) => (
+              <div key={project.id} className="group relative aspect-square rounded-[2rem] overflow-hidden bg-[#2f606b]">
+                <img src="https://via.placeholder.com/500" alt={project.label} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-linear-to-t from-[#173b61] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-8 flex flex-col justify-end">
+                  <h4 className="text-[#fcecd4] text-2xl font-black">{project.label}</h4>
+                  <p className="text-[#ee8e3b] font-bold text-sm mt-1">{project.sublabel}</p>
                 </div>
-            </section>
-        )}
+              </div>
+            )) : (
+              <div className="col-span-full rounded-2xl border border-[#fcecd4]/30 bg-[#2f606b] p-8 text-center text-[#fcecd4]/90">
+                No hay proyectos visibles para mostrar.
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
-
-        {/* --- PROYECTOS: GALERÍA DE MOSAICO (Imagen 1 bottom) --- */}
-        {visibleProjects.length > 0 && (
-            <section className="border-b border-[#C9E1F0] px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
-                <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-16">
-                    <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-6">
-                        {visibleProjects.map((project) => (
-                            <div key={project.id} className="aspect-square bg-white rounded-2xl overflow-hidden border border-[#C9E1F0] shadow-sm hover:shadow-lg transition-shadow group relative">
-                                <img src="https://via.placeholder.com/300" alt={project.label} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4 text-center text-white">
-                                    <h4 className="font-bold text-lg">{project.label}</h4>
-                                    <p className="text-xs opacity-90 mt-1">{project.sublabel}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    
-                    {/* Título de Proyectos (Estilo Canva) */}
-                    <div className="md:w-1/3 text-center md:text-right">
-                        <LayoutGrid size={40} className="text-[#77B6E6] mb-8" />
-                        <h3 className="text-4xl font-extrabold text-[#003A6C] tracking-tighter leading-tight sm:text-5xl lg:text-6xl">MUESTRA<br/>DE PROYECTOS</h3>
-                        <div className="mt-6 p-4 rounded-xl bg-[#77B6E6]/10 text-[#003A6C] font-semibold text-lg inline-block">SOCIAL MEDIA</div>
-                    </div>
+      {/* --- EXPERIENCIA Y ACADEMIA --- */}
+      <section className="py-24 px-6 md:px-20">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-20">
+          
+          {/* Experiencia */}
+          <div>
+            <div className="flex items-center gap-4 mb-12">
+              <div className="h-1 w-12 bg-[#ee8e3b]"></div>
+              <h3 className="text-4xl font-black uppercase tracking-tighter">Experiencia</h3>
+            </div>
+            <div className="space-y-8">
+              {workExperience.length > 0 ? workExperience.map((exp) => (
+                <div key={exp.id} className="relative pl-10 border-l-2 border-[#7d959e]/30 pb-4">
+                  <div className="absolute -left-2.25 top-0 w-4 h-4 rounded-full bg-[#ee8e3b] shadow-[0_0_10px_#ee8e3b]"></div>
+                  <h4 className="text-2xl font-bold leading-tight">{exp.label}</h4>
+                  <p className="text-[#2f606b] font-semibold mt-1">{exp.sublabel}</p>
                 </div>
-            </section>
-        )}
+              )) : (
+                <p className="text-[#2f606b]">No hay experiencia laboral visible.</p>
+              )}
+            </div>
+          </div>
 
+          {/* Academia y Redes */}
+          <div className="space-y-16">
+            <div className="bg-white p-10 rounded-[2.5rem] shadow-xl border border-[#7d959e]/10">
+              <div className="flex items-center gap-3 mb-8">
+                <GraduationCap className="text-[#ee8e3b]" size={32} />
+                <h3 className="text-2xl font-black uppercase">Formación</h3>
+              </div>
+              <div className="space-y-8">
+                {academicExperience.length > 0 ? academicExperience.map((acad) => (
+                  <div key={acad.id} className="group">
+                    <span className="text-[#ee8e3b] font-black text-lg">/ Formación</span>
+                    <h4 className="text-xl font-bold group-hover:text-[#2f606b] transition-colors">{acad.label}</h4>
+                    <p className="text-sm text-[#7d959e] font-medium">{acad.sublabel}</p>
+                  </div>
+                )) : (
+                  <p className="text-[#2f606b]">No hay formación académica visible.</p>
+                )}
+              </div>
+            </div>
 
-        {/* --- EXPERIENCIA Y REDES (Imagen 1 top) --- */}
-        {(visibleExperience.length > 0 || visibleNetworks.length > 0) && (
-            <section className="border-b border-[#C9E1F0] px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
-                <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-16">
-                    
-                    {/* Funciones / Experiencia Laboral (Imagen 1 top right) */}
-                    <div className="flex-1">
-                        <h3 className="text-5xl font-extrabold mb-12 tracking-tight">FUNCIONES <span className="text-[#77B6E6]">& Experiencia</span></h3>
-                        <div className="space-y-6">
-                            {workExperience.map((exp) => (
-                                <div key={exp.id} className="flex gap-6 items-start p-6 bg-gray-50 rounded-xl border border-[#C9E1F0]">
-                                    <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center border border-[#C9E1F0] text-[#77B6E6] shrink-0"><Briefcase size={22}/></div>
-                                    <div className="flex-1">
-                                        <h4 className="font-bold text-lg">{exp.label}</h4>
-                                        <p className="text-sm text-gray-500 mt-1">{exp.sublabel}</p>
-                                    </div>
-                                </div>
-                            ))}
-                            {workExperience.length === 0 ? (
-                                <p className="text-sm text-gray-500">No hay experiencia laboral visible.</p>
-                            ) : null}
-                        </div>
-                    </div>
+            <div className="text-center bg-[#2f606b] p-10 rounded-[2.5rem]">
+              <h3 className="text-[#fcecd4] text-xl font-black mb-8 uppercase tracking-widest">Conectemos</h3>
+              <div className="flex justify-center gap-6">
+                {visibleNetworks.length > 0 ? visibleNetworks.map((net) => (
+                  <a key={net.id} href={net.sublabel || '#'} target="_blank" rel="noreferrer" className="w-14 h-14 bg-[#fcecd4] rounded-2xl flex items-center justify-center text-[#173b61] hover:bg-[#ee8e3b] hover:text-white transition-all transform hover:-translate-y-2 shadow-lg" title={net.label}>
+                    <Globe size={24} />
+                  </a>
+                )) : (
+                  <p className="text-[#fcecd4]/85">No hay redes visibles.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-                    {/* Experiencia Académica y Redes (Imagen 1 left) */}
-                    <div className="md:w-1/3 space-y-16">
-                        {/* Académica */}
-                        <div className="bg-white p-8 rounded-2xl border-2 border-dashed border-[#C9E1F0]">
-                            <h3 className="text-3xl font-bold mb-10 flex items-center gap-4"><BookOpen className="text-[#77B6E6]" />Formación Académica</h3>
-                            <div className="space-y-6">
-                                {academicExperience.map((acad) => (
-                                    <div key={acad.id}>
-                                        <p className="font-bold text-lg text-[#77B6E6]">Formación</p>
-                                        <h4 className="font-semibold text-[#003A6C] mt-1">{acad.label}</h4>
-                                        <p className="text-sm text-gray-500">{acad.sublabel}</p>
-                                    </div>
-                                ))}
-                                {academicExperience.length === 0 ? (
-                                    <p className="text-sm text-gray-500">No hay formación académica visible.</p>
-                                ) : null}
-                            </div>
-                        </div>
-
-                        {/* Redes */}
-                        <div className="text-center">
-                            <h3 className="text-2xl font-bold mb-8 text-[#003A6C]">Redes Profesionales</h3>
-                            <div className="flex gap-8 justify-center">
-                                {visibleNetworks.map((net) => (
-                                    <a href={net.sublabel || '#'} target="_blank" rel="noreferrer" key={net.id} className="w-16 h-16 rounded-full bg-[#77B6E6]/10 flex items-center justify-center border-2 border-[#77B6E6] text-[#77B6E6] hover:bg-[#77B6E6] hover:text-white transition-all transform hover:-translate-y-1" title={net.label}>
-                                        <Globe size={28}/>
-                                    </a>
-                                ))}
-                                {visibleNetworks.length === 0 ? (
-                                    <p className="text-sm text-gray-500">No hay redes visibles.</p>
-                                ) : null}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        )}
-
-
+      {/* --- FOOTER --- */}
+      <footer className="py-10 text-center border-t border-[#7d959e]/10">
+        <p className="text-[10px] font-black tracking-[0.5em] text-[#7d959e] uppercase">
+          Portafolio Profesional • {displayName}
+        </p>
+      </footer>
     </div>
   );
 };
