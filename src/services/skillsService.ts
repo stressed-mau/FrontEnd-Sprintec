@@ -97,7 +97,7 @@ function formatError(error: unknown): Error {
     }
 
     if (error.code === 'ERR_NETWORK') {
-      return new Error('No se pudo conectar con el backend en http://localhost:8000. Verifica que Laravel este levantado.');
+      return new Error('No se pudo conectar con el backend configurado. Verifica que la API desplegada est\xe9 disponible.');
     }
 
     const backendMessage =
