@@ -87,7 +87,7 @@ type ExperienceGroup = {
 }
 
 const EXPERIENCES_ENDPOINT = "/experiences"
-const EXPERIENCE_MUTATION_TIMEOUT_MS = 10_000
+const EXPERIENCE_MUTATION_TIMEOUT_MS = 30_000
 
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {

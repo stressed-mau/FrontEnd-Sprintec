@@ -53,7 +53,6 @@ const PublishPortfolio = () => {
     data, openSections, sectionsArray, isLoading, isSaving, pageError,
     toggleSection, handleItemCheck, handleBulkSelect, getVisibleCountText, reloadVisibilityData, } = usePortfolioVisibility();
   const { portfolio } = usePortfolio();
-  const safePortfolio = portfolio!;
   const visibleSections = sectionsArray.filter((sectionConfig) => data[sectionConfig.key].length > 0);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
 
