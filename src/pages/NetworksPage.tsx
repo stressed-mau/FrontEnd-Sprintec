@@ -50,14 +50,6 @@ function YoutubeIcon({ className }: { className?: string }) {
   )
 }
 
-function StackOverflowIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
-      <path d="M18.58 20.75v-6h1.98v7.98H4.44v-7.98h1.98v6h12.16Zm-10.5-1.98h8.52v1.98H8.08v-1.98Zm.42-4.51 8.35 1.74-.4 1.94-8.35-1.74.4-1.94Zm1.1-4.08 7.73 3.61-.84 1.8-7.73-3.61.84-1.8Zm2.16-3.82 6.56 5.48-1.27 1.52-6.56-5.48 1.27-1.52Zm4.23-4.09 1.59 1.18-4.59 6.19-1.59-1.18 4.59-6.19Z" />
-    </svg>
-  )
-}
-
 const PROFESSIONAL_NETWORKS: ProfessionalNetwork[] = [
   {
     id: "github",
@@ -89,16 +81,6 @@ const PROFESSIONAL_NETWORKS: ProfessionalNetwork[] = [
     description: "Comparte tu canal de YouTube",
     matchKeys: ["youtube", "google"],
   },
-  {
-    id: "stackexchange",
-    name: "Stack Exchange",
-    icon: StackOverflowIcon,
-    color: "bg-[#F48024] hover:bg-[#DA670B]",
-    lightColor: "bg-orange-100",
-    textColor: "text-[#F48024]",
-    description: "Conecta tu perfil técnico y reputación en la comunidad",
-    matchKeys: ["stackexchange", "stack exchange", "stackoverflow", "stack overflow"],
-  },
 ]
 
 const NetworksPage = () => {
@@ -129,7 +111,7 @@ const NetworksPage = () => {
           PROFESSIONAL_NETWORKS.find((network) => network.id === provider || network.matchKeys.includes(provider))
             ?.name ?? `${provider.charAt(0).toUpperCase()}${provider.slice(1)}`
 
-        showFeedback(`Conexión exitosa con ${providerLabel}. Tu perfil está ahora conectado.`, "success")
+        showFeedback(`Conexion exitosa con ${providerLabel}. Tu perfil esta ahora conectado.`, "success")
         void loadNetworks()
       }, 500)
 
@@ -209,11 +191,11 @@ const NetworksPage = () => {
                   </div>
                   <div className="flex-1">
                     <h3 id="titulo-informacion-oauth-redes" className="mb-1 font-semibold text-blue-900">
-                      Conexión segura mediante OAuth
+                      Conexion segura mediante OAuth
                     </h3>
                     <p id="descripcion-informacion-oauth-redes" className="text-sm leading-6 text-blue-700">
-                      Al conectar tus redes sociales, serás redirigido a la plataforma oficial para autorizar el acceso.
-                      Obtendremos automáticamente tu URL de perfil sin necesidad de que la copies manualmente.
+                      Al conectar tus redes sociales, seras redirigido a la plataforma oficial para autorizar el acceso.
+                      Obtendremos automaticamente tu URL de perfil sin necesidad de que la copies manualmente.
                     </p>
                   </div>
                 </div>
@@ -381,7 +363,7 @@ const NetworksPage = () => {
               </svg>
             </div>
             <h2 id="titulo-modal-exito-redes-profesionales" className="text-xl font-bold text-[#003A6C]">
-              Éxito
+              Exito
             </h2>
             <p id="mensaje-modal-exito-redes-profesionales" className="mt-2 text-sm text-[#4B778D]">
               {successMessage}
