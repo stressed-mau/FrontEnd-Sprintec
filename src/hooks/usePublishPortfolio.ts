@@ -7,31 +7,29 @@ export const usePublishPortfolio = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handlePublish = async (template: number) => {
+  // En usePublishPortfolio.ts
+    const handlePublish = async (template: number) => {
     try {
-      setLoading(true);
-      setError(null);
+        console.log(" FRONTEND: Intentando publicar...");
+        console.log(" Datos enviados:", { template, is_public: true });
+        
+        setLoading(true);
+        const data = await publishPortfolioRequest(template, true);
 
-      const data = await publishPortfolioRequest(template, true);
-
-      // Si llegamos aquí, es porque success fue true
-      setIsPublished(true);
-      setPortfolioUrl(data.public_url);
-
-      return data; 
+        console.log(" BACKEND RESPONDIÓ:", data);
+        setIsPublished(true);
+        return data;
     } catch (err: any) {
-      // Capturamos el mensaje que viene del Service (res.data.message)
-      const errorMessage = err.message || "Error inesperado al publicar";
-      setError(errorMessage);
-      console.error("Error en handlePublish:", err);
-      
-      // IMPORTANTE: Lanzar el error de nuevo o retornar null 
-      // para que el componente que llama sepa que falló.
-      throw err; 
+        console.error(" ERROR DETECTADO:");
+        console.log("Mensaje:", err.message);
+        // Esto te dirá si el error es de red o del servidor
+        if (err.response) {
+        console.log("Status del servidor:", err.response.status); 
+        }
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+    };
 
   const handleUnpublish = async (template: number) => {
     try {
