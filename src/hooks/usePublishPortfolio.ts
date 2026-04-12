@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import { publishPortfolioRequest } from "../services/PublishPortfolioService";
 
 export const usePublishPortfolio = () => {
@@ -8,30 +7,13 @@ export const usePublishPortfolio = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handlePublish = async (templateId: number) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const result = await publishPortfolioRequest(templateId, true);
-      
-      // Actualizamos los estados con la respuesta del backend
-      setIsPublished(true);
-      setPortfolioUrl(result.public_url); // Guardamos "http://localhost:8000/p/dana"
-
-      console.log("El nombre del usuario es:", result.slug); 
-      console.log("La URL para compartir es:", result.public_url);
-
-      return result; 
-    } catch (err: any) {
-      const errorMessage = err.message || "Error al publicar el portafolio";
-      setError(errorMessage);
-      console.error("Error en handlePublish:", err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+ 
+    const handlePublish = async (templateId: number) => {
+    const result = await publishPortfolioRequest(templateId, true);
+    
+    console.log("El nombre del usuario es:", result.slug); // Imprime "dana"
+    console.log("La URL para compartir es:", result.public_url); // Imprime la URL completa
+    };
 
   const handleUnpublish = async (template: number) => {
     try {
