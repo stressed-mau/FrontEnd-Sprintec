@@ -34,10 +34,10 @@ function GithubIcon({ className }: { className?: string }) {
   )
 }
 
-function LinkedinIcon({ className }: { className?: string }) {
+function GitlabIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
-      <path d="M19 3A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19ZM8.339 10.339H5.667V18.667H8.339V10.339ZM7.003 5.667A1.56 1.56 0 0 0 5.444 7.225c0 .861.697 1.559 1.559 1.559s1.558-.698 1.558-1.559A1.558 1.558 0 0 0 7.003 5.667ZM18.667 13.583c0-2.51-1.602-3.578-3.115-3.578-1.219 0-1.946.671-2.273 1.143h-.034v-.809H10.67c.034.536 0 8.328 0 8.328h2.672v-4.65c0-.249.018-.498.091-.676.199-.498.653-1.014 1.416-1.014 1 0 1.401.765 1.401 1.886v4.454h2.417v-5.084Z" />
+      <path d="m22.84 14.73-.93-2.86-1.85-5.67a.48.48 0 0 0-.91 0l-1.57 4.84H6.42L4.85 6.2a.48.48 0 0 0-.91 0L2.09 11.87l-.93 2.86a.97.97 0 0 0 .35 1.08l10.14 7.37a.6.6 0 0 0 .7 0l10.14-7.37a.97.97 0 0 0 .35-1.08Z" />
     </svg>
   )
 }
@@ -46,6 +46,14 @@ function YoutubeIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
       <path d="M23.498 6.186a2.989 2.989 0 0 0-2.103-2.116C19.538 3.556 12 3.556 12 3.556s-7.538 0-9.395.514A2.989 2.989 0 0 0 .502 6.186 31.23 31.23 0 0 0 0 12a31.23 31.23 0 0 0 .502 5.814 2.989 2.989 0 0 0 2.103 2.116c1.857.514 9.395.514 9.395.514s7.538 0 9.395-.514a2.989 2.989 0 0 0 2.103-2.116A31.23 31.23 0 0 0 24 12a31.23 31.23 0 0 0-.502-5.814ZM9.6 15.568V8.432L15.818 12 9.6 15.568Z" />
+    </svg>
+  )
+}
+
+function StackOverflowIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M18.58 20.75v-6h1.98v7.98H4.44v-7.98h1.98v6h12.16Zm-10.5-1.98h8.52v1.98H8.08v-1.98Zm.42-4.51 8.35 1.74-.4 1.94-8.35-1.74.4-1.94Zm1.1-4.08 7.73 3.61-.84 1.8-7.73-3.61.84-1.8Zm2.16-3.82 6.56 5.48-1.27 1.52-6.56-5.48 1.27-1.52Zm4.23-4.09 1.59 1.18-4.59 6.19-1.59-1.18 4.59-6.19Z" />
     </svg>
   )
 }
@@ -62,14 +70,14 @@ const PROFESSIONAL_NETWORKS: ProfessionalNetwork[] = [
     matchKeys: ["github"],
   },
   {
-    id: "linkedin",
-    name: "LinkedIn",
-    icon: LinkedinIcon,
-    color: "bg-[#0A66C2] hover:bg-[#004182]",
-    lightColor: "bg-blue-100",
-    textColor: "text-[#0A66C2]",
-    description: "Muestra tu perfil profesional",
-    matchKeys: ["linkedin"],
+    id: "gitlab",
+    name: "GitLab",
+    icon: GitlabIcon,
+    color: "bg-[#FC6D26] hover:bg-[#E24329]",
+    lightColor: "bg-orange-100",
+    textColor: "text-[#E24329]",
+    description: "Conecta tu repositorio y perfil de desarrollo",
+    matchKeys: ["gitlab"],
   },
   {
     id: "google",
@@ -80,6 +88,16 @@ const PROFESSIONAL_NETWORKS: ProfessionalNetwork[] = [
     textColor: "text-[#FF0000]",
     description: "Comparte tu canal de YouTube",
     matchKeys: ["youtube", "google"],
+  },
+  {
+    id: "stackexchange",
+    name: "Stack Exchange",
+    icon: StackOverflowIcon,
+    color: "bg-[#F48024] hover:bg-[#DA670B]",
+    lightColor: "bg-orange-100",
+    textColor: "text-[#F48024]",
+    description: "Conecta tu perfil técnico y reputación en la comunidad",
+    matchKeys: ["stackexchange", "stack exchange", "stackoverflow", "stack overflow"],
   },
 ]
 

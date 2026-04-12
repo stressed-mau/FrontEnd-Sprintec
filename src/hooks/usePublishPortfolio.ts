@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { publishPortfolioRequest } from "../services/PublishPortfolioService";
 
 export const usePublishPortfolio = () => {
@@ -7,29 +8,30 @@ export const usePublishPortfolio = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // En usePublishPortfolio.ts
-    const handlePublish = async (template: number) => {
+  const handlePublish = async (templateId: number) => {
     try {
-        console.log(" FRONTEND: Intentando publicar...");
-        console.log(" Datos enviados:", { template, is_public: true });
-        
-        setLoading(true);
-        const data = await publishPortfolioRequest(template, true);
+      setLoading(true);
+      setError(null);
 
-        console.log(" BACKEND RESPONDIÓ:", data);
-        setIsPublished(true);
-        return data;
+      const result = await publishPortfolioRequest(templateId, true);
+      
+      // Actualizamos los estados con la respuesta del backend
+      setIsPublished(true);
+      setPortfolioUrl(result.public_url); // Guardamos "http://localhost:8000/p/dana"
+
+      console.log("El nombre del usuario es:", result.slug); 
+      console.log("La URL para compartir es:", result.public_url);
+
+      return result; 
     } catch (err: any) {
-        console.error(" ERROR DETECTADO:");
-        console.log("Mensaje:", err.message);
-        // Esto te dirá si el error es de red o del servidor
-        if (err.response) {
-        console.log("Status del servidor:", err.response.status); 
-        }
+      const errorMessage = err.message || "Error al publicar el portafolio";
+      setError(errorMessage);
+      console.error("Error en handlePublish:", err);
+      throw err;
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-    };
+  };
 
   const handleUnpublish = async (template: number) => {
     try {

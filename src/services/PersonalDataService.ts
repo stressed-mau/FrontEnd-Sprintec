@@ -1,7 +1,5 @@
 import { api } from './api';
 
-const USER_ENDPOINT = '/user_information';
-
 export const getUserInformation = async (userId: string | number) => {
   const res = await api.get(`${USER_ENDPOINT}/${userId}`);
 

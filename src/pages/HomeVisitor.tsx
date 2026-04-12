@@ -72,9 +72,9 @@ export default function Home() {
                 description="Vincula tus perfiles de GitHub y muestra tu actividad de desarrollo."
               />
               <FeatureCard
-                icon={<div className="rounded-lg bg-[#0A66C2] p-3 text-white"><LinkedInIcon className="size-6" /></div>}
-                title="Conectar con LinkedIn"
-                description="Integra tu perfil de LinkedIn y amplía tu red profesional."
+                icon={<div className="rounded-lg bg-[#FC6D26] p-3 text-white"><GitLabIcon className="size-6" /></div>}
+                title="Conectar con GitLab"
+                description="Integra tu perfil de GitLab y muestra tu trabajo de desarrollo."
               />
             </div>
           </div>
@@ -175,10 +175,10 @@ function GitHubIcon({ className }: { className?: string }) {
   )
 }
 
-function LinkedInIcon({ className }: { className?: string }) {
+function GitLabIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
-      <path d="M4.98 3.5A2.48 2.48 0 1 0 5 8.46 2.48 2.48 0 0 0 4.98 3.5ZM3 9h4v12H3V9Zm7 0h3.83v1.64h.05c.53-1.01 1.84-2.07 3.79-2.07 4.05 0 4.8 2.66 4.8 6.11V21h-4v-5.57c0-1.33-.02-3.04-1.85-3.04-1.86 0-2.15 1.45-2.15 2.95V21h-4V9Z" />
+      <path d="m22.84 14.73-.93-2.86-1.85-5.67a.48.48 0 0 0-.91 0l-1.57 4.84H6.42L4.85 6.2a.48.48 0 0 0-.91 0L2.09 11.87l-.93 2.86a.97.97 0 0 0 .35 1.08l10.14 7.37a.6.6 0 0 0 .7 0l10.14-7.37a.97.97 0 0 0 .35-1.08Z" />
     </svg>
   )
 }

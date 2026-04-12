@@ -7,15 +7,17 @@ const VIEW_PORTFOLIO_ENDPOINT = "/view-portfolio";
 
 export const publishPortfolioRequest = async (template: number, isPublic: boolean) => {
   const res = await api.post(PUBLISH_ENDPOINT, {
-    template,    // ID de la plantilla (1, 2 o 3)
+    template,
     is_public: isPublic,
   });
 
   if (res.data?.success === false) {
-    throw new Error(res.data?.message || "Error al procesar la publicación del portafolio");
+    throw new Error(res.data?.message || "Error al procesar la publicación");
   }
 
-  return res.data.data;
+  const data = res.data.data;
+  
+  return data; 
 };
 
 export const getPublicPortfolio = async (slug: string) => {
