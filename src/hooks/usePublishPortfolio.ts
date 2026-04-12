@@ -14,13 +14,20 @@ export const usePublishPortfolio = () => {
 
       const data = await publishPortfolioRequest(template, true);
 
+      // Si llegamos aquí, es porque success fue true
       setIsPublished(true);
       setPortfolioUrl(data.public_url);
 
-      return data;
+      return data; 
     } catch (err: any) {
-      setError(err.message);
-      console.error(err);
+      // Capturamos el mensaje que viene del Service (res.data.message)
+      const errorMessage = err.message || "Error inesperado al publicar";
+      setError(errorMessage);
+      console.error("Error en handlePublish:", err);
+      
+      // IMPORTANTE: Lanzar el error de nuevo o retornar null 
+      // para que el componente que llama sepa que falló.
+      throw err; 
     } finally {
       setLoading(false);
     }
@@ -36,8 +43,10 @@ export const usePublishPortfolio = () => {
       setIsPublished(false);
       setPortfolioUrl("");
     } catch (err: any) {
-      setError(err.message);
-      console.error(err);
+      const errorMessage = err.message || "Error al ocultar el portafolio";
+      setError(errorMessage);
+      console.error("Error en handleUnpublish:", err);
+      throw err;
     } finally {
       setLoading(false);
     }
