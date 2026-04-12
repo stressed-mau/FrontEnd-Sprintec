@@ -1,9 +1,38 @@
 import Header from "../components/HeaderUser";
 import Sidebar from "../components/Sidebar";
+import type { Portfolio } from "@/types/portfolio";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { Mail, Globe, MapPin, Briefcase, Code } from "lucide-react";
 import MinimalistTemplate from "@/components/templates/MinimalistTemplate";
-
+import ModernTemplate from "@/components/templates/ModernTemplate";
+import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate";
+const mapToVisibilityData = (portfolio: Portfolio) => ({
+  projects: portfolio.projects.map((p, index) => ({
+    id: Number(index), 
+    label: p.nombre ?? "",
+    sublabel: p.descripcion ?? "",
+    checked: true,
+  })),
+  skills: portfolio.skills.map((s, index) => ({
+    id: Number(index),
+    label: s.name ?? "",
+    sublabel: s.level ?? "",
+    checked: true,
+  })),
+  experience: portfolio.experiences.map((e, index) => ({
+    id: Number(index),
+    label: e.position ?? "",
+    sublabel: e.company ?? "",
+    checked: true,
+    sourceTable: "work_experiences" as const,
+  })),
+  networks: portfolio.socialNetworks.map((n, index) => ({
+    id: Number(index),
+    label: n.name ?? "",
+    sublabel: n.url ?? "",
+    checked: true,
+  })),
+});
 const MyPortfolio = () => {
   const { portfolio, loading } = usePortfolio();
 
@@ -15,7 +44,10 @@ const MyPortfolio = () => {
     );
   }
 
-  const isMinimalist = Number(portfolio.template) === 2;
+  const template = Number(portfolio.template);
+  const isModern = template === 1;
+  const isMinimalist = template === 2;
+  const isCorporate = template === 3;
 
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
@@ -25,12 +57,61 @@ const MyPortfolio = () => {
         <Sidebar />
 
         <main className="flex-1 p-4 md:p-10">
-          {isMinimalist ? (
-            <MinimalistTemplate
+          {isModern && (
+            <ModernTemplate 
+            data={mapToVisibilityData(portfolio)}
+            profile={{
+              fullname: portfolio.user.fullname ?? "",
+              occupation: portfolio.user.occupation ?? "",
+              image_url: portfolio.user.image_url ?? "",
+              residence: portfolio.user.nationality ?? "",
+              public_email: portfolio.user.public_email ?? "",
+              phone: portfolio.user.phone_number ?? "",
+              biography: portfolio.user.biography ?? "",
+            }}
+          />
+            )}
+
+            {isMinimalist && (
+              <MinimalistTemplate 
                 portfolio={portfolio}
                 isPreview={false}
-            />
-          ) : (
+              />
+            )}
+
+        {isCorporate && (
+          <CorporatePortfolioTemplate 
+            data={{
+              fullName: portfolio.user.fullname,
+              role: portfolio.user.occupation,
+              summary: portfolio.user.biography,
+              email: portfolio.user.public_email,
+              location: portfolio.user.nationality,
+              socialLinks: portfolio.socialNetworks.map(n => ({
+                id: n.id,
+                label: n.name,
+                url: n.url,
+              })),
+              skills: portfolio.skills.map(s => s.name),
+              experience: portfolio.experiences.map(e => ({
+                id: e.id,
+                title: e.position,
+                organization: e.company,
+                period: `${e.startDate ?? ""} - ${e.current ? "Actualidad" : e.endDate ?? ""}`,
+                description: "",
+              })),
+              education: [],
+              projects: portfolio.projects.map(p => ({
+                id: p.id ?? "", 
+                name: p.nombre ?? "",
+                description: p.descripcion ?? "",
+                stack: [],
+              }))
+            }}
+          />
+        )}
+
+        {!isModern && !isMinimalist && !isCorporate && (
           <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">
               <header className="text-center border-b pb-6 mb-8">
 
