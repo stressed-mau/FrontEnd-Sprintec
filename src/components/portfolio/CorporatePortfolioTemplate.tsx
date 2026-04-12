@@ -118,7 +118,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                 <span>{initials}</span>
               </div>
 
-              <div className="flex min-h-[220px] items-center justify-center py-8 lg:min-h-[340px]">
+              <div className="flex min-h-55 items-center justify-center py-8 lg:min-h-85">
                 <div className="relative flex h-40 w-36 items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/10 bg-[linear-gradient(160deg,#D8B182_0%,#7C8EA1_100%)] shadow-[0_20px_50px_rgba(0,0,0,0.3)] lg:h-52 lg:w-44">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.42),transparent_42%)]" />
                   <span className="relative text-5xl font-black tracking-[-0.06em] text-white">
@@ -233,7 +233,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
               {education.map((item) => (
                 <article
                   key={item.id}
-                  className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-white/[0.07]"
+                  className="rounded-[1.6rem] border border-white/10 bg-white/3 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-white/[0.07]"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
                     <p className="text-lg font-bold text-white">{item.title}</p>
@@ -304,7 +304,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
               {skills.map((skill) => (
                 <span
                   key={skill}
-                  className="rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-white/86 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B] hover:bg-[#D6A96B]/12 hover:text-[#F4D8AE]"
+                  className="rounded-full border border-white/12 bg-white/4 px-4 py-2 text-sm font-semibold text-white/86 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B] hover:bg-[#D6A96B]/12 hover:text-[#F4D8AE]"
                 >
                   {skill}
                 </span>
@@ -433,7 +433,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
               type="button"
               onClick={handlePreviousSheet}
               disabled={activeSheetIndex === 0}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.05] text-white transition hover:border-[#D6A96B] hover:text-[#F4D8AE] disabled:cursor-not-allowed disabled:opacity-35"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/5 text-white transition hover:border-[#D6A96B] hover:text-[#F4D8AE] disabled:cursor-not-allowed disabled:opacity-35"
               aria-label="Seccion anterior"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -442,7 +442,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
               type="button"
               onClick={handleNextSheet}
               disabled={activeSheetIndex === totalMobileSheets - 1}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/[0.05] text-white transition hover:border-[#D6A96B] hover:text-[#F4D8AE] disabled:cursor-not-allowed disabled:opacity-35"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/5 text-white transition hover:border-[#D6A96B] hover:text-[#F4D8AE] disabled:cursor-not-allowed disabled:opacity-35"
               aria-label="Siguiente seccion"
             >
               <ArrowRight className="h-4 w-4" />
@@ -465,7 +465,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                   ref={(element) => {
                     sheetRefs.current[index] = element
                   }}
-                  className={`min-h-[620px] w-full shrink-0 snap-start rounded-[2rem] border p-5 shadow-[0_24px_60px_rgba(0,0,0,0.18)] transition-colors duration-300 ${
+                  className={`min-h-155 w-full shrink-0 snap-start rounded-[2rem] border p-5 shadow-[0_24px_60px_rgba(0,0,0,0.18)] transition-colors duration-300 ${
                     lightSheet
                       ? "border-white/10 bg-[#EFE8DE] text-[#111111]"
                       : "border-white/10 bg-[#1A1A1A] text-white"
@@ -520,7 +520,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                 <span>{initials}</span>
               </div>
 
-              <div className="mt-6 flex min-h-[360px] items-center justify-center">
+              <div className="mt-6 flex min-h-90 items-center justify-center">
                 <div className="relative flex h-64 w-56 items-center justify-center overflow-hidden rounded-[2rem] border border-white/35 bg-[linear-gradient(160deg,#CFA16A_0%,#697A8F_100%)] shadow-[0_24px_55px_rgba(0,0,0,0.18)]">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.42),transparent_42%)]" />
                   <span className="relative text-7xl font-black tracking-[-0.08em] text-white">
@@ -602,7 +602,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                       {education.map((item) => (
                         <article
                           key={item.id}
-                          className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-5 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-[#1B1815]"
+                          className="rounded-[1.4rem] border border-white/10 bg-white/3 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-[#1B1815]"
                         >
                           <div className="flex flex-col gap-2">
                             <p className="text-lg font-bold text-white">{item.title}</p>
@@ -671,7 +671,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                       {skills.map((skill) => (
                         <span
                           key={skill}
-                          className="rounded-full border border-white/12 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-white/86 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B] hover:bg-[#D6A96B]/12 hover:text-[#F4D8AE]"
+                          className="rounded-full border border-white/12 bg-white/4 px-4 py-2 text-sm font-semibold text-white/86 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B] hover:bg-[#D6A96B]/12 hover:text-[#F4D8AE]"
                         >
                           {skill}
                         </span>
