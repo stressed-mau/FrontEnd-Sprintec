@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { CheckCircle2, Copy, Palette, Upload, X } from "lucide-react"
 
 import Header from "../components/HeaderUser"
@@ -7,9 +7,11 @@ import {
   CorporatePortfolioTemplate,
   type CorporatePortfolioData,
 } from "@/components/portfolio/CorporatePortfolioTemplate"
-import ModernTemplate from "../components/templates/ModernTemplate"
+import ModernTemplate, { type ModernTemplateProfile } from "../components/templates/ModernTemplate"
 import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility"
 import { usePublishPortfolio } from "../hooks/usePublishPortfolio"
+import { getUserInformation } from "@/services/PersonalDataService"
+import { getAuthSession } from "@/services/auth/auth-storage"
 
 const CORPORATE_PREVIEW_DATA: CorporatePortfolioData = {
   fullName: "Maria Victoria Grageda Vallejos",
@@ -113,6 +115,7 @@ const PublishPortfolio = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null)
   const [copiedLink, setCopiedLink] = useState(false)
+  const [profileData, setProfileData] = useState<ModernTemplateProfile | null>(null)
 
   const selectedTemplateNumber =
     selectedTemplate != null
@@ -127,6 +130,34 @@ const PublishPortfolio = () => {
   function closePreview() {
     setPreviewTemplate(null)
   }
+
+  useEffect(() => {
+    async function loadProfile() {
+      const session = getAuthSession()
+
+      if (!session?.user?.id) {
+        return
+      }
+
+      try {
+        const profile = await getUserInformation(session.user.id)
+
+        setProfileData({
+          fullname: profile?.fullname ?? "",
+          occupation: profile?.occupation ?? "",
+          image_url: profile?.image_url ?? "",
+          residence: profile?.nationality ?? "",
+          public_email: profile?.public_email ?? "",
+          phone: profile?.phone_number ?? "",
+          biography: profile?.biography ?? "",
+        })
+      } catch {
+        setProfileData(null)
+      }
+    }
+
+    void loadProfile()
+  }, [])
 
   async function copyToClipboard() {
     if (!portfolioUrl) {
@@ -160,7 +191,7 @@ const PublishPortfolio = () => {
 
   function renderPreviewContent() {
     if (previewTemplate === "Moderna") {
-      return <ModernTemplate data={data} />
+      return <ModernTemplate data={data} profile={profileData} />
     }
 
     if (previewTemplate === "Corporativa") {
@@ -168,7 +199,7 @@ const PublishPortfolio = () => {
     }
 
     return (
-      <div className="flex min-h-[420px] flex-col items-center justify-center gap-4 text-center text-gray-400">
+      <div className="flex min-h-105 flex-col items-center justify-center gap-4 text-center text-gray-400">
         <Palette size={48} className="opacity-20" />
         <p>No hay vista previa disponible para esta plantilla.</p>
       </div>
@@ -212,7 +243,7 @@ const PublishPortfolio = () => {
                     }`}
                   >
                     <div
-                      className={`relative flex h-32 items-center justify-center bg-gradient-to-br ${template.colorClass}`}
+                      className={`relative flex h-32 items-center justify-center bg-linear-to-br ${template.colorClass}`}
                     >
                       <svg
                         className="h-10 w-10 text-white opacity-40"
@@ -396,7 +427,7 @@ const PublishPortfolio = () => {
                       </div>
 
                       <div
-                        className={`transition-all duration-300 ease-in-out ${isOpen ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"}`}
+                        className={`transition-all duration-300 ease-in-out ${isOpen ? "max-h-250 opacity-100" : "max-h-0 opacity-0"}`}
                       >
                         <div className="border-t border-[#C9E1F0] bg-white p-4">
                           <div className="mb-4 flex gap-2">

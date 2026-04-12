@@ -90,28 +90,28 @@ const UserPersonalData = () => {
                           <span>{form.fullName || "No especificado"}</span>
                         </div>
                         <div>
-                          <p className="text-gray-400 text-sm font-medium  font-bold mb-1">Ocupación</p>
+                          <p className="text-gray-400 text-sm font-medium  mb-1">Ocupación</p>
                           <div className="flex items-center gap-2">
                             <Briefcase size={16} className="text-gray-400" />
                             <span>{form.occupation || "No especificado"}</span>
                           </div>
                         </div>
                         <div>
-                          <p className="text-gray-400 text-sm font-medium font-bold mb-1">Residencia actual</p>
+                          <p className="text-gray-400 text-sm font-medium  mb-1">Residencia actual</p>
                           <div className="flex items-center gap-2">
                             <MapPin size={16} className="text-gray-400" />
                             <span>{form.location || "No especificado"}</span>
                           </div>
                         </div>
                         <div>
-                          <p className="text-gray-400 text-sm font-medium font-bold mb-1">Correo electrónico</p>
+                          <p className="text-gray-400 text-sm font-medium mb-1">Correo electrónico</p>
                           <div className="flex items-center gap-2">
                             <Mail size={16} className="text-gray-400" />
                             <span>{form.email || "No especificado"}</span>
                           </div>
                         </div>
                         <div>
-                          <p className="text-gray-400 text-sm font-medium font-bold mb-1">Número de contacto</p>
+                          <p className="text-gray-400 text-sm font-medium mb-1">Número de contacto</p>
                           <div className="flex items-center gap-2">
                             <Phone size={16} className="text-gray-400" />
                             <span>{phoneNumber ? `+${countryCode} ${phoneNumber}` : "No especificado"}</span>
@@ -319,7 +319,7 @@ const UserPersonalData = () => {
                   </div>
                 )}
                 {success && (
-                  <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
+                  <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
                     <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl p-8 text-center">
                       
                       <h3 className="text-[#003A6C] text-xl font-bold mb-2">
