@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createProject, getProjects, uploadImage } from "@/services/ProjectService";
+import { createProject, uploadImage } from "@/services/ProjectService";
 export interface Project {
   nombre: string;
   descripcion: string;

@@ -108,13 +108,10 @@ export function ExperienceFormModal({
           </div>
 
           {isLaboralExperience ? (
-            <div className="space-y-2 rounded-2xl border border-[#A5D7E8] bg-white/60 p-4">
+            <div className="space-y-2">
               <Label id="experience-email-label" htmlFor="experience-email" className="text-[#003A6C]">
                 Correo electrónico *
               </Label>
-              <p className="text-xs text-[#4B778D]">
-                Completa este correo para la experiencia laboral.
-              </p>
               <Input
                 id="experience-email"
                 type="email"
