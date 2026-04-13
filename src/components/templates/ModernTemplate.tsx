@@ -72,10 +72,6 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ data, profile, isPrevie
           </div>
         </div>
 
-        {/* Elemento Decorativo: Puntos */}
-        <div className="absolute top-10 right-10 grid grid-cols-4 gap-2 opacity-20">
-          {[...Array(12)].map((_, i) => <div key={i} className="w-2 h-2 bg-[#2f606b] rounded-full"></div>)}
-        </div>
       </header>
 
       {/* --- PERFIL Y BIO --- */}
