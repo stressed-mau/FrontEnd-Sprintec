@@ -27,7 +27,8 @@ export const useSkillsManager = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
+//Modal de confirmacion
+  const [showConfirmEdit, setShowConfirmEdit] = useState(false);
   const [pageError, setPageError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -76,27 +77,42 @@ export const useSkillsManager = () => {
     setErrorMessage('');
   };
 
-  const handleSkillNameChange = (value: string) => {
-    setSkillName(value);
-
-    if (errorMessage) {
+const handleSkillNameChange = (value: string) => {
+  setSkillName(value);
+  if (skillType === "blanda") {
+    const hasNumbers = /\d/.test(value);
+    const hasSpecialChars = /[^a-zA-ZÀ-ÿ\s]/.test(value);
+    if (hasNumbers) {
+      setErrorMessage("El Nombre de la habilidad contiene numeros. Solo se permiten letras.");
+    } else if (hasSpecialChars) {
+      setErrorMessage("El Nombre de la habilidad contiene caracteres especiales. Solo se permiten letras.");
+    } else {
       setErrorMessage("");
     }
-  };
+  } else {
+    if (errorMessage) setErrorMessage("");
+  }
+};
 
-  const handleSave = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (isSaving) {
-      return;
-    }
-
-    setErrorMessage("");
+  const handleSave = async (e?: FormEvent<HTMLFormElement>) => {
+    if (e) e.preventDefault();
+    if (errorMessage) return;
+    if (isSaving) return;
+    setErrorMessage("");  
     // Validación 1: Campo obligatorio
     if (!skillName.trim()) {
       setErrorMessage("El campo Nombre de habilidad es obligatorio.");
       return;
     }
+if (skillType === "blanda") {
+   const onlyLettersRegex = /^[a-zA-ZÀ-ÿ\s]+$/;
+  if (!onlyLettersRegex.test(skillName.trim())) {
+   const hasNumbers = /\d/.test(skillName);
+    if (hasNumbers) {setErrorMessage("El Nombre de la habilidad contiene números. Solo se permiten letras.");
+    } else { setErrorMessage("El Nombre de la habilidad contiene caracteres especiales. Solo se permiten letras."); }
+    return;
+  }
+}
     // Validación 2: No permitir duplicados
     const skillNameLower = skillName.trim().toLowerCase();
     const exists = skills.some(s => 
@@ -106,6 +122,10 @@ export const useSkillsManager = () => {
     if (exists) {
       setErrorMessage("Ya existe una habilidad registrada con ese nombre.");
       return;
+    }
+    if (editingSkill && !showConfirmEdit) {
+      setShowConfirmEdit(true);
+      return; 
     }
     const payload = {
       name: skillName.trim(),
@@ -118,23 +138,18 @@ export const useSkillsManager = () => {
 
       if (editingSkill) {
         const updatedSkill = await updateSkill(editingSkill.id, payload);
-        setSkills((currentSkills) =>
-          currentSkills.map((currentSkill) => (currentSkill.id === editingSkill.id ? updatedSkill : currentSkill)),
-        );
+        setSkills(prev => prev.map(s => s.id === editingSkill.id ? updatedSkill : s));
         setSuccessMessage("Habilidad actualizada correctamente.");
       } else {
         const createdSkill = await createSkill(payload);
-        setSkills((currentSkills) => [...currentSkills, createdSkill]);
+        setSkills(prev => [...prev, createdSkill]);
         setSuccessMessage("Habilidad agregada correctamente.");
       }
 
       setIsModalOpen(false);
-      setEditingSkill(null);
+      setShowConfirmEdit(false);
       setShowSuccessModal(true);
-
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 2000);
+      setEditingSkill(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo guardar la habilidad.';
       setErrorMessage(message);
@@ -174,8 +189,8 @@ const softSkills = useMemo(() => {
 }, [skills]);
 
   return {
-    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,pageError,isLoading,isSaving,technicalSkills,softSkills,// Estados
-    setSkillType,setSkillName, setSkillLevel, handleSkillNameChange,// Setters
+    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,pageError,isLoading,isSaving,technicalSkills,softSkills,showConfirmEdit,// Estados
+    setSkillType,setSkillName, setSkillLevel, handleSkillNameChange,setShowConfirmEdit,setShowSuccessModal,// Setters
     openModal,closeModal,handleSave,handleDelete,// Métodos
   };
   
