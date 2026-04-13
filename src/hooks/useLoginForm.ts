@@ -19,12 +19,15 @@ const INITIAL_VALUES: LoginValues = {
   password: "",
 }
 
+const EMOJI_REGEX = /\p{Extended_Pictographic}/u
+
 function validateLoginField(field: keyof LoginValues, values: LoginValues): string {
   const user = values.user.trim()
   const password = values.password
 
   if (field === "user") {
     if (!user) return "El campo Usuario o correo electrónico es obligatorio."
+    if (EMOJI_REGEX.test(values.user)) return "El campo Usuario o correo electrónico no permite emoticones."
     if (user.length > 60) return "El campo Usuario o correo electrónico permite un máximo de 60 caracteres."
   }
 

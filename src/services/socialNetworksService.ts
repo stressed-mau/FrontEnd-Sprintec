@@ -29,7 +29,7 @@ export interface UpdateSocialNetworkPayload {
 }
 
 const SOCIAL_NETWORKS_ENDPOINT = "/social_network"
-const SOCIAL_NETWORK_MUTATION_TIMEOUT_MS = 5000
+const SOCIAL_NETWORK_MUTATION_TIMEOUT_MS = 30_000
 
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {

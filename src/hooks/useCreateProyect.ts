@@ -1,8 +1,6 @@
 
 import { useState } from 'react';
-import { createProject, getProjects, uploadImage } from "@/services/ProjectService";
-
-import { useEffect } from "react";
+import { createProject, uploadImage } from "@/services/ProjectService";
 export interface Project {
   nombre: string;
   descripcion: string;
@@ -16,6 +14,34 @@ export interface Project {
   image?: string;
 }
 
+function projectFromCreatePayload(
+  payload: {
+    title: string;
+    description: string;
+    initial_date: string;
+    final_date: string | null;
+    url_to_project: string | null;
+    url_to_deploy: string | null;
+    photoghaph: string | null;
+    project_rol: string;
+    is_current: boolean;
+  },
+  selectedTechs: { id: number; name: string }[]
+): Project {
+  return {
+    nombre: payload.title,
+    descripcion: payload.description,
+    tecnologias: selectedTechs,
+    rol: payload.project_rol,
+    fechaInicio: payload.initial_date,
+    fechaFin: payload.final_date ?? undefined,
+    is_current: payload.is_current,
+    github: payload.url_to_project ?? undefined,
+    demo: payload.url_to_deploy ?? undefined,
+    image: payload.photoghaph ?? "",
+  };
+}
+
 export const useCreateProyect = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,32 +49,8 @@ export const useCreateProyect = () => {
   const [errors, setErrors] = useState<any>({});
   const [success, setSuccess] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const data = await getProjects();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-        const mapped = data.map((p: any) => ({
-          nombre: p.title,
-          descripcion: p.description,
-          tecnologias: p.technologies || [],
-          rol: p.project_rol,
-          fechaInicio: p.initial_date,
-          fechaFin: p.final_date,
-          is_current: p.is_current,
-          github: p.url_to_project,
-          demo: p.url_to_deploy,
-          image: p.photoghaph || ""
-        }));
-
-        setProjects(mapped);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchProjects();
-  }, []);
   const openModal = (index: number | null = null) => {
     setEditingIndex(index);
     setErrors({});
@@ -123,7 +125,9 @@ export const useCreateProyect = () => {
   };
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>,
-    selectedTechs: { id: number; name: string }[]
+    selectedTechs: { id: number; name: string }[],
+    /** Estado del checkbox en la página; FormData puede no reflejar inputs controlados de React. */
+    isCurrentFromUi: boolean
   ) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -134,10 +138,10 @@ export const useCreateProyect = () => {
     const fechaInicio = formData.get('fechaInicio') as string;
     const fechaFinRaw = formData.get('fechaFin') as string;
     const fechaFin = fechaFinRaw ? fechaFinRaw : null;
-    const is_current = formData.get('is_current') === 'on';
+    const is_current = isCurrentFromUi;
     const github = (formData.get('github') as string) || "";
     const demo = (formData.get('demo') as string) || "";
-    const file = formData.get('image') as File | null;
+    const file = formData.get("image");
 
     let newErrors: any = {};
     const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
@@ -207,7 +211,7 @@ export const useCreateProyect = () => {
     }
 
     // --- VALIDACIÓN: IMAGEN ---
-    if (file && file.size > 0) {
+    if (typeof Blob !== "undefined" && file instanceof Blob && file.size > 0) {
       const allowedTypes = ["image/jpeg", "image/png"];
       if (!allowedTypes.includes(file.type)) {
         newErrors.image = "Formato de imagen no permitido.";
@@ -218,52 +222,65 @@ export const useCreateProyect = () => {
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
-    const technologyIds = selectedTechs.map(t => t.id);
-    let imageUrl = null;
 
-    if (file && file.size > 0) {
-      imageUrl = await uploadImage(file);
-    }
-    const payload = {
-      title: nombre,
-      description: descripcion,
-      initial_date: fechaInicio,
-      final_date: is_current ? null : fechaFin,
-      url_to_project: github || null,
-      url_to_deploy: demo || null, 
-      photoghaph: imageUrl,
-      technologies: technologyIds,
-      project_rol: rol, 
-      is_current,
-    };
+    setIsSubmitting(true);
+    try {
+      const technologyIds = selectedTechs.map(t => t.id);
+      let imageUrl: string | null = null;
 
-    await createProject(payload);
-    const data = await getProjects();
+      const fileInput = formData.get("image");
+      const hasImage =
+        typeof Blob !== "undefined" &&
+        fileInput instanceof Blob &&
+        fileInput.size > 0;
 
-    const mapped = data.map((p: any) => ({
-      nombre: p.title,
-      descripcion: p.description,
-      tecnologias: p.technologies || [],
-      rol: p.project_rol,
-      fechaInicio: p.initial_date,
-      fechaFin: p.final_date,
-      is_current: p.is_current,
-      github: p.url_to_project,
-      demo: p.url_to_deploy,
-      image: p.photoghaph || ""
-    }));
+      if (hasImage) {
+        imageUrl = await uploadImage(fileInput);
+      }
+      const payload = {
+        title: nombre,
+        description: descripcion,
+        initial_date: fechaInicio,
+        final_date: is_current ? null : fechaFin,
+        url_to_project: github || null,
+        url_to_deploy: demo || null,
+        photoghaph: imageUrl,
+        technologies: technologyIds,
+        project_rol: rol,
+        is_current,
+      };
 
-    setProjects(mapped);
-    setSuccess("Proyecto guardado correctamente.");
-    setTimeout(() => {
-      setSuccess("");
+      await createProject(payload);
+
+      setProjects((prev) => [
+        ...prev,
+        projectFromCreatePayload(payload, selectedTechs),
+      ]);
+
       closeModal();
-    }, 1500);
+      setSuccess("Proyecto guardado correctamente.");
+      setTimeout(() => setSuccess(""), 4000);
+    } catch (err: unknown) {
+      let message = "No se pudo guardar el proyecto. Revisa la consola o el servidor.";
+      if (err && typeof err === "object" && "response" in err) {
+        const data = (err as { response?: { data?: { message?: string } } }).response
+          ?.data;
+        if (data?.message) message = String(data.message);
+        else if (err instanceof Error) message = err.message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      console.error(err);
+      setErrors((prev: any) => ({ ...prev, form: message }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return {
     projects, isModalOpen, editingIndex, errors, success, setSuccess, preview,
-    setPreview, handleDelete: (index: number) => setProjects(projects.filter((_, i) => i !== index)),
+    setPreview, isSubmitting,
+    handleDelete: (index: number) => setProjects(projects.filter((_, i) => i !== index)),
     handleEdit: (index: number) => { setEditingIndex(index); setIsModalOpen(true); },
     handleSubmit, handleChange, openModal, closeModal
   };

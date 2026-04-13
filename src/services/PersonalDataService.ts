@@ -1,7 +1,8 @@
 import { api } from './api';
+const USER_ENDPOINT = '/user_information';
 
 export const getUserInformation = async (userId: string | number) => {
-  const res = await api.get(`/user_information/${userId}`);
+  const res = await api.get(`${USER_ENDPOINT}/${userId}`);
 
   if (!res.data.success) {
     throw new Error('Error al obtener datos del usuario');
@@ -11,7 +12,7 @@ export const getUserInformation = async (userId: string | number) => {
 };
 
 export const updateUserInformation = async (userId: string | number, formData: FormData) => {
-  const res = await api.post(`/user_information/${userId}`, formData, {
+  const res = await api.post(`${USER_ENDPOINT}/${userId}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

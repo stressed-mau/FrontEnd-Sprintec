@@ -32,7 +32,7 @@ function getNetworkVisual(name: string, url: string): NetworkVisual {
   if (normalizedValue.includes("github")) {
     return {
       icon: FolderGit2,
-      badge: "Código",
+      badge: "Codigo",
       iconClassName: "text-slate-900",
       surfaceClassName: "bg-slate-100",
       buttonClassName: "border-slate-200 text-slate-700 hover:bg-slate-50",
@@ -69,21 +69,6 @@ function getNetworkVisual(name: string, url: string): NetworkVisual {
     }
   }
 
-  if (
-    normalizedValue.includes("stackexchange") ||
-    normalizedValue.includes("stack exchange") ||
-    normalizedValue.includes("stackoverflow") ||
-    normalizedValue.includes("stack overflow")
-  ) {
-    return {
-      icon: MessageSquare,
-      badge: "Comunidad",
-      iconClassName: "text-[#F48024]",
-      surfaceClassName: "bg-[#FFF4EC]",
-      buttonClassName: "border-[#F7C9A7] text-[#C25C10] hover:bg-[#FFF8F3]",
-    }
-  }
-
   return {
     icon: Globe,
     badge: "Enlace",
@@ -101,9 +86,9 @@ export function NetworksList({ networks, onEdit, onDelete }: NetworksListProps) 
           <div className="mx-auto mb-5 flex size-20 items-center justify-center rounded-[1.75rem] bg-[radial-gradient(circle_at_top,#d7ecff,white_70%)] text-[#003A6C] shadow-sm">
             <Globe className="size-9" />
           </div>
-          <h2 className="mb-2 text-2xl font-semibold text-[#003A6C]">Aún no conectaste ninguna red</h2>
+          <h2 className="mb-2 text-2xl font-semibold text-[#003A6C]">Aun no conectaste ninguna red</h2>
           <p className="mx-auto max-w-xl text-sm leading-6 text-[#4B778D] sm:text-base">
-            Agrega enlaces profesionales para que tu portafolio se vea más completo y tus visitantes puedan validar tu
+            Agrega enlaces profesionales para que tu portafolio se vea mas completo y tus visitantes puedan validar tu
             presencia digital en segundos.
           </p>
         </CardContent>

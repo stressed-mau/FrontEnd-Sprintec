@@ -35,7 +35,7 @@ export interface Skill {
 }
 
 const SKILLS_ENDPOINT = '/skills';
-const SKILL_MUTATION_TIMEOUT_MS = 5000;
+const SKILL_MUTATION_TIMEOUT_MS = 30_000;
 
 function mapApiTypeToUi(type?: SkillDto['type']): SkillType {
   const normalizedType = typeof type === 'string'
@@ -74,7 +74,6 @@ function capitalizeLevel(level?: string | null): string | undefined {
     return undefined;
   }
 
-  // Normaliza para que coincida con los value de los option del modal
   const normalizedLevel = level
     .toLowerCase()
     .normalize('NFD')
@@ -93,11 +92,11 @@ function capitalizeLevel(level?: string | null): string | undefined {
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {
     if (error.code === 'ECONNABORTED') {
-      return new Error('La solicitud tardó más de 5 segundos. Intenta nuevamente.');
+      return new Error('La solicitud tardó más de 30 segundos. Intenta nuevamente.');
     }
 
     if (error.code === 'ERR_NETWORK') {
-      return new Error('No se pudo conectar con el backend en http://localhost:8000. Verifica que Laravel este levantado.');
+      return new Error('No se pudo conectar con el backend configurado. Verifica que la API desplegada esté disponible.');
     }
 
     const backendMessage =

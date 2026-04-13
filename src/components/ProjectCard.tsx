@@ -44,9 +44,10 @@ const ProjectCard = ({ project, onEdit, onDelete }: ProjectProps) => {
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{project.descripcion}</p>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          {project.tecnologias.map((tech: string, idx: number) => (
+          {(Array.isArray(project.tecnologias) ? project.tecnologias : []).map(
+            (tech: string | { name?: string }, idx: number) => (
             <span key={idx} className="bg-blue-50 text-blue-600 text-xs px-3 py-1 rounded-full border border-blue-100">
-              {tech}
+              {typeof tech === "string" ? tech : tech?.name ?? "—"}
             </span>
           ))}
         </div>
@@ -65,11 +66,12 @@ const ProjectCard = ({ project, onEdit, onDelete }: ProjectProps) => {
 
               {project.is_current
                 ? "Actualidad"
-                : new Date(project.fechaFin).toLocaleDateString("es-ES", {
-                    month: "short",
-                    year: "numeric"
-                  })
-              }
+                : project.fechaFin
+                  ? new Date(project.fechaFin).toLocaleDateString("es-ES", {
+                      month: "short",
+                      year: "numeric"
+                    })
+                  : "—"}
             </p>
           )}
         </div>

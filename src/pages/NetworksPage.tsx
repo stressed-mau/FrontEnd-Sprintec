@@ -50,14 +50,6 @@ function YoutubeIcon({ className }: { className?: string }) {
   )
 }
 
-function StackOverflowIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
-      <path d="M18.58 20.75v-6h1.98v7.98H4.44v-7.98h1.98v6h12.16Zm-10.5-1.98h8.52v1.98H8.08v-1.98Zm.42-4.51 8.35 1.74-.4 1.94-8.35-1.74.4-1.94Zm1.1-4.08 7.73 3.61-.84 1.8-7.73-3.61.84-1.8Zm2.16-3.82 6.56 5.48-1.27 1.52-6.56-5.48 1.27-1.52Zm4.23-4.09 1.59 1.18-4.59 6.19-1.59-1.18 4.59-6.19Z" />
-    </svg>
-  )
-}
-
 const PROFESSIONAL_NETWORKS: ProfessionalNetwork[] = [
   {
     id: "github",
@@ -89,16 +81,6 @@ const PROFESSIONAL_NETWORKS: ProfessionalNetwork[] = [
     description: "Comparte tu canal de YouTube",
     matchKeys: ["youtube", "google"],
   },
-  {
-    id: "stackexchange",
-    name: "Stack Exchange",
-    icon: StackOverflowIcon,
-    color: "bg-[#F48024] hover:bg-[#DA670B]",
-    lightColor: "bg-orange-100",
-    textColor: "text-[#F48024]",
-    description: "Conecta tu perfil técnico y reputación en la comunidad",
-    matchKeys: ["stackexchange", "stack exchange", "stackoverflow", "stack overflow"],
-  },
 ]
 
 const NetworksPage = () => {
@@ -129,7 +111,7 @@ const NetworksPage = () => {
           PROFESSIONAL_NETWORKS.find((network) => network.id === provider || network.matchKeys.includes(provider))
             ?.name ?? `${provider.charAt(0).toUpperCase()}${provider.slice(1)}`
 
-        showFeedback(`Conexión exitosa con ${providerLabel}. Tu perfil está ahora conectado.`, "success")
+        showFeedback(`Conexion exitosa con ${providerLabel}. Tu perfil esta ahora conectado.`, "success")
         void loadNetworks()
       }, 500)
 
@@ -209,11 +191,10 @@ const NetworksPage = () => {
                   </div>
                   <div className="flex-1">
                     <h3 id="titulo-informacion-oauth-redes" className="mb-1 font-semibold text-blue-900">
-                      Conexión segura mediante OAuth
+                      Conexion segura mediante OAuth
                     </h3>
                     <p id="descripcion-informacion-oauth-redes" className="text-sm leading-6 text-blue-700">
-                      Al conectar tus redes sociales, serás redirigido a la plataforma oficial para autorizar el acceso.
-                      Obtendremos automáticamente tu URL de perfil sin necesidad de que la copies manualmente.
+                      Al conectar tus redes sociales, serás redirigido a la plataforma oficial para autorizar el acceso.  
                     </p>
                   </div>
                 </div>
@@ -239,11 +220,11 @@ const NetworksPage = () => {
               </h2>
 
               {isLoading ? (
-                <div id="skeleton-redes-profesionales" className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div id="skeleton-redes-profesionales" className="grid grid-cols-2 items-start gap-3 sm:gap-4">
                   {PROFESSIONAL_NETWORKS.map((network) => (
                     <Card key={network.id} id={`tarjeta-cargando-red-${network.id}`} className="border-gray-200 bg-white py-0">
-                      <CardContent className="px-3 pb-4 pt-4 sm:px-6 sm:pb-5 sm:pt-5">
-                        <div className="flex animate-pulse flex-col gap-4">
+                      <CardContent className="p-4 sm:p-5">
+                        <div className="flex animate-pulse flex-col gap-3.5">
                           <div className="flex items-start gap-3 sm:gap-4">
                             <div className="h-12 w-12 rounded-xl bg-gray-100 sm:h-14 sm:w-14" />
                             <div className="min-w-0 flex-1">
@@ -260,7 +241,7 @@ const NetworksPage = () => {
                   ))}
                 </div>
               ) : (
-                <div id="grid-redes-profesionales" className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div id="grid-redes-profesionales" className="grid grid-cols-2 items-start gap-3 sm:gap-4">
                   {connectedNetworks.map((network) => {
                     const Icon = network.icon
                     const isConnected = network.connected
@@ -277,8 +258,8 @@ const NetworksPage = () => {
                             : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
                         }`}
                       >
-                        <CardContent className="px-3 pb-4 pt-4 sm:px-6 sm:pb-5 sm:pt-5">
-                          <div className="flex flex-col gap-4">
+                        <CardContent className="p-4 sm:p-5">
+                          <div className="flex flex-col gap-3.5">
                             <div className="flex items-start gap-3 sm:gap-4">
                               <div
                                 id={`icono-red-${network.id}`}
@@ -374,24 +355,33 @@ const NetworksPage = () => {
       <Footer />
       {isSuccessModalOpen ? (
         <div id="modal-exito-redes-profesionales" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-          <div id="contenedor-modal-exito-redes-profesionales" className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
+          <div id="contenedor-modal-exito-redes-profesionales" className="relative w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
+            <button
+              id="boton-cerrar-modal-exito-redes-profesionales"
+              type="button"
+              onClick={closeSuccessModal}
+              aria-label="Cerrar modal de éxito"
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-[#4B778D] transition hover:bg-[#EEF5F9]"
+            >
+              X
+            </button>
             <div id="icono-modal-exito-redes-profesionales" className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#D9EAF4] text-[#003A6C]">
               <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
             <h2 id="titulo-modal-exito-redes-profesionales" className="text-xl font-bold text-[#003A6C]">
-              Éxito
+              Exito
             </h2>
             <p id="mensaje-modal-exito-redes-profesionales" className="mt-2 text-sm text-[#4B778D]">
               {successMessage}
             </p>
             <Button
-              id="boton-continuar-modal-exito-redes-profesionales"
+              id="boton-aceptar-modal-exito-redes-profesionales"
               onClick={closeSuccessModal}
               className="mt-6 h-11 w-full bg-[#003A6C] text-white hover:bg-[#1a4f7a]"
             >
-              Continuar
+              Aceptar
             </Button>
           </div>
         </div>

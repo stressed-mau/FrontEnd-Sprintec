@@ -132,6 +132,7 @@ export interface Portfolio {
   socialNetworks: SocialNetwork[];
   isPublished?: boolean;
   portfolioUrl?: string;
+  template: number;
 }
 
 // =========================
