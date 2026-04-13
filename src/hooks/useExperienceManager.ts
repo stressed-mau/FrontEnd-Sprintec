@@ -410,10 +410,6 @@ export function useExperienceManager() {
       return
     }
 
-    if (field === "email" && typeof normalizedValue === "string") {
-      validateEmail(normalizedValue)
-    }
-
     if (errors[field]) {
       setErrors((currentErrors) => ({
         ...currentErrors,
