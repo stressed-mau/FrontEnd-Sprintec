@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 
-import { useEmailValidation } from "@/hooks/useEmailValidation"
+import isEmail from "validator/lib/isEmail"
 import {
   createExperience,
   getExperiences,
@@ -167,7 +167,6 @@ function validateExperienceField(
   values: ExperienceFormValues,
 ): string {
   const company = values.company.trim()
-  const email = values.email.trim()
   const position = values.position.trim()
   const description = values.description.trim()
   const startDate = values.startDate.trim()
@@ -184,16 +183,27 @@ function validateExperienceField(
   }
 
   if (field === "email") {
-    if (!email) {
+    if (values.type !== "laboral") {
       return ""
     }
 
-    if (email.length > 60) {
-      return "El correo electrónico no puede exceder los 60 caracteres."
+    const rawEmail = values.email
+    const normalizedEmail = rawEmail.trim()
+
+    if (!normalizedEmail) {
+      return "El campo Correo electrónico es obligatorio."
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return "El correo electrónico debe tener un formato válido."
+    if (/\s/.test(rawEmail)) {
+      return "El campo Correo electrónico no puede contener espacios en blanco."
+    }
+
+    if (normalizedEmail.length > 60) {
+      return "El campo Correo electrónico permite un máximo de 60 caracteres."
+    }
+
+    if (!isEmail(normalizedEmail)) {
+      return "El Correo electrónico debe tener un formato válido (ej. usuario@gmail.com)."
     }
   }
 
@@ -254,8 +264,6 @@ function validateExperienceField(
 }
 
 export function useExperienceManager() {
-  const { sanitizeEmailInput, validateEmail } = useEmailValidation()
-
   const [experiences, setExperiences] = useState<ExperienceItem[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
@@ -377,7 +385,7 @@ export function useExperienceManager() {
 
   function updateField(field: keyof ExperienceFormValues, value: string | boolean) {
     const normalizedValue =
-      field === "email" && typeof value === "string" ? sanitizeEmailInput(value) : value
+      field === "email" && typeof value === "string" ? value.slice(0, 60) : value
 
     const nextValues: ExperienceFormValues = {
       ...formData,
@@ -601,3 +609,4 @@ export function useExperienceManager() {
     reloadExperiences: loadExperiences,
   }
 }
+
