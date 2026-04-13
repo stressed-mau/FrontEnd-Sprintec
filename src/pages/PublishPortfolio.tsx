@@ -338,7 +338,7 @@ const PublishPortfolio = () => {
       ) : (
         // VISTA PUBLICADO (Imagen 2)
         <div className="space-y-6">
-          <div className="bg-[#E7F6EC] border-1 border-[#34A853] rounded-2xl p-6 flex items-center justify-between shadow-sm mt-8">
+          <div className="bg-[#E7F6EC] border border-[#34A853] rounded-2xl p-6 flex items-center justify-between shadow-sm mt-8">
             <div className="flex items-center gap-4">
               <div className="bg-[#34A853] p-2 rounded-full">
                 <CheckCircle2 className="w-6 h-6 text-white" />
@@ -354,7 +354,7 @@ const PublishPortfolio = () => {
                 if (!templateNumber) return;
                 handleUnpublish(templateNumber);
               }}
-              className={`border-1 border-[#4982ad] bg-[#C2DBED] text-[#003A6C] px-6 py-2 rounded-lg font-semibold text-sm transition-all ${
+              className={`border border-[#4982ad] bg-[#C2DBED] text-[#003A6C] px-6 py-2 rounded-lg font-semibold text-sm transition-all ${
                 loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#c4a57c]'
               }`}
             >
