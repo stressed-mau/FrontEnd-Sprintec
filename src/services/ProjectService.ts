@@ -64,6 +64,26 @@ export const createLanguage = async (name: string) => {
 
   return res.data.data;
 };
+
+export const getRoles = async (search = "") => {
+  const res = await api.get(`/roles?search=${search}`);
+
+  if (!res.data.success) {
+    throw new Error("Error al obtener roles");
+  }
+
+  return res.data.data;
+};
+
+export const createRole = async (name: string) => {
+  const res = await api.post("/roles", { name });
+
+  if (!res.data.success) {
+    throw new Error("Error al crear rol");
+  }
+
+  return res.data.data;
+};
 function extractProjectList(body: unknown): unknown[] | null {
   if (Array.isArray(body)) return body;
   if (body && typeof body === "object") {

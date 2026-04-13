@@ -4,7 +4,7 @@ import ProjectCard from '../components/ProjectCard';
 import { Plus } from 'lucide-react';
 import { useCreateProyect } from "../hooks/useCreateProyect";
 import { useEffect, useState, useRef  } from 'react';
-import { createLanguage, getLanguages } from "@/services/ProjectService";
+import { createLanguage, createRole, getLanguages, getRoles } from "@/services/ProjectService";
 const CreateProyect = () => {
   const {
     projects,
@@ -26,18 +26,28 @@ const CreateProyect = () => {
   const [isCurrent, setIsCurrent] = useState(false);
   const [techSearch, setTechSearch] = useState("");
   const [techList, setTechList] = useState<{ id: number; name: string }[]>([]);
-
   const [selectedTechs, setSelectedTechs] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [roleSearch, setRoleSearch] = useState("");
+  const [roleList, setRoleList] = useState<{ id: number; name: string }[]>([]);
+  const [selectedRole, setSelectedRole] = useState<any | null>(null);
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const roleDropdownRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (editingIndex !== null) {
       const project = projects[editingIndex];
 
       setSelectedTechs(project.tecnologias || []);
       setIsCurrent(project.is_current || false);
+
+      setSelectedRole(
+        project.rol
+          ? { id: (project as any).role_id ?? 0, name: project.rol }
+          : null
+      );
     }
-  },  [editingIndex, projects]);
+  }, [editingIndex, projects]);
 
   useEffect(() => {
     if (!isModalOpen) {
@@ -68,7 +78,29 @@ const CreateProyect = () => {
 
     fetchTechs();
   }, []);
-  
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (roleDropdownRef.current && !roleDropdownRef.current.contains(e.target as Node)) {
+        setShowRoleDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const data = await getRoles();
+        setRoleList(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchRoles();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
@@ -96,14 +128,7 @@ const CreateProyect = () => {
             {/* Estado Vacío vs Listado */}
             {projects.length === 0 ? (
               <div className="border-2 border-dashed border-blue-300 rounded-2xl p-20 flex flex-col items-center justify-center bg-white">
-                <p className="text-gray-500 mb-6 text-lg">Tu portafolio aún no tiene proyectos. Agrega tu primer proyecto.</p>
-                <button 
-                  id="btn-add-first-project"
-                  onClick={() => openModal()}
-                  className="bg-[#003A6C] text-white text-sm px-5 py-2 rounded-lg flex items-center gap-2 font-normal shadow-md hover:scale-105 transition-transform"
-                >
-                  <Plus size={20} /> Agregar primer proyecto
-                </button>
+                <p className="text-gray-500 mb-6 text-lg">Tu portafolio aún no tiene proyectos. Agrega tu primer proyecto.</p> 
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
@@ -145,10 +170,10 @@ const CreateProyect = () => {
               
             </div>
 
-            <form onSubmit={(e) => void handleSubmit(e, selectedTechs, isCurrent)} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <form onSubmit={(e) => void handleSubmit(e, selectedTechs, selectedRole, isCurrent)} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Nombre del proyecto *</label>
-                <input id="nombre" name="nombre" maxLength={60} defaultValue={editingIndex !== null ? projects[editingIndex].nombre : ""} type="text" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input id="nombre" name="nombre" onChange={handleChange} maxLength={60} defaultValue={editingIndex !== null ? projects[editingIndex].nombre : ""} type="text" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
                 {errors.nombre && (
                   <p id="error-nombre" className="text-red-500 text-xs mt-1">{errors.nombre}</p>
                 )}
@@ -163,7 +188,7 @@ const CreateProyect = () => {
               
               <div ref={dropdownRef} className="relative">
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">
-                  Tecnologías
+                  Tecnologías*
                 </label>
 
                 {/* Buscador */}
@@ -188,11 +213,16 @@ const CreateProyect = () => {
 
                 <input
                   type="text"
-                  placeholder="Buscar o agregar tecnología..."
+                  name="techSearch"
+                  placeholder={selectedTechs.length >= 10 ? "Límite alcanzado (máx 10)" : "Buscar o agregar tecnología..."}
                   value={techSearch}
-                  onChange={(e) => setTechSearch(e.target.value)}
+                  onChange={(e) => {
+                    setTechSearch(e.target.value);
+                    handleChange(e);               
+                  }}
                   onFocus={() => setShowDropdown(true)}
-                  className="flex-1 outline-none text-sm"
+                  disabled={selectedTechs.length >= 10}
+                  className={`flex-1 outline-none text-sm ${selectedTechs.length >= 10 ? "bg-gray-100 cursor-not-allowed" : ""}`}
                 />
               </div>
 
@@ -211,6 +241,7 @@ const CreateProyect = () => {
                           <div
                             key={t.id}
                             onClick={() => {
+                              if (selectedTechs.length >= 10) return;
                               setSelectedTechs(prev => [...prev, t]);
                               setTechSearch("");
                               setShowDropdown(false);
@@ -231,25 +262,34 @@ const CreateProyect = () => {
                   })()}
                 </div>
                 )}
-                {/* Crear nueva tecnología */}
-                {techSearch && !techList.some(t => t.name.toLowerCase() === techSearch.toLowerCase()) && (
+
+                {techSearch && 
+                  !errors.techSearch && // <--- AGREGAR: Solo muestra si el nombre es válido
+                  !techList.some(t => t.name.toLowerCase() === techSearch.toLowerCase().trim()) && (
                   <button
                     type="button"
                     onClick={async () => {
-                    try {
-                      const newTech = await createLanguage(techSearch);
-
-                      setTechList(prev => [...prev, newTech]);
-                      setSelectedTechs(prev => [...prev, newTech]);
-                      setTechSearch("");
-                    } catch (error) {
-                      console.error(error);
-                    }
-                  }}
-                    className="text-blue-600 text-xs mb-2"
+                      if (selectedTechs.length >= 10 || errors.techSearch) return; // Doble protección
+                      try {
+                        const newTech = await createLanguage(techSearch.trim());
+                        setTechList(prev => [...prev, newTech]);
+                        setSelectedTechs(prev => [...prev, newTech]);
+                        setTechSearch("");
+                      } catch (error) {
+                        console.error(error);
+                      }
+                    }}
+                    className="text-blue-600 text-xs mb-2 font-medium hover:underline"
                   >
                     + Agregar "{techSearch}"
                   </button>
+                )}
+
+                {/* Mostrar el mensaje de error específico para techSearch si existe */}
+                {errors.techSearch && (
+                  <p className="text-red-500 text-[10px] mt-1 mb-2 italic">
+                    {errors.techSearch}
+                  </p>
                 )}
 
                 {errors.tecnologias && (
@@ -257,11 +297,95 @@ const CreateProyect = () => {
                 )}
               </div>
               
-              <div>
-                <label className="block text-sm font-normal text-[#003A6C] mb-1">Tu rol en el proyecto</label>
-                <input id="rol" name="rol" onChange={handleChange} maxLength={50} defaultValue={editingIndex !== null ? projects[editingIndex].rol : ""} type="text" placeholder="Full Stack Developer" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              <div ref={roleDropdownRef} className="relative">
+                <label className="block text-sm font-normal text-[#003A6C] mb-1">
+                  Tu rol en el proyecto*
+                </label>
+
+                <div className="flex flex-wrap items-center gap-2 border border-[#4982AD] rounded-lg px-2 py-1 bg-white mb-2">
+
+                  {selectedRole && (
+                    <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
+                      {selectedRole.name}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRole(null)}
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  )}
+
+                  <input
+                    type="text"
+                    placeholder="Buscar o agregar rol..."
+                    value={roleSearch}
+                    onChange={(e) => {
+                      setRoleSearch(e.target.value);
+                      handleChange({ target: { name: "rol", value: e.target.value } });
+                    }}
+                    onFocus={() => setShowRoleDropdown(true)}
+                    className="flex-1 outline-none text-sm"
+                  />
+                </div>
+
+                {showRoleDropdown && (
+                  <div className="max-h-32 overflow-y-auto border rounded-lg bg-white mb-2">
+                    {(() => {
+                      const filtered = roleList.filter(r =>
+                        r.name.toLowerCase().includes(roleSearch.toLowerCase()) &&
+                        (!selectedRole || selectedRole.id !== r.id)
+                      );
+
+                      return (
+                        <>
+                          {filtered.map(r => (
+                            <div
+                              key={r.id}
+                              onClick={() => {
+                                setSelectedRole(r);
+                                setRoleSearch("");
+                                setShowRoleDropdown(false);
+                              }}
+                              className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                            >
+                              {r.name}
+                            </div>
+                          ))}
+
+                          {filtered.length === 0 && (
+                            <p className="text-xs text-gray-400 px-3 py-2">
+                              No hay resultados
+                            </p>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {roleSearch &&
+                  !roleList.some(r => r.name.toLowerCase() === roleSearch.toLowerCase().trim()) && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const newRole = await createRole(roleSearch.trim());
+                        setRoleList(prev => [...prev, newRole]);
+                        setSelectedRole(newRole);
+                        setRoleSearch("");
+                      } catch (error) {
+                        console.error(error);
+                      }
+                    }}
+                    className="text-blue-600 text-xs mb-2 font-medium hover:underline"
+                  >
+                    + Agregar "{roleSearch}"
+                  </button>
+                )}
+
                 {errors.rol && (
-                  <p id="error-rol" className="text-red-500 text-xs mt-1">{errors.rol}</p>
+                  <p className="text-red-500 text-xs mt-1">{errors.rol}</p>
                 )}
               </div>
               <div>
@@ -270,7 +394,7 @@ const CreateProyect = () => {
                   {/* FECHA INICIO */}
                   <div className="w-1/2">
                     <label className="block text-sm font-normal text-[#003A6C] mb-1">
-                      Fecha de inicio
+                      Fecha de inicio*
                     </label>
                     <input
                       id="fechaInicio"
@@ -286,7 +410,7 @@ const CreateProyect = () => {
                   {/* FECHA FIN */}
                   <div className="w-1/2">
                     <label className="block text-sm font-normal text-[#003A6C] mb-1">
-                      Fecha de finalización
+                      Fecha de finalización*
                     </label>
                     <input
                       id="fechaFin"
@@ -328,12 +452,25 @@ const CreateProyect = () => {
                 </label>
               </div>
               <div>
-                <label className="block text-sm font-normal text-[#003A6C] mb-1">Enlace a GitHub</label>
-                <input id="github" name="github" maxLength={50} defaultValue={editingIndex !== null ? projects[editingIndex].github : ""} type="text" placeholder="https://github.com/usuario/proyecto" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                {errors.github && (
-                  <p id="error-github" className="text-red-500 text-xs mt-1">{errors.github}</p>
-                )}
-              </div>
+              <label className="block text-sm font-normal text-[#003A6C] mb-1">
+                Enlace a GitHub
+              </label>
+              <input 
+                id="github" 
+                name="github" 
+                maxLength={50} 
+                onChange={handleChange} 
+                defaultValue={editingIndex !== null ? projects[editingIndex].github : ""} 
+                type="text" 
+                placeholder="https://github.com/usuario/proyecto" 
+                className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+              />
+              {errors.github && (
+                <p id="error-github" className="text-red-500 text-xs mt-1">
+                  {errors.github}
+                </p>
+              )}
+            </div>
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Enlace a la demo</label>
                 <input id="demo" name="demo" maxLength={100} defaultValue={editingIndex !== null ? projects[editingIndex].demo : ""} type="text" placeholder="https://demo.com" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
@@ -352,10 +489,16 @@ const CreateProyect = () => {
               )}
 
               {preview && (
-                <button 
+                <button
                   type="button"
-                  onClick={() => setPreview(null)}
-                  className="text-red-500 text-sm hover:underline mb-2"
+                  onClick={() => {
+                    setPreview(null);
+                    const label = document.getElementById("file-name");
+                    if (label) label.textContent = "Ningún archivo seleccionado";
+                    const fileInput = document.getElementById("image") as HTMLInputElement;
+                    if (fileInput) fileInput.value = "";
+                  }}
+                  className="bg-[#C2DBED] text-[#003A6C] px-4 py-2 text-sm rounded-lg border border-[#4982AD] font-medium hover:bg-[#C4A57C]"
                 >
                   Eliminar imagen
                 </button>
@@ -368,11 +511,15 @@ const CreateProyect = () => {
                   id = "image"
                   name = "image"
                   type="file" 
-                  accept="image/png, image/jpeg, image/gif"
+                  accept="image/png, image/jpeg"
                   className="hidden"
                   onChange={(e) => {
                   const file = e.target.files?.[0];
-
+                  if (file && !["image/jpeg", "image/png"].includes(file.type)) {
+                    alert("El sistema solo permite subir archivos en formato JPG o PNG");
+                    e.target.value = ""; 
+                    return;
+                  }
                   // Mostrar nombre archivo
                   const fileName = file?.name || "Ningún archivo seleccionado";
                   const label = document.getElementById("file-name");
@@ -392,7 +539,7 @@ const CreateProyect = () => {
             </div>
 
             <p className="text-gray-600 text-xs mt-2 text-left">
-              Formatos: JPG, PNG, GIF (máx. 2MB)
+              Formatos: JPG, PNG (máx. 2MB)
             </p>
             {errors.image && (
               <p id="error-image" className="text-red-500 text-xs mt-1">{errors.image}</p>
@@ -437,25 +584,33 @@ const CreateProyect = () => {
           </div>
         </div>
       )}
-      {success && ( 
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
-        <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl p-8 text-center">
-          
-          <h3 className="text-[#003A6C] text-xl font-bold mb-2">
-            El proyecto ha sido registrado exitosamente.
-          </h3>
+      {/* Modal de Éxito */}
+      {success && (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+        <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl transition-all transform scale-100">
 
-          <p className="text-gray-600 text-sm">
-            {success}
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#D9EAF4] text-[#003A6C]">
+            <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth="3" 
+                d="M5 13l4 4L19 7" 
+              />
+            </svg>
+          </div>
+
+          <h2 className="text-2xl font-bold text-[#003A6C]">Éxito</h2>
+
+          <p className="mt-2 text-sm text-[#4B778D]">
+            {success || "Proyecto registrado correctamente."}
           </p>
-
           <button 
-            onClick={() => setSuccess("")}
-            className="mt-4 px-4 py-2 bg-[#003A6C] text-white rounded-lg"
+            onClick={() => setSuccess("")} 
+            className="mt-8 h-12 w-full bg-[#003A6C] text-white rounded-xl font-semibold text-sm hover:bg-[#002d54] transition-colors shadow-lg"
           >
-            Cerrar
+            Continuar
           </button>
-
         </div>
       </div>
     )}

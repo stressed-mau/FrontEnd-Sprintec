@@ -20,6 +20,7 @@ const UserPersonalData = () => {
     setCountryCode,
     handlePhoneChange,
     handleChange,
+    isSubmitting,
     handleSubmit,
     handleCancel,
     handleClick,
@@ -58,7 +59,7 @@ const UserPersonalData = () => {
                 <h1 className="text-[#003A6C] text-3xl md:text-4xl font-bold mb-2">Datos Personales</h1>
                 <p className="text-gray-600 text-sm md:text-base">Esta información se mostrará en tu portafolio público</p>
               </div>
-                {/* --- VISTA DE LECTURA (Imagen 1) --- */}
+                {/* --- VISTA DE LECTURA --- */}
                 <div className="bg-white border border-[#0E7D96] rounded-2xl p-6 md:p-10 shadow-sm relative">
                   <div className="flex justify-between items-start mb-8">
                     <div>
@@ -140,7 +141,7 @@ const UserPersonalData = () => {
                         </button>
                       </div>
 
-                      <form onSubmit={async (e) => { await handleSubmit(e); setIsModalOpen(false); }} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+                      <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
                         
                         
                         <div className="flex flex-col items-center gap-2">
@@ -169,7 +170,7 @@ const UserPersonalData = () => {
                             <button 
                               type="button"
                               onClick={removeImage}
-                              className="text-red-500 text-sm hover:underline mt-1"
+                              className="bg-[#003A6C] text-white px-4 py-2 text-sm rounded-lg font-medium hover:bg-[#1a4f85]"           
                             >
                               Eliminar foto
                             </button>
@@ -304,13 +305,24 @@ const UserPersonalData = () => {
 
                         {/* Botones Finales */}
                         <div className="flex gap-3 pt-4">
-                          <button type="submit" className="bg-[#003A6C] text-white px-4 py-2 text-sm rounded-lg font-medium hover:bg-[#1a4f85]">
-                            Guardar cambios
+                          <button 
+                            type="submit" 
+                            disabled={isSubmitting}
+                            className={`bg-[#003A6C] text-white px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
+                              isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#1a4f85]'
+                            }`}
+                          >
+                            {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
                           </button>
+
                           <button 
                             type="button" 
+                            disabled={isSubmitting}
                             onClick={closeAndCancel}
-                            className="bg-[#C2DBED] text-[#003A6C] px-4 py-2 text-sm rounded-lg border border-[#4982AD] font-medium hover:bg-[#C4A57C]">
+                            className={`bg-[#C2DBED] text-[#003A6C] px-4 py-2 text-sm rounded-lg border border-[#4982AD] font-medium transition-colors ${
+                              isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#C4A57C]'
+                            }`}
+                          >
                             Cancelar
                           </button>
                         </div>

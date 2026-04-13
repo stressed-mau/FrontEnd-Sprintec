@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { createProject, getProjects, uploadImage } from "@/services/ProjectService";
 export interface Project {
@@ -6,6 +5,7 @@ export interface Project {
   descripcion: string;
   tecnologias: { id: number; name: string }[];
   rol: string;
+  rol_id?: number;
   fechaInicio: string;
   fechaFin?: string;
   is_current: boolean; 
@@ -23,16 +23,18 @@ function projectFromCreatePayload(
     url_to_project: string | null;
     url_to_deploy: string | null;
     photoghaph: string | null;
-    project_rol: string;
+    rol_id?: number;
     is_current: boolean;
   },
-  selectedTechs: { id: number; name: string }[]
+  selectedTechs: { id: number; name: string }[],
+  selectedRole: { id: number; name: string } | null
 ): Project {
   return {
     nombre: payload.title,
     descripcion: payload.description,
     tecnologias: selectedTechs,
-    rol: payload.project_rol,
+    rol: selectedRole?.name || "", 
+    rol_id: payload.rol_id,
     fechaInicio: payload.initial_date,
     fechaFin: payload.final_date ?? undefined,
     is_current: payload.is_current,
@@ -69,20 +71,55 @@ export const useCreateProyect = () => {
     const { name, value } = e.target;
 
     let error = "";
-
+    const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
+    if (name === "nombre") {
+      if (!value.trim()) {
+        error = "El campo Nombre del proyecto es obligatorio.";
+      } 
+    }
     if (name === "descripcion") {
-        if (value && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) {
-        error = "El campo Descripción contiene caracteres especiales. Solo se permiten letras.";
-        } else if (value.length > 250) {
+        if (value.length > 250) {
         error = "La descripción no puede exceder 250 caracteres.";
         }
     }
+    if (name === "techSearch") {
+      const trimmed = value.trim();
+      // Permite letras, números y símbolos clásicos de programación (C#, C++, .NET)
+      const regexValida = /^[a-zA-Z0-9\s+#.-]*$/;
+      // Verifica si al menos contiene una letra (para evitar nombres como "123")
+      const tieneLetras = /[a-zA-Z]/.test(trimmed);
+
+      if (trimmed.length > 0) {
+        if (trimmed.length < 2) {
+          error = "El nombre de la tecnología es muy corto.";
+        } else if (trimmed.length > 20) {
+          error = "El nombre de la tecnología no puede exceder los 20 caracteres.";
+        } else if (!regexValida.test(trimmed)) {
+          error = "La tecnología contiene caracteres no permitidos.";
+        } else if (!tieneLetras) {
+          error = "El nombre de la tecnología debe contener al menos una letra.";
+        } 
+      }
+    }
     if (name === "rol") {
-        if (value && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) {
-        error = "El campo Tu rol en el proyecto contiene caracteres especiales. Solo se permiten letras.";
+        if (!value.trim()) {
+            error = "El campo Tu rol en el proyecto es obligatorio.";
+        } else if (value && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) {
+        error = "El campo Tu rol en el proyecto contiene caracteres numéricos. Sólo se permiten letras.";
         } else if (value.length > 50) {
         error = "El rol no puede exceder 50 caracteres.";
         }
+    }
+    if (name === "github") {
+      if (value.trim()) {
+        if (value.length > 50) {
+          error = "El campo Enlace de GitHub permite un máximo de 50 caracteres.";
+        } else if (!urlRegex.test(value)) {
+          error = "El enlace de GitHub debe ser una URL válida.";
+        } else if (!value.includes("github.com")) {
+          error = "El enlace debe pertenecer al dominio github.com.";
+        }
+      }
     }
     if (name === "fechaInicio" || name === "fechaFin") {
       const selectedDate = new Date(value);
@@ -109,7 +146,11 @@ export const useCreateProyect = () => {
     }
     setErrors((prev: any) => {
       const updated = { ...prev };
-
+      if (error) {
+        updated[name] = error;
+      } else {
+        delete updated[name]; 
+      }
       if (name === "fechaInicio" || name === "fechaFin") {
         delete updated.fechaInicio;
         delete updated.fechaFin;
@@ -126,7 +167,7 @@ export const useCreateProyect = () => {
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>,
     selectedTechs: { id: number; name: string }[],
-    /** Estado del checkbox en la página; FormData puede no reflejar inputs controlados de React. */
+    selectedRole: { id: number; name: string } | null,
     isCurrentFromUi: boolean
   ) => {
     e.preventDefault();
@@ -134,7 +175,6 @@ export const useCreateProyect = () => {
 
     const nombre = (formData.get('nombre') as string) || "";
     const descripcion = (formData.get('descripcion') as string) || "";
-    const rol = (formData.get('rol') as string) || "";
     const fechaInicio = formData.get('fechaInicio') as string;
     const fechaFinRaw = formData.get('fechaFin') as string;
     const fechaFin = fechaFinRaw ? fechaFinRaw : null;
@@ -142,29 +182,31 @@ export const useCreateProyect = () => {
     const github = (formData.get('github') as string) || "";
     const demo = (formData.get('demo') as string) || "";
     const file = formData.get("image");
-
     let newErrors: any = {};
     const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
 
     // --- VALIDACIONES PREVIAS (Nombre, Tecnologías, Rol) ---
     if (!nombre || !nombre.trim()) {
-        newErrors.nombre = "El campo Nombre del proyecto es obligatorio.";
+      newErrors.nombre = "El campo Nombre del proyecto es obligatorio.";
+    } else {
+      const nombreRepetido = projects.some((p, index) => {
+        if (editingIndex !== null && index === editingIndex) return false;
+        return p.nombre.toLowerCase() === nombre.trim().toLowerCase();
+      });
+
+      if (nombreRepetido) {
+        newErrors.nombre = "Ya existe un proyecto registrado con ese nombre";
+      }
     }
-    if (descripcion) {
-        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(descripcion)) {
-            newErrors.descripcion = "El campo Descripción contiene caracteres especiales. Solo se permiten letras.";
-        } 
-    }
+    
     if (selectedTechs.length === 0) {
       newErrors.tecnologias = "Debes seleccionar al menos una tecnología.";
+    } else if (selectedTechs.length > 10) {
+      newErrors.tecnologias = "Se debe permitir seleccionar un máximo de 10 tecnologías.";
     }
-    if (!rol.trim()) newErrors.rol = "El campo Tu rol en el proyecto es obligatorio.";
-    if (rol) {
-        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(rol)) {
-            newErrors.rol = "El campo Tu rol en el proyecto contiene caracteres especiales. Solo se permiten letras.";
-        } else if (rol.length > 50) {
-            newErrors.rol = "El rol no puede exceder 50 caracteres.";
-        }
+
+    if (!selectedRole) {
+      newErrors.rol = "Debes seleccionar un rol.";
     }
     // --- VALIDACIÓN: FECHA ---
     if (!fechaInicio) {
@@ -224,6 +266,7 @@ export const useCreateProyect = () => {
     if (Object.keys(newErrors).length > 0) return;
 
     setIsSubmitting(true);
+    
     try {
       const technologyIds = selectedTechs.map(t => t.id);
       let imageUrl: string | null = null;
@@ -246,7 +289,7 @@ export const useCreateProyect = () => {
         url_to_deploy: demo || null,
         photoghaph: imageUrl,
         technologies: technologyIds,
-        project_rol: rol,
+        role_id: selectedRole?.id,
         is_current,
       };
 
@@ -254,25 +297,36 @@ export const useCreateProyect = () => {
 
       setProjects((prev) => [
         ...prev,
-        projectFromCreatePayload(payload, selectedTechs),
+        projectFromCreatePayload(payload, selectedTechs, selectedRole),
       ]);
 
       closeModal();
       setSuccess("Proyecto guardado correctamente.");
       setTimeout(() => setSuccess(""), 4000);
-    } catch (err: unknown) {
-      let message = "No se pudo guardar el proyecto. Revisa la consola o el servidor.";
-      if (err && typeof err === "object" && "response" in err) {
-        const data = (err as { response?: { data?: { message?: string } } }).response
-          ?.data;
-        if (data?.message) message = String(data.message);
-        else if (err instanceof Error) message = err.message;
-      } else if (err instanceof Error) {
-        message = err.message;
+    } catch (err: any) {
+    let message = "No se pudo guardar el proyecto. Revisa los datos ingresados.";
+
+    if (err.response && err.response.data) {
+      const data = err.response.data;
+
+      if (data.message === "The given data was invalid.") {
+        message = "Los datos proporcionados son inválidos. Por favor, revisa los campos marcados.";
+      } 
+      else if (data.errors) {
+
+        const firstErrorKey = Object.keys(data.errors)[0];
+        message = data.errors[firstErrorKey][0]; 
       }
-      console.error(err);
-      setErrors((prev: any) => ({ ...prev, form: message }));
-    } finally {
+      else if (data.message) {
+        message = data.message;
+      }
+    } else if (err instanceof Error) {
+      message = err.message;
+    }
+
+    console.error(err);
+    setErrors((prev: any) => ({ ...prev, form: message }));
+  } finally {
       setIsSubmitting(false);
     }
   };
