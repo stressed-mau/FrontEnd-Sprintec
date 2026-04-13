@@ -31,6 +31,7 @@ const INITIAL_VALUES: RegisterValues = {
 }
 
 const SPECIAL_CHARACTER_REGEX = /[^A-Za-z0-9]/
+const EMOJI_REGEX = /\p{Extended_Pictographic}/u
 
 export const WELCOME_MESSAGE = `¡Te damos la bienvenida a Portafolio Gen!
 
@@ -43,6 +44,7 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
 
   if (field === "name") {
     if (!name) return "El campo Nombre usuario es obligatorio."
+    if (EMOJI_REGEX.test(values.name)) return "El nombre de usuario no permite emoticones."
     if (/\s/.test(values.name)) return "El nombre de usuario no permite espacios."
     if (name.length > 30) return "El campo Nombre de usuario no permite un máximo de 30 caracteres."
   }
