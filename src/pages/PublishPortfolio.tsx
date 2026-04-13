@@ -228,8 +228,8 @@ const PublishPortfolio = () => {
                   const sectionEnabled = items.some(item => item.checked);
 
                   return (
-                    <div key={sectionKey} className="border border-[#C9E1F0] rounded-xl overflow-hidden bg-white">
-                      
+                    <div key={sectionKey} className={`transition-all duration-300 ${!sectionEnabled ? 'opacity-60 grayscale-30' : 'opacity-100'}`}>
+
                       <div className="flex items-center justify-between p-4 border-b border-[#C9E1F0]">
                         <div className="flex items-center gap-3">
                           <label className="relative inline-flex items-center cursor-pointer">

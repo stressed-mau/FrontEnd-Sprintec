@@ -66,11 +66,12 @@ export const usePortfolioVisibility = () => {
       nextItems: VisibilityItem[],
       previousItems: VisibilityItem[],
       itemId?: number,
+      sourceTable?: any,      
     ) => {
       try {
         setIsSaving(true);
         setPageError('');
-        await savePortfolioVisibilitySection(sectionKey, nextItems, itemId);
+        await savePortfolioVisibilitySection(sectionKey, nextItems, itemId, sourceTable);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'No se pudo guardar la configuración de visibilidad.';
         setPageError(message);
@@ -84,12 +85,21 @@ export const usePortfolioVisibility = () => {
 
   const handleItemCheck = async (sectionKey: SectionKey, itemId: number) => {
     const previousItems = data[sectionKey];
+    const clickedItem = previousItems.find(i => i.id === itemId);
+    if (!clickedItem) return;
+    const totalChecked = Object.values(data).flat().filter(i => i.checked).length;
+    const targetItem = previousItems.find(i => i.id === itemId);
+    if (totalChecked === 1 && targetItem?.checked) {alert("Acción no permitida: El portafolio debe tener al menos un elemento visible.");
+    return;}
+    if (!targetItem) return;
     const nextItems = previousItems.map((item) =>
-      item.id === itemId ? { ...item, checked: !item.checked } : item,
+      (item.id === itemId && item.sourceTable === clickedItem.sourceTable) 
+        ? { ...item, checked: !item.checked } 
+        : item,
     );
-
+    
     setData((prev) => ({ ...prev, [sectionKey]: nextItems }));
-    await persistSection(sectionKey, nextItems, previousItems, itemId);
+    await persistSection(sectionKey, nextItems, previousItems, itemId, clickedItem.sourceTable);
   };
 
   const handleBulkSelect = async (sectionKey: SectionKey, selectAll: boolean) => {

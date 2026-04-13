@@ -144,18 +144,15 @@ function asBoolean(value: unknown, fallback = true): boolean {
   }
 
   if (typeof value === 'number') {
-    return value === 1;
-  }
+    return value === 1;  }
 
   if (typeof value === 'string') {
     const normalized = value.trim().toLowerCase();
     if (normalized === 'true' || normalized === '1') {
-      return true;
-    }
+      return true; }
 
     if (normalized === 'false' || normalized === '0') {
-      return false;
-    }
+      return false; }
   }
 
   return fallback;
@@ -199,8 +196,8 @@ function normalizeExperience(data: unknown): VisibilityItem[] {
     const record = (item ?? {}) as WorkExperienceDto;
     return {
       id: asId(record.id, index + 1),
-      label: asString(record.role) || `Experiencia laboral ${index + 1}`,
-      sublabel: asString(record.company_name),
+      label: `${record.role} en ${record.company_name}`,
+      sublabel: "Experiencia laboral",
       checked: asBoolean(record.is_public),
       sourceTable: 'work_experiences',
     } as VisibilityItem;
@@ -209,9 +206,9 @@ function normalizeExperience(data: unknown): VisibilityItem[] {
   const educationItems = educationList.map((item, index) => {
     const record = (item ?? {}) as EducationDto;
     return {
-      id: asId(record.id, workItems.length + index + 1),
-      label: asString(record.degree ?? record.career) || `Educación ${index + 1}`,
-      sublabel: asString(record.institution),
+      id: asId(record.id, index + 1),
+      label: `${record.degree ?? record.career} en ${record.institution}`,
+      sublabel: "Educación",
       checked: asBoolean(record.is_public),
       sourceTable: 'educations',
     } as VisibilityItem;
@@ -225,8 +222,9 @@ function normalizeNetworks(data: unknown): VisibilityItem[] {
 
   return list.map((item, index) => {
     const record = (item ?? {}) as SocialNetworkDto;
+    const realId = asId(record.id, index + 1);
     return {
-      id: asId(record.id, index + 1),
+      id: realId,
       label: asString(record.name ?? record.platform) || `Red ${index + 1}`,
       sublabel: asString(record.url ?? record.link),
       checked: asBoolean(record.is_public),
@@ -263,22 +261,24 @@ export async function savePortfolioVisibilitySection(
   section: SectionKey,
   items: VisibilityItem[],
   itemId?: number,
+  sourceTable?: VisibilityTable,
 ): Promise<void> {
   const session = getAuthSession();
 
   if (!session?.user?.id) {
-    throw new Error('No se pudo obtener el id del usuario autenticado.');
+    throw new Error('Usuario no autenticado.');
   }
 
-  const targetItems = itemId != null ? items.filter((item) => item.id === itemId) : items;
+ const targetItems = itemId != null 
+    ? items.filter((item) => item.id === itemId && item.sourceTable === sourceTable) 
+    : items;
 
   try {
     await Promise.all(
       targetItems.map((item) =>
         api.put(
           `${USER_INFORMATION_ENDPOINT}/${item.id}?table=${item.sourceTable ?? section}`,
-          {
-            id: item.id,
+          { id: item.id,
             is_public: item.checked,
           },
         ),
