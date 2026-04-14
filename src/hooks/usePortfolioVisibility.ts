@@ -57,7 +57,11 @@ export const usePortfolioVisibility = () => {
   }, [loadVisibilityData]);
 
   const toggleSection = (sectionKey: SectionKey) => {
-    setOpenSections((prev) => ({ ...prev, [sectionKey]: !prev[sectionKey] }));
+    setOpenSections((prev) => {
+      const next = { ...prev };
+      next[sectionKey] = !prev[sectionKey];
+      return next;
+    });
   };
 
   const persistSection = useCallback(
@@ -66,7 +70,7 @@ export const usePortfolioVisibility = () => {
       nextItems: VisibilityItem[],
       previousItems: VisibilityItem[],
       itemId?: number,
-      sourceTable?: any,      
+      sourceTable?: VisibilityItem['sourceTable'],
     ) => {
       try {
         setIsSaving(true);
@@ -83,12 +87,16 @@ export const usePortfolioVisibility = () => {
     [],
   );
 
-  const handleItemCheck = async (sectionKey: SectionKey, itemId: number) => {
+  const handleItemCheck = async (sectionKey: SectionKey, itemId: number, sourceTable?: VisibilityItem['sourceTable']) => {
     const previousItems = data[sectionKey];
-    const clickedItem = previousItems.find(i => i.id === itemId);
+    const clickedItem = previousItems.find(
+      (item) => item.id === itemId && (sourceTable ? item.sourceTable === sourceTable : true),
+    );
     if (!clickedItem) return;
-    const totalChecked = Object.values(data).flat().filter(i => i.checked).length;
-    const targetItem = previousItems.find(i => i.id === itemId);
+    const totalChecked = Object.values(data).flat().filter((item) => item.checked).length;
+    const targetItem = previousItems.find(
+      (item) => item.id === itemId && item.sourceTable === clickedItem.sourceTable,
+    );
     if (totalChecked === 1 && targetItem?.checked) {alert("Acción no permitida: El portafolio debe tener al menos un elemento visible.");
     return;}
     if (!targetItem) return;

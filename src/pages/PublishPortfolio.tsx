@@ -53,7 +53,6 @@ const PublishPortfolio = () => {
     data, openSections, sectionsArray, isLoading, isSaving, pageError,
     toggleSection, handleItemCheck, handleBulkSelect, getVisibleCountText, reloadVisibilityData, } = usePortfolioVisibility();
   const { portfolio } = usePortfolio();
-  const visibleSections = sectionsArray.filter((sectionConfig) => data[sectionConfig.key].length > 0);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
 
   const templates = [
@@ -214,13 +213,7 @@ const PublishPortfolio = () => {
               )}
 
               <div className="space-y-6">
-                {visibleSections.length === 0 && !isLoading ? (
-                  <div className="rounded-xl border border-dashed border-[#C9E1F0] bg-[#F8FBFE] px-4 py-8 text-center text-sm text-gray-500">
-                    No hay elementos para mostrar en este momento.
-                  </div>
-                ) : null}
-
-                {visibleSections.map((sectionConfig) => {
+                {sectionsArray.map((sectionConfig) => {
                   const sectionKey = sectionConfig.key;
                   const isOpen = openSections[sectionKey];
                   const items = data[sectionKey];
@@ -277,13 +270,16 @@ const PublishPortfolio = () => {
 
                           {/* Lista de Checkboxes Individuales */}
                           <div className="space-y-4 ml-2">
+                            {items.length === 0 && (
+                              <p className="text-sm text-gray-400">Esta sección no tiene elementos aún.</p>
+                            )}
                             {items.map((item) => (
-                              <div key={item.id} className="flex items-center gap-3">
+                              <div key={`${item.sourceTable ?? sectionKey}-${item.id}`} className="flex items-center gap-3">
                                 <input 
                                   type="checkbox" 
                                   checked={item.checked} 
                                   disabled={isLoading || isSaving}
-                                  onChange={() => void handleItemCheck(sectionKey, item.id)}
+                                  onChange={() => void handleItemCheck(sectionKey, item.id, item.sourceTable)}
                                   className="w-5 h-5 text-[#003A6C] border-gray-300 rounded focus:ring-[#003A6C] focus:ring-2 cursor-pointer"
                                 />
                                 <div className="flex flex-col md:flex-row md:items-baseline md:gap-2">

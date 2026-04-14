@@ -194,10 +194,12 @@ function normalizeExperience(data: unknown): VisibilityItem[] {
 
   const workItems = workList.map((item, index) => {
     const record = (item ?? {}) as WorkExperienceDto;
+    const role = asString(record.role) || `Cargo ${index + 1}`;
+    const institution = asString(record.company_name) || `Institución ${index + 1}`;
     return {
       id: asId(record.id, index + 1),
-      label: `${record.role} en ${record.company_name}`,
-      sublabel: "Experiencia laboral",
+      label: `${role} en ${institution}`,
+      sublabel: 'Experiencia Laboral',
       checked: asBoolean(record.is_public),
       sourceTable: 'work_experiences',
     } as VisibilityItem;
@@ -205,10 +207,12 @@ function normalizeExperience(data: unknown): VisibilityItem[] {
 
   const educationItems = educationList.map((item, index) => {
     const record = (item ?? {}) as EducationDto;
+    const role = asString(record.degree ?? record.career) || `Cargo ${index + 1}`;
+    const institution = asString(record.institution) || `Institución ${index + 1}`;
     return {
       id: asId(record.id, index + 1),
-      label: `${record.degree ?? record.career} en ${record.institution}`,
-      sublabel: "Educación",
+      label: `${role} en ${institution}`,
+      sublabel: 'Educación',
       checked: asBoolean(record.is_public),
       sourceTable: 'educations',
     } as VisibilityItem;
@@ -222,7 +226,8 @@ function normalizeNetworks(data: unknown): VisibilityItem[] {
 
   return list.map((item, index) => {
     const record = (item ?? {}) as SocialNetworkDto;
-    const realId = asId(record.id, index + 1);
+    // Preserve DB id identity and avoid collisions with persisted positive ids if backend id is missing.
+    const realId = asId(record.id, -(index + 1));
     return {
       id: realId,
       label: asString(record.name ?? record.platform) || `Red ${index + 1}`,
@@ -246,7 +251,15 @@ export async function getPortfolioVisibilityData(): Promise<PortfolioVisibilityD
     const response = await api.get(`${USER_INFORMATION_ENDPOINT}/${session.user.id}`);
     const payload = unwrapPayload(response.data);
 
+    const baseData: PortfolioVisibilityData = {
+      projects: [],
+      skills: [],
+      experience: [],
+      networks: [],
+    };
+
     return {
+      ...baseData,
       projects: normalizeProjects(payload),
       skills: normalizeSkills(payload),
       experience: normalizeExperience(payload),
