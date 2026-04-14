@@ -240,8 +240,8 @@ const PublishPortfolio = () => {
                         </div>
                         
                         <button 
+                          type="button"
                           onClick={() => toggleSection(sectionKey)}
-                          disabled={isLoading}
                           className="text-gray-400 p-1 hover:bg-gray-100 rounded-full transition-colors"
                           aria-label={isOpen ? "Cerrar sección" : "Abrir sección"}>
                           <svg className={`w-5 h-5 transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,7 +250,7 @@ const PublishPortfolio = () => {
                         </button>
                       </div>
 
-                      <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-250 opacity-100' : 'max-h-0 opacity-0'}`}>
+                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-250 opacity-100 pointer-events-auto' : 'max-h-0 opacity-0 pointer-events-none'}`}>
                         <div className="p-4 bg-white border-t border-[#C9E1F0]">
                           
                           <div className="flex gap-2 mb-4">
