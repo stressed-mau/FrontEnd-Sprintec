@@ -23,6 +23,7 @@ const PortfolioCard = ({
   image,
   portfolioUrl
 }: Props) => {
+
   return (
     <div className="bg-white rounded-2xl border border-[#C9E1F0] p-6 shadow-sm hover:shadow-md transition-all">
       
@@ -53,8 +54,8 @@ const PortfolioCard = ({
 
       {/* Stats */}
       <div className="flex justify-between text-sm text-[#4982ad] mb-4">
-        <span>💻 {projectsCount} proyectos</span>
-        <span>🧠 {skillsCount} habilidades</span>
+        <span> {projectsCount} proyectos</span>
+        <span> {skillsCount} habilidades</span>
       </div>
 
       {/* Tecnologías */}

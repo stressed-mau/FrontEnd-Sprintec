@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { Palette, Upload, CheckCircle2, Copy} from "lucide-react";
@@ -7,6 +7,7 @@ import ModernTemplate from '../components/templates/ModernTemplate';
 import { usePublishPortfolio } from '../hooks/usePublishPortfolio';
 import MinimalistTemplate from '../components/templates/MinimalistTemplate';
 import { usePortfolio } from '../hooks/usePortfolio';
+
 import { CorporatePortfolioTemplate, type CorporatePortfolioData } from "@/components/portfolio/CorporatePortfolioTemplate";
 const CORPORATE_PREVIEW_DATA: CorporatePortfolioData = {
   fullName: "Tu Nombre",
@@ -86,8 +87,12 @@ const PublishPortfolio = () => {
     portfolioUrl,
     handlePublish,
     handleUnpublish,
-    loading
+    loading,
+    checkInitialStatus
   } = usePublishPortfolio();
+  useEffect(() => {
+    checkInitialStatus()
+  }, []);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const selected = templates.find(t => t.id === selectedTemplate);
   const templateNumber =
@@ -313,27 +318,35 @@ const PublishPortfolio = () => {
               <p className="text-gray-500 text-sm">Tu portafolio no es visible públicamente</p>
             </div>
           </div>
+          <div className="flex flex-col items-center gap-3">
           <button 
-            // Deshabilitamos si no hay plantilla seleccionada O si está cargando
+            // Mantenemos el bloqueo lógico
             disabled={!templateNumber || loading}
-            onClick={() => {
-              if (!templateNumber) {
-                alert("Selecciona una plantilla");
-                return;
+            onClick={() => handlePublish(templateNumber!)}
+            className={`
+              bg-[#003A6C] text-white px-6 py-2.5 rounded-xl font-semibold text-sm 
+              flex items-center gap-2 transition-all shadow-lg active:scale-95
+              ${(loading || !templateNumber) 
+                ? 'opacity-40 cursor-not-allowed grayscale' 
+                : 'hover:bg-[#002a4d] hover:shadow-blue-900/20'
               }
-              handlePublish(templateNumber);
-            }}
-            className={`bg-[#003A6C] text-white px-5 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 hover:bg-[#002a4d] transition-all shadow-md active:scale-95 ${
-              (loading || !templateNumber) ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            `}
           >
             {loading ? (
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
             ) : (
               <Upload className="w-5 h-5" />
             )}
-            {loading ? "Publicando..." : "Publicar portafolio"}
+            
+            <span>{loading ? "Publicando..." : "Publicar portafolio"}</span>
           </button>
+
+          {!templateNumber && !loading && (
+            <p className="text-xs text-blue-600 font-medium animate-pulse">
+              * Selecciona un diseño arriba para activar la publicación
+            </p>
+          )}
+        </div>
         </div>
       ) : (
         // VISTA PUBLICADO (Imagen 2)

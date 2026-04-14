@@ -1,119 +1,103 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import type { Portfolio } from "@/types/portfolio";
 import { portfolioMock } from "@/mocks/portfolio.mock";
-
 import { getAuthSession } from "@/services/auth/auth-storage";
-import { getUserInformation } from "@/services/PersonalDataService";
-import { getProjects } from "@/services/ProjectService";
-import { getSkills } from "@/services/skillsService";
-import { getUserSocialNetworks } from "@/services/socialNetworksService";
-import { getExperiences } from "@/services/experienceService";
+import { api } from "@/services/api";
 
 const USE_MOCK = false;
-const MOCK_TEMPLATE = null as any; 
+
+/** * Mapeadores: Mantenerlos es vital para que si el backend cambia 
+ * un nombre de columna (ej: 'work_experiences' vs 'experiences'), 
+ * tu componente no deje de funcionar.
+ */
 const mapProject = (p: any) => ({
   nombre: p.title,
   descripcion: p.description,
   tecnologias: p.technologies || [],
-  rol: p.project_rol,        
+  rol: p.project_rol,
   fechaInicio: p.initial_date,
   fechaFin: p.final_date,
   is_current: p.is_current,
   github: p.url_to_project,
-  demo: p.url_to_deploy,    
-  image: p.photoghaph || ""  
+  demo: p.url_to_deploy,
+  image: p.photoghaph || ""
 });
 
 const mapExperience = (e: any) => ({
   id: e.id,
-  type: e.type,
-  company: e.company,
-  email: e.email,
-  position: e.position,
+  company: e.company_name, // Ajustado a tu nueva API
+  position: e.rol,         // Ajustado a tu nueva API
   description: e.description,
-  startDate: e.startDate ?? e.start_date,
-  endDate: e.endDate ?? e.end_date,
-  current: e.current,
-  image: e.image
+  email: e.company_email,
+  image: e.logo_url
 });
-
-const mapSkill = (s: any) => ({
-  id: s.id,
-  name: s.name,
-  type: s.type,
-  level: s.level
-});
-
-const mapSocialNetwork = (sn: any) => ({
-  id: sn.id,
-  name: sn.name,
-  url: sn.url
-});
-
 
 export const usePortfolio = () => {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        setLoading(true);
+  const fetchAll = useCallback(async () => {
+    try {
+      setLoading(true);
 
-        // MOCK MODE
-        if (USE_MOCK) {
-          setPortfolio({
-            ...portfolioMock,
-            template: MOCK_TEMPLATE,
-          });
-          setLoading(false);
-          return;
-        }
-        const session = getAuthSession();
-
-        if (!session?.user?.id) {
-          console.error("No hay sesión válida");
-          setLoading(false);
-          return;
-        }
-
-        const userId = session.user.id;
-
-        const [user, projects, skills, experiences, socialNetworks] =
-          await Promise.all([
-            getUserInformation(userId),
-            getProjects(),
-            getSkills(),
-            getExperiences(),
-            getUserSocialNetworks()
-          ]);
-
-        const mappedProjects = projects.map(mapProject);
-        const mappedSkills = skills.map(mapSkill);
-        const mappedExperiences = experiences.map(mapExperience);
-        const mappedSocialNetworks = socialNetworks.map(mapSocialNetwork);
-
-        setPortfolio({
-          user,
-          projects: mappedProjects,
-          skills: mappedSkills,
-          experiences: mappedExperiences,
-          socialNetworks: mappedSocialNetworks,
-          isPublished: user.is_published, 
-          portfolioUrl: user.portfolio_url,
-          template: user.template_id
-        });
-
-      } catch (error) {
-        console.error("Error cargando portafolio:", error);
-      } finally {
-        setLoading(false);
+      if (USE_MOCK) {
+        setPortfolio(portfolioMock as any);
+        return;
       }
+
+      const session = getAuthSession();
+      const username = session?.user?.username;
+
+      if (!username) {
+        setLoading(false);
+        return;
+      }
+
+      // 1. PETICIÓN ÚNICA A LA NUEVA API
+      const res = await api.get(`/p/${username}`);
+      
+      if (res.data.success) {
+        const d = res.data.data;
+
+        // 2. ARMADO DEL ESTADO CON EL MAPEO
+        setPortfolio({
+          user: {
+            ...d.profile,
+            fullname: d.profile.name, // Ajuste de compatibilidad
+          },
+          projects: d.projects.map(mapProject),
+          skills: d.skills.map((s: any) => ({
+            name: s.name,
+            level: s.level_of_domain,
+            type: s.type
+          })),
+          experiences: d.work_experiences.map(mapExperience),
+          socialNetworks: d.social_networks,
+          isPublished: d.config.is_public ?? true,
+          portfolioUrl: d.config.slug,
+          template: d.config.template
+        });
+      }
+    } catch (error) {
+      console.error("Error cargando portafolio:", error);
+      setPortfolio(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAll();
+
+    // 3. ESCUCHAR EL EVENTO DE PUBLICACIÓN EXITOSA
+    const handleUpdate = () => {
+      console.log("Sincronizando: Portafolio actualizado...");
+      fetchAll();
     };
 
-    fetchAll();
-  }, []);
-  console.log("PORTFOLIO:", portfolio);
-  console.log("LOADING:", loading);
-  return { portfolio, loading };
+    window.addEventListener("portfolioUpdated", handleUpdate);
+    return () => window.removeEventListener("portfolioUpdated", handleUpdate);
+  }, [fetchAll]);
+
+  return { portfolio, loading, refresh: fetchAll };
 };
