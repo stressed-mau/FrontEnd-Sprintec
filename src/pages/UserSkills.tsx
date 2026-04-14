@@ -104,7 +104,7 @@ const UserSkills = () => {
 
             <form onSubmit={handleSave} className="p-8 pt-4 space-y-5">
               <div>
-                <label className="block text-[#003A6C] font-semibold text-sm mb-1.5">Tipo de habilidad</label>
+                <label className="block text-[#003A6C] font-semibold text-sm mb-1.5">Tipo de habilidad *</label>
                 <select 
                   value={skillType} 
                   onChange={(e) => setSkillType(e.target.value as any)}
