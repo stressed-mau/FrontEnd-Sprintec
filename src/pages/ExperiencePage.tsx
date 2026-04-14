@@ -14,9 +14,12 @@ const ExperiencePage = () => {
     errors,
     isModalOpen,
     isEditing,
+    isConfirmEditModalOpen,
     feedbackMessage,
     feedbackType,
+    isDuplicateModalOpen,
     isSuccessModalOpen,
+    duplicateMessage,
     successMessage,
     pageError,
     isLoading,
@@ -28,7 +31,10 @@ const ExperiencePage = () => {
     openCreateModal,
     openEditModal,
     closeModal,
+    closeConfirmEditModal,
+    closeDuplicateModal,
     closeSuccessModal,
+    confirmEditSave,
     updateField,
     handleBlur,
     handleImageChange,
@@ -156,6 +162,69 @@ const ExperiencePage = () => {
             <h2 className="text-xl font-bold text-[#003A6C]">Éxito</h2>
             <p className="mt-2 text-sm text-[#4B778D]">{successMessage}</p>
             <Button onClick={closeSuccessModal} className="mt-6 h-11 w-full bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
+              Aceptar
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {isConfirmEditModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
+            <button
+              type="button"
+              onClick={closeConfirmEditModal}
+              aria-label="Cerrar confirmación de guardado"
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-[#4B778D] transition hover:bg-[#EEF5F9]"
+            >
+              X
+            </button>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#D9EAF4] text-[#003A6C]">
+              <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-3-3v6m9 0A9 9 0 113 12a9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-[#003A6C]">Confirmar cambios</h2>
+            <p className="mt-2 text-sm text-[#4B778D]">
+              ¿Estás seguro de que deseas guardar los cambios realizados?
+            </p>
+            <div className="mt-6 flex gap-3">
+              <Button onClick={confirmEditSave} disabled={isSaving} className="h-11 flex-1 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
+                Aceptar
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={closeConfirmEditModal}
+                disabled={isSaving}
+                className="h-11 flex-1 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isDuplicateModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
+            <button
+              type="button"
+              onClick={closeDuplicateModal}
+              aria-label="Cerrar modal de duplicado"
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-[#4B778D] transition hover:bg-[#EEF5F9]"
+            >
+              X
+            </button>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#FDEBEC] text-[#B42318]">
+              <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M10.29 3.86l-7.17 12.42A2 2 0 004.85 19h14.3a2 2 0 001.73-3.02L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-[#003A6C]">Registro duplicado</h2>
+            <p className="mt-2 text-sm text-[#4B778D]">{duplicateMessage}</p>
+            <Button onClick={closeDuplicateModal} className="mt-6 h-11 w-full bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
               Aceptar
             </Button>
           </div>

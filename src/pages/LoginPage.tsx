@@ -41,7 +41,7 @@ export default function LoginPage() {
                 <LogIn className="size-8" />
               </div>
               <div className="space-y-2">
-                <CardTitle className="text-2xl font-bold text-[#003A6C]">Iniciar sesión</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[#003A6C]">Iniciar sesion</CardTitle>
                 <CardDescription className="text-sm leading-6 text-[#4F6F88]">
                   Accede a tu portafolio profesional.
                 </CardDescription>
@@ -52,14 +52,14 @@ export default function LoginPage() {
               <form noValidate onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor={idEntradaCorreo} className="text-[#003A6C]">
-                    Tu usuario o Correo electrónico
+                    Tu usuario o correo electronico <span aria-hidden="true">*</span>
                   </Label>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
                       id={idEntradaCorreo}
                       type="text"
-                      placeholder="Tu usuario o tu correo electrónico registrado"
+                      placeholder="Tu usuario o tu correo electronico registrado"
                       maxLength={60}
                       value={values.user}
                       onBlur={() => handleBlur("user")}
@@ -75,11 +75,11 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-3">
                     <Label htmlFor={idEntradaContrasena} className="text-[#003A6C]">
-                      Contraseña
+                      Contrasena <span aria-hidden="true">*</span>
                     </Label>
                     {/*
                     <button type="button" className="text-xs font-medium text-[#4982AD] transition hover:text-[#003A6C]">
-                      ¿La olvidaste?
+                      La olvidaste?
                     </button>
                     */}
                   </div>
@@ -100,7 +100,7 @@ export default function LoginPage() {
                       type="button"
                       onClick={togglePasswordVisibility}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B88A0] transition hover:text-[#003A6C]"
-                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                      aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
@@ -131,15 +131,15 @@ export default function LoginPage() {
                   disabled={isSubmitting}
                   className="h-11 w-full bg-[#003A6C] text-white transition hover:bg-[#4982AD] disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
+                  {isSubmitting ? "Iniciando sesion..." : "Iniciar sesion"}
                 </Button>
               </form>
 
               <div className="flex flex-col items-center gap-3 text-center text-sm text-[#4F6F88]">
                 <p>
-                  ¿No tienes cuenta?{" "}
+                  No tienes cuenta?{" "}
                   <Link to={REGISTER_ROUTE} className="font-medium text-[#4982AD] transition hover:text-[#003A6C]">
-                    Regístrate aquí
+                    Registrate aqui
                   </Link>
                 </p>
               </div>

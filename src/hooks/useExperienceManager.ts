@@ -139,6 +139,66 @@ function isIsoDate(value: string) {
   return ISO_DATE_PATTERN.test(value.trim())
 }
 
+function normalizeComparableText(value: string) {
+  return value.trim().toLocaleLowerCase("es-BO")
+}
+
+function resolveExperienceRange(values: Pick<ExperienceFormValues, "startDate" | "endDate" | "current">) {
+  const start = parseDate(values.startDate)
+
+  if (!start) {
+    return null
+  }
+
+  const end = values.current || !values.endDate.trim() ? null : parseDate(values.endDate)
+
+  if (values.endDate.trim() && !values.current && !end) {
+    return null
+  }
+
+  return { start, end }
+}
+
+function experiencesOverlap(
+  left: Pick<ExperienceFormValues, "startDate" | "endDate" | "current">,
+  right: Pick<ExperienceFormValues, "startDate" | "endDate" | "current">,
+) {
+  const leftRange = resolveExperienceRange(left)
+  const rightRange = resolveExperienceRange(right)
+
+  if (!leftRange || !rightRange) {
+    return false
+  }
+
+  const leftEndTime = leftRange.end?.getTime() ?? Number.POSITIVE_INFINITY
+  const rightEndTime = rightRange.end?.getTime() ?? Number.POSITIVE_INFINITY
+
+  return leftRange.start.getTime() <= rightEndTime && rightRange.start.getTime() <= leftEndTime
+}
+
+function findDuplicateExperience(
+  experiences: ExperienceItem[],
+  values: ExperienceFormValues,
+  editingExperienceId?: string,
+) {
+  const normalizedType = normalizeExperienceTypeValue(values.type)
+  const normalizedCompany = normalizeComparableText(values.company)
+  const normalizedPosition = normalizeComparableText(values.position)
+
+  return experiences.find((experience) => {
+    if (editingExperienceId && experience.id === editingExperienceId) {
+      return false
+    }
+
+    return (
+      normalizeExperienceTypeValue(experience.type) === normalizedType &&
+      normalizeComparableText(experience.company) === normalizedCompany &&
+      normalizeComparableText(experience.position) === normalizedPosition &&
+      experiencesOverlap(values, experience)
+    )
+  })
+}
+
 function hasAllowedImageFormat(file: File) {
   const normalizedFileName = file.name.trim().toLowerCase()
   const hasAllowedExtension = ALLOWED_IMAGE_EXTENSIONS.some((extension) => normalizedFileName.endsWith(extension))
@@ -272,13 +332,17 @@ function validateExperienceField(
 export function useExperienceManager() {
   const [experiences, setExperiences] = useState<ExperienceItem[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isConfirmEditModalOpen, setIsConfirmEditModalOpen] = useState(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false)
   const [editingExperience, setEditingExperience] = useState<ExperienceItem | null>(null)
+  const [pendingEditPayload, setPendingEditPayload] = useState<ExperiencePayload | null>(null)
   const [formData, setFormData] = useState<ExperienceFormValues>(EMPTY_FORM)
   const [errors, setErrors] = useState<ExperienceFormErrors>({})
   const [feedbackMessage, setFeedbackMessage] = useState("")
   const [feedbackType, setFeedbackType] = useState<"success" | "error" | "">("")
   const [successMessage, setSuccessMessage] = useState("")
+  const [duplicateMessage, setDuplicateMessage] = useState("")
   const [pageError, setPageError] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -334,15 +398,36 @@ export function useExperienceManager() {
     setIsSuccessModalOpen(true)
   }
 
+  function openConfirmEditModal(payload: ExperiencePayload) {
+    setPendingEditPayload(payload)
+    setIsConfirmEditModalOpen(true)
+  }
+
+  function closeConfirmEditModal() {
+    setPendingEditPayload(null)
+    setIsConfirmEditModalOpen(false)
+  }
+
   function closeSuccessModal() {
     setIsSuccessModalOpen(false)
     setSuccessMessage("")
+  }
+
+  function showDuplicateModal(message: string) {
+    setDuplicateMessage(message)
+    setIsDuplicateModalOpen(true)
+  }
+
+  function closeDuplicateModal() {
+    setIsDuplicateModalOpen(false)
+    setDuplicateMessage("")
   }
 
   function resetForm() {
     setEditingExperience(null)
     setSelectedImageFile(null)
     setHasRemovedExistingImage(false)
+    closeConfirmEditModal()
     setFormData(EMPTY_FORM)
     setErrors({})
 
@@ -358,14 +443,18 @@ export function useExperienceManager() {
 
   function openCreateModal() {
     clearFeedback()
+    closeConfirmEditModal()
     closeSuccessModal()
+    closeDuplicateModal()
     resetForm()
     setIsModalOpen(true)
   }
 
   function openEditModal(experience: ExperienceItem) {
     clearFeedback()
+    closeConfirmEditModal()
     closeSuccessModal()
+    closeDuplicateModal()
     setEditingExperience(experience)
     setSelectedImageFile(null)
     setHasRemovedExistingImage(false)
@@ -415,24 +504,22 @@ export function useExperienceManager() {
     if (field === "current") {
       setErrors((currentErrors) => ({
         ...currentErrors,
+        current: "",
         endDate: validateExperienceField("endDate", nextValues),
       }))
       return
     }
 
-    if (errors[field]) {
-      setErrors((currentErrors) => ({
-        ...currentErrors,
-        [field]: validateExperienceField(field, nextValues),
-      }))
-    }
-
-    if ((field === "startDate" || field === "endDate" || field === "type") && errors.endDate) {
-      setErrors((currentErrors) => ({
-        ...currentErrors,
-        endDate: validateExperienceField("endDate", nextValues),
-      }))
-    }
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      [field]: validateExperienceField(field, nextValues),
+      ...(field === "type" && nextValues.type === "academica"
+        ? { email: "" }
+        : {}),
+      ...(field === "startDate" || field === "endDate" || field === "type"
+        ? { endDate: validateExperienceField("endDate", nextValues) }
+        : {}),
+    }))
   }
 
   function handleBlur(field: keyof ExperienceFormValues) {
@@ -505,9 +592,42 @@ export function useExperienceManager() {
     }
   }
 
+  async function persistExperience(payload: ExperiencePayload) {
+    try {
+      setIsSaving(true)
+
+      if (editingExperience) {
+        await updateExperience(editingExperience.id, payload)
+        closeConfirmEditModal()
+        closeModal()
+        showSuccessModal("Experiencia actualizada correctamente.")
+      } else {
+        await createExperience(payload)
+        closeModal()
+        showSuccessModal("Experiencia registrada correctamente.")
+      }
+
+      await loadExperiences()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo guardar la experiencia."
+      showFeedback(message, "error")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  async function confirmEditSave() {
+    if (!editingExperience || !pendingEditPayload || isSaving) {
+      return
+    }
+
+    await persistExperience(pendingEditPayload)
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     clearFeedback()
+    closeDuplicateModal()
     setPageError("")
 
     if (isSaving) {
@@ -531,6 +651,22 @@ export function useExperienceManager() {
       return
     }
 
+    const duplicateExperience = findDuplicateExperience(
+      experiences,
+      formData,
+      editingExperience?.id,
+    )
+
+    if (duplicateExperience) {
+      const duplicatedTypeLabel =
+        duplicateExperience.type === "academica" ? "experiencia academica" : "experiencia laboral"
+
+      showDuplicateModal(
+        `Ya tienes una ${duplicatedTypeLabel} registrada en ${duplicateExperience.company} como ${duplicateExperience.position} dentro de un periodo que se cruza con las fechas ingresadas. Revisa las fechas o edita el registro existente.`,
+      )
+      return
+    }
+
     const payload: ExperiencePayload = {
       type: normalizeExperienceTypeValue(formData.type),
       company: formData.company.trim(),
@@ -544,26 +680,12 @@ export function useExperienceManager() {
       removeLogo: hasRemovedExistingImage && !selectedImageFile,
     }
 
-    try {
-      setIsSaving(true)
-
-      if (editingExperience) {
-        await updateExperience(editingExperience.id, payload)
-        closeModal()
-        showSuccessModal("Experiencia actualizada correctamente.")
-      } else {
-        await createExperience(payload)
-        closeModal()
-        showSuccessModal("Experiencia registrada correctamente.")
-      }
-
-      await loadExperiences()
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "No se pudo guardar la experiencia."
-      showFeedback(message, "error")
-    } finally {
-      setIsSaving(false)
+    if (editingExperience) {
+      openConfirmEditModal(payload)
+      return
     }
+
+    await persistExperience(payload)
   }
 
   async function handleDelete(id: string) {
@@ -592,21 +714,28 @@ export function useExperienceManager() {
     errors,
     isModalOpen,
     isEditing,
+    isConfirmEditModalOpen,
     feedbackMessage,
     feedbackType,
+    isDuplicateModalOpen,
     isSuccessModalOpen,
+    duplicateMessage,
     successMessage,
     pageError,
     isLoading,
     isSaving,
     canRemoveImage,
+    pendingEditPayload,
     laboralExperiences,
     academicExperiences,
     fileInputRef,
     openCreateModal,
     openEditModal,
     closeModal,
+    closeConfirmEditModal,
+    closeDuplicateModal,
     closeSuccessModal,
+    confirmEditSave,
     updateField,
     handleBlur,
     handleImageChange,

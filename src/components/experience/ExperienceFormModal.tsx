@@ -35,8 +35,8 @@ export function ExperienceFormModal({
   onRemoveImage,
   onSubmit,
 }: ExperienceFormModalProps) {
-  const companyLabel = formData.type === "laboral" ? "Empresa" : "Institución"
-  const positionLabel = formData.type === "laboral" ? "Cargo" : "Título"
+  const companyLabel = formData.type === "laboral" ? "Empresa" : "Institucion"
+  const positionLabel = formData.type === "laboral" ? "Cargo" : "Titulo"
   const isLaboralExperience = formData.type === "laboral"
   const isCurrentActive = formData.current
 
@@ -55,7 +55,7 @@ export function ExperienceFormModal({
               {isEditing ? "Editar experiencia" : "Nueva experiencia"}
             </h2>
             <p id="descripcion-modal-experiencia" className="mt-1 text-sm text-[#4B778D]">
-              {isEditing ? "Actualiza" : "Agrega"} tu experiencia laboral o académica.
+              {isEditing ? "Actualiza" : "Agrega"} tu experiencia laboral o academica.
             </p>
           </div>
 
@@ -71,26 +71,28 @@ export function ExperienceFormModal({
         </div>
 
         <form id="formulario-experiencia" noValidate onSubmit={onSubmit} className="space-y-4 px-5 py-5 sm:px-6 sm:py-6">
-          {!isEditing ? <div className="space-y-2">
-            <Label id="experience-type-label" htmlFor="experience-type" className="text-[#003A6C]">
-              Tipo de experiencia
-            </Label>
-            <select
-              id="experience-type"
-              value={formData.type}
-              disabled={isSaving}
-              onChange={(event) => onFieldChange("type", event.target.value)}
-              className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8]"
-              aria-labelledby="experience-type-label"
-            >
-              <option value="laboral">Experiencia laboral</option>
-              <option value="academica">Experiencia académica</option>
-            </select>
-          </div> : null}
+          {!isEditing ? (
+            <div className="space-y-2">
+              <Label id="experience-type-label" htmlFor="experience-type" className="text-[#003A6C]">
+                Tipo de experiencia <span aria-hidden="true">*</span>
+              </Label>
+              <select
+                id="experience-type"
+                value={formData.type}
+                disabled={isSaving}
+                onChange={(event) => onFieldChange("type", event.target.value)}
+                className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8]"
+                aria-labelledby="experience-type-label"
+              >
+                <option value="laboral">Experiencia laboral</option>
+                <option value="academica">Experiencia academica</option>
+              </select>
+            </div>
+          ) : null}
 
           <div className="space-y-2">
             <Label id="experience-company-label" htmlFor="experience-company" className="text-[#003A6C]">
-              {companyLabel} *
+              {companyLabel} <span aria-hidden="true">*</span>
             </Label>
             <Input
               id="experience-company"
@@ -110,7 +112,7 @@ export function ExperienceFormModal({
           {isLaboralExperience ? (
             <div className="space-y-2">
               <Label id="experience-email-label" htmlFor="experience-email" className="text-[#003A6C]">
-                Correo electrónico *
+                Correo electronico <span aria-hidden="true">*</span>
               </Label>
               <Input
                 id="experience-email"
@@ -132,7 +134,7 @@ export function ExperienceFormModal({
 
           <div className="space-y-2">
             <Label id="experience-position-label" htmlFor="experience-position" className="text-[#003A6C]">
-              {positionLabel} *
+              {positionLabel} <span aria-hidden="true">*</span>
             </Label>
             <Input
               id="experience-position"
@@ -151,7 +153,7 @@ export function ExperienceFormModal({
 
           <div className="space-y-2">
             <Label id="experience-description-label" htmlFor="experience-description" className="text-[#003A6C]">
-              Descripción
+              Descripcion
             </Label>
             <Textarea
               id="experience-description"
@@ -174,7 +176,7 @@ export function ExperienceFormModal({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label id="experience-start-date-label" htmlFor="experience-start-date" className="text-[#003A6C]">
-                Fecha de inicio
+                Fecha de inicio <span aria-hidden="true">*</span>
               </Label>
               <Input
                 id="experience-start-date"
@@ -221,13 +223,13 @@ export function ExperienceFormModal({
               className="size-4 rounded border-[#A5D7E8] text-[#003A6C] focus:ring-[#A5D7E8]"
             />
             <Label id="experience-current-label" htmlFor="experience-current" className="cursor-pointer text-[#003A6C]">
-              Actualmente trabajo/estudio aquí
+              Actualmente trabajo/estudio aqui
             </Label>
           </div>
 
           <div className="space-y-2">
             <Label id="experience-image-label" htmlFor="experience-image" className="text-[#003A6C]">
-              Logo de la empresa o institución
+              Logo de la empresa o institucion
             </Label>
 
             <input
@@ -278,7 +280,7 @@ export function ExperienceFormModal({
             ) : null}
 
             {errors.image ? <p className="text-sm text-red-600">{errors.image}</p> : null}
-            <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG y PNG. Tamaño máximo: 2 MB.</p>
+            <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG y PNG. Tamano maximo: 2 MB.</p>
           </div>
 
           <div className="flex gap-3 pt-4">

@@ -1,5 +1,5 @@
 ﻿import type { ReactNode } from "react"
-import { Briefcase, Edit, GraduationCap, Trash2 } from "lucide-react"
+import { Briefcase, Check, Edit, GraduationCap, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -60,17 +60,24 @@ export function ExperienceSection({
 
                     <div className="min-w-0 flex-1">
                       <CardTitle className="text-lg font-semibold text-[#003A6C]">
-                        {experience.position}
+                        {experience.company}
                       </CardTitle>
-                      <p className="mt-1 text-[#4B778D]">{experience.company}</p>
+                      <p className="mt-1 text-[#4B778D]">{experience.position}</p>
                       {experience.email ? (
                         <div className="mt-2 flex flex-col gap-1 text-sm text-[#6B7E8E]">
                           {experience.email ? <p>{experience.email}</p> : null}
                         </div>
                       ) : null}
-                      <p className="mt-1 text-sm text-[#6B7E8E]">
-                        {formatExperienceDate(experience.startDate)} - {experience.current ? "Actual" : formatExperienceDate(experience.endDate)}
-                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-[#6B7E8E]">
+                        <p>
+                          {formatExperienceDate(experience.startDate)} - {experience.current ? "Actual" : formatExperienceDate(experience.endDate)}
+                        </p>
+                        {experience.current ? (
+                          <span className="inline-flex items-center justify-center rounded-full bg-green-600 p-1 text-white" aria-label="Experiencia activa" title="Experiencia activa">
+                            <Check className="size-3" />
+                          </span>
+                        ) : null}
+                      </div>
                       {experience.description ? (
                         <p className="mt-2 text-sm leading-6 text-[#355468]">{experience.description}</p>
                       ) : null}

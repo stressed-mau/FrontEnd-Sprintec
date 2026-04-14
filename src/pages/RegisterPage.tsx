@@ -68,7 +68,7 @@ export default function RegisterPage() {
               <form noValidate onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor={idEntradaNombre} className="text-[#003A6C]">
-                    Nombre de usuario
+                    Nombre de usuario <span aria-hidden="true">*</span>
                   </Label>
                   <div className="relative">
                     <UserRound className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
@@ -90,7 +90,7 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor={idEntradaCorreo} className="text-[#003A6C]">
-                    Correo electrónico
+                    Correo electronico <span aria-hidden="true">*</span>
                   </Label>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
@@ -110,7 +110,7 @@ export default function RegisterPage() {
                   {errors.email ? <p id={idErrorCorreo} className="text-sm text-red-600">{errors.email}</p> : null}
                   {!errors.email && emailSuggestion ? (
                     <p className="text-sm text-amber-700">
-                      ¿Quisiste decir{" "}
+                      Quisiste decir{" "}
                       <a
                         href={`mailto:${emailSuggestion.full}`}
                         className="font-medium underline underline-offset-2 transition hover:text-amber-900"
@@ -128,10 +128,10 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor={idEntradaContrasena} className="text-[#003A6C]">
-                    Contraseña
+                    Contrasena <span aria-hidden="true">*</span>
                   </Label>
                   <p id={idAyudaContrasena} className="text-xs leading-5 text-[#5E7D95]">
-                    La contraseña debe contener entre 8 y 20 caracteres, e incluir al menos una letra mayúscula, un número y un carácter especial.
+                    La contrasena debe contener entre 8 y 20 caracteres, e incluir al menos una letra mayuscula, un numero y un caracter especial.
                   </p>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
@@ -151,7 +151,7 @@ export default function RegisterPage() {
                       type="button"
                       onClick={togglePasswordVisibility}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B88A0] transition hover:text-[#003A6C]"
-                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                      aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
@@ -161,7 +161,7 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor={idEntradaConfirmarContrasena} className="text-[#003A6C]">
-                    Confirmar contraseña
+                    Confirmar contrasena <span aria-hidden="true">*</span>
                   </Label>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
@@ -181,7 +181,7 @@ export default function RegisterPage() {
                       type="button"
                       onClick={toggleConfirmPasswordVisibility}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B88A0] transition hover:text-[#003A6C]"
-                      aria-label={showConfirmPassword ? "Ocultar confirmar contraseña" : "Mostrar confirmar contraseña"}
+                      aria-label={showConfirmPassword ? "Ocultar confirmar contrasena" : "Mostrar confirmar contrasena"}
                     >
                       {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
@@ -215,9 +215,9 @@ export default function RegisterPage() {
 
               <div className="flex flex-col items-center gap-3 text-center text-sm text-[#4F6F88]">
                 <p>
-                  ¿Ya tienes cuenta?{" "}
+                  Ya tienes cuenta?{" "}
                   <Link to={LOGIN_ROUTE} className="font-medium text-[#4982AD] transition hover:text-[#003A6C]">
-                    Inicia sesión aquí
+                    Inicia sesion aqui
                   </Link>
                 </p>
               </div>
