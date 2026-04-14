@@ -344,12 +344,8 @@ function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: Exper
   }
 }
 
-function buildFormData(payload: ExperiencePayload, options?: { methodOverride?: "PUT" }) {
+function buildFormData(payload: ExperiencePayload) {
   const formData = new FormData()
-
-  if (options?.methodOverride) {
-    formData.append("_method", options.methodOverride)
-  }
 
   formData.append("type", payload.type)
   formData.append("name", payload.company.trim())
@@ -358,7 +354,7 @@ function buildFormData(payload: ExperiencePayload, options?: { methodOverride?: 
 
   const description = payload.description.trim()
   const email = payload.email.trim()
-  const endDate = payload.current ? "" : payload.endDate.trim()
+  const endDate = payload.endDate.trim()
 
   if (description) {
     formData.append("description", description)
@@ -419,7 +415,7 @@ export async function createExperience(payload: ExperiencePayload): Promise<Expe
 
 export async function updateExperience(id: string, payload: ExperiencePayload): Promise<ExperienceItem> {
   try {
-    const response = await api.post(`${EXPERIENCES_ENDPOINT}/${id}`, buildFormData(payload, { methodOverride: "PUT" }), {
+    const response = await api.put(`${EXPERIENCES_ENDPOINT}/${id}`, buildFormData(payload), {
       timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
       headers: {
         "Content-Type": "multipart/form-data",

@@ -236,12 +236,8 @@ function validateExperienceField(
   }
 
   if (field === "endDate") {
-    if (values.current) {
-      return ""
-    }
-
     if (!endDate) {
-      return "El campo Fecha de fin es obligatorio."
+      return ""
     }
 
     if (!isIsoDate(endDate) || !parseDate(endDate)) {
@@ -527,7 +523,7 @@ export function useExperienceManager() {
       position: formData.position.trim(),
       description: formData.description.trim(),
       startDate: formData.startDate.trim(),
-      endDate: formData.current ? "" : formData.endDate.trim(),
+      endDate: formData.endDate.trim(),
       current: formData.current,
       logoFile: selectedImageFile,
       removeLogo: hasRemovedExistingImage && !selectedImageFile,
