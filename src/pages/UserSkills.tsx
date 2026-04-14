@@ -1,6 +1,6 @@
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
-import { Plus, Code2, Lightbulb, X, Edit3, Trash2 } from 'lucide-react';
+import { Plus, Code2, Lightbulb, X, Edit3, Trash2, Check} from 'lucide-react';
 import { useSkillsManager, type Skill } from '../hooks/useSkillsManager';
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -15,8 +15,8 @@ function getLevelLabel(level: string): string {
 }
 
 const UserSkills = () => {
-  const {    isModalOpen, technicalSkills, softSkills, editingSkill, skillType, skillName, skillLevel, errorMessage, successMessage,showSuccessModal, pageError, isLoading, isSaving,
-            setSkillType, setSkillLevel, openModal,  closeModal, handleSave, handleDelete, handleSkillNameChange, } = useSkillsManager();
+  const {    isModalOpen, technicalSkills, softSkills, editingSkill, skillType, skillName, skillLevel, errorMessage,showSuccessModal, pageError, isLoading, isSaving, isDeleting,
+            showConfirmEdit, showConfirmDelete, skillToDelete, setShowSuccessModal, setShowConfirmEdit,setSkillType, setSkillLevel, openModal,  closeModal, handleSave, requestDelete, cancelDelete, confirmDelete, handleSkillNameChange, } = useSkillsManager();
   const hasNameError = Boolean(errorMessage);
 
   return (
@@ -62,7 +62,7 @@ const UserSkills = () => {
                     </div>
                   </div>
                 ) : (  technicalSkills.map(skill => (
-                    <SkillCard key={skill.id} skill={skill} disabled={isLoading || isSaving} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
+                    <SkillCard key={skill.id} skill={skill} disabled={isLoading || isSaving || isDeleting} onEdit={() => openModal(skill)} onDelete={() => requestDelete(skill)} />
                   ))
                 )}
               </div>
@@ -83,7 +83,7 @@ const UserSkills = () => {
                     </div>
                   </div>
                 ) : ( softSkills.map(skill => (
-                    <SkillCard key={skill.id} skill={skill} disabled={isLoading || isSaving} onEdit={() => openModal(skill)} onDelete={() => handleDelete(skill.id)} />
+                    <SkillCard key={skill.id} skill={skill} disabled={isLoading || isSaving || isDeleting} onEdit={() => openModal(skill)} onDelete={() => requestDelete(skill)} />
                   ))
                 )}
               </div>
@@ -163,22 +163,66 @@ const UserSkills = () => {
           </div>
         </div>
       )}
-
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-110 flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl p-8 text-center animate-in zoom-in-95 duration-200">
-            <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
+{showConfirmEdit && (
+        <div className="fixed inset-0 z-120 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center">
+            <h3 className="text-lg font-bold text-[#003A6C] mb-4">¿Estás seguro que desea guardar los cambios realizados?</h3>
+            <div className="flex gap-3">
+              <button onClick={() => handleSave()} className="flex-1 bg-[#003A6C] text-white py-2 rounded-lg font-semibold hover:bg-[#002a50]">Confirmar</button>
+              <button onClick={() => setShowConfirmEdit(false)} className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300">Cancelar</button>
             </div>
-            <h3 className="text-[#003A6C] text-xl font-bold mb-2">¡Exito!</h3>
-            <p className="text-gray-600 text-sm">{successMessage}</p>
           </div>
         </div>
       )}
+      {showConfirmDelete && (
+        <div className="fixed inset-0 z-120 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center">
+            <h3 className="text-lg font-bold text-[#003A6C] mb-2">¿Deseas eliminar esta habilidad?</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              {skillToDelete ? `Se eliminará "${skillToDelete.name}" de forma permanente.` : 'Esta acción no se puede deshacer.'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => void confirmDelete()}
+                disabled={isDeleting}
+                className="flex-1 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? 'Eliminando...' : 'Eliminar'}
+              </button>
+              <button
+                onClick={cancelDelete}
+                disabled={isDeleting}
+                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showSuccessModal && (
+  <div className="fixed inset-0 z-150 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div className="bg-white w-full max-w-100 rounded-[32px] shadow-2xl p-8 relative animate-in zoom-in-95 duration-200">
+      <button 
+        onClick={() => setShowSuccessModal(false)}  className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition-colors" >
+        <X className="size-6" />
+      </button>
+      <div className="flex flex-col items-center">
+        <div className="w-16 h-16 bg-[#E1EFFE] rounded-full flex items-center justify-center mb-6">
+          <Check className="size-8 text-[#003A6C] stroke-[3px]" />
+        </div>
+        <h3 className="text-[#003A6C] text-2xl font-bold mb-2">Éxito</h3>
+        <p className="text-[#6B7280] text-center text-lg mb-8">
+          {editingSkill ? "Habilidad actualizada correctamente." : "Habilidad registrada correctamente."}
+        </p>
+        <button 
+          onClick={() => setShowSuccessModal(false)}
+          className="w-full bg-[#003A6C] text-white py-4 rounded-xl font-bold text-xl hover:bg-[#002a50] transition-all shadow-lg active:scale-[0.98]"> Continuar
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };

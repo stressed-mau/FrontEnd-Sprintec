@@ -60,9 +60,9 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ data, profile, isPrevie
             <Award size={28} className="text-[#2f606b]" />
           </div>
           
-          <h1 className="text-[90px] md:text-[140px] font-black leading-[0.85] tracking-tighter drop-shadow-sm">
-            PORTA<br/>
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#173b61] to-[#ee8e3b]">FOLIO</span>
+          <h1 className="text-[90px] md:text-[140px] font-black leading-[0.85] tracking-tighter drop-shadow-sm">P
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#173b61] to-[#ee8e3b]">ORTAFOLIO</span><br/>
+             <span className="text-transparent bg-clip-text bg-linear-to-r from-[#Ee8e3b] to-[#173b61]">GEN</span>
           </h1>
           
           <div className="mt-10 inline-block bg-[#173b61] px-6 py-2 rounded-full">
@@ -72,10 +72,6 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ data, profile, isPrevie
           </div>
         </div>
 
-        {/* Elemento Decorativo: Puntos */}
-        <div className="absolute top-10 right-10 grid grid-cols-4 gap-2 opacity-20">
-          {[...Array(12)].map((_, i) => <div key={i} className="w-2 h-2 bg-[#2f606b] rounded-full"></div>)}
-        </div>
       </header>
 
       {/* --- PERFIL Y BIO --- */}

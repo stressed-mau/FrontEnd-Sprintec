@@ -53,7 +53,6 @@ const PublishPortfolio = () => {
     data, openSections, sectionsArray, isLoading, isSaving, pageError,
     toggleSection, handleItemCheck, handleBulkSelect, getVisibleCountText, reloadVisibilityData, } = usePortfolioVisibility();
   const { portfolio } = usePortfolio();
-  const visibleSections = sectionsArray.filter((sectionConfig) => data[sectionConfig.key].length > 0);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
 
   const templates = [
@@ -214,13 +213,7 @@ const PublishPortfolio = () => {
               )}
 
               <div className="space-y-6">
-                {visibleSections.length === 0 && !isLoading ? (
-                  <div className="rounded-xl border border-dashed border-[#C9E1F0] bg-[#F8FBFE] px-4 py-8 text-center text-sm text-gray-500">
-                    No hay elementos para mostrar en este momento.
-                  </div>
-                ) : null}
-
-                {visibleSections.map((sectionConfig) => {
+                {sectionsArray.map((sectionConfig) => {
                   const sectionKey = sectionConfig.key;
                   const isOpen = openSections[sectionKey];
                   const items = data[sectionKey];
@@ -228,8 +221,8 @@ const PublishPortfolio = () => {
                   const sectionEnabled = items.some(item => item.checked);
 
                   return (
-                    <div key={sectionKey} className="border border-[#C9E1F0] rounded-xl overflow-hidden bg-white">
-                      
+                    <div key={sectionKey} className={`transition-all duration-300 ${!sectionEnabled ? 'opacity-60 grayscale-30' : 'opacity-100'}`}>
+
                       <div className="flex items-center justify-between p-4 border-b border-[#C9E1F0]">
                         <div className="flex items-center gap-3">
                           <label className="relative inline-flex items-center cursor-pointer">
@@ -247,8 +240,8 @@ const PublishPortfolio = () => {
                         </div>
                         
                         <button 
+                          type="button"
                           onClick={() => toggleSection(sectionKey)}
-                          disabled={isLoading}
                           className="text-gray-400 p-1 hover:bg-gray-100 rounded-full transition-colors"
                           aria-label={isOpen ? "Cerrar sección" : "Abrir sección"}>
                           <svg className={`w-5 h-5 transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,7 +250,7 @@ const PublishPortfolio = () => {
                         </button>
                       </div>
 
-                      <div className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-250 opacity-100' : 'max-h-0 opacity-0'}`}>
+                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-250 opacity-100 pointer-events-auto' : 'max-h-0 opacity-0 pointer-events-none'}`}>
                         <div className="p-4 bg-white border-t border-[#C9E1F0]">
                           
                           <div className="flex gap-2 mb-4">
@@ -277,13 +270,16 @@ const PublishPortfolio = () => {
 
                           {/* Lista de Checkboxes Individuales */}
                           <div className="space-y-4 ml-2">
+                            {items.length === 0 && (
+                              <p className="text-sm text-gray-400">Esta sección no tiene elementos aún.</p>
+                            )}
                             {items.map((item) => (
-                              <div key={item.id} className="flex items-center gap-3">
+                              <div key={`${item.sourceTable ?? sectionKey}-${item.id}`} className="flex items-center gap-3">
                                 <input 
                                   type="checkbox" 
                                   checked={item.checked} 
                                   disabled={isLoading || isSaving}
-                                  onChange={() => void handleItemCheck(sectionKey, item.id)}
+                                  onChange={() => void handleItemCheck(sectionKey, item.id, item.sourceTable)}
                                   className="w-5 h-5 text-[#003A6C] border-gray-300 rounded focus:ring-[#003A6C] focus:ring-2 cursor-pointer"
                                 />
                                 <div className="flex flex-col md:flex-row md:items-baseline md:gap-2">
@@ -338,7 +334,7 @@ const PublishPortfolio = () => {
       ) : (
         // VISTA PUBLICADO (Imagen 2)
         <div className="space-y-6">
-          <div className="bg-[#E7F6EC] border-1 border-[#34A853] rounded-2xl p-6 flex items-center justify-between shadow-sm mt-8">
+          <div className="bg-[#E7F6EC] border border-[#34A853] rounded-2xl p-6 flex items-center justify-between shadow-sm mt-8">
             <div className="flex items-center gap-4">
               <div className="bg-[#34A853] p-2 rounded-full">
                 <CheckCircle2 className="w-6 h-6 text-white" />
@@ -354,7 +350,7 @@ const PublishPortfolio = () => {
                 if (!templateNumber) return;
                 handleUnpublish(templateNumber);
               }}
-              className={`border-1 border-[#4982ad] bg-[#C2DBED] text-[#003A6C] px-6 py-2 rounded-lg font-semibold text-sm transition-all ${
+              className={`border border-[#4982ad] bg-[#C2DBED] text-[#003A6C] px-6 py-2 rounded-lg font-semibold text-sm transition-all ${
                 loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#c4a57c]'
               }`}
             >

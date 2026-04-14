@@ -84,7 +84,7 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
     <div className="w-full min-h-screen bg-[#F9F9F8] flex items-center justify-center p-4 md:p-10 font-sans text-zinc-900">
       
       {/* Tarjeta Principal - Estética Arena/Piedra */}
-      <div className="w-full max-w-6xl aspect-[16/10] bg-white flex flex-col md:flex-row overflow-hidden rounded-2xl border border-stone-200 shadow-sm relative">
+      <div className="w-full max-w-6xl aspect-16/10 bg-white flex flex-col md:flex-row overflow-hidden rounded-2xl border border-stone-200 shadow-sm relative">
         
         {/* LADO IZQUIERDO: Visual (Grayscale Profundo) */}
         <div className="w-full md:w-[42%] bg-stone-50 relative overflow-hidden flex items-center justify-center p-12 border-r border-stone-200">
@@ -103,7 +103,7 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
         {/* LADO DERECHO: Contenido Dinámico */}
         <div className="w-full md:w-[58%] p-8 md:p-16 flex flex-col bg-white">
           
-          <div className="animate-in fade-in slide-in-from-right-3 duration-500 flex-grow">
+          <div className="animate-in fade-in slide-in-from-right-3 duration-500 grow">
             
             {/* PÁGINA 0: DATOS PERSONALES */}
             {page === 0 && (
