@@ -62,7 +62,6 @@ const Sidebar = () => {
           <h2 className="text-[#003A6C] font-bold text-xl leading-tight">
             Gestionar <br /> Portafolio
           </h2>
-          <p className="text-[#4982ad] text-sm">Google User</p>
         </div>
 
         <nav className="space-y-2">

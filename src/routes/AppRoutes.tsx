@@ -21,7 +21,7 @@ import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE } 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomeVisitor/>} />
+      <Route path="/" element={<UserSkills/>} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path={LOGIN_ROUTE} element={<LoginPage />} />
