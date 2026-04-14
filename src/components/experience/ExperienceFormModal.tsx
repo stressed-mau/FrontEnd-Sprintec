@@ -78,7 +78,7 @@ export function ExperienceFormModal({
             <select
               id="experience-type"
               value={formData.type}
-              disabled={isSaving || isEditing}
+              disabled={isSaving}
               onChange={(event) => onFieldChange("type", event.target.value)}
               className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8]"
               aria-labelledby="experience-type-label"

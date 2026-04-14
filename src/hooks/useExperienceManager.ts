@@ -35,6 +35,10 @@ const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 
+function normalizeExperienceTypeValue(value: string): ExperienceFormValues["type"] {
+  return value === "academica" ? "academica" : "laboral"
+}
+
 function normalizeFormDate(value: string) {
   const trimmedValue = value.trim()
 
@@ -171,6 +175,12 @@ function validateExperienceField(
   const description = values.description.trim()
   const startDate = values.startDate.trim()
   const endDate = values.endDate.trim()
+
+  if (field === "type") {
+    if (values.type !== "laboral" && values.type !== "academica") {
+      return "Seleccione un tipo de experiencia válido."
+    }
+  }
 
   if (field === "company") {
     if (!company) {
@@ -360,7 +370,7 @@ export function useExperienceManager() {
     setSelectedImageFile(null)
     setHasRemovedExistingImage(false)
     setFormData({
-      type: experience.type,
+      type: normalizeExperienceTypeValue(experience.type),
       company: experience.company,
       email: experience.email,
       position: experience.position,
@@ -381,7 +391,11 @@ export function useExperienceManager() {
 
   function updateField(field: keyof ExperienceFormValues, value: string | boolean) {
     const normalizedValue =
-      field === "email" && typeof value === "string" ? value.slice(0, 60) : value
+      field === "type" && typeof value === "string"
+        ? normalizeExperienceTypeValue(value)
+        : field === "email" && typeof value === "string"
+          ? value.slice(0, 60)
+          : value
 
     const nextValues: ExperienceFormValues = {
       ...formData,
@@ -501,6 +515,7 @@ export function useExperienceManager() {
     }
 
     const nextErrors: ExperienceFormErrors = {
+      type: validateExperienceField("type", formData),
       company: validateExperienceField("company", formData),
       email: validateExperienceField("email", formData),
       position: validateExperienceField("position", formData),
@@ -517,7 +532,7 @@ export function useExperienceManager() {
     }
 
     const payload: ExperiencePayload = {
-      type: formData.type,
+      type: normalizeExperienceTypeValue(formData.type),
       company: formData.company.trim(),
       email: formData.type === "laboral" ? formData.email.trim() : "",
       position: formData.position.trim(),
