@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button"
 import {Award,Briefcase,ChevronsLeftRight,FolderGit2,Sparkles,Share2,Users,TrendingUp,Palette} from "lucide-react"
 import Foto from "@/assets/images/fotoEscritorio.png"
 import FotoP from "@/assets/images/fotoPorque.jpeg"
+import PortadaModern from "@/assets/images/PortadaModern1.png"
+import PortadaMin from "@/assets/images/PortadaMin.png"
+import PortadaCorp from "@/assets/images/PortadaCorp.png"
 
 export default function Home() {
   return (
@@ -83,7 +86,7 @@ export default function Home() {
         <section id="seccion-beneficios-inicio" aria-labelledby="titulo-beneficios-inicio" className="py-16 lg:py-24">
           <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
          <div className="relative h-64 sm:h-96 lg:h-full w-full order-2 lg:order-1">
-         <img src={FotoP} alt="Equipo trabajando" className="h-full w-full object-cover rounded-[2rem] shadow-xl"/></div>
+         <img src={FotoP} alt="Equipo trabajando" className="w-full max-w-sm sm:max-w-md h-64 sm:h-80 lg:h-140 object-cover rounded-2xl shadow-xl"/></div>
          <div className="space-y-8 lg:space-y-10 order-1 lg:order-2">
         <h2 id="titulo-beneficios-inicio" className="text-3xl lg:text-4xl font-extrabold text-[#003A6C] text-center lg:text-left">¿Por qué usar PortfolioGen?</h2>
 
@@ -118,9 +121,9 @@ export default function Home() {
           <p className="text-base lg:text-lg text-[#4982AD] max-w-2xl mx-auto"> Diseños profesionales que se adaptan automáticamente a tu contenido</p>
           </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-              <TemplateCard title="Plantilla Moderna" gradient="from-[#77B6E6] to-[#003A6C]" description="Diseño contemporáneo con gradientes y animaciones suaves" />
-              <TemplateCard title="Plantilla Minimalista" bgColor="bg-[#2D3748]" description="Diseño limpio y elegante enfocado en el contenido" isFeatured={true} />
-              <TemplateCard title="Plantilla Corporativa" gradient="from-[#4982AD] to-[#77B6E6]" description="Diseño profesional perfecto para empresas" />
+              <TemplateCard title="Plantilla Moderna" img={PortadaModern} description="Diseño contemporáneo con gradientes y animaciones suaves" />
+              <TemplateCard title="Plantilla Minimalista" img={PortadaMin} description="Diseño limpio y elegante enfocado en el contenido" isFeatured={true} />
+              <TemplateCard title="Plantilla Corporativa" img={PortadaCorp} description="Diseño profesional perfecto para empresas" />
             </div>
           </div>
 </section>
@@ -152,11 +155,19 @@ function BenefitItem({ icon, color, title, description }: { icon: React.ReactNod
   )
 }
 
-function TemplateCard({ title, description, gradient, bgColor, isFeatured }: { title: string; description: string; gradient?: string; bgColor?: string; isFeatured?: boolean }) {
+function TemplateCard({ title, description, img, isFeatured }: { title: string; description: string; img: string; isFeatured?: boolean }) {
   return (
     <div className={`bg-white rounded-3xl border ${isFeatured ? 'border-2 border-[#C2DBED] shadow-xl lg:scale-105' : 'border-[#C2DBED] shadow-sm'} flex flex-col overflow-hidden hover:shadow-2xl transition-all group hover:-translate-y-1`}>
-      <div className={`h-48 lg:h-60 ${gradient ? `bg-linear-to-br ${gradient}` : bgColor} p-8 flex items-center justify-center`}>
-        <Palette className="size-16 lg:size-20 text-white opacity-80" />
+      <div className="relative h-48 lg:h-60 overflow-hidden">
+        <img
+          src={img}
+          alt={`Portada de ${title}`}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-black/10" />
+        <div className="absolute bottom-3 right-3 rounded-full bg-white/85 p-2 shadow-sm">
+          <Palette className="size-5 text-[#003A6C]" />
+        </div>
       </div>
       <div className="p-6 lg:p-8 flex-1 flex flex-col justify-between space-y-4">
         <div>
