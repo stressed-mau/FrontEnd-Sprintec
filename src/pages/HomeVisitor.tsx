@@ -88,7 +88,7 @@ export default function Home() {
          <div className="relative h-64 sm:h-96 lg:h-full w-full order-2 lg:order-1">
          <img src={FotoP} alt="Equipo trabajando" className="w-full max-w-sm sm:max-w-md h-64 sm:h-80 lg:h-140 object-cover rounded-2xl shadow-xl"/></div>
          <div className="space-y-8 lg:space-y-10 order-1 lg:order-2">
-        <h2 id="titulo-beneficios-inicio" className="text-3xl lg:text-4xl font-extrabold text-[#003A6C] text-center lg:text-left">¿Por qué usar PortfolioGen?</h2>
+        <h2 id="titulo-beneficios-inicio" className="text-3xl lg:text-4xl font-extrabold text-[#003A6C] text-center lg:text-left">¿Por qué usar Portfolio Gen?</h2>
 
           <div className="space-y-6 lg:space-y-8">
                 <BenefitItem 
