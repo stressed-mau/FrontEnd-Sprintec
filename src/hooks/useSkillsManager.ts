@@ -27,10 +27,19 @@ export const useSkillsManager = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 //Modal de confirmacion
   const [showConfirmEdit, setShowConfirmEdit] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null);
   const [pageError, setPageError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  const normalizeErrorMessage = useCallback((message: string) => {
+    return message
+      .replace(/infoemacion/gi, 'información')
+      .replace(/informacion/gi, 'información');
+  }, []);
 
   const loadSkills = useCallback(async () => {
     setIsLoading(true);
@@ -44,16 +53,30 @@ export const useSkillsManager = () => {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudieron cargar las habilidades.';
       console.error('[loadSkills] Error al cargar habilidades:', message);
-      setPageError(message);
+      setPageError(normalizeErrorMessage(message));
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [normalizeErrorMessage]);
 
   useEffect(() => {
     console.log('[useSkillsManager] Component montado, llamando loadSkills');
     void loadSkills();
   }, [loadSkills]);
+
+  useEffect(() => {
+    if (!pageError) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setPageError('');
+    }, 5000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [pageError]);
 
   const openModal = (skill?: Skill) => {
     if (skill) {
@@ -158,14 +181,35 @@ if (skillType === "blanda") {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const requestDelete = (skill: Skill) => {
+    if (isDeleting) return;
+    setSkillToDelete(skill);
+    setShowConfirmDelete(true);
+    setPageError('');
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDelete(false);
+    setSkillToDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!skillToDelete || isDeleting) {
+      return;
+    }
+
     try {
-      await removeSkill(id);
-      setSkills((currentSkills) => currentSkills.filter((skill) => skill.id !== id));
+      setIsDeleting(true);
+      await removeSkill(skillToDelete.id);
+      setSkills((currentSkills) => currentSkills.filter((skill) => skill.id !== skillToDelete.id));
       setPageError('');
+      setShowConfirmDelete(false);
+      setSkillToDelete(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo eliminar la habilidad.';
-      setPageError(message);
+      setPageError(normalizeErrorMessage(message));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -189,9 +233,9 @@ const softSkills = useMemo(() => {
 }, [skills]);
 
   return {
-    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,pageError,isLoading,isSaving,technicalSkills,softSkills,showConfirmEdit,// Estados
-    setSkillType,setSkillName, setSkillLevel, handleSkillNameChange,setShowConfirmEdit,setShowSuccessModal,// Setters
-    openModal,closeModal,handleSave,handleDelete,// Métodos
+    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,pageError,isLoading,isSaving,isDeleting,technicalSkills,softSkills,showConfirmEdit,showConfirmDelete,skillToDelete,// Estados
+    setSkillType,setSkillName, setSkillLevel, handleSkillNameChange,setShowConfirmEdit,setShowSuccessModal,setShowConfirmDelete,// Setters
+    openModal,closeModal,handleSave,requestDelete,cancelDelete,confirmDelete,// Métodos
   };
   
 };
