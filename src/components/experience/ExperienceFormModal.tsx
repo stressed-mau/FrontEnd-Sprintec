@@ -71,7 +71,7 @@ export function ExperienceFormModal({
         </div>
 
         <form id="formulario-experiencia" noValidate onSubmit={onSubmit} className="space-y-4 px-5 py-5 sm:px-6 sm:py-6">
-          <div className="space-y-2">
+          {!isEditing ? <div className="space-y-2">
             <Label id="experience-type-label" htmlFor="experience-type" className="text-[#003A6C]">
               Tipo de experiencia
             </Label>
@@ -86,7 +86,7 @@ export function ExperienceFormModal({
               <option value="laboral">Experiencia laboral</option>
               <option value="academica">Experiencia académica</option>
             </select>
-          </div>
+          </div> : null}
 
           <div className="space-y-2">
             <Label id="experience-company-label" htmlFor="experience-company" className="text-[#003A6C]">
