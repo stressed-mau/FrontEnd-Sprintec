@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { Palette, Upload, CheckCircle2, Copy} from "lucide-react";
 import { usePortfolioVisibility } from '../hooks/usePortfolioVisibility';
-import ModernTemplate from '../components/templates/ModernTemplate';
+import ModernTemplate, { type ModernTemplateProfile } from '../components/templates/ModernTemplate';
 import { usePublishPortfolio } from '../hooks/usePublishPortfolio';
 import MinimalistTemplate from '../components/templates/MinimalistTemplate';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { CorporatePortfolioTemplate, type CorporatePortfolioData } from "@/components/portfolio/CorporatePortfolioTemplate";
+import { getAuthSession } from '@/services/auth/auth-storage';
+import { getUserInformation } from '@/services/PersonalDataService';
 const CORPORATE_PREVIEW_DATA: CorporatePortfolioData = {
   fullName: "Tu Nombre",
   role: "Tu profesión",
@@ -58,6 +60,34 @@ const PublishPortfolio = () => {
     data.skills.length === 0 &&
     data.experience.length === 0;
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
+  const [modernProfile, setModernProfile] = useState<ModernTemplateProfile | null>(null);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const session = getAuthSession();
+        if (!session?.user?.id) {
+          setModernProfile(null);
+          return;
+        }
+
+        const user = await getUserInformation(String(session.user.id));
+        setModernProfile({
+          fullname: String(user?.fullname ?? ''),
+          occupation: String(user?.occupation ?? ''),
+          image_url: String(user?.image_url ?? ''),
+          residence: String(user?.nationality ?? ''),
+          public_email: String(user?.public_email ?? ''),
+          phone: String(user?.phone_number ?? ''),
+          biography: String(user?.biography ?? ''),
+        });
+      } catch {
+        setModernProfile(null);
+      }
+    };
+
+    void loadProfile();
+  }, []);
 
   const templates = [
     {
@@ -404,7 +434,7 @@ const PublishPortfolio = () => {
             
             <div className="flex-1 overflow-y-auto bg-gray-50">
               {previewTemplate === 'Moderna' ? (
-                <ModernTemplate data={data} />
+                <ModernTemplate data={data} profile={modernProfile} />
               ) : previewTemplate === 'Minimalista' ? (
                 <MinimalistTemplate 
                   portfolio={portfolio || { user: {}, projects: [], skills: [], experiences: [], socialNetworks: [] } as any} 
