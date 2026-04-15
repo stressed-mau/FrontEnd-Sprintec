@@ -26,9 +26,11 @@ const initialOpenSections: OpenSections = {
 const sectionsArray: { key: SectionKey; title: string }[] = [
   { key: 'projects', title: 'Proyectos' },
   { key: 'skills', title: 'Habilidades' },
-  { key: 'experience', title: 'Experiencia' },
+  { key: 'experience', title: 'Experiencias' },
   { key: 'networks', title: 'Redes profesionales' },
 ];
+
+const MIN_VISIBLE_MESSAGE = 'Debe mantener al menos una sección visible en el portafolio.';
 
 export const usePortfolioVisibility = () => {
   const [data, setData] = useState<PortfolioVisibilityData>(initialData);
@@ -97,8 +99,10 @@ export const usePortfolioVisibility = () => {
     const targetItem = previousItems.find(
       (item) => item.id === itemId && item.sourceTable === clickedItem.sourceTable,
     );
-    if (totalChecked === 1 && targetItem?.checked) {alert("Acción no permitida: El portafolio debe tener al menos un elemento visible.");
-    return;}
+    if (totalChecked === 1 && targetItem?.checked) {
+      setPageError(MIN_VISIBLE_MESSAGE);
+      return;
+    }
     if (!targetItem) return;
     const nextItems = previousItems.map((item) =>
       (item.id === itemId && item.sourceTable === clickedItem.sourceTable) 
@@ -113,6 +117,15 @@ export const usePortfolioVisibility = () => {
   const handleBulkSelect = async (sectionKey: SectionKey, selectAll: boolean) => {
     const previousItems = data[sectionKey];
     const nextItems = previousItems.map((item) => ({ ...item, checked: selectAll }));
+
+    if (!selectAll) {
+      const totalChecked = Object.values(data).flat().filter((item) => item.checked).length;
+      const sectionChecked = previousItems.filter((item) => item.checked).length;
+      if (totalChecked - sectionChecked <= 0) {
+        setPageError(MIN_VISIBLE_MESSAGE);
+        return;
+      }
+    }
 
     setData((prev) => ({ ...prev, [sectionKey]: nextItems }));
     await persistSection(sectionKey, nextItems, previousItems);
