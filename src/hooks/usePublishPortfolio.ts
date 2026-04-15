@@ -32,8 +32,6 @@ export const usePublishPortfolio = () => {
     try {
       setLoading(true);
       setError(null);
-
-      // Enviamos template y is_public: false
       await publishPortfolioRequest(template, false);
       window.dispatchEvent(new Event("portfolioUpdated"));
       setIsPublished(false);
@@ -44,29 +42,35 @@ export const usePublishPortfolio = () => {
       setLoading(false);
     }
   };
+
   const checkInitialStatus = async () => {
-  const session = getAuthSession();
-  const username = session?.user?.username;
+    const session = getAuthSession();
+    const username = session?.user?.username;
 
-  if (!username) return; // Si no hay usuario, no hacemos nada
+    if (!username) return;
 
-  try {
-    setLoading(true);
-    const res = await api.get(`/p/${username}`);
-    
-    if (res.data?.success) {
-      const portfolioData = res.data.data;
-      setIsPublished(true); 
-      setPortfolioUrl(portfolioData.public_url || `${window.location.origin}/p/${portfolioData.config.slug}`);
-      setSelectedTemplate(portfolioData.config.template); 
+    try {
+      setLoading(true);
+      const res = await api.get(`/p/${username}`);
+      
+      if (res.data?.success) {
+        const portfolioData = res.data.data;
+        setIsPublished(true); 
+        
+        // CAMBIO CLAVE: Construimos la URL usando el username si el slug no viene listo.
+        // Esto hace que el link aparezca de inmediato.
+        const userSlug = portfolioData.config?.slug || username;
+        setPortfolioUrl(portfolioData.public_url || `${window.location.origin}/p/${userSlug}`);
+        
+        setSelectedTemplate(portfolioData.config.template); 
+      }
+    } catch (err: any) {
+      setIsPublished(false);
+      setPortfolioUrl(""); 
+    } finally {
+      setLoading(false);
     }
-  } catch (err: any) {
-    setIsPublished(false);
-    setPortfolioUrl("");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return {
     isPublished,

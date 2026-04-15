@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { uploadImage, getProjects } from "@/services/ProjectService";
 import { api } from '@/services/api';
 export interface Project {
+  id?: number;
   nombre: string;
   descripcion: string;
   tecnologias: { id: number; name: string }[];
@@ -16,6 +17,7 @@ export interface Project {
 
 function projectFromCreatePayload(
   payload: {
+    id?: number;
     title: string;
     description: string;
     initial_date: string;
@@ -30,6 +32,7 @@ function projectFromCreatePayload(
   selectedRole: string | null // CAMBIO: Ahora es string
 ): Project {
   return {
+    id: payload.id,
     nombre: payload.title,
     descripcion: payload.description,
     tecnologias: selectedTechs,
@@ -54,9 +57,11 @@ export const useCreateProyect = () => {
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const data = await getProjects();
-        // Mapeamos los datos que vienen del backend
-        setProjects(data as Project[]); 
+        const res = await api.get('/projects'); // Llamada directa
+        if (res.data.success) {
+          // Accedemos a la ruta exacta del JSON: data -> data -> projects
+          setProjects(res.data.data.projects); 
+        }
       } catch (error) {
         console.error("Error cargando proyectos:", error);
       }
@@ -285,6 +290,8 @@ export const useCreateProyect = () => {
     setIsSubmitting(true);
     
     try {
+      const isEditing = editingIndex !== null;
+      const projectId = isEditing ? projects[editingIndex!].id : null;
       const technologyIds = selectedTechs.map(t => t.id);
       let imageUrl: string | null = null;
 
@@ -304,12 +311,20 @@ export const useCreateProyect = () => {
         final_date: is_current ? null : fechaFin,
         url_to_project: github || null,
         url_to_deploy: demo || null,
-        photograph: imageUrl,
-        technologies: technologyIds,
-        project_rol: selectedRole,
-        is_current: is_current,
+        photograph: imageUrl, 
+        technologies: technologyIds, 
+        project_rol: selectedRole, 
+        is_current: is_current
       };
-
+      if (isEditing && projectId) {
+      // INTENTO DE EDICIÓN
+      // Se envía a /projects/2 por ejemplo
+      await api.put(`/projects/${projectId}`, payload); 
+      
+      // Actualizamos el estado local para que se vea el cambio en la lista
+      setProjects(prev => prev.map((p, i) => i === editingIndex ? { ...p, ...payload } : p));
+      setSuccess("¡Proyecto actualizado!");
+    } else {
       const res = await api.post('/projects', payload);
 
       if (res.data.success) {
@@ -323,6 +338,7 @@ export const useCreateProyect = () => {
         setSuccess("¡Proyecto registrado exitosamente!");
         // ...
       }
+    }
     } catch (err: any) {
     let message = "No se pudo guardar el proyecto. Revisa los datos ingresados.";
 

@@ -29,24 +29,39 @@ const PublishPortfolio = () => {
     getVisibleCountText,
     reloadVisibilityData,
   } = usePortfolioVisibility()
-  const { portfolio } = usePortfolio()
+
+  const { portfolio } = usePortfolio() 
   const hasNoMainItems =
     data.projects.length === 0 &&
     data.skills.length === 0 &&
-    data.experience.length === 0
-  const [previewTemplate, setPreviewTemplate] = useState<string | null>(null)
-  const [modernProfile, setModernProfile] = useState<ModernTemplateProfile | null>(null)
+    data.experience.length === 0 
 
+  const [previewTemplate, setPreviewTemplate] = useState<string | null>(null) 
+  const [modernProfile, setModernProfile] = useState<ModernTemplateProfile | null>(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null) 
+
+  // Extraemos los datos del hook de publicación
+  const {
+    isPublished,
+    portfolioUrl,
+    handlePublish,
+    handleUnpublish,
+    loading,
+    checkInitialStatus,
+    selectedTemplate: selectedIdFromHook, // ID numérico que viene de la DB
+  } = usePublishPortfolio()
+
+  // 1. Carga del perfil del usuario
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const session = getAuthSession()
+        const session = getAuthSession() 
         if (!session?.user?.id) {
           setModernProfile(null)
           return
         }
 
-        const user = await getUserInformation(String(session.user.id))
+        const user = await getUserInformation(String(session.user.id)) 
         setModernProfile({
           fullname: String(user?.fullname ?? ""),
           occupation: String(user?.occupation ?? ""),
@@ -55,14 +70,32 @@ const PublishPortfolio = () => {
           public_email: String(user?.public_email ?? ""),
           phone: String(user?.phone_number ?? ""),
           biography: String(user?.biography ?? ""),
-        })
+        }) 
       } catch {
-        setModernProfile(null)
+        setModernProfile(null) 
       }
     }
 
     void loadProfile()
   }, [])
+
+  // 2. Sincronización de estado inicial y plantilla seleccionada
+  useEffect(() => {
+    const syncStatus = async () => {
+      await checkInitialStatus() 
+      
+      // Mapeo para convertir el ID numérico del hook al nombre del string de la UI
+      if (selectedIdFromHook) {
+        const templateMap: Record<number, string> = { 
+          1: "Moderna", 
+          2: "Minimalista", 
+          3: "Corporativa" 
+        }
+        setSelectedTemplate(templateMap[selectedIdFromHook])
+      }
+    }
+    void syncStatus()
+  }, [selectedIdFromHook]) // Se dispara cuando el ID del hook cambia tras la carga inicial
 
   const templates = [
     {
@@ -87,27 +120,15 @@ const PublishPortfolio = () => {
       coverImage: PortadaCorp,
       previewEnabled: true,
     },
-  ]
+  ] 
 
-  const {
-    isPublished,
-    portfolioUrl,
-    handlePublish,
-    handleUnpublish,
-    loading,
-    checkInitialStatus,
-  } = usePublishPortfolio()
-
-  useEffect(() => {
-    void checkInitialStatus()
-  }, [])
-
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const selected = templates.find((t) => t.id === selectedTemplate)
+  const selected = templates.find((t) => t.id === selectedTemplate) 
+  
+  // Determinamos el ID numérico para las funciones de publicación
   const templateNumber =
     selected?.id === "Moderna" ? 1 :
     selected?.id === "Minimalista" ? 2 :
-    selected?.id === "Corporativa" ? 3 : null
+    selected?.id === "Corporativa" ? 3 : null 
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(portfolioUrl)
