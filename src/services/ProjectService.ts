@@ -112,12 +112,15 @@ export const getProjects = async () => {
 
   throw new Error("Formato de respuesta inesperado al listar proyectos");
 };
-export const uploadImage = async (file: Blob) => {
+export const uploadImage = async (file: File) => {
   const formData = new FormData();
-  formData.append("image", file);
+  formData.append("image", file, file.name);
 
   const res = await api.post("/images", formData, {
     timeout: IMAGE_UPLOAD_TIMEOUT_MS,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
 
   // Solo tratar como fallo explícito si el backend lo indica (no exigir success en 2xx).

@@ -22,7 +22,7 @@ function projectFromCreatePayload(
     final_date: string | null;
     url_to_project: string | null;
     url_to_deploy: string | null;
-    photoghaph: string | null;
+    photograph: string | null;
     project_rol: string | null; // Cambiado de rol_id a project_role
     is_current: boolean;
   },
@@ -39,7 +39,7 @@ function projectFromCreatePayload(
     is_current: payload.is_current,
     github: payload.url_to_project ?? undefined,
     demo: payload.url_to_deploy ?? undefined,
-    image: payload.photoghaph ?? undefined,
+    image: payload.photograph ?? undefined,
   };
 }
 
@@ -278,8 +278,8 @@ export const useCreateProyect = () => {
 
       const fileInput = formData.get("image");
       const hasImage =
-        typeof Blob !== "undefined" &&
-        fileInput instanceof Blob &&
+        typeof File !== "undefined" &&
+        fileInput instanceof File &&
         fileInput.size > 0;
 
       if (hasImage) {
@@ -292,7 +292,7 @@ export const useCreateProyect = () => {
         final_date: is_current ? null : fechaFin,
         url_to_project: github || null,
         url_to_deploy: demo || null,
-        photoghaph: imageUrl,
+        photograph: imageUrl,
         technologies: technologyIds,
         project_rol: selectedRole,
         is_current: is_current,
