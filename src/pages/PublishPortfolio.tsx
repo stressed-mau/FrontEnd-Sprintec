@@ -17,8 +17,8 @@ const CORPORATE_PREVIEW_DATA: CorporatePortfolioData = {
   socialLinks: [
     {
       id: "1",
-      label: "LinkedIn",
-      url: "https://linkedin.com",
+      label: "GitHub",
+      url: "https://github.com/",
     },
   ],
   skills: ["Skill 1", "Skill 2"],
