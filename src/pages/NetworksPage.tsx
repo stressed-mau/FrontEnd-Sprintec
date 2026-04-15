@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   Check,
   ExternalLink,
@@ -98,12 +98,24 @@ const NetworksPage = () => {
   } = useNetworksManager()
 
   const [connectingNetwork, setConnectingNetwork] = useState<string | null>(null)
+  const oauthResultHandledRef = useRef(false)
 
   useEffect(() => {
+    if (oauthResultHandledRef.current) {
+      return
+    }
+
     const urlParams = new URLSearchParams(window.location.search)
     const status = urlParams.get("social_status")
     const provider = urlParams.get("social_provider")
     const message = urlParams.get("social_message")
+
+    if (!status) {
+      return
+    }
+
+    oauthResultHandledRef.current = true
+    window.history.replaceState({}, document.title, window.location.pathname)
 
     if (status === "success" && provider) {
       const timer = setTimeout(() => {
@@ -125,10 +137,6 @@ const NetworksPage = () => {
 
       const errorMessage = message ? `Error: ${message}` : `No se pudo conectar con ${providerLabel}`
       showFeedback(errorMessage, "error")
-    }
-
-    if (status) {
-      window.history.replaceState({}, document.title, window.location.pathname)
     }
   }, [loadNetworks, showFeedback])
 

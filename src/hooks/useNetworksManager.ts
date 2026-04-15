@@ -98,10 +98,10 @@ export function useNetworksManager() {
     void loadNetworks()
   }, [loadNetworks])
 
-  function showFeedback(message: string, type: "success" | "error") {
+  const showFeedback = useCallback((message: string, type: "success" | "error") => {
     setFeedbackMessage(message)
     setFeedbackType(type)
-  }
+  }, [])
 
   function clearFeedback() {
     setFeedbackMessage("")
