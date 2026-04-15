@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { Palette, Upload, CheckCircle2, Copy} from "lucide-react";
 import { usePortfolioVisibility } from '../hooks/usePortfolioVisibility';
-import ModernTemplate from '../components/templates/ModernTemplate';
+import ModernTemplate, { type ModernTemplateProfile } from '../components/templates/ModernTemplate';
 import { usePublishPortfolio } from '../hooks/usePublishPortfolio';
 import MinimalistTemplate from '../components/templates/MinimalistTemplate';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { CorporatePortfolioTemplate, type CorporatePortfolioData } from "@/components/portfolio/CorporatePortfolioTemplate";
+import { getAuthSession } from '@/services/auth/auth-storage';
+import { getUserInformation } from '@/services/PersonalDataService';
 const CORPORATE_PREVIEW_DATA: CorporatePortfolioData = {
   fullName: "Tu Nombre",
   role: "Tu profesión",
@@ -53,7 +55,39 @@ const PublishPortfolio = () => {
     data, openSections, sectionsArray, isLoading, isSaving, pageError,
     toggleSection, handleItemCheck, handleBulkSelect, getVisibleCountText, reloadVisibilityData, } = usePortfolioVisibility();
   const { portfolio } = usePortfolio();
+  const hasNoMainItems =
+    data.projects.length === 0 &&
+    data.skills.length === 0 &&
+    data.experience.length === 0;
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
+  const [modernProfile, setModernProfile] = useState<ModernTemplateProfile | null>(null);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const session = getAuthSession();
+        if (!session?.user?.id) {
+          setModernProfile(null);
+          return;
+        }
+
+        const user = await getUserInformation(String(session.user.id));
+        setModernProfile({
+          fullname: String(user?.fullname ?? ''),
+          occupation: String(user?.occupation ?? ''),
+          image_url: String(user?.image_url ?? ''),
+          residence: String(user?.nationality ?? ''),
+          public_email: String(user?.public_email ?? ''),
+          phone: String(user?.phone_number ?? ''),
+          biography: String(user?.biography ?? ''),
+        });
+      } catch {
+        setModernProfile(null);
+      }
+    };
+
+    void loadProfile();
+  }, []);
 
   const templates = [
     {
@@ -213,6 +247,11 @@ const PublishPortfolio = () => {
               )}
 
               <div className="space-y-6">
+                {hasNoMainItems && !isLoading && (
+                  <div className="rounded-xl border border-dashed border-[#C9E1F0] bg-[#F8FBFE] px-4 py-3 text-center text-sm text-gray-500">
+                    No hay elementos para mostrar en este momento.
+                  </div>
+                )}
                 {sectionsArray.map((sectionConfig) => {
                   const sectionKey = sectionConfig.key;
                   const isOpen = openSections[sectionKey];
@@ -271,7 +310,7 @@ const PublishPortfolio = () => {
                           {/* Lista de Checkboxes Individuales */}
                           <div className="space-y-4 ml-2">
                             {items.length === 0 && (
-                              <p className="text-sm text-gray-400">Esta sección no tiene elementos aún.</p>
+                              <p className="text-sm text-gray-400">No hay elementos para mostrar en esta sección.</p>
                             )}
                             {items.map((item) => (
                               <div key={`${item.sourceTable ?? sectionKey}-${item.id}`} className="flex items-center gap-3">
@@ -284,7 +323,7 @@ const PublishPortfolio = () => {
                                 />
                                 <div className="flex flex-col md:flex-row md:items-baseline md:gap-2">
                                   <span className="text-[#003A6C] font-medium">{item.label}</span>
-                                  <span className="text-gray-400 text-sm">{item.sublabel}</span>
+                                  {item.sublabel && <span className="text-gray-400 text-sm">{item.sublabel}</span>}
                                 </div>
                               </div>
                             ))}
@@ -395,7 +434,7 @@ const PublishPortfolio = () => {
             
             <div className="flex-1 overflow-y-auto bg-gray-50">
               {previewTemplate === 'Moderna' ? (
-                <ModernTemplate data={data} />
+                <ModernTemplate data={data} profile={modernProfile} />
               ) : previewTemplate === 'Minimalista' ? (
                 <MinimalistTemplate 
                   portfolio={portfolio || { user: {}, projects: [], skills: [], experiences: [], socialNetworks: [] } as any} 

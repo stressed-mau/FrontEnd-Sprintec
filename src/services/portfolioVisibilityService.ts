@@ -24,6 +24,7 @@ interface BaseVisibilityDto {
 interface SkillDto extends BaseVisibilityDto {
   name?: string;
   level_of_domain?: string;
+  type?: string;
 }
 
 interface ProjectDto extends BaseVisibilityDto {
@@ -178,10 +179,12 @@ function normalizeSkills(data: unknown): VisibilityItem[] {
 
   return list.map((item, index) => {
     const record = (item ?? {}) as SkillDto;
+    const normalizedType = asString(record.type).toLowerCase().trim();
+    const isSoftSkill = normalizedType === 'blanda';
     return {
       id: asId(record.id, index + 1),
       label: asString(record.name) || `Habilidad ${index + 1}`,
-      sublabel: asString(record.level_of_domain),
+      sublabel: isSoftSkill ? '' : asString(record.level_of_domain),
       checked: asBoolean(record.is_public),
       sourceTable: 'skills',
     } as VisibilityItem;
@@ -198,8 +201,8 @@ function normalizeExperience(data: unknown): VisibilityItem[] {
     const institution = asString(record.company_name) || `Institución ${index + 1}`;
     return {
       id: asId(record.id, index + 1),
-      label: `${role} en ${institution}`,
-      sublabel: 'Experiencia Laboral',
+      label: role,
+      sublabel: `Experiencia Laboral - ${institution}`,
       checked: asBoolean(record.is_public),
       sourceTable: 'work_experiences',
     } as VisibilityItem;
@@ -211,8 +214,8 @@ function normalizeExperience(data: unknown): VisibilityItem[] {
     const institution = asString(record.institution) || `Institución ${index + 1}`;
     return {
       id: asId(record.id, index + 1),
-      label: `${role} en ${institution}`,
-      sublabel: 'Educación',
+      label: role,
+      sublabel: `Educación - ${institution}`,
       checked: asBoolean(record.is_public),
       sourceTable: 'educations',
     } as VisibilityItem;
