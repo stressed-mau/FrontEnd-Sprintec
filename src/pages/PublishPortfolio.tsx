@@ -349,7 +349,7 @@ const PublishPortfolio = () => {
         </div>
         </div>
       ) : (
-        // VISTA PUBLICADO (Imagen 2)
+        // VISTA PUBLICADO 
         <div className="space-y-6">
           <div className="bg-[#E7F6EC] border-1 border-[#34A853] rounded-2xl p-6 flex items-center justify-between shadow-sm mt-8">
             <div className="flex items-center gap-4">
@@ -360,7 +360,7 @@ const PublishPortfolio = () => {
                 <h3 className="text-[#003A6C] text-lg font-bold">Portafolio publicado</h3>
                 <p className="text-gray-500 text-sm">Tu portafolio es visible para todos</p>
               </div>
-            </div>
+            </div>pu
             <button 
               disabled={loading}
               onClick={() => {

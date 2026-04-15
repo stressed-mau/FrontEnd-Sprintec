@@ -25,10 +25,13 @@ const mapProject = (p: any) => ({
 
 const mapExperience = (e: any) => ({
   id: e.id,
-  company: e.company_name, // Ajustado a tu nueva API
-  position: e.rol,         // Ajustado a tu nueva API
+  company: e.company_name, 
+  position: e.rol,         
   description: e.description,
   email: e.company_email,
+  startDate: e.initial_date,
+  endDate: e.final_date,
+  current: e.is_current,
   image: e.logo_url
 });
 
@@ -37,6 +40,8 @@ export const usePortfolio = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchAll = useCallback(async () => {
+    const session = getAuthSession();
+    const username = session?.user?.username;
     try {
       setLoading(true);
 
@@ -45,14 +50,10 @@ export const usePortfolio = () => {
         return;
       }
 
-      const session = getAuthSession();
-      const username = session?.user?.username;
-
       if (!username) {
         setLoading(false);
         return;
       }
-
       // 1. PETICIÓN ÚNICA A LA NUEVA API
       const res = await api.get(`/p/${username}`);
       
@@ -63,7 +64,8 @@ export const usePortfolio = () => {
         setPortfolio({
           user: {
             ...d.profile,
-            fullname: d.profile.name, // Ajuste de compatibilidad
+            fullname: d.profile.name,
+            image_url: d.profile.image, // Ajuste de compatibilidad
           },
           projects: d.projects.map(mapProject),
           skills: d.skills.map((s: any) => ({
@@ -79,8 +81,26 @@ export const usePortfolio = () => {
         });
       }
     } catch (error) {
-      console.error("Error cargando portafolio:", error);
-      setPortfolio(null);
+      console.error("No hay portafolio en el back, cargando default del front");
+      setPortfolio({
+        user: {
+          id: session?.user?.id.toString() || "0",
+          fullname: session?.user?.username || "Usuario Nuevo",
+          occupation: "Frontend Developer",
+          biography: "Bienvenido a mi portafolio. Aquí puedes contar tu historia.",
+          nationality: "Tu ubicación",
+          public_email: session?.user?.email || "",
+          image_url: "" 
+        },
+        projects: [],
+        skills: [],
+        experiences: [],
+        socialNetworks: [],
+        template: 0, // Usamos 0 para que NO coincida con 1, 2 o 3 del back
+        isPublished: false
+      });
+    
+    
     } finally {
       setLoading(false);
     }

@@ -36,10 +36,24 @@ const mapToVisibilityData = (portfolio: Portfolio) => ({
 const MyPortfolio = () => {
   const { portfolio, loading } = usePortfolio();
 
-  if (loading || !portfolio) {
+  // MyPortfolio.tsx
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Cargando portafolio...
+      <div className="min-h-screen flex items-center justify-center font-bold text-[#003A6C]">
+        <div className="animate-pulse">Cargando portafolio...</div>
+      </div>
+    );
+  }
+
+  if (!portfolio) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F7F0E1] p-6 text-center">
+        <h2 className="text-2xl font-bold text-[#003A6C] mb-4">Aún no tienes un portafolio</h2>
+        <p className="text-gray-600 mb-6">Configura tus datos y elige una plantilla para empezar.</p>
+        <a href="/publish" className="bg-[#003A6C] text-white px-6 py-2 rounded-xl">
+          Ir a Publicar
+        </a>
       </div>
     );
   }
@@ -135,7 +149,7 @@ const MyPortfolio = () => {
                 </h1>
 
                 <p className="text-[#003A6C] mt-2 font-medium">
-                  {portfolio.user.occupation}
+                  {portfolio.user.occupation || "Profesión no especificada"}
                 </p>
 
                 <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm text-gray-600">
@@ -147,7 +161,7 @@ const MyPortfolio = () => {
                     <MapPin size={16} /> {portfolio.user.nationality}
                   </span>
 
-                  {portfolio.socialNetworks.map((sn, index) => (
+                  {portfolio.socialNetworks?.map((sn, index) => (
                     <span key={index} className="flex items-center gap-1">
                       <Globe size={16} /> {sn.name}
                     </span>
@@ -176,14 +190,14 @@ const MyPortfolio = () => {
                   </h3>
 
                   <div className="mt-3 flex flex-col gap-2">
-                    {portfolio.skills.map((skill, index) => (
+                  {portfolio.skills.length > 0 ? (
+                    portfolio.skills.map((skill, index) => (
                       <div
                         key={index}
                         className="text-sm text-gray-700 flex items-center gap-2"
                       >
                         <div className="w-1.5 h-1.5 bg-[#003A6C] rounded-full" />
                         <span className="font-medium">{skill.name}</span>
-
                         {/* opcional: nivel si existe */}
                         {"level" in skill && skill.level && (
                           <span className="text-xs text-gray-400">
@@ -191,8 +205,11 @@ const MyPortfolio = () => {
                           </span>
                         )}
                       </div>
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">No hay habilidades registradas</p>
+                  )}
+                </div>
                 </div>
               </aside>
 
@@ -206,7 +223,8 @@ const MyPortfolio = () => {
                   </h3>
 
                   <div className="mt-6 space-y-6">
-                    {portfolio.experiences.map((exp, index) => (
+                    {portfolio.experiences.length > 0 ? (
+                      portfolio.experiences.map((exp, index) => (
                       <div key={index} className="border-l-2 pl-4">
 
                         <p className="font-bold">{exp.position}</p>
@@ -222,8 +240,11 @@ const MyPortfolio = () => {
                           </p>
                         )}
                       </div>
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">Sin experiencia registrada</p>
+                  )}
+                </div>
                 </div>
 
                 {/* PROYECTOS */}
@@ -239,11 +260,11 @@ const MyPortfolio = () => {
                         className="bg-gray-50 border-l-4 border-[#003A6C] p-4"
                       >
                         <h4 className="font-bold text-sm uppercase">
-                          {project.nombre || project.nombre}
+                          {project.nombre || "Proyecto sin título"}
                         </h4>
 
                         <p className="text-sm text-gray-600 mt-1">
-                          {project.descripcion || project.descripcion}
+                          {project.descripcion || "Sin descripción disponible"}
                         </p>
 
                         {/* tecnologías si existen */}
