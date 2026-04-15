@@ -1,7 +1,9 @@
 import { Footer } from "@/components/Footer"
 import { Header } from "@/components/Header"
 import { Button } from "@/components/ui/button"
+import { REGISTER_ROUTE } from "@/routes/route-paths"
 import {Award,Briefcase,ChevronsLeftRight,FolderGit2,Sparkles,Share2,Users,TrendingUp,Palette} from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import Foto from "@/assets/images/fotoEscritorio.png"
 import FotoP from "@/assets/images/fotoPorque.jpeg"
 import PortadaModern from "@/assets/images/PortadaModern1.png"
@@ -9,6 +11,8 @@ import PortadaMin from "@/assets/images/PortadaMin.png"
 import PortadaCorp from "@/assets/images/PortadaCorp.png"
 
 export default function Home() {
+  const navigate = useNavigate()
+
   return (
     <div className="min-h-screen bg-linear-to-b from-[#F7F0E1] to-[#C2DBED] flex flex-col">
       <Header />
@@ -26,7 +30,11 @@ export default function Home() {
               Crea, gestiona y comparte tus proyectos, habilidades y experiencia en una plataforma profesional
             </p>
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
-              <Button size="lg" className="bg-[#003A6C] px-8 py-6 text-lg shadow-lg transition-all hover:bg-[#4982AD] w-full sm:w-auto">
+              <Button
+                size="lg"
+                onClick={() => navigate(REGISTER_ROUTE)}
+                className="bg-[#003A6C] px-8 py-6 text-lg shadow-lg transition-all hover:bg-[#4982AD] w-full sm:w-auto"
+              >
                 <Sparkles className="mr-2 size-5" />
                 Crear mi portafolio
               </Button>
