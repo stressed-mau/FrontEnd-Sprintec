@@ -138,8 +138,8 @@ const CreateProyect = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-[#C2DBED] rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
-            <div className="flex justify-between items-center p-6 pb-0">
+          <div className="bg-[#C2DBED] rounded-xl w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b border-[#4982AD]/20">
             <div>
               <h2 className="text-[#003A6C] text-lg font-semibold">Nuevo proyecto</h2>
               <p className="text-[#4982AD] text-sm">Agrega la información de tu proyecto</p>
@@ -160,11 +160,10 @@ const CreateProyect = () => {
             </div>
 
             <form
-              onSubmit={(e) => {
-                // Asegúrate de pasar: e, el array de techs, el string del rol, y el booleano
-                handleSubmit(e, selectedTechs, selectedRole, isCurrent);
-              }}
+              onSubmit={(e) => handleSubmit(e, selectedTechs, selectedRole, isCurrent)}
+              className="flex flex-col flex-1 min-h-0"
             >
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Nombre del proyecto *</label>
                 <input id="nombre" name="nombre" onChange={handleChange} maxLength={60} defaultValue={editingIndex !== null ? projects[editingIndex].nombre : ""} type="text" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
@@ -172,7 +171,7 @@ const CreateProyect = () => {
                   <p id="error-nombre" className="text-red-500 text-xs mt-1">{errors.nombre}</p>
                 )}
               </div>
-              <div>
+              <div >
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Descripción</label>
                 <textarea id="descripcion" name="descripcion" onChange={handleChange} maxLength={250} defaultValue={editingIndex !== null ? projects[editingIndex].descripcion : ""} rows={3} className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
                 {errors.descripcion && (
@@ -532,6 +531,7 @@ const CreateProyect = () => {
                   {success}
                 </p>
               )}
+              </div>
             </form>
           </div>
         </div>
