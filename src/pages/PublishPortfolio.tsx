@@ -7,49 +7,9 @@ import ModernTemplate, { type ModernTemplateProfile } from '../components/templa
 import { usePublishPortfolio } from '../hooks/usePublishPortfolio';
 import MinimalistTemplate from '../components/templates/MinimalistTemplate';
 import { usePortfolio } from '../hooks/usePortfolio';
-import { CorporatePortfolioTemplate, type CorporatePortfolioData } from "@/components/portfolio/CorporatePortfolioTemplate";
+import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate";
 import { getAuthSession } from '@/services/auth/auth-storage';
 import { getUserInformation } from '@/services/PersonalDataService';
-const CORPORATE_PREVIEW_DATA: CorporatePortfolioData = {
-  fullName: "Tu Nombre",
-  role: "Tu profesión",
-  summary: "Descripción breve profesional",
-  email: "correo@ejemplo.com",
-  location: "Tu ubicación",
-  socialLinks: [
-    {
-      id: "1",
-      label: "GitHub",
-      url: "https://github.com/",
-    },
-  ],
-  skills: ["Skill 1", "Skill 2"],
-  experience: [
-    {
-      id: "1",
-      title: "Cargo",
-      organization: "Empresa",
-      period: "2023 - Actualidad",
-      description: "Descripción breve",
-    },
-  ],
-  education: [
-    {
-      id: "1",
-      title: "Carrera",
-      institution: "Universidad",
-      period: "2018 - 2023",
-    },
-  ],
-  projects: [
-    {
-      id: "1",
-      name: "Proyecto",
-      description: "Descripción del proyecto",
-      stack: ["React", "Node"],
-    },
-  ],
-};
 const PublishPortfolio = () => {
   const {
     data, openSections, sectionsArray, isLoading, isSaving, pageError,
@@ -417,7 +377,7 @@ const PublishPortfolio = () => {
         </div>
       )}
       {showPreview && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-6xl h-[90vh] bg-white rounded-3xl overflow-hidden flex flex-col shadow-2xl">
             <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-white">
               <div>
@@ -441,7 +401,7 @@ const PublishPortfolio = () => {
                   isPreview={true} 
                 />
               ) : previewTemplate === 'Corporativa' ? (
-                <CorporatePortfolioTemplate data={CORPORATE_PREVIEW_DATA} />
+                <CorporatePortfolioTemplate data={data} profile={modernProfile} />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-gray-400">
                   Selecciona una plantilla

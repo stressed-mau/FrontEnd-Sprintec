@@ -6,6 +6,7 @@ import {
   MapPin,
 } from "lucide-react"
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
+import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
 
 type CorporatePortfolioLink = {
   id: string
@@ -13,39 +14,19 @@ type CorporatePortfolioLink = {
   url: string
 }
 
-type CorporatePortfolioData = {
-  fullName: string
-  role?: string
-  summary?: string
-  email?: string
-  location?: string
-  githubUrl?: string
-  linkedinUrl?: string
-  socialLinks?: CorporatePortfolioLink[]
-  skills?: string[]
-  experience?: Array<{
-    id: string
-    title: string
-    organization: string
-    period: string
-    description: string
-  }>
-  education?: Array<{
-    id: string
-    title: string
-    institution: string
-    period: string
-  }>
-  projects?: Array<{
-    id: string
-    name: string
-    description: string
-    stack: string[]
-  }>
+type CorporatePortfolioProfile = {
+  fullname: string
+  occupation: string
+  image_url: string
+  residence: string
+  public_email: string
+  phone: string
+  biography: string
 }
 
 type CorporatePortfolioTemplateProps = {
-  data: CorporatePortfolioData
+  data: PortfolioVisibilityData
+  profile?: CorporatePortfolioProfile | null
 }
 
 type Sheet = {
@@ -53,6 +34,41 @@ type Sheet = {
   label: string
   content: ReactNode
 }
+
+const FALLBACK_SOCIAL_LINKS: CorporatePortfolioLink[] = [
+  { id: "fallback-github", label: "GitHub", url: "https://github.com/" },
+  { id: "fallback-linkedin", label: "LinkedIn", url: "https://linkedin.com/" },
+]
+
+const FALLBACK_SKILLS = ["Liderazgo", "Comunicación", "Gestión", "Estrategia", "React", "TypeScript"]
+
+const FALLBACK_EXPERIENCE = [
+  {
+    id: "fallback-experience-1",
+    title: "Cargo principal",
+    organization: "Empresa o institución",
+    period: "2023 - Actualidad",
+    description: "Descripción breve de responsabilidades, logros o impacto profesional.",
+  },
+]
+
+const FALLBACK_EDUCATION = [
+  {
+    id: "fallback-education-1",
+    title: "Formación académica",
+    institution: "Universidad o centro de estudios",
+    period: "2018 - 2023",
+  },
+]
+
+const FALLBACK_PROJECTS = [
+  {
+    id: "fallback-project-1",
+    name: "Proyecto destacado",
+    description: "Descripción general del proyecto, enfoque de trabajo o resultado principal.",
+    stack: ["React", "Node.js"],
+  },
+]
 
 function getInitials(name: string) {
   const trimmedName = name.trim()
@@ -68,42 +84,98 @@ function getInitials(name: string) {
     .join("")
 }
 
-function normalizeSocialLinks(data: CorporatePortfolioData) {
-  const dynamicLinks = (data.socialLinks ?? []).filter((link) => link.label.trim() && link.url.trim())
-
-  if (dynamicLinks.length > 0) {
-    return dynamicLinks
-  }
-
-  const fallbackLinks: CorporatePortfolioLink[] = []
-
-  if (data.githubUrl?.trim()) {
-    fallbackLinks.push({
-      id: "github",
-      label: "GitHub",
-      url: data.githubUrl,
-    })
-  }
-
-  if (data.linkedinUrl?.trim()) {
-    fallbackLinks.push({
-      id: "linkedin",
-      label: "LinkedIn",
-      url: data.linkedinUrl,
-    })
-  }
-
-  return fallbackLinks
+function cleanVisibilitySublabel(value: string, prefix: string) {
+  return value.startsWith(prefix) ? value.slice(prefix.length).trim() : value
 }
 
-export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateProps) {
-  const initials = getInitials(data.fullName)
-  const socialLinks = useMemo(() => normalizeSocialLinks(data), [data])
-  const skills = data.skills ?? []
-  const experience = data.experience ?? []
-  const education = data.education ?? []
-  const projects = data.projects ?? []
-  const hasContactInfo = Boolean(data.email?.trim() || data.location?.trim() || socialLinks.length)
+export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolioTemplateProps) {
+  const userProfile = profile ?? {
+    fullname: "",
+    occupation: "",
+    image_url: "",
+    residence: "",
+    public_email: "",
+    phone: "",
+    biography: "",
+  }
+
+  const displayName = userProfile.fullname.trim() || "Sin nombre disponible"
+  const displayRole = userProfile.occupation.trim() || "Profesional"
+  const displaySummary = userProfile.biography.trim() || "Descripción profesional pendiente de completar."
+  const displayEmail = userProfile.public_email.trim() || "correo@ejemplo.com"
+  const displayLocation = userProfile.residence.trim() || "Ubicación pendiente"
+  const initials = getInitials(displayName)
+
+  const visibleProjects = useMemo(() => data.projects.filter((item) => item.checked), [data.projects])
+  const visibleSkills = useMemo(() => data.skills.filter((item) => item.checked), [data.skills])
+  const visibleExperience = useMemo(() => data.experience.filter((item) => item.checked), [data.experience])
+  const visibleNetworks = useMemo(() => data.networks.filter((item) => item.checked), [data.networks])
+
+  const socialLinks = useMemo<CorporatePortfolioLink[]>(
+    () =>
+      visibleNetworks
+        .filter((link) => link.label.trim() && link.sublabel.trim())
+        .map((link) => ({
+          id: String(link.id),
+          label: link.label,
+          url: link.sublabel,
+        })),
+    [visibleNetworks],
+  )
+
+  const skills = useMemo(() => {
+    const realSkills = visibleSkills.map((skill) => skill.label).filter(Boolean)
+    return realSkills.length ? realSkills : FALLBACK_SKILLS
+  }, [visibleSkills])
+
+  const workExperience = useMemo(
+    () => visibleExperience.filter((item) => item.sourceTable === "work_experiences"),
+    [visibleExperience],
+  )
+
+  const educationItems = useMemo(
+    () => visibleExperience.filter((item) => item.sourceTable === "educations"),
+    [visibleExperience],
+  )
+
+  const experience = useMemo(() => {
+    const realExperience = workExperience.map((item) => ({
+      id: String(item.id),
+      title: item.label,
+      organization: cleanVisibilitySublabel(item.sublabel, "Experiencia Laboral -"),
+      period: "",
+      description: "",
+    }))
+
+    return realExperience.length ? realExperience : FALLBACK_EXPERIENCE
+  }, [workExperience])
+
+  const education = useMemo(
+    () =>
+      educationItems.map((item) => ({
+        id: String(item.id),
+        title: item.label,
+        institution: cleanVisibilitySublabel(item.sublabel, "Educación -"),
+        period: "",
+      })),
+    [educationItems],
+  )
+
+  const projects = useMemo(
+    () =>
+      visibleProjects.map((project) => ({
+        id: String(project.id),
+        name: project.label,
+        description: project.sublabel,
+        stack: [] as string[],
+      })),
+    [visibleProjects],
+  )
+
+  const resolvedEducation = education.length ? education : FALLBACK_EDUCATION
+  const resolvedProjects = projects.length ? projects : FALLBACK_PROJECTS
+  const resolvedSocialLinks = socialLinks.length ? socialLinks : FALLBACK_SOCIAL_LINKS
+  const hasContactInfo = Boolean(displayEmail || displayLocation || resolvedSocialLinks.length)
 
   const sheets = useMemo<Sheet[]>(() => {
     const nextSheets: Sheet[] = [
@@ -134,16 +206,16 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                 <h3 className="mt-3 text-3xl font-bold text-[#111111] sm:text-4xl">Perfil profesional</h3>
               </div>
 
-              {data.role?.trim() ? (
+              {displayRole ? (
                 <div className="rounded-[1.5rem] border border-black/10 bg-white/40 p-5">
                   <p className="text-xs uppercase tracking-[0.28em] text-[#7B6D5B]">Rol</p>
-                  <p className="mt-3 text-xl font-bold text-[#111111]">{data.role}</p>
+                  <p className="mt-3 text-xl font-bold text-[#111111]">{displayRole}</p>
                 </div>
               ) : null}
 
-              {data.summary?.trim() ? (
+              {displaySummary ? (
                 <div className="rounded-[1.5rem] border border-black/10 bg-white/40 p-5">
-                  <p className="text-sm leading-7 text-[#4B545D]">{data.summary}</p>
+                  <p className="text-sm leading-7 text-[#4B545D]">{displaySummary}</p>
                 </div>
               ) : null}
 
@@ -151,21 +223,21 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                 <div className="rounded-[1.5rem] border border-black/10 bg-white/40 p-5">
                   <p className="text-xs uppercase tracking-[0.28em] text-[#7B6D5B]">Datos personales</p>
                   <div className="mt-4 grid gap-3 text-sm text-[#3D4348]">
-                    {data.email?.trim() ? (
-                      <a href={`mailto:${data.email}`} className="flex items-center gap-3 transition hover:text-[#8C6E46]">
+                    {displayEmail ? (
+                      <a href={`mailto:${displayEmail}`} className="flex items-center gap-3 transition hover:text-[#8C6E46]">
                         <Mail className="h-4 w-4" />
-                        {data.email}
+                        {displayEmail}
                       </a>
                     ) : null}
-                    {data.location?.trim() ? (
+                    {displayLocation ? (
                       <div className="flex items-center gap-3">
                         <MapPin className="h-4 w-4" />
-                        {data.location}
+                        {displayLocation}
                       </div>
                     ) : null}
-                    {socialLinks.length ? (
+                    {resolvedSocialLinks.length ? (
                       <div className="flex flex-wrap gap-2 pt-2">
-                        {socialLinks.map((link) => (
+                        {resolvedSocialLinks.map((link) => (
                           <a
                             key={link.id}
                           href={link.url}
@@ -209,11 +281,15 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                       <h4 className="mt-2 text-xl font-bold">{item.title}</h4>
                       <p className="mt-1 text-sm font-medium text-[#5E6670]">{item.organization}</p>
                     </div>
-                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7C8791]">
-                      {item.period}
-                    </span>
+                    {item.period.trim() ? (
+                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7C8791]">
+                        {item.period}
+                      </span>
+                    ) : null}
                   </div>
-                  <p className="mt-4 text-sm leading-7 text-[#47515B]">{item.description}</p>
+                  {item.description.trim() ? (
+                    <p className="mt-4 text-sm leading-7 text-[#47515B]">{item.description}</p>
+                  ) : null}
                 </article>
               ))}
             </div>
@@ -222,7 +298,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
       })
     }
 
-    if (education.length) {
+    if (resolvedEducation.length) {
       nextSheets.push({
         id: "corporate-education",
         label: "Formacion",
@@ -230,16 +306,18 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
           <section>
             <h3 className="text-3xl font-bold text-white">Formacion</h3>
             <div className="mt-6 grid gap-4">
-              {education.map((item) => (
+              {resolvedEducation.map((item) => (
                 <article
                   key={item.id}
                   className="rounded-[1.6rem] border border-white/10 bg-white/3 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-white/[0.07]"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
                     <p className="text-lg font-bold text-white">{item.title}</p>
-                    <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/48">
-                      {item.period}
-                    </span>
+                    {item.period.trim() ? (
+                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/48">
+                        {item.period}
+                      </span>
+                    ) : null}
                   </div>
                   <p className="mt-2 text-sm text-white/68">{item.institution}</p>
                 </article>
@@ -250,7 +328,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
       })
     }
 
-    if (projects.length) {
+    if (resolvedProjects.length) {
       nextSheets.push({
         id: "corporate-projects",
         label: "Proyectos",
@@ -258,7 +336,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
           <section>
             <h3 className="text-3xl font-bold">Proyectos</h3>
             <div className="mt-8 grid gap-4 lg:grid-cols-2">
-              {projects.map((project, index) => (
+              {resolvedProjects.map((project, index) => (
                 <article
                   key={project.id}
                   className="rounded-[1.8rem] border border-black/10 bg-white p-6 transition duration-300 hover:-translate-y-2 hover:border-[#111111] hover:shadow-[0_24px_50px_rgba(0,0,0,0.12)]"
@@ -316,7 +394,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
     }
 
     return nextSheets
-  }, [data.email, data.location, data.role, data.summary, education, experience, hasContactInfo, initials, projects, skills, socialLinks])
+  }, [displayEmail, displayLocation, displayRole, displaySummary, experience, hasContactInfo, initials, resolvedEducation, resolvedProjects, resolvedSocialLinks, skills])
 
   const [activeSectionId, setActiveSectionId] = useState<string | null>(sheets[0]?.id ?? null)
   const [activeSheetIndex, setActiveSheetIndex] = useState(0)
@@ -405,8 +483,8 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
             Presentacion Corporativa
           </div>
           <div className="flex flex-wrap items-center gap-3 sm:justify-end sm:gap-6">
-            {data.email?.trim() ? <span>{data.email}</span> : null}
-            {data.location?.trim() ? <span>{data.location}</span> : null}
+            {displayEmail ? <span>{displayEmail}</span> : null}
+            {displayLocation ? <span>{displayLocation}</span> : null}
             <span>Portfolio Preview</span>
           </div>
         </div>
@@ -490,11 +568,11 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
           <div className="flex items-start justify-between gap-8">
             <div className="max-w-4xl">
               <div className="text-[clamp(4rem,10vw,7.2rem)] font-black uppercase leading-[0.84] tracking-[-0.08em] text-[#F6F1E8]">
-                {data.fullName}
+                {displayName}
               </div>
-              {data.role?.trim() ? (
+              {displayRole ? (
                 <p className="mt-4 text-base uppercase tracking-[0.38em] text-[#D2B082]">
-                  {data.role}
+                  {displayRole}
                 </p>
               ) : null}
             </div>
@@ -535,41 +613,41 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
             <p className="text-xs uppercase tracking-[0.35em] text-[#7B6D5B]">Introduccion</p>
             <h3 className="mt-3 text-5xl font-black leading-[0.92] tracking-[-0.05em]">Perfil profesional</h3>
 
-            {data.role?.trim() ? (
-              <p className="mt-8 text-4xl font-bold tracking-[-0.04em] text-[#1A1714]">{data.role}</p>
+            {displayRole ? (
+              <p className="mt-8 text-4xl font-bold tracking-[-0.04em] text-[#1A1714]">{displayRole}</p>
             ) : null}
 
-            {data.summary?.trim() ? (
-              <p className="mt-6 max-w-3xl text-sm leading-7 text-[#4B545D]">{data.summary}</p>
+            {displaySummary ? (
+              <p className="mt-6 max-w-3xl text-sm leading-7 text-[#4B545D]">{displaySummary}</p>
             ) : null}
 
             {hasContactInfo ? (
               <div className="mt-8 grid max-w-3xl gap-4 md:grid-cols-2">
-                {data.email?.trim() ? (
+                {displayEmail ? (
                   <div className="rounded-[1.4rem] border border-black/10 bg-white/50 p-5 shadow-[0_12px_28px_rgba(99,72,35,0.06)]">
                     <p className="text-xs uppercase tracking-[0.24em] text-[#7B6D5B]">Correo</p>
-                    <a href={`mailto:${data.email}`} className="mt-3 inline-flex items-center gap-3 text-sm font-medium transition hover:text-[#8C6E46]">
+                    <a href={`mailto:${displayEmail}`} className="mt-3 inline-flex items-center gap-3 text-sm font-medium transition hover:text-[#8C6E46]">
                       <Mail className="h-4 w-4" />
-                      {data.email}
+                      {displayEmail}
                     </a>
                   </div>
                 ) : null}
 
-                {data.location?.trim() ? (
+                {displayLocation ? (
                   <div className="rounded-[1.4rem] border border-black/10 bg-white/50 p-5 shadow-[0_12px_28px_rgba(99,72,35,0.06)]">
                     <p className="text-xs uppercase tracking-[0.24em] text-[#7B6D5B]">Ubicacion</p>
                     <div className="mt-3 inline-flex items-center gap-3 text-sm font-medium">
                       <MapPin className="h-4 w-4" />
-                      {data.location}
+                      {displayLocation}
                     </div>
                   </div>
                 ) : null}
               </div>
             ) : null}
 
-            {socialLinks.length ? (
+            {resolvedSocialLinks.length ? (
               <div className="mt-6 flex flex-wrap gap-3">
-                {socialLinks.map((link) => (
+                {resolvedSocialLinks.map((link) => (
                   <a
                     key={link.id}
                     href={link.url}
@@ -586,10 +664,10 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
           </div>
         </section>
 
-        {(education.length || skills.length || experience.length || projects.length) ? (
+        {(resolvedEducation.length || skills.length || experience.length || resolvedProjects.length) ? (
           <section className="grid border-t border-white/10 lg:grid-cols-[0.88fr_1.12fr]">
             <div className="bg-[#141414] px-8 py-10">
-              {education.length ? (
+              {resolvedEducation.length ? (
                 <div
                   id="corporate-education"
                   className={`rounded-[2rem] p-1 transition-colors duration-300 ${
@@ -599,7 +677,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                   <div className="rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.025))] p-6">
                     <h3 className="text-3xl font-black tracking-[-0.04em] text-white">Formacion</h3>
                     <div className="mt-6 grid gap-4">
-                      {education.map((item) => (
+                      {resolvedEducation.map((item) => (
                         <article
                           key={item.id}
                           className="rounded-[1.4rem] border border-white/10 bg-white/3 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-[#1B1815]"
@@ -607,9 +685,11 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                           <div className="flex flex-col gap-2">
                             <p className="text-lg font-bold text-white">{item.title}</p>
                             <p className="text-sm text-white/68">{item.institution}</p>
-                            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/48">
-                              {item.period}
-                            </span>
+                            {item.period.trim() ? (
+                              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/48">
+                                {item.period}
+                              </span>
+                            ) : null}
                           </div>
                         </article>
                       ))}
@@ -642,11 +722,15 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                             <h4 className="mt-2 text-xl font-bold">{item.title}</h4>
                             <p className="mt-1 text-sm font-medium text-[#5E6670]">{item.organization}</p>
                           </div>
-                          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7C8791]">
-                            {item.period}
-                          </span>
+                          {item.period.trim() ? (
+                            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7C8791]">
+                              {item.period}
+                            </span>
+                          ) : null}
                         </div>
-                        <p className="mt-4 text-sm leading-7 text-[#47515B]">{item.description}</p>
+                        {item.description.trim() ? (
+                          <p className="mt-4 text-sm leading-7 text-[#47515B]">{item.description}</p>
+                        ) : null}
                       </article>
                     ))}
                   </div>
@@ -685,7 +769,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                 </div>
               )}
 
-              {projects.length ? (
+              {resolvedProjects.length ? (
                 <div
                   id="corporate-projects"
                   className={`mt-10 rounded-[2rem] border p-6 transition-colors duration-300 ${
@@ -696,7 +780,7 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
                 >
                   <h3 className="text-4xl font-black tracking-[-0.05em]">Proyectos</h3>
                   <div className="mt-8 grid gap-4">
-                    {projects.map((project, index) => (
+                    {resolvedProjects.map((project, index) => (
                       <article
                         key={project.id}
                         className="rounded-[1.8rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-6 transition duration-300 hover:-translate-y-2 hover:border-[#8C6E46] hover:shadow-[0_24px_50px_rgba(0,0,0,0.12)]"
@@ -731,4 +815,4 @@ export function CorporatePortfolioTemplate({ data }: CorporatePortfolioTemplateP
   )
 }
 
-export type { CorporatePortfolioData, CorporatePortfolioLink }
+export type { CorporatePortfolioLink, CorporatePortfolioProfile }
