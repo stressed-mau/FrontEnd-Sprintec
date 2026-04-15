@@ -15,6 +15,7 @@ import UserPersonalData from "@/pages/UserPersonalData"
 import UserSkills from "@/pages/UserSkills"
 import MyPortfolio from "@/pages/MyPortfolio"
 import ProtectedRoute from "@/routes/ProtectedRoute"
+import PublicPortfolio from "@/pages/PublicPortfolio"
 
 import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 
@@ -42,6 +43,7 @@ function AppRoutes() {
       <Route path="/proyectos" element={<CreateProyect />} />
       <Route path="/publicar" element={<PublishPortfolio />} />
       <Route path="/portafolio" element={<MyPortfolio />} />
+      <Route path="/p/:slug" element={<PublicPortfolio />} />
     </Routes>
   )
 }

@@ -1,5 +1,6 @@
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
+import { Footer } from '@/components/Footer';
 import { Plus, Code2, Lightbulb, X, Edit3, Trash2, Check} from 'lucide-react';
 import { useSkillsManager, type Skill } from '../hooks/useSkillsManager';
 
@@ -20,9 +21,9 @@ const UserSkills = () => {
   const hasNameError = Boolean(errorMessage);
 
   return (
-    <div className="min-h-screen bg-[#F7F0E1]">
+    <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
       <Header />
-      <div className="flex flex-col lg:flex-row">
+      <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
           <div className="max-w-5xl mx-auto">
@@ -92,6 +93,7 @@ const UserSkills = () => {
         </main>
       </div>
 
+      <Footer />
       {isModalOpen && ( <div className="fixed inset-0 z-100 flex items-end justify-center bg-black/30 px-3 backdrop-blur-[2px] sm:items-center sm:px-4">
           <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/20 bg-[#D9EAF8] shadow-xl animate-in zoom-in-95 duration-200 sm:rounded-[2rem]">
             <div className="px-8 pt-8 pb-2 flex justify-between items-start">

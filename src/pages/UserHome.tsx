@@ -1,16 +1,17 @@
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import PortfolioCard from '../components/PortfolioCard';
+import { Footer } from '@/components/Footer';
 import { usePortfolio } from '../hooks/usePortfolio';
 
 const UserHome = () => {
   const { portfolio, loading } = usePortfolio(); 
 
   return (
-    <div id="userhome-page" className="min-h-screen bg-[#F7F0E1]">
+    <div id="userhome-page" className="min-h-screen bg-[#F7F0E1] flex flex-col">
       <Header />
 
-      <div className="flex flex-col md:flex-row">
+      <div className="flex flex-col md:flex-row flex-1">
         <Sidebar />
 
         <main id="userhome-main" className="flex-1 p-4 md:p-10">
@@ -49,6 +50,7 @@ const UserHome = () => {
           </div>
         </main>
       </div>
+      <Footer />
     </div>
   );
 };

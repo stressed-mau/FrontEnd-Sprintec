@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Footer } from '@/components/Footer';
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { User, Mail, Lock, SquarePen, X, ShieldCheck } from 'lucide-react';
@@ -7,10 +8,10 @@ const ProfilePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <div id="profile-page" className="min-h-screen bg-[#F7F0E1] relative">
+    <div id="profile-page" className="min-h-screen bg-[#F7F0E1] relative flex flex-col">
       <Header />
 
-        <div className="flex flex-col lg:flex-row">
+        <div className="flex flex-col lg:flex-row flex-1">
 
           <Sidebar />
 
@@ -71,6 +72,7 @@ const ProfilePage = () => {
       </div>
 
       {/* --- MODAL DE EDICIÓN --- */}
+      <Footer />
       {isModalOpen && (
           <div id="modal-overlay" className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm px-3 sm:px-4">
           <div 

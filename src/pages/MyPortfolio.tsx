@@ -1,88 +1,227 @@
-import { Award, Briefcase, FolderGit2, Globe, User, Upload, Eye } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import Header from "../components/HeaderUser"
+import Sidebar from "../components/Sidebar"
+import type { Portfolio } from "@/types/portfolio"
+import { usePortfolio } from "@/hooks/usePortfolio"
+import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
+import { Mail, Globe, MapPin, Briefcase, Code } from "lucide-react"
+import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
+import ModernTemplate from "@/components/templates/ModernTemplate"
+import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
+import { useParams } from "react-router-dom"
 
-const Sidebar = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => ({
+  projects: portfolio.projects.map((p, index) => ({
+    id: Number(p.id ?? index),
+    label: p.nombre ?? "",
+    sublabel: p.descripcion ?? "",
+    checked: true,
+    sourceTable: "projects",
+  })),
+  skills: portfolio.skills.map((s, index) => ({
+    id: Number(s.id ?? index),
+    label: s.name ?? "",
+    sublabel: s.level ?? "",
+    checked: true,
+    sourceTable: "skills",
+  })),
+  experience: portfolio.experiences.map((e, index) => ({
+    id: Number(e.id ?? index),
+    label: e.position ?? "",
+    sublabel: e.company ?? "",
+    checked: true,
+    sourceTable: e.type === "academica" ? "educations" : "work_experiences",
+  })),
+  networks: portfolio.socialNetworks.map((n, index) => ({
+    id: Number(n.id ?? index),
+    label: n.name ?? "",
+    sublabel: n.url ?? "",
+    checked: true,
+    sourceTable: "social_networks",
+  })),
+})
 
-  const navItems = [
-    { id: "portafolio", label: "Ver mi portafolio", icon: Eye, path: "/portafolio" },
-    { id: "personal", label: "Datos personales", icon: User, path: "/personal" },
-    { id: "red-profesional", label: "Red profesional", icon: Globe, path: "/red-profesional" },
-    { id: "proyectos", label: "Proyectos", icon: FolderGit2, path: "/proyectos" },
-    { id: "habilidades", label: "Habilidades", icon: Award, path: "/habilidades" },
-    { id: "experiencia", label: "Experiencia", icon: Briefcase, path: "/experiencia" },
-    { id: "publicar", label: "Publicar", icon: Upload, path: "/publicar" },
-  ];
+const MyPortfolio = () => {
+  const { slug } = useParams()
+  const { portfolio, loading } = usePortfolio(slug)
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-bold text-[#003A6C]">
+        <div className="animate-pulse">Cargando portafolio...</div>
+      </div>
+    )
+  }
+
+  if (!portfolio) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-gray-500">El portafolio no está disponible.</p>
+      </div>
+    )
+  }
+
+  const template = Number(portfolio.template)
+  const isModern = template === 1
+  const isMinimalist = template === 2
+  const isCorporate = template === 3
+  const visibilityData = mapToVisibilityData(portfolio)
+  const profile = {
+    fullname: portfolio.user.fullname ?? "",
+    occupation: portfolio.user.occupation ?? "",
+    image_url: portfolio.user.image_url ?? "",
+    residence: portfolio.user.nationality ?? "",
+    public_email: portfolio.user.public_email ?? "",
+    phone: portfolio.user.phone_number ?? "",
+    biography: portfolio.user.biography ?? "",
+  }
 
   return (
-    <>
-      {/* --- VISTA MÓVIL --- */}
-      {/* Se muestra solo en pantallas pequeñas (block md:hidden) */}
-      <div className="block lg:hidden w-full p-4">
-        <section className="bg-white border-2 border-[#6dacbf] rounded-2xl p-6 shadow-sm">
-          <h2 className="text-[#003A6C] font-bold text-xl mb-6">Gestionar portafolio</h2>
-          <div className="grid grid-cols-2 gap-4">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center justify-center h-28 md:h-20 p-4 border rounded-2xl  transition-transform active:scale-95 ${
-                  location.pathname === item.path
-                    ? "bg-[#003A6C] text-white border-[#003A6C]"
-                    : "bg-[#F7F0E1]/50 border-[#c2dbed]"
-                }`}
-              >
-                <item.icon
-                  className={`w-8 h-8 mb-3 ${
-                    location.pathname === item.path
-                      ? "text-white"
-                      : "text-[#4982ad]"
-                  }`}
-                />
-                                <span
-                  className={`text-xs text-center font-semibold leading-tight ${
-                    location.pathname === item.path
-                      ? "text-white"
-                      : "text-[#4982ad]"
-                  }`}
-                >
-                  {item.label}
-                </span>
-              </button>
-            ))}
-          </div>
-        </section>
+    <div className="min-h-screen bg-[#F7F0E1]">
+      <Header />
+
+      <div className="flex flex-col md:flex-row">
+        <Sidebar />
+
+        <main className="flex-1 p-4 md:p-10">
+          {isModern && <ModernTemplate data={visibilityData} profile={profile} />}
+
+          {isMinimalist && <MinimalistTemplate portfolio={portfolio} isPreview={false} />}
+
+          {isCorporate && <CorporatePortfolioTemplate data={visibilityData} profile={profile} />}
+
+          {!isModern && !isMinimalist && !isCorporate && (
+            <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">
+              <header className="text-center border-b pb-6 mb-8">
+                <div className="flex justify-center mb-4">
+                  {portfolio.user.image_url ? (
+                    <img
+                      src={portfolio.user.image_url}
+                      alt={portfolio.user.fullname}
+                      className="w-28 h-28 rounded-full object-cover border-4 border-[#003A6C]"
+                    />
+                  ) : (
+                    <div className="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+                      Sin foto
+                    </div>
+                  )}
+                </div>
+
+                <h1 className="text-4xl font-serif font-bold uppercase">{portfolio.user.fullname}</h1>
+
+                <p className="text-[#003A6C] mt-2 font-medium">
+                  {portfolio.user.occupation || "Profesión no especificada"}
+                </p>
+
+                <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm text-gray-600">
+                  <span className="flex items-center gap-1">
+                    <Mail size={16} /> {portfolio.user.public_email}
+                  </span>
+
+                  <span className="flex items-center gap-1">
+                    <MapPin size={16} /> {portfolio.user.nationality}
+                  </span>
+
+                  {portfolio.socialNetworks?.map((sn, index) => (
+                    <span key={index} className="flex items-center gap-1">
+                      <Globe size={16} /> {sn.name}
+                    </span>
+                  ))}
+                </div>
+              </header>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <aside className="space-y-8">
+                  <div>
+                    <h3 className="font-bold uppercase border-b pb-2">Sobre mí</h3>
+                    <p className="text-sm text-gray-600 mt-3">{portfolio.user.biography}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-bold uppercase border-b pb-2">Habilidades</h3>
+                    <div className="mt-3 flex flex-col gap-2">
+                      {portfolio.skills.length > 0 ? (
+                        portfolio.skills.map((skill, index) => (
+                          <div key={index} className="text-sm text-gray-700 flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-[#003A6C] rounded-full" />
+                            <span className="font-medium">{skill.name}</span>
+                            {"level" in skill && skill.level && (
+                              <span className="text-xs text-gray-400">({skill.level})</span>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-gray-400 italic">No hay habilidades registradas</p>
+                      )}
+                    </div>
+                  </div>
+                </aside>
+
+                <section className="md:col-span-2 space-y-10">
+                  <div>
+                    <h3 className="flex items-center gap-2 text-xl font-bold uppercase">
+                      <Briefcase size={18} /> Experiencia
+                    </h3>
+
+                    <div className="mt-6 space-y-6">
+                      {portfolio.experiences.length > 0 ? (
+                        portfolio.experiences.map((exp, index) => (
+                          <div key={index} className="border-l-2 pl-4">
+                            <p className="font-bold">{exp.position}</p>
+                            <p className="text-[#003A6C] text-sm">{exp.company}</p>
+                            {"startDate" in exp && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {exp.startDate} - {exp.current ? "Actualidad" : exp.endDate}
+                              </p>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-400 italic">Sin experiencia registrada</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="flex items-center gap-2 text-xl font-bold uppercase">
+                      <Code size={18} /> Proyectos
+                    </h3>
+
+                    <div className="mt-6 grid gap-4">
+                      {portfolio.projects.map((project, index) => (
+                        <div key={index} className="bg-gray-50 border-l-4 border-[#003A6C] p-4">
+                          <h4 className="font-bold text-sm uppercase">
+                            {project.nombre || "Proyecto sin título"}
+                          </h4>
+
+                          <p className="text-sm text-gray-600 mt-1">
+                            {project.descripcion || "Sin descripción disponible"}
+                          </p>
+
+                          {"tecnologias" in project && project.tecnologias?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {project.tecnologias.map((t) => (
+                                <span key={t.id} className="text-xs bg-gray-200 px-2 py-1 rounded">
+                                  {t.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {"rol" in project && (
+                            <p className="text-xs text-gray-500 mt-2">Rol: {project.rol}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          )}
+        </main>
       </div>
+    </div>
+  )
+}
 
-      {/* --- VISTA ESCRITORIO (BARRA LATERAL) --- */}
-      {/* Se oculta en móvil y aparece en md (hidden md:block) */}
-      <aside className="hidden lg:block w-64 bg-white border-r-2 border-[#6dacbf] min-h-[calc(100vh-64px)] p-6">
-        <div className="mb-6 pb-4 -mx-6 px-6 border-b border-[#c2dbed]">
-          <h2 className="text-[#003A6C] font-bold text-xl leading-tight">
-            Gestionar <br /> Portafolio
-          </h2>
-        </div>
-
-        <nav className="space-y-2">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${
-                location.pathname === item.path 
-                  ? "bg-[#003A6C] text-white" 
-                  : "text-[#4982ad] hover:bg-[#77b6e6]/30"
-              }`}
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="font-normal">{item.label}</span>
-            </button>
-          ))}
-        </nav>
-      </aside>
-    </>
-  );
-};
-
-export default Sidebar;
+export default MyPortfolio

@@ -29,19 +29,6 @@ export const useUserPersonalData = () => {
   const handlePhoneChange = (value: string) => { 
   setPhoneNumber(value);
 
-  // warning visual (UI)
-  if (value.length === 8) {
-    setCharLimitWarning(prev => ({
-      ...prev,
-      phone: "Has alcanzado el máximo de 8 dígitos."
-    }));
-  } else {
-    setCharLimitWarning(prev => ({
-      ...prev,
-      phone: ""
-    }));
-  }
-
   // validación real
   setErrors((prev: any) => ({
     ...prev,
@@ -62,7 +49,7 @@ export const useUserPersonalData = () => {
     console.log("FORM CAMBIÓ:", form);
   }, [form]);
 
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
@@ -153,6 +140,18 @@ export const useUserPersonalData = () => {
 
       setForm(mappedForm);
 
+      const initialErrors: any = {};
+
+      Object.keys(mappedForm).forEach((key) => {
+        const error = validateField(key, (mappedForm as any)[key]);
+        if (error) initialErrors[key] = error;
+      });
+
+      const phoneError = validateField("phone", phoneNumber);
+      if (phoneError) initialErrors.phone = phoneError;
+
+      setErrors(initialErrors);
+
       if (user.phone_number) {
         const foundCountry = allCountries.find(c =>
           user.phone_number.startsWith("+" + c.dialCode)
@@ -199,18 +198,16 @@ const handleChange = (e: any) => {
   const limit = LIMITS[id];
 
   // WARNING POR CAMPO
-  if (limit && value.length >= limit) {
-    const errorMessage = validateField(id, value);
-
+  if (limit && value.length > limit) {
+    return; // Ignora el cambio si excede el límite
+  }
+  if (limit && value.length === limit) {
     setCharLimitWarning(prev => ({
       ...prev,
-      [id]: errorMessage
+      [id]: `Has alcanzado el límite de ${limit} caracteres.`
     }));
   } else {
-    setCharLimitWarning(prev => ({
-      ...prev,
-      [id]: ""
-    }));
+    setCharLimitWarning(prev => ({ ...prev, [id]: "" }));
   }
 
   const newValue = id === "email" ? sanitizeEmailInput(value) : value;
@@ -231,10 +228,11 @@ const handleChange = (e: any) => {
   // =========================
   // SUBMIT
   // =========================
+  
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     console.log("SUBMIT EJECUTADO");
-
+    if (isSubmitting) return;
     const newErrors: any = {};
 
     Object.keys(form).forEach((key) => {
@@ -248,15 +246,18 @@ const handleChange = (e: any) => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      console.log("VALIDACIÓN FALLÓ");
-      return;
+      return; // Detener si hay errores de validación
     }
+
+      
+    setIsSubmitting(true);
 
     try {
       const session = getAuthSession();
 
       if (!session || !session.accessToken) {
         setErrors({ server: "Sesión expirada. Inicia sesión nuevamente." });
+        setIsSubmitting(false);
         return;
       }
 
@@ -286,6 +287,8 @@ const handleChange = (e: any) => {
           server: error.response?.data?.message || "Error al guardar datos"
         });
       }
+    } finally {
+      setIsSubmitting(false); 
     }
   };
 
@@ -363,6 +366,7 @@ const handleChange = (e: any) => {
     setPhoneNumber,
     handleChange,
     handlePhoneChange,
+    isSubmitting,
     handleSubmit,
     handleCancel,
     handleClick,

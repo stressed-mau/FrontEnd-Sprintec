@@ -1,119 +1,119 @@
-import { useEffect, useState } from "react";
-import type { Portfolio } from "@/types/portfolio";
-import { portfolioMock } from "@/mocks/portfolio.mock";
-
+import { useEffect, useState, useCallback } from "react";
+import type { Portfolio, Experience, Project, Skill, SocialNetwork } from "@/types/portfolio";
 import { getAuthSession } from "@/services/auth/auth-storage";
-import { getUserInformation } from "@/services/PersonalDataService";
-import { getProjects } from "@/services/ProjectService";
+import { api } from "@/services/api";
+
+import { getUserInformation } from "@/services/PersonalDataService"; 
 import { getSkills } from "@/services/skillsService";
-import { getUserSocialNetworks } from "@/services/socialNetworksService";
 import { getExperiences } from "@/services/experienceService";
+import { getProjects } from "@/services/ProjectService";
+import { getUserSocialNetworks } from "@/services/socialNetworksService";
 
-const USE_MOCK = false;
-const MOCK_TEMPLATE = null as any; 
-const mapProject = (p: any) => ({
-  nombre: p.title,
-  descripcion: p.description,
-  tecnologias: p.technologies || [],
-  rol: p.project_rol,        
-  fechaInicio: p.initial_date,
-  fechaFin: p.final_date,
-  is_current: p.is_current,
-  github: p.url_to_project,
-  demo: p.url_to_deploy,    
-  image: p.photoghaph || ""  
-});
-
-const mapExperience = (e: any) => ({
-  id: e.id,
-  type: e.type,
-  company: e.company,
-  email: e.email,
-  position: e.position,
-  description: e.description,
-  startDate: e.startDate ?? e.start_date,
-  endDate: e.endDate ?? e.end_date,
-  current: e.current,
-  image: e.image
-});
-
-const mapSkill = (s: any) => ({
-  id: s.id,
-  name: s.name,
-  type: s.type,
-  level: s.level
-});
-
-const mapSocialNetwork = (sn: any) => ({
-  id: sn.id,
-  name: sn.name,
-  url: sn.url
-});
-
-
-export const usePortfolio = () => {
+export const usePortfolio = (externalSlug?: string) => {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
+    const session = getAuthSession();
+    // Priorizamos el slug externo (público), si no, usamos el del usuario logueado
+    const slugToFetch = externalSlug || session?.user?.username;
+
+    if (!slugToFetch) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // --- PASO 1: INTENTAR CARGAR PORTAFOLIO PUBLICADO ---
       try {
-        setLoading(true);
-
-        // MOCK MODE
-        if (USE_MOCK) {
+        const res = await api.get(`/p/${slugToFetch}`);
+        
+        if (res.data.success) {
+          const d = res.data.data;
           setPortfolio({
-            ...portfolioMock,
-            template: MOCK_TEMPLATE,
+            user: {
+              id: String(d.profile.id),
+              fullname: d.profile.name,
+              occupation: d.profile.occupation || "",
+              biography: d.profile.bio || "",
+              nationality: d.profile.nationality || "",
+              public_email: d.profile.email || "",
+              phone_number: d.profile.phone || "",
+              image_url: d.profile.image || "",
+            },
+            projects: d.projects, // El endpoint /p/ ya suele venir normalizado
+            skills: d.skills,
+            experiences: d.work_experiences,
+            socialNetworks: d.social_networks,
+            isPublished: d.config.is_public ?? true,
+            portfolioUrl: d.config.slug,
+            template: Number(d.config.template),
           });
-          setLoading(false);
-          return;
+          return; // Éxito: salimos de la función
         }
-        const session = getAuthSession();
+      } catch (err) {
+        console.warn("No se encontró portafolio publicado o error en endpoint /p/.");
+      }
 
-        if (!session?.user?.id) {
-          console.error("No hay sesión válida");
-          setLoading(false);
-          return;
-        }
-
-        const userId = session.user.id;
-
-        const [user, projects, skills, experiences, socialNetworks] =
-          await Promise.all([
-            getUserInformation(userId),
-            getProjects(),
-            getSkills(),
-            getExperiences(),
-            getUserSocialNetworks()
-          ]);
-
-        const mappedProjects = projects.map(mapProject);
-        const mappedSkills = skills.map(mapSkill);
-        const mappedExperiences = experiences.map(mapExperience);
-        const mappedSocialNetworks = socialNetworks.map(mapSocialNetwork);
+      // --- PASO 2: CARGA DE EMERGENCIA (DATOS INDIVIDUALES) ---
+      // Si no hay portafolio publicado pero tenemos sesión, traemos sus datos base
+      if (session?.user?.id) {
+        const [userData, skills, experiences, projects, social] = await Promise.all([
+          getUserInformation(session.user.id),
+          getSkills(),
+          getExperiences(),
+          getProjects(),
+          getUserSocialNetworks(),
+        ]);
 
         setPortfolio({
-          user,
-          projects: mappedProjects,
-          skills: mappedSkills,
-          experiences: mappedExperiences,
-          socialNetworks: mappedSocialNetworks,
-          isPublished: user.is_published, 
-          portfolioUrl: user.portfolio_url,
-          template: user.template_id
+          user: {
+            id: String(userData.id),
+            fullname: userData.name || session.user.username,
+            occupation: userData.occupation || "",
+            biography: userData.bio || "",
+            nationality: userData.nationality || "",
+            public_email: userData.email || session.user.email,
+            phone_number: userData.phone || "",
+            image_url: userData.image || "",
+          },
+          // Forzamos el tipado para que coincida con tu interfaz Portfolio
+          skills: skills as Skill[],
+          experiences: experiences as unknown as Experience[],
+          projects: projects as unknown as Project[],
+          socialNetworks: social as SocialNetwork[],
+          template: 0, // Template 0 indica que no ha elegido uno aún
+          isPublished: false,
         });
-
-      } catch (error) {
-        console.error("Error cargando portafolio:", error);
-      } finally {
-        setLoading(false);
+      } else {
+        // Si no hay slug público y no hay sesión, no hay nada que mostrar
+        setPortfolio(null);
       }
+    } catch (error) {
+      console.error("Error crítico en usePortfolio:", error);
+      setPortfolio(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [externalSlug]);
+
+  useEffect(() => {
+    fetchAll();
+
+    // Sincronización mediante eventos globales (útil para el Sidebar de Visibilidad)
+    const handleUpdate = () => {
+      console.log("Sincronizando datos de portafolio...");
+      fetchAll();
     };
 
-    fetchAll();
-  }, []);
-  console.log("PORTFOLIO:", portfolio);
-  console.log("LOADING:", loading);
-  return { portfolio, loading };
+    window.addEventListener("portfolioUpdated", handleUpdate);
+    return () => window.removeEventListener("portfolioUpdated", handleUpdate);
+  }, [fetchAll]);
+
+  return { 
+    portfolio, 
+    loading, 
+    refresh: fetchAll 
+  };
 };
