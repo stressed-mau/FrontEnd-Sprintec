@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { uploadImage, getProjects } from "@/services/ProjectService";
+import { uploadImage } from "@/services/ProjectService";
 import { api } from '@/services/api';
 export interface Project {
   id?: number;
@@ -57,13 +57,31 @@ export const useCreateProyect = () => {
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const res = await api.get('/projects'); // Llamada directa
+        const res = await api.get('/projects');
         if (res.data.success) {
-          // Accedemos a la ruta exacta del JSON: data -> data -> projects
-          setProjects(res.data.data.projects); 
+          // IMPORTANTE: Transformamos cada proyecto del backend al formato de tu interfaz
+          const proyectosTransformados = res.data.data.projects.map((proy: any) => 
+            projectFromCreatePayload(
+              {
+                id: proy.id,
+                title: proy.title,
+                description: proy.description,
+                initial_date: proy.initial_date,
+                final_date: proy.final_date,
+                url_to_project: proy.url_to_project,
+                url_to_deploy: proy.url_to_deploy,
+                photograph: proy.photograph,
+                project_rol: proy.project_rol,
+                is_current: proy.is_current
+              },
+              proy.languages, // El backend lo llama 'languages'
+              proy.project_rol
+            )
+          );
+          setProjects(proyectosTransformados);
         }
       } catch (error) {
-        console.error("Error cargando proyectos:", error);
+        console.error("Error al cargar:", error);
       }
     };
     loadProjects();

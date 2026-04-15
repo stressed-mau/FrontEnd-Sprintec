@@ -91,16 +91,7 @@ const ProjectCard = ({ project, onEdit, onDelete }: ProjectProps) => {
           </div>
         )}
 
-        <hr className="mb-4" />
-
-        <div className="flex gap-4">
-          <button onClick={onEdit} className="flex items-center gap-2 text-sm">
-            <Pencil size={16}/> Editar
-          </button>
-          <button onClick={onDelete} className="flex items-center gap-2 text-red-500 text-sm">
-            <Trash2 size={16}/> Eliminar
-          </button>
-        </div>
+        <hr className="mb-4" /> 
       </div>
     </div>
   );
