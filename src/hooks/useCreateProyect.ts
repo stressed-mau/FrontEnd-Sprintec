@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { uploadImage } from "@/services/ProjectService";
+import { useState, useEffect } from 'react';
+import { uploadImage, getProjects } from "@/services/ProjectService";
 import { api } from '@/services/api';
 export interface Project {
   nombre: string;
@@ -51,7 +51,18 @@ export const useCreateProyect = () => {
   const [success, setSuccess] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const data = await getProjects();
+        // Mapeamos los datos que vienen del backend
+        setProjects(data as Project[]); 
+      } catch (error) {
+        console.error("Error cargando proyectos:", error);
+      }
+    };
+    loadProjects();
+  }, []);
   const openModal = (index: number | null = null) => {
     setEditingIndex(index);
     setErrors({});
@@ -65,6 +76,7 @@ export const useCreateProyect = () => {
     setEditingIndex(null);
     setErrors({});
   };
+  
   
   const handleChange = (e: any) => {
     const { name, value } = e.target;
