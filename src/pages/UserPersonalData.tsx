@@ -133,7 +133,7 @@ const UserPersonalData = () => {
                     <div className="bg-[#C2DBED] rounded-xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                       <div className="flex justify-between items-center p-6 pb-2">
                         <div>
-                          <h2 className="text-[#003A6C] text-lg font-semibold">Editar Datos Personales</h2>
+                          <h2 className="text-[#003A6C] text-lg font-semibold">Registrar Datos Personales</h2>
                           <p className="text-[#4982AD] text-sm">Actualiza los datos que verán los visitantes</p>
                         </div>
                         <button onClick={closeAndCancel} className="text-[#003A6C] hover:text-red-500 transition-colors">

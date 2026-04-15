@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { createProject, uploadImage } from "@/services/ProjectService";
+import { api } from '@/services/api';
 export interface Project {
   nombre: string;
   descripcion: string;
   tecnologias: { id: number; name: string }[];
   rol: string;
-  rol_id?: number;
   fechaInicio: string;
   fechaFin?: string;
   is_current: boolean; 
@@ -23,24 +23,23 @@ function projectFromCreatePayload(
     url_to_project: string | null;
     url_to_deploy: string | null;
     photoghaph: string | null;
-    rol_id?: number;
+    project_rol: string | null; // Cambiado de rol_id a project_role
     is_current: boolean;
   },
   selectedTechs: { id: number; name: string }[],
-  selectedRole: { id: number; name: string } | null
+  selectedRole: string | null // CAMBIO: Ahora es string
 ): Project {
   return {
     nombre: payload.title,
     descripcion: payload.description,
     tecnologias: selectedTechs,
-    rol: selectedRole?.name || "", 
-    rol_id: payload.rol_id,
+    rol: selectedRole || "", // Ya es un string, lo usamos directamente
     fechaInicio: payload.initial_date,
     fechaFin: payload.final_date ?? undefined,
     is_current: payload.is_current,
     github: payload.url_to_project ?? undefined,
     demo: payload.url_to_deploy ?? undefined,
-    image: payload.photoghaph ?? "",
+    image: payload.photoghaph ?? undefined,
   };
 }
 
@@ -167,7 +166,7 @@ export const useCreateProyect = () => {
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>,
     selectedTechs: { id: number; name: string }[],
-    selectedRole: { id: number; name: string } | null,
+    selectedRole: string | null, // CAMBIO: Ahora es string o null
     isCurrentFromUi: boolean
   ) => {
     e.preventDefault();
@@ -182,10 +181,11 @@ export const useCreateProyect = () => {
     const github = (formData.get('github') as string) || "";
     const demo = (formData.get('demo') as string) || "";
     const file = formData.get("image");
+    
     let newErrors: any = {};
     const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
 
-    // --- VALIDACIONES PREVIAS (Nombre, Tecnologías, Rol) ---
+    // --- VALIDACIONES PREVIAS ---
     if (!nombre || !nombre.trim()) {
       newErrors.nombre = "El campo Nombre del proyecto es obligatorio.";
     } else {
@@ -193,7 +193,6 @@ export const useCreateProyect = () => {
         if (editingIndex !== null && index === editingIndex) return false;
         return p.nombre.toLowerCase() === nombre.trim().toLowerCase();
       });
-
       if (nombreRepetido) {
         newErrors.nombre = "Ya existe un proyecto registrado con ese nombre";
       }
@@ -202,13 +201,14 @@ export const useCreateProyect = () => {
     if (selectedTechs.length === 0) {
       newErrors.tecnologias = "Debes seleccionar al menos una tecnología.";
     } else if (selectedTechs.length > 10) {
-      newErrors.tecnologias = "Se debe permitir seleccionar un máximo de 10 tecnologías.";
+      newErrors.tecnologias = "Se permite un máximo de 10 tecnologías.";
     }
 
-    if (!selectedRole) {
+    // CAMBIO: Validación de rol como string
+    if (!selectedRole || selectedRole.trim() === "") {
       newErrors.rol = "Debes seleccionar un rol.";
     }
-    // --- VALIDACIÓN: FECHA ---
+
     if (!fechaInicio) {
       newErrors.fechaInicio = "La fecha de inicio es obligatoria.";
     }
@@ -226,20 +226,25 @@ export const useCreateProyect = () => {
       if (inicio > today || fin > today) {
         newErrors.fechaInicio = "Las fechas no pueden ser futuras.";
       }
-
       if (inicio >= fin) {
         newErrors.fechaError = "La fecha de inicio debe ser menor que la fecha final.";
       }
     }
 
-    // --- VALIDACIÓN: GITHUB ---
+    // --- VALIDACIÓN URLS ---
     if (github.trim()) {
       if (github.length > 50) {
-        newErrors.github = "El campo Enlace de GitHub permite un máximo de 50 caracteres.";
-      } else if (!urlRegex.test(github)) {
-        newErrors.github = "El enlace de GitHub debe ser una URL válida.";
-      } else if (!github.includes("github.com")) {
-        newErrors.github = "El enlace debe pertenecer al dominio github.com.";
+        newErrors.github = "Máximo 50 caracteres.";
+      } else if (!urlRegex.test(github) || !github.includes("github.com")) {
+        newErrors.github = "Debe ser una URL válida de GitHub.";
+      }
+    }
+
+    if (demo.trim()) {
+      if (demo.length > 100) {
+        newErrors.demo = "Máximo 100 caracteres.";
+      } else if (!urlRegex.test(demo)) {
+        newErrors.demo = "Debe ser una URL válida.";
       }
     }
 
@@ -289,20 +294,23 @@ export const useCreateProyect = () => {
         url_to_deploy: demo || null,
         photoghaph: imageUrl,
         technologies: technologyIds,
-        role_id: selectedRole?.id,
-        is_current,
+        project_rol: selectedRole,
+        is_current: is_current,
       };
 
-      await createProject(payload);
+      const res = await api.post('/projects', payload);
 
-      setProjects((prev) => [
-        ...prev,
-        projectFromCreatePayload(payload, selectedTechs, selectedRole),
-      ]);
-
-      closeModal();
-      setSuccess("Proyecto guardado correctamente.");
-      setTimeout(() => setSuccess(""), 4000);
+      if (res.data.success) {
+        setProjects((prev) => [
+          ...prev,
+          // Ahora pasamos payload, las tecnologías y el string del rol
+          projectFromCreatePayload(payload, selectedTechs, selectedRole),
+        ]);
+        
+        closeModal();
+        setSuccess("¡Proyecto registrado exitosamente!");
+        // ...
+      }
     } catch (err: any) {
     let message = "No se pudo guardar el proyecto. Revisa los datos ingresados.";
 

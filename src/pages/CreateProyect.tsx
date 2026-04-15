@@ -4,7 +4,13 @@ import ProjectCard from '../components/ProjectCard';
 import { Plus } from 'lucide-react';
 import { useCreateProyect } from "../hooks/useCreateProyect";
 import { useEffect, useState, useRef  } from 'react';
-import { createLanguage, createRole, getLanguages, getRoles } from "@/services/ProjectService";
+import { getLanguages } from "@/services/ProjectService";
+
+const FIXED_ROLES = [
+  "Frontend Developer", "Backend Developer", "Fullstack Developer", 
+  "Mobile Developer", "Software Architect", "Tech Lead", 
+  "QA Engineer", "Project Manager", "Product Manager", "Data Scientist"
+];
 const CreateProyect = () => {
   const {
     projects,
@@ -30,22 +36,17 @@ const CreateProyect = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [roleSearch, setRoleSearch] = useState("");
-  const [roleList, setRoleList] = useState<{ id: number; name: string }[]>([]);
-  const [selectedRole, setSelectedRole] = useState<any | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const roleDropdownRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (editingIndex !== null) {
-      const project = projects[editingIndex];
-
+  if (editingIndex !== null) {
+    const project = projects[editingIndex];
       setSelectedTechs(project.tecnologias || []);
       setIsCurrent(project.is_current || false);
-
-      setSelectedRole(
-        project.rol
-          ? { id: (project as any).role_id ?? 0, name: project.rol }
-          : null
-      );
+      const roleName = project.rol || "";
+      setSelectedRole(roleName);
+      setRoleSearch(""); 
     }
   }, [editingIndex, projects]);
 
@@ -66,17 +67,17 @@ const CreateProyect = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-    useEffect(() => {
+  useEffect(() => {
     const fetchTechs = async () => {
       try {
         const data = await getLanguages();
         setTechList(data);
       } catch (error) {
-        console.error(error);
+        console.error("Error al cargar tecnologías:", error);
       }
     };
-
     fetchTechs();
+    // Se eliminó fetchRoles()
   }, []);
 
   useEffect(() => {
@@ -89,18 +90,7 @@ const CreateProyect = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const data = await getRoles();
-        setRoleList(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchRoles();
-  }, []);
+  
 
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
@@ -146,7 +136,6 @@ const CreateProyect = () => {
         </main>
       </div>
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <div className="bg-[#C2DBED] rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
@@ -170,7 +159,12 @@ const CreateProyect = () => {
               
             </div>
 
-            <form onSubmit={(e) => void handleSubmit(e, selectedTechs, selectedRole, isCurrent)} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <form
+              onSubmit={(e) => {
+                // Asegúrate de pasar: e, el array de techs, el string del rol, y el booleano
+                handleSubmit(e, selectedTechs, selectedRole, isCurrent);
+              }}
+            >
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Nombre del proyecto *</label>
                 <input id="nombre" name="nombre" onChange={handleChange} maxLength={60} defaultValue={editingIndex !== null ? projects[editingIndex].nombre : ""} type="text" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
@@ -186,176 +180,79 @@ const CreateProyect = () => {
               )}
               </div>
               
+              {/* --- SECCIÓN DE TECNOLOGÍAS --- */}
               <div ref={dropdownRef} className="relative">
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">
                   Tecnologías*
                 </label>
 
-                {/* Buscador */}
-                <div className="flex flex-wrap items-center gap-2 border border-[#4982AD] rounded-lg px-2 py-1 bg-white mb-2">
-  
-                {selectedTechs.map(t => (
-                  <span
-                    key={t.id}
-                    className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs"
-                  >
-                    {t.name}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedTechs(prev => prev.filter(s => s.id !== t.id))
-                      }
+                {/* Contenedor del Buscador y Tags */}
+                <div className="flex flex-wrap items-center gap-2 border border-[#4982AD] rounded-lg px-2 py-1 bg-white mb-2 focus-within:ring-1 focus-within:ring-[#003A6C]">
+                  {selectedTechs.map((t) => (
+                    <span
+                      key={t.id}
+                      className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium"
                     >
-                      ✕
-                    </button>
-                  </span>
-                ))}
-
-                <input
-                  type="text"
-                  name="techSearch"
-                  placeholder={selectedTechs.length >= 10 ? "Límite alcanzado (máx 10)" : "Buscar o agregar tecnología..."}
-                  value={techSearch}
-                  onChange={(e) => {
-                    setTechSearch(e.target.value);
-                    handleChange(e);               
-                  }}
-                  onFocus={() => setShowDropdown(true)}
-                  disabled={selectedTechs.length >= 10}
-                  className={`flex-1 outline-none text-sm ${selectedTechs.length >= 10 ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                />
-              </div>
-
-                {/* Lista filtrada */}
-                {showDropdown && (
-                <div className="max-h-32 overflow-y-auto border rounded-lg bg-white mb-2">
-                  {(() => {
-                    const filtered = techList.filter(t => 
-                      t.name.toLowerCase().includes(techSearch.toLowerCase()) &&
-                      !selectedTechs.some(s => s.id === t.id)
-                    );
-
-                    return (
-                      <>
-                        {filtered.map(t => (
-                          <div
-                            key={t.id}
-                            onClick={() => {
-                              if (selectedTechs.length >= 10) return;
-                              setSelectedTechs(prev => [...prev, t]);
-                              setTechSearch("");
-                              setShowDropdown(false);
-                            }}
-                            className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
-                          >
-                            {t.name}
-                          </div>
-                        ))}
-
-                        {filtered.length === 0 && (
-                          <p className="text-xs text-gray-400 px-3 py-2">
-                            No hay resultados
-                          </p>
-                        )}
-                      </>
-                    );
-                  })()}
-                </div>
-                )}
-
-                {techSearch && 
-                  !errors.techSearch && // <--- AGREGAR: Solo muestra si el nombre es válido
-                  !techList.some(t => t.name.toLowerCase() === techSearch.toLowerCase().trim()) && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (selectedTechs.length >= 10 || errors.techSearch) return; // Doble protección
-                      try {
-                        const newTech = await createLanguage(techSearch.trim());
-                        setTechList(prev => [...prev, newTech]);
-                        setSelectedTechs(prev => [...prev, newTech]);
-                        setTechSearch("");
-                      } catch (error) {
-                        console.error(error);
-                      }
-                    }}
-                    className="text-blue-600 text-xs mb-2 font-medium hover:underline"
-                  >
-                    + Agregar "{techSearch}"
-                  </button>
-                )}
-
-                {/* Mostrar el mensaje de error específico para techSearch si existe */}
-                {errors.techSearch && (
-                  <p className="text-red-500 text-[10px] mt-1 mb-2 italic">
-                    {errors.techSearch}
-                  </p>
-                )}
-
-                {errors.tecnologias && (
-                  <p className="text-red-500 text-xs mt-1">{errors.tecnologias}</p>
-                )}
-              </div>
-              
-              <div ref={roleDropdownRef} className="relative">
-                <label className="block text-sm font-normal text-[#003A6C] mb-1">
-                  Tu rol en el proyecto*
-                </label>
-
-                <div className="flex flex-wrap items-center gap-2 border border-[#4982AD] rounded-lg px-2 py-1 bg-white mb-2">
-
-                  {selectedRole && (
-                    <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
-                      {selectedRole.name}
+                      {t.name}
                       <button
                         type="button"
-                        onClick={() => setSelectedRole(null)}
+                        onClick={() =>
+                          setSelectedTechs((prev) => prev.filter((s) => s.id !== t.id))
+                        }
+                        className="hover:text-blue-900 ml-1"
                       >
                         ✕
                       </button>
                     </span>
-                  )}
+                  ))}
 
                   <input
                     type="text"
-                    placeholder="Buscar o agregar rol..."
-                    value={roleSearch}
-                    onChange={(e) => {
-                      setRoleSearch(e.target.value);
-                      handleChange({ target: { name: "rol", value: e.target.value } });
-                    }}
-                    onFocus={() => setShowRoleDropdown(true)}
-                    className="flex-1 outline-none text-sm"
+                    placeholder={
+                      selectedTechs.length >= 10
+                        ? "Límite alcanzado (máx 10)"
+                        : "Buscar tecnología..."
+                    }
+                    value={techSearch}
+                    onChange={(e) => setTechSearch(e.target.value)}
+                    onFocus={() => setShowDropdown(true)}
+                    disabled={selectedTechs.length >= 10}
+                    className={`flex-1 outline-none text-sm py-1 ${
+                      selectedTechs.length >= 10 ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
                   />
                 </div>
 
-                {showRoleDropdown && (
-                  <div className="max-h-32 overflow-y-auto border rounded-lg bg-white mb-2">
+                {/* Dropdown de Resultados (Solo Selección) */}
+                {showDropdown && techSearch.trim() !== "" && (
+                  <div className="absolute z-20 w-full max-h-40 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-xl">
                     {(() => {
-                      const filtered = roleList.filter(r =>
-                        r.name.toLowerCase().includes(roleSearch.toLowerCase()) &&
-                        (!selectedRole || selectedRole.id !== r.id)
+                      const filtered = techList.filter(
+                        (t) =>
+                          t.name.toLowerCase().includes(techSearch.toLowerCase()) &&
+                          !selectedTechs.some((s) => s.id === t.id)
                       );
 
                       return (
                         <>
-                          {filtered.map(r => (
+                          {filtered.map((t) => (
                             <div
-                              key={r.id}
+                              key={t.id}
                               onClick={() => {
-                                setSelectedRole(r);
-                                setRoleSearch("");
-                                setShowRoleDropdown(false);
+                                if (selectedTechs.length >= 10) return;
+                                setSelectedTechs((prev) => [...prev, t]);
+                                setTechSearch("");
+                                setShowDropdown(false);
                               }}
-                              className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                              className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm transition-colors"
                             >
-                              {r.name}
+                              {t.name}
                             </div>
                           ))}
 
                           {filtered.length === 0 && (
-                            <p className="text-xs text-gray-400 px-3 py-2">
-                              No hay resultados
+                            <p className="text-xs text-gray-400 px-3 py-3 text-center">
+                              No hay resultados (Si no la encuentras, selecciona "Otro")
                             </p>
                           )}
                         </>
@@ -364,28 +261,83 @@ const CreateProyect = () => {
                   </div>
                 )}
 
-                {roleSearch &&
-                  !roleList.some(r => r.name.toLowerCase() === roleSearch.toLowerCase().trim()) && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        const newRole = await createRole(roleSearch.trim());
-                        setRoleList(prev => [...prev, newRole]);
-                        setSelectedRole(newRole);
-                        setRoleSearch("");
-                      } catch (error) {
-                        console.error(error);
-                      }
-                    }}
-                    className="text-blue-600 text-xs mb-2 font-medium hover:underline"
-                  >
-                    + Agregar "{roleSearch}"
-                  </button>
+                {/* Errores de Tecnologías */}
+                {errors.tecnologias && (
+                  <p className="text-red-500 text-xs mt-1 italic">{errors.tecnologias}</p>
+                )}
+              </div>
+
+              {/* --- SECCIÓN DE ROL EN EL PROYECTO --- */}
+              <div ref={roleDropdownRef} className="relative mt-4">
+                <label className="block text-sm font-normal text-[#003A6C] mb-1">
+                  Tu rol en el proyecto*
+                </label>
+
+                <div className="flex flex-wrap items-center gap-2 border border-[#4982AD] rounded-lg px-2 py-1 bg-white mb-1 focus-within:ring-1 focus-within:ring-[#003A6C]">
+                  {/* Visualización del Rol Seleccionado como Tag */}
+                  {selectedRole && (
+                    <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                      {selectedRole}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedRole("");
+                          handleChange({ target: { name: "role", value: "" } } as any);
+                        }}
+                        className="hover:text-blue-900 ml-1"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  )}
+
+                  {/* Input Buscador de Roles */}
+                  {!selectedRole && (
+                    <input
+                      type="text"
+                      placeholder="Ej: Frontend Developer..."
+                      value={roleSearch}
+                      onChange={(e) => {
+                        setRoleSearch(e.target.value);
+                        setShowRoleDropdown(true);
+                      }}
+                      onFocus={() => setShowRoleDropdown(true)}
+                      className="flex-1 outline-none text-sm py-1"
+                    />
+                  )}
+                </div>
+
+                {/* Dropdown de Roles Predefinidos */}
+                {showRoleDropdown && (
+                  <div className="absolute z-20 w-full max-h-40 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-xl mt-1">
+                    {FIXED_ROLES.filter((r) =>
+                      r.toLowerCase().includes(roleSearch.toLowerCase())
+                    ).map((roleName) => (
+                      <div
+                        key={roleName}
+                        onClick={() => {
+                          setSelectedRole(roleName); // Guardamos el nombre como texto
+                          setRoleSearch("");
+                          setShowRoleDropdown(false);
+                          // Sincronizamos con el hook pasando el valor como texto
+                          handleChange({ target: { name: "role", value: roleName } } as any);
+                        }}
+                        className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm transition-colors"
+                      >
+                        {roleName}
+                      </div>
+                    ))}
+                    {FIXED_ROLES.filter((r) =>
+                      r.toLowerCase().includes(roleSearch.toLowerCase())
+                    ).length === 0 && (
+                      <p className="text-xs text-gray-400 px-3 py-2">No se encontró el rol</p>
+                    )}
+                  </div>
                 )}
 
-                {errors.rol && (
-                  <p className="text-red-500 text-xs mt-1">{errors.rol}</p>
+                {/* Errores de Rol */}
+                {errors.role && (
+                  <p className="text-red-500 text-xs mt-1 italic">{errors.role}</p>
                 )}
               </div>
               <div>

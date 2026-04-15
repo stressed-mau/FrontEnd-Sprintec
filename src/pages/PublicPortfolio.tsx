@@ -1,5 +1,4 @@
-import Header from "../components/HeaderUser";
-import Sidebar from "../components/Sidebar";
+
 import type { Portfolio } from "@/types/portfolio";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { Mail, Globe, MapPin, Briefcase, Code } from "lucide-react";
@@ -35,7 +34,7 @@ const mapToVisibilityData = (portfolio: Portfolio) => ({
     checked: true,
   })),
 });
-const MyPortfolio = () => {
+const PublicPortfolio = () => {
   const { slug } = useParams(); // Si usas react-router para la ruta pública
   const { portfolio, loading } = usePortfolio(slug);
 
@@ -63,11 +62,7 @@ const MyPortfolio = () => {
   const isCorporate = template === 3;
 
   return (
-    <div className="min-h-screen bg-[#F7F0E1]">
-      <Header />
-
-      <div className="flex flex-col md:flex-row">
-        <Sidebar />
+        
 
         <main className="flex-1 p-4 md:p-10">
           {isModern && (
@@ -296,9 +291,6 @@ const MyPortfolio = () => {
           </div>
           )}
         </main>
-      </div>
-    </div>
   );
 };
-
-export default MyPortfolio;
+export default PublicPortfolio;
