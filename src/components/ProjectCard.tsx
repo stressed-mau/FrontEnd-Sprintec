@@ -1,4 +1,4 @@
-import { GitBranch, ExternalLink, Pencil, Trash2 } from 'lucide-react';
+import { GitBranch, ExternalLink } from 'lucide-react';
 
 interface ProjectProps {
   project: any;
@@ -6,7 +6,7 @@ interface ProjectProps {
   onDelete: () => void;
 }
 
-const ProjectCard = ({ project, onEdit, onDelete }: ProjectProps) => {
+const ProjectCard = ({ project }: ProjectProps) => {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm flex flex-col h-full">
       
