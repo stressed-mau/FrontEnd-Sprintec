@@ -1,7 +1,8 @@
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { Footer } from '@/components/Footer';
-import { Plus, Code2, Lightbulb, X, Edit3, Trash2, Check} from 'lucide-react';
+import { Plus, Code2, Lightbulb, X, Edit3, Trash2 } from 'lucide-react';
+import ConfirmationModal from '../components/ConfirmationModal';
 import { useSkillsManager, type Skill } from '../hooks/useSkillsManager';
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -16,7 +17,7 @@ function getLevelLabel(level: string): string {
 }
 
 const UserSkills = () => {
-  const {    isModalOpen, technicalSkills, softSkills, editingSkill, skillType, skillName, skillLevel, errorMessage,showSuccessModal, pageError, isLoading, isSaving, isDeleting,
+  const {    isModalOpen, technicalSkills, softSkills, editingSkill, skillType, skillName, skillLevel, errorMessage, successMessage, showSuccessModal, pageError, isLoading, isSaving, isDeleting,
             showConfirmEdit, showConfirmDelete, skillToDelete, setShowSuccessModal, setShowConfirmEdit,setSkillType, setSkillLevel, openModal,  closeModal, handleSave, requestDelete, cancelDelete, confirmDelete, handleSkillNameChange, } = useSkillsManager();
   const hasNameError = Boolean(errorMessage);
 
@@ -202,29 +203,12 @@ const UserSkills = () => {
           </div>
         </div>
       )}
-      {showSuccessModal && (
-  <div className="fixed inset-0 z-150 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-    <div className="bg-white w-full max-w-100 rounded-[32px] shadow-2xl p-8 relative animate-in zoom-in-95 duration-200">
-      <button 
-        onClick={() => setShowSuccessModal(false)}  className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition-colors" >
-        <X className="size-6" />
-      </button>
-      <div className="flex flex-col items-center">
-        <div className="w-16 h-16 bg-[#E1EFFE] rounded-full flex items-center justify-center mb-6">
-          <Check className="size-8 text-[#003A6C] stroke-[3px]" />
-        </div>
-        <h3 className="text-[#003A6C] text-2xl font-bold mb-2">Éxito</h3>
-        <p className="text-[#6B7280] text-center text-lg mb-8">
-          {editingSkill ? "Habilidad actualizada correctamente." : "Habilidad registrada correctamente."}
-        </p>
-        <button 
-          onClick={() => setShowSuccessModal(false)}
-          className="w-full bg-[#003A6C] text-white py-4 rounded-xl font-bold text-xl hover:bg-[#002a50] transition-all shadow-lg active:scale-[0.98]"> Continuar
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        title="Éxito"
+        message={successMessage || 'Operación realizada correctamente.'}
+        onClose={() => setShowSuccessModal(false)}
+      />
     </div>
   );
 };

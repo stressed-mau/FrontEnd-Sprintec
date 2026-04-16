@@ -540,7 +540,7 @@ const CreateProyect = () => {
       )}
       {/* Modal de Éxito */}
       {success && (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+      <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
         <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl transition-all transform scale-100">
 
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#D9EAF4] text-[#003A6C]">
