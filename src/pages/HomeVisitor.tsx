@@ -56,7 +56,7 @@ export default function Home() {
               <p className="text-base lg:text-lg leading-relaxed text-[#4982AD]">Todo lo que necesitas para destacar profesionalmente</p>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-6">
               <FeatureCard
                 icon={<div className="rounded-lg bg-[#77B6E6] p-3"><FolderGit2 className="text-[#003A6C]" /></div>}
                 title="Crear portafolio profesional"
@@ -143,10 +143,12 @@ export default function Home() {
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
-    <div className="rounded-2xl border border-[#0e6db6] bg-[#F8FAFC] p-8 transition-shadow hover:shadow-md">
-      <div className="mb-6 flex size-12 items-center justify-center rounded-lg bg-white shadow-sm">{icon}</div>
-      <h3 className="mb-3 text-xl font-bold text-[#003A6C]">{title}</h3>
-      <p className="leading-relaxed text-[#4982AD]">{description}</p>
+    <div className="rounded-xl border border-[#0e6db6] bg-[#F8FAFC] p-3 sm:p-5 lg:p-6 transition-shadow hover:shadow-md">
+      <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-white shadow-sm sm:mb-4 sm:size-11 lg:size-12">
+        {icon}
+      </div>
+      <h3 className="mb-2 text-sm font-bold leading-snug text-[#003A6C] sm:text-base lg:text-xl">{title}</h3>
+      <p className="text-xs leading-snug text-[#4982AD] sm:text-sm sm:leading-relaxed lg:text-base">{description}</p>
     </div>
   )
 }
