@@ -54,6 +54,11 @@ export const useCreateProyect = () => {
   const [success, setSuccess] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCurrent, setIsCurrent] = useState(false);
+  const [selectedTechs, setSelectedTechs] = useState<any[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [techSearch, setTechSearch] = useState("");
+  const [roleSearch, setRoleSearch] = useState("");
   useEffect(() => {
     const loadProjects = async () => {
       try {
@@ -90,6 +95,13 @@ export const useCreateProyect = () => {
     setEditingIndex(index);
     setErrors({});
     setPreview(null);
+    if (index === null) {
+    setSelectedRole(null);
+    setSelectedTechs([]);
+    setIsCurrent(false);
+    setTechSearch(""); 
+    setRoleSearch("");
+  }
     setIsModalOpen(true);
   };
 
@@ -98,6 +110,13 @@ export const useCreateProyect = () => {
     setPreview(null);
     setEditingIndex(null);
     setErrors({});
+    setSelectedRole(null);
+    setSelectedTechs([]);
+    setIsCurrent(false);
+    const fileNameLabel = document.getElementById("file-name");
+    if (fileNameLabel) fileNameLabel.textContent = "Ningún archivo seleccionado";
+    const fileInput = document.getElementById("image") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
   };
   
   
@@ -388,6 +407,11 @@ export const useCreateProyect = () => {
   return {
     projects, isModalOpen, editingIndex, errors, success, setSuccess, preview,
     setPreview, isSubmitting,
+    isCurrent, setIsCurrent,
+    selectedTechs, setSelectedTechs,
+    selectedRole, setSelectedRole,
+    techSearch, setTechSearch,
+    roleSearch, setRoleSearch,
     handleDelete: (index: number) => setProjects(projects.filter((_, i) => i !== index)),
     handleEdit: (index: number) => { setEditingIndex(index); setIsModalOpen(true); },
     handleSubmit, handleChange, openModal, closeModal

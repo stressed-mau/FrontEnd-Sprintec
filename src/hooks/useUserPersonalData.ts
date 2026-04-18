@@ -97,7 +97,7 @@ export const useUserPersonalData = () => {
       const cleanValue = value.trim();
 
       if (!cleanValue) {
-        return "El número de contacto es obligatorio";
+        return ""; 
       }
 
       if (!/^[0-9]+$/.test(cleanValue)) {
@@ -116,16 +116,12 @@ export const useUserPersonalData = () => {
   }
   };
   useEffect(() => {
-    console.log("USEEFFECT CORRIENDO");
-
+    if (!loading) return;
     const fetchData = async () => {
     try {
       const session = getAuthSession();
 
-      if (!session || !session.user?.id || !session.accessToken) {
-        console.error("No hay sesión válida");
-        return;
-      }
+      if (!session || !session.user?.id) return;
 
       const user = await getUserInformation(String(session.user.id));
 
@@ -178,12 +174,9 @@ export const useUserPersonalData = () => {
     }
   };
 
-  fetchData();
-}, []);
+    fetchData();
+  }, []);
 
-  // =========================
-  // INPUTS
-  // =========================
   const LIMITS: Record<string, number> = {
   fullName: 100,
   location: 100,
@@ -222,12 +215,6 @@ const handleChange = (e: any) => {
     [id]: validateField(id, newValue)
   }));
 };
-
-  
-  
-  // =========================
-  // SUBMIT
-  // =========================
   
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -249,7 +236,6 @@ const handleChange = (e: any) => {
       return; // Detener si hay errores de validación
     }
 
-      
     setIsSubmitting(true);
 
     try {
@@ -273,10 +259,17 @@ const handleChange = (e: any) => {
       if (fileInputRef.current?.files?.[0]) {
         formData.append("image_url", fileInputRef.current.files[0]);
       }
+      const updatedUser = await updateUserInformation(String(session.user.id), formData); 
+      setForm({
+        fullName: updatedUser.fullname || "", 
+        occupation: updatedUser.occupation || "",
+        bio: updatedUser.biography || "", 
+        location: updatedUser.nationality || "", 
+        email: updatedUser.public_email || "", 
+        image: updatedUser.image_url || "", 
+      });
 
-      
-      await updateUserInformation(String(session.user.id), formData);
-
+      setPreview(null);
       setSuccess("Información guardada correctamente ");
 
     } catch (error: any) {
@@ -292,27 +285,13 @@ const handleChange = (e: any) => {
     }
   };
 
-  // =========================
-  // CANCELAR
-  // =========================
   const handleCancel = () => {
-    setForm({
-      fullName: "",
-      occupation: "",
-      bio: "",
-      location: "",
-      email: "",
-      image: ""
-    });
     setPhoneNumber("");
     setPreview(null);
     setErrors({});
     setSuccess("");
   };
 
-  // =========================
-  // IMAGEN
-  // =========================
   const handleClick = () => {
     fileInputRef.current?.click();
   };
