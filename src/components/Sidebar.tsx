@@ -1,4 +1,4 @@
-import { Award, Briefcase, ChevronLeft, ChevronRight, Eye, FolderGit2, Globe, Upload, User } from "lucide-react"
+import { Award, Briefcase, ChevronLeft, ChevronRight, Eye, FolderGit2, Globe, LayoutTemplate, Settings2, Upload, User, GraduationCap } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 
@@ -15,7 +15,10 @@ const navItems: NavItem[] = [
   { id: "red-profesional", label: "Red profesional", icon: Globe, path: "/red-profesional" },
   { id: "proyectos", label: "Proyectos", icon: FolderGit2, path: "/proyectos" },
   { id: "habilidades", label: "Habilidades", icon: Award, path: "/habilidades" },
+  { id: "formacion-academica", label: "Formación académica", icon: GraduationCap, path: "/formacion-academica" },
   { id: "experiencia", label: "Experiencia", icon: Briefcase, path: "/experiencia" },
+  { id: "plantillas", label: "Plantillas", icon: LayoutTemplate, path: "/plantillas" },
+  { id: "configuracion-visibilidad", label: "Configuración de visibilidad", icon: Settings2, path: "/configuracion-visibilidad" },
   { id: "publicar", label: "Publicar", icon: Upload, path: "/publicar" },
 ]
 

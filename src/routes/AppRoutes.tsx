@@ -1,12 +1,15 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import AboutPage from "@/pages/AboutPage"
+import AcademicFormationPage from "@/pages/AcademicFormationPage"
 import ContactPage from "@/pages/ContactPage"
 import CreateProyect from "@/pages/CreateProyect"
 import ExperiencePage from "@/pages/ExperiencePage"
 import HomeVisitor from "@/pages/HomeVisitor"
 import LoginPage from "@/pages/LoginPage"
 import NetworksPage from "@/pages/NetworksPage"
+import PortfolioTemplatesPage from "@/pages/PortfolioTemplatesPage"
+import PortfolioVisibilityConfigPage from "@/pages/PortfolioVisibilityConfigPage"
 import ProfilePage from "@/pages/ProfilePage"
 import PublishPortfolio from "@/pages/PublishPortfolio"
 import RegisterPage from "@/pages/RegisterPage"
@@ -36,7 +39,10 @@ function AppRoutes() {
         
         <Route path="/habilidades" element={<UserSkills />} />
         <Route path="/red-profesional" element={<NetworksPage />} />
+        <Route path="/formacion-academica" element={<AcademicFormationPage />} />
         <Route path="/experiencia" element={<ExperiencePage />} />
+        <Route path="/plantillas" element={<PortfolioTemplatesPage />} />
+        <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
         
       </Route>
       <Route path="/personal" element={<UserPersonalData />} />
