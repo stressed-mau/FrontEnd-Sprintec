@@ -36,11 +36,6 @@ const ProjectCard = ({ project }: ProjectProps) => {
             {project.is_current ? "Activo" : "Finalizado"}
           </span>
         </h3>
-        {project.is_current && (
-          <p className="text-green-600 text-sm mb-2 font-medium">
-            Actualmente trabajo en este proyecto
-          </p>
-        )}
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{project.descripcion}</p>
 
         <div className="flex flex-wrap gap-2 mb-4">

@@ -8,7 +8,6 @@ export const api = axios.create({
   baseURL: baseURL.replace(/\/+$/, ""),
   timeout: 50000,
   headers: {
-    "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
@@ -19,5 +18,12 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+  } else if (!config.headers["Content-Type"]) {
+    config.headers["Content-Type"] = "application/json";
+  }
+
   return config;
 });

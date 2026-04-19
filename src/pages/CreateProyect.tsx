@@ -7,6 +7,9 @@ import { useCreateProyect } from "../hooks/useCreateProyect";
 import { useEffect, useState, useRef  } from 'react';
 import { getLanguages } from "@/services/ProjectService";
 import ConfirmationModal from '../components/ConfirmationModal';
+
+const inputErrorClassName = "border-red-500 focus:ring-red-200";
+const inputBaseClassName = "border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none";
 const FIXED_ROLES = [
   "Frontend Developer", "Backend Developer", "Fullstack Developer", 
   "Mobile Developer", "Software Architect", "Tech Lead", 
@@ -170,14 +173,14 @@ const CreateProyect = () => {
               <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Nombre del proyecto *</label>
-                <input id="nombre" name="nombre" onChange={handleChange} maxLength={60} defaultValue={editingIndex !== null ? projects[editingIndex].nombre : ""} type="text" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input id="nombre" name="nombre" onChange={handleChange} maxLength={60} defaultValue={editingIndex !== null ? projects[editingIndex].nombre : ""} type="text" aria-invalid={Boolean(errors.nombre)} className={`w-full px-3 py-1.5 rounded-lg ${inputBaseClassName} ${errors.nombre ? inputErrorClassName : ""}`} />
                 {errors.nombre && (
                   <p id="error-nombre" className="text-red-500 text-xs mt-1">{errors.nombre}</p>
                 )}
               </div>
               <div >
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Descripción</label>
-                <textarea id="descripcion" name="descripcion" onChange={handleChange} maxLength={250} defaultValue={editingIndex !== null ? projects[editingIndex].descripcion : ""} rows={3} className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                <textarea id="descripcion" name="descripcion" onChange={handleChange} maxLength={250} defaultValue={editingIndex !== null ? projects[editingIndex].descripcion : ""} rows={3} aria-invalid={Boolean(errors.descripcion)} className={`w-full px-3 py-1.5 rounded-lg ${inputBaseClassName} ${errors.descripcion ? inputErrorClassName : ""}`} />
                 {errors.descripcion && (
                 <p id="error-descripcion" className="text-red-500 text-xs mt-1">{errors.descripcion}</p>
               )}
@@ -190,7 +193,7 @@ const CreateProyect = () => {
                 </label>
 
                 {/* Contenedor del Buscador y Tags */}
-                <div className="flex flex-wrap items-center gap-2 border border-[#4982AD] rounded-lg px-2 py-1 bg-white mb-2 focus-within:ring-1 focus-within:ring-[#003A6C]">
+                <div className={`flex flex-wrap items-center gap-2 rounded-lg px-2 py-1 bg-white mb-2 border ${errors.tecnologias ? "border-red-500 focus-within:ring-1 focus-within:ring-red-200" : "border-[#4982AD] focus-within:ring-1 focus-within:ring-[#003A6C]"}`}>
                   {selectedTechs.map((t) => (
                     <span
                       key={t.id}
@@ -217,9 +220,13 @@ const CreateProyect = () => {
                         : "Buscar tecnología..."
                     }
                     value={techSearch}
-                    onChange={(e) => setTechSearch(e.target.value)}
+                    onChange={(e) => {
+                      setTechSearch(e.target.value);
+                      handleChange({ target: { name: "techSearch", value: e.target.value } } as any);
+                    }}
                     onFocus={() => setShowDropdown(true)}
                     disabled={selectedTechs.length >= 10}
+                    aria-invalid={Boolean(errors.tecnologias)}
                     className={`flex-1 outline-none text-sm py-1 ${
                       selectedTechs.length >= 10 ? "bg-gray-100 cursor-not-allowed" : ""
                     }`}
@@ -246,6 +253,7 @@ const CreateProyect = () => {
                                 setSelectedTechs((prev) => [...prev, t]);
                                 setTechSearch("");
                                 setShowDropdown(false);
+                                handleChange({ target: { name: "tecnologias", value: "selected" } } as any);
                               }}
                               className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm transition-colors"
                             >
@@ -276,7 +284,7 @@ const CreateProyect = () => {
                   Tu rol en el proyecto*
                 </label>
 
-                <div className="flex flex-wrap items-center gap-2 border border-[#4982AD] rounded-lg px-2 py-1 bg-white mb-1 focus-within:ring-1 focus-within:ring-[#003A6C]">
+                <div className={`flex flex-wrap items-center gap-2 rounded-lg px-2 py-1 bg-white mb-1 border ${errors.rol ? "border-red-500 focus-within:ring-1 focus-within:ring-red-200" : "border-[#4982AD] focus-within:ring-1 focus-within:ring-[#003A6C]"}`}>
                   {/* Visualización del Rol Seleccionado como Tag */}
                   {selectedRole && (
                     <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
@@ -285,7 +293,7 @@ const CreateProyect = () => {
                         type="button"
                         onClick={() => {
                           setSelectedRole("");
-                          handleChange({ target: { name: "role", value: "" } } as any);
+                          handleChange({ target: { name: "rol", value: "" } } as any);
                         }}
                         className="hover:text-blue-900 ml-1"
                       >
@@ -303,8 +311,10 @@ const CreateProyect = () => {
                       onChange={(e) => {
                         setRoleSearch(e.target.value);
                         setShowRoleDropdown(true);
+                        handleChange({ target: { name: "rol", value: e.target.value } } as any);
                       }}
                       onFocus={() => setShowRoleDropdown(true)}
+                      aria-invalid={Boolean(errors.rol)}
                       className="flex-1 outline-none text-sm py-1"
                     />
                   )}
@@ -323,7 +333,7 @@ const CreateProyect = () => {
                           setRoleSearch("");
                           setShowRoleDropdown(false);
                           // Sincronizamos con el hook pasando el valor como texto
-                          handleChange({ target: { name: "role", value: roleName } } as any);
+                          handleChange({ target: { name: "rol", value: roleName } } as any);
                         }}
                         className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm transition-colors"
                       >
@@ -339,8 +349,8 @@ const CreateProyect = () => {
                 )}
 
                 {/* Errores de Rol */}
-                {errors.role && (
-                  <p className="text-red-500 text-xs mt-1 italic">{errors.role}</p>
+                {errors.rol && (
+                  <p className="text-red-500 text-xs mt-1 italic">{errors.rol}</p>
                 )}
               </div>
               <div>
@@ -357,8 +367,12 @@ const CreateProyect = () => {
                       type="date"
                       max={new Date().toISOString().split("T")[0]}
                       onChange={handleChange}
-                      className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      aria-invalid={Boolean(errors.fechaInicio || errors.fechaError)}
+                      className={`w-full px-3 py-1.5 rounded-lg bg-white text-sm focus:ring-2 outline-none ${errors.fechaInicio || errors.fechaError ? "border border-red-500 focus:ring-red-200" : "border border-[#4982AD] focus:ring-blue-500"}`}
                     />
+                    {errors.fechaInicio && (
+                      <p className="text-red-500 text-xs mt-1">{errors.fechaInicio}</p>
+                    )}
                     
                   </div>
 
@@ -374,8 +388,12 @@ const CreateProyect = () => {
                       max={new Date().toISOString().split("T")[0]}
                       onChange={handleChange}
                       disabled={isCurrent}
-                      className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      aria-invalid={Boolean(errors.fechaFin || errors.fechaError)}
+                      className={`w-full px-3 py-1.5 rounded-lg bg-white text-sm focus:ring-2 outline-none ${errors.fechaFin || errors.fechaError ? "border border-red-500 focus:ring-red-200" : "border border-[#4982AD] focus:ring-blue-500"}`}
                     />
+                    {errors.fechaFin && (
+                      <p className="text-red-500 text-xs mt-1">{errors.fechaFin}</p>
+                    )}
                   
                   </div>
 
@@ -418,7 +436,8 @@ const CreateProyect = () => {
                 defaultValue={editingIndex !== null ? projects[editingIndex].github : ""} 
                 type="text" 
                 placeholder="https://github.com/usuario/proyecto" 
-                className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                aria-invalid={Boolean(errors.github)}
+                className={`w-full px-3 py-1.5 rounded-lg bg-white text-[#003A6C] text-sm focus:ring-2 outline-none ${errors.github ? "border border-red-500 focus:ring-red-200" : "border border-[#4982AD] focus:ring-blue-500"}`} 
               />
               {errors.github && (
                 <p id="error-github" className="text-red-500 text-xs mt-1">
@@ -428,7 +447,7 @@ const CreateProyect = () => {
             </div>
               <div>
                 <label className="block text-sm font-normal text-[#003A6C] mb-1">Enlace a la demo</label>
-                <input id="demo" name="demo" maxLength={100} defaultValue={editingIndex !== null ? projects[editingIndex].demo : ""} type="text" placeholder="https://demo.com" className="w-full px-3 py-1.5 rounded-lg border border-[#4982AD] bg-white text-[#003A6C] text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input id="demo" name="demo" maxLength={100} onChange={handleChange} defaultValue={editingIndex !== null ? projects[editingIndex].demo : ""} type="text" placeholder="https://demo.com" aria-invalid={Boolean(errors.demo)} className={`w-full px-3 py-1.5 rounded-lg bg-white text-[#003A6C] text-sm focus:ring-2 outline-none ${errors.demo ? "border border-red-500 focus:ring-red-200" : "border border-[#4982AD] focus:ring-blue-500"}`} />
                 {errors.demo && (
                   <p id="error-demo" className="text-red-500 text-xs mt-1">{errors.demo}</p>
                 )}
