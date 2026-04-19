@@ -5,10 +5,10 @@ import Sidebar from '../components/Sidebar';
 import { allCountries } from 'country-telephone-data';
 import { useUserPersonalData } from '../hooks/useUserPersonalData';
 import { Edit3, Mail, Phone, MapPin, Briefcase, User, X, Upload } from 'lucide-react';
-
+import ConfirmActionModal from '@/components/ConfirmActionModal';
 const UserPersonalData = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const {
     form,
     errors,
@@ -38,7 +38,16 @@ const UserPersonalData = () => {
     handleCancel();
     setIsModalOpen(false);
   };
+  const handleConfirmSave = async () => {
+    setShowConfirmModal(false);
 
+    // simulamos el evento
+    const fakeEvent = {
+      preventDefault: () => {},
+    };
+
+    await handleSubmit(fakeEvent);
+  };
   return (
     
     <div id="personaldata-page" className="min-h-screen bg-[#F7F0E1] flex flex-col">
@@ -142,7 +151,7 @@ const UserPersonalData = () => {
                         </button>
                       </div>
 
-                      <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+                      <form onSubmit={(e) => { e.preventDefault(); setShowConfirmModal(true);}} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
                         
                         
                         <div className="flex flex-col items-center gap-2">
@@ -353,6 +362,15 @@ const UserPersonalData = () => {
                     </div>
                   </div>
                 )}
+                <ConfirmActionModal
+                  isOpen={showConfirmModal}
+                  title="Guardar cambios"
+                  message="¿Estás seguro de que deseas guardar los cambios en tus datos personales?"
+                  confirmText="Guardar"
+                  cancelText="Cancelar"
+                  onConfirm={handleConfirmSave}
+                  onCancel={() => setShowConfirmModal(false)}
+                />
               </>
             )}
           </div>
