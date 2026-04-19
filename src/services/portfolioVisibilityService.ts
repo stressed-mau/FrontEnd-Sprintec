@@ -35,11 +35,29 @@ interface ProjectDto extends BaseVisibilityDto {
 }
 
 interface WorkExperienceDto extends BaseVisibilityDto {
+  title?: string;
+  job_title?: string;
+  position?: string;
+  cargo?: string;
+  company?: string;
+  name?: string;
+  organization?: string;
+  institution?: string;
   company_name?: string;
   role?: string;
 }
 
 interface EducationDto extends BaseVisibilityDto {
+  title?: string;
+  role?: string;
+  job_title?: string;
+  position?: string;
+  cargo?: string;
+  institution_name?: string;
+  name?: string;
+  school?: string;
+  university?: string;
+  college?: string;
   institution?: string;
   degree?: string;
   career?: string;
@@ -124,6 +142,17 @@ function asString(value: unknown): string {
   return '';
 }
 
+function firstNonEmpty(...values: unknown[]): string {
+  for (const value of values) {
+    const normalized = asString(value).trim();
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return '';
+}
+
 function asId(value: unknown, fallback: number): number {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return value;
@@ -197,12 +226,14 @@ function normalizeExperience(data: unknown): VisibilityItem[] {
 
   const workItems = workList.map((item, index) => {
     const record = (item ?? {}) as WorkExperienceDto;
-    const role = asString(record.role) || `Cargo ${index + 1}`;
-    const institution = asString(record.company_name) || `Institución ${index + 1}`;
+    const role = firstNonEmpty(record.role, record.title, record.job_title, record.position, record.cargo) || 'Sin cargo';
+    const organization =
+      firstNonEmpty(record.company_name, record.company, record.name, record.organization, record.institution) ||
+      'Sin empresa';
     return {
       id: asId(record.id, index + 1),
       label: role,
-      sublabel: `Experiencia Laboral - ${institution}`,
+      sublabel: `${organization} - Laboral`,
       checked: asBoolean(record.is_public),
       sourceTable: 'work_experiences',
     } as VisibilityItem;
@@ -210,12 +241,16 @@ function normalizeExperience(data: unknown): VisibilityItem[] {
 
   const educationItems = educationList.map((item, index) => {
     const record = (item ?? {}) as EducationDto;
-    const role = asString(record.degree ?? record.career) || `Cargo ${index + 1}`;
-    const institution = asString(record.institution) || `Institución ${index + 1}`;
+    const title =
+      firstNonEmpty(record.title, record.degree, record.career, record.role, record.job_title, record.position, record.cargo) ||
+      'Sin título';
+    const institution =
+      firstNonEmpty(record.institution, record.institution_name, record.name, record.school, record.university, record.college) ||
+      'Sin institución';
     return {
       id: asId(record.id, index + 1),
-      label: role,
-      sublabel: `Educación - ${institution}`,
+      label: title,
+      sublabel: `${institution} - Académica`,
       checked: asBoolean(record.is_public),
       sourceTable: 'educations',
     } as VisibilityItem;
