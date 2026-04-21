@@ -19,6 +19,7 @@ import UserSkills from "@/pages/UserSkills"
 import MyPortfolio from "@/pages/MyPortfolio"
 import ProtectedRoute from "@/routes/ProtectedRoute"
 import PublicPortfolio from "@/pages/PublicPortfolio"
+import ExplorePortfolios from "@/pages/ExplorePortfolio"
 
 import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 
@@ -30,6 +31,7 @@ function AppRoutes() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path={LOGIN_ROUTE} element={<LoginPage />} />
       <Route path={REGISTER_ROUTE} element={<RegisterPage />} />
+      <Route path="/explore" element={<ExplorePortfolios />} />
 
       <Route element={<ProtectedRoute />}>
         <Route path={USER_HOME_ROUTE} element={<UserHome />} />
