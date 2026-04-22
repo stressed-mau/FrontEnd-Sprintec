@@ -18,8 +18,19 @@ interface PortfolioCard {
 
 export default function ExplorePortfolios() {
   const [portfolios, setPortfolios] = useState<PortfolioCard[]>([]);
-  
-  const {  currentData, currentPage, totalPages, next, prev, goToPage } = usePagination({ items: portfolios, itemsPerPage: 8 });
+  const [itemsPerPage, setItemsPerPage] = useState(12);
+
+  useEffect(() => {
+  const updateLimit = () => { setItemsPerPage(window.innerWidth < 640 ? 6 : 12); };
+  updateLimit(); 
+  window.addEventListener("resize", updateLimit);
+  return () => window.removeEventListener("resize", updateLimit);
+  }, []);
+
+const { currentData, currentPage, totalPages, next, prev, goToPage } = usePagination({ 
+  items: portfolios, 
+  itemsPerPage 
+  });
 
   useEffect(() => {
     // Simulación de carga de BD
@@ -33,7 +44,7 @@ export default function ExplorePortfolios() {
       topSkills: ["React", "Node.js", "Tailwind"]
     }));
     setPortfolios(dataFromDB);
-  }, []);
+    }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FDF8F0]">
@@ -54,42 +65,47 @@ export default function ExplorePortfolios() {
               />*/}
             </div>
           </section>
-
-          {/* Grid Responsivo: Cards pequeñas en móvil */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-            {currentData.map((portfolio) => (
-              <div 
-                key={portfolio.id}
-                className="group flex flex-col items-center rounded-[2rem] bg-white p-6 shadow-sm border border-gray-100 hover:shadow-xl transition-all"
-              >
-                <img 
-                  src={portfolio.profileImage} 
-                  className="mb-4 size-20 rounded-full object-cover ring-4 ring-[#FDF8F0] md:size-24" 
-                  alt="Perfil"
-                />
-                <h3 className="text-lg font-bold text-[#003A6C] text-center">{portfolio.fullName}</h3>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{portfolio.occupation}</p>
-                
-                <div className="my-4 flex gap-3 text-[10px] font-bold text-gray-400">
-                  <span>{portfolio.projectsCount} PROYECTOS</span>
-                  <span>•</span>
-                  <span>{portfolio.skillsCount} SKILLS</span>
+          {/* Grid Principal: 1 col en móvil, 2 en tablet, 3 en desktop */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {currentData.map((portfolio) => (
+                <div key={portfolio.id} className="group mx-auto flex w-full max-w-md items-center gap-4 rounded-2xl bg-white p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all hover:border-[#4982AD]/30"  >
+                <div className="shrink-0">
+                <img src={portfolio.profileImage} 
+                    className="size-16 rounded-full object-cover ring-2 ring-[#FDF8F0] md:size-20" 
+                    alt="Perfil" />
                 </div>
 
-                <div className="flex flex-wrap justify-center gap-1.5">
-                  {portfolio.topSkills.map(skill => (
-                    <Badge key={skill} variant="secondary" className="bg-[#EBF5FF] text-[#003A6C] text-[10px] px-2 py-0">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
+             <div className="flex-1 min-w-0">
+                <div className="flex flex-col">
+                <h3 className="truncate text-base font-bold text-[#003A6C]">   {portfolio.fullName}  </h3>
+                <p className="truncate text-[11px] font-semibold text-[#a08057] uppercase tracking-wider"> {portfolio.occupation} </p>
+            </div>
+        
+        {/* Stats en una sola línea */}
+             <div className="my-1 flex gap-2 text-[9px] font-bold text-gray-400">
+                <span>{portfolio.projectsCount} PROYECTOS</span>
+                <span>•</span>
+                <span>{portfolio.skillsCount} SKILLS</span>
+            </div>
 
-                <Button className="mt-6 w-full rounded-xl bg-[#003A6C] hover:bg-[#C4A57C] text-white font-bold transition-colors">
-                  Ver Perfil
-                </Button>
-              </div>
-            ))}
-          </div>
+        {/* Skills: Solo las primeras 2 para no romper el diseño horizontal */}
+             <div className="flex flex-wrap gap-1 mt-1">
+                {portfolio.topSkills.slice(0, 2).map(skill => (
+                    <Badge key={skill} className="bg-[#fcecd4] text-[#173b61] text-[9px] px-1.5 py-0 border-none">
+                    {skill}
+                    </Badge> ))}
+                {portfolio.topSkills.length > 2 && (
+                <span className="text-[9px] text-gray-400 font-bold">+{portfolio.topSkills.length - 2}</span>)}
+            </div>
+        </div>
+
+      {/* Botón de flecha a la derecha */}
+        <Button size="icon"
+              className="shrink-0 size-8 rounded-lg bg-[#003A6C] hover:bg-[#c4a57c] text-white transition-colors" >
+             <ChevronRight className="size-4" />
+        </Button>
+        </div>))}
+        </div>
 
           <nav className="mt-12 flex items-center justify-center gap-2 md:gap-4">
             <Button 
