@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Home, LogOut, User } from "lucide-react"
+import { Home, LogOut, User, Search} from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 import logo from "@/assets/logo.png"
@@ -28,6 +28,11 @@ const HeaderUser = () => {
     [location.pathname],
   )
 
+  const isExplore = useMemo(
+    () => location.pathname === "/explore",
+    [location.pathname],
+  )
+
   function navigateTo(path: string) {
     setIsMenuOpen(false)
     navigate(path)
@@ -40,7 +45,7 @@ const HeaderUser = () => {
         <h1 className="text-lg font-bold tracking-tight text-white md:text-xl">PortfolioGen</h1>
       </div>
 
-      <nav className="order-3 mt-3 flex w-full justify-start md:order-2 md:mt-0 md:w-auto md:justify-center">
+      <nav className="order-3 mt-3 flex w-full justify-start gap-4 md:order-2 md:mt-0 md:w-auto md:justify-center md:gap-6">
         <button
           id="btn-go-dashboard"
           onClick={() => navigateTo(USER_HOME_ROUTE)}
@@ -52,6 +57,19 @@ const HeaderUser = () => {
         >
           <Home size={18} />
           <span>Inicio</span>
+        </button>
+
+        <button
+          id="btn-go-explore"
+          onClick={() => navigateTo("/explore")}
+          className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium transition-colors ${
+            isExplore
+              ? "bg-[#77b6e6] text-[#003A6C] md:bg-transparent md:text-[#77b6e6]"
+              : "text-[#c2dbed] hover:text-[#77b6e6]"
+          }`}
+        >
+          <Search size={18} />
+          <span>Explorar portafolios</span>
         </button>
       </nav>
 
@@ -77,19 +95,15 @@ const HeaderUser = () => {
               <div className="px-3 py-2">
                 <button
                   onClick={() => navigateTo("/perfil")}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"
-                >
-                  <User size={16} className="text-gray-500" />
-                  Mi perfil
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]" >
+                  <User size={16} className="text-gray-500" />  Mi perfil
                 </button>
               </div>
               <div className="border-t border-[#0E7D96] px-3 py-2">
                 <button
                   onClick={logout}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-[#C4A57C]"
-                >
-                  <LogOut size={16} />
-                  Cerrar sesión
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-[#C4A57C]"   >
+                  <LogOut size={16} />  Cerrar sesión
                 </button>
               </div>
             </div>
