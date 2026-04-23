@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react"; 
+import { ChevronLeft, ChevronRight, Eye } from "lucide-react"; 
 import { Header } from "@/components/Header"; 
 import HeaderUser from "@/components/HeaderUser";
 import Sidebar from "@/components/Sidebar";
@@ -26,7 +26,7 @@ export default function ExplorePortfolios() {
 
   useEffect(() => {
     const updateLimit = () => { 
-      setItemsPerPage(window.innerWidth < 640 ? 6 : 12); 
+      setItemsPerPage(window.innerWidth < 640 ? 5 : 12); 
     };
     updateLimit(); 
     window.addEventListener("resize", updateLimit);
@@ -60,15 +60,12 @@ export default function ExplorePortfolios() {
       <div className="flex flex-1">
         {isUserAuthenticated && <Sidebar />}
 
-        <main className="flex-1 px-4 py-8 md:px-8">
+        <main className="flex-1 px-4 py-4 md:px-8 md:py-6">
           <div className="mx-auto max-w-7xl">
             
-            <section className="mb-12 text-center">
-              <h1 className="text-3xl font-black text-[#003A6C] md:text-5xl"> Explorar Portafolios </h1>
-              <p className="mt-2 text-gray-500">Descubre los portafolios de desarrolladores</p>
-              
-              <div className="mx-auto mt-8 max-w-xl relative">
-              </div>
+            <section className="mb-4 text-center">
+              <h1 className="text-2xl font-black text-[#003A6C] md:text-3xl"> Explorar Portafolios </h1>
+              <p className="text-sm text-gray-500">Descubre los portafolios de desarrolladores</p>
             </section>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -107,15 +104,15 @@ export default function ExplorePortfolios() {
                     </div>
                   </div>
 
-                  <Button size="icon" className="shrink-0 size-8 rounded-lg bg-[#003A6C] hover:bg-[#c4a57c] text-white transition-colors">
-                    <ChevronRight className="size-4" />
+                  <Button className="shrink-0 h-8 px-3 rounded-lg bg-[#003A6C] hover:bg-[#c4a57c] text-white transition-colors flex items-center gap-2 text-xs font-bold" >
+                    Ver <Eye className="size-4" />
                   </Button>
                 </div>
               ))}
             </div>
 
             {/* Paginación */}
-            <nav className="mt-12 flex items-center justify-center gap-2 md:gap-4">
+            <nav className="mt-6 flex items-center justify-center gap-2 md:gap-4">
               <Button 
                 variant="outline" 
                 onClick={prev} 
