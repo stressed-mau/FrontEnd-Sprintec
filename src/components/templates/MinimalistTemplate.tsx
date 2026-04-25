@@ -47,7 +47,7 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   };
 
   return (
-    <article className="w-full max-w-4xl mx-auto min-h-[600px] bg-white text-zinc-900 font-sans shadow-2xl flex flex-col md:flex-row overflow-hidden border border-stone-100">
+    <article className="w-full max-w-4xl mx-auto min-h-[500px] bg-white text-zinc-900 font-sans shadow-2xl flex flex-col md:flex-row overflow-hidden border border-stone-100">
       
       {/* LATERAL IZQUIERDO - Identidad Fija */}
       <div className="w-full md:w-1/3 bg-stone-50 p-8 flex flex-col items-center text-center border-r border-stone-100">
@@ -124,13 +124,6 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 overflow-y-auto max-h-[350px] pr-2">
                 {projects.length > 0 ? projects.map((p: any) => (
                   <div key={p.id} className="bg-stone-50/50 border border-stone-100 rounded-2xl p-4 transition-all hover:bg-white hover:shadow-xl hover:shadow-stone-200/50 group">
-                    <div className="w-full h-24 rounded-lg overflow-hidden bg-stone-100 mb-3">
-                      <img 
-                        src={p.image || "https://via.placeholder.com/500"} 
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
-                        alt={p.label} 
-                      />
-                    </div>
                     <h3 className="font-bold text-sm text-zinc-900 uppercase mb-1">{p.label}</h3>
                     <p className="text-[10px] text-stone-400 leading-relaxed line-clamp-2 italic">{p.sublabel}</p>
                   </div>
@@ -166,7 +159,7 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
         </div>
 
         {/* NAVEGACIÓN Y REDES (Filtradas) */}
-        <div className="flex items-center justify-between mt-10 pt-6 border-t border-stone-100">
+        <div className="flex items-center justify-between mt-10 pt-6 border-t border-stone-100 sticky bottom-0 bg-white">
           <div className="flex gap-2">
             <button 
               onClick={prevPage} 
