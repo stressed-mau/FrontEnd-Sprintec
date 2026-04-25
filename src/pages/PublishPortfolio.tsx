@@ -468,7 +468,8 @@ const PublishPortfolio = () => {
                       <ModernTemplate data={data} profile={modernProfile} />
                     ) : previewTemplate === "Minimalista" ? (
                       <MinimalistTemplate
-                        portfolio={portfolio || ({ user: {}, projects: [], skills: [], experiences: [], socialNetworks: [] } as any)}
+                        data={data}           
+                        profile={modernProfile} 
                         isPreview={true}
                       />
                     ) : previewTemplate === "Corporativa" ? (

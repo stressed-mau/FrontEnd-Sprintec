@@ -102,7 +102,7 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
   const displayName = userProfile.fullname.trim() || "Sin nombre disponible"
   const displayRole = userProfile.occupation.trim() || "Profesional"
   const displaySummary = userProfile.biography.trim() || "Descripción profesional pendiente de completar."
-  const displayEmail = userProfile.public_email.trim() || "correo@ejemplo.com"
+  const displayEmail = userProfile.public_email.trim()
   const displayLocation = userProfile.residence.trim() || "Ubicación pendiente"
   const initials = getInitials(displayName)
 
@@ -124,8 +124,7 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
   )
 
   const skills = useMemo(() => {
-    const realSkills = visibleSkills.map((skill) => skill.label).filter(Boolean)
-    return realSkills.length ? realSkills : FALLBACK_SKILLS
+  return visibleSkills.map((skill) => skill.label).filter(Boolean)
   }, [visibleSkills])
 
   const workExperience = useMemo(
@@ -139,43 +138,37 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
   )
 
   const experience = useMemo(() => {
-    const realExperience = workExperience.map((item) => ({
-      id: String(item.id),
-      title: item.label,
-      organization: cleanVisibilitySublabel(item.sublabel, "Experiencia Laboral -"),
-      period: "",
-      description: "",
-    }))
+  return workExperience.map((item) => ({
+    id: String(item.id),
+    title: item.label,
+    organization: cleanVisibilitySublabel(item.sublabel, "Experiencia Laboral -"),
+    period: "",
+    description: "",
+  }))
+}, [workExperience])
 
-    return realExperience.length ? realExperience : FALLBACK_EXPERIENCE
-  }, [workExperience])
+  const education = useMemo(() => {
+  return educationItems.map((item) => ({
+    id: String(item.id),
+    title: item.label,
+    institution: cleanVisibilitySublabel(item.sublabel, "Educación -"),
+    period: "",
+  }))
+}, [educationItems])
 
-  const education = useMemo(
-    () =>
-      educationItems.map((item) => ({
-        id: String(item.id),
-        title: item.label,
-        institution: cleanVisibilitySublabel(item.sublabel, "Educación -"),
-        period: "",
-      })),
-    [educationItems],
-  )
+  const projects = useMemo(() => {
+  return visibleProjects.map((project) => ({
+    id: String(project.id),
+    name: project.label,
+    description: project.sublabel,
+    stack: [] as string[],
+  }))
+}, [visibleProjects])
 
-  const projects = useMemo(
-    () =>
-      visibleProjects.map((project) => ({
-        id: String(project.id),
-        name: project.label,
-        description: project.sublabel,
-        stack: [] as string[],
-      })),
-    [visibleProjects],
-  )
-
-  const resolvedEducation = education.length ? education : FALLBACK_EDUCATION
-  const resolvedProjects = projects.length ? projects : FALLBACK_PROJECTS
-  const resolvedSocialLinks = socialLinks.length ? socialLinks : FALLBACK_SOCIAL_LINKS
-  const hasContactInfo = Boolean(displayEmail || displayLocation || resolvedSocialLinks.length)
+  const resolvedEducation = education
+  const resolvedProjects = projects
+  const resolvedSocialLinks = socialLinks
+  const hasContactInfo = Boolean(displayEmail || displayLocation || socialLinks.length)
 
   const sheets = useMemo<Sheet[]>(() => {
     const nextSheets: Sheet[] = [
@@ -235,9 +228,9 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                         {displayLocation}
                       </div>
                     ) : null}
-                    {resolvedSocialLinks.length ? (
+                    {socialLinks.length ? (
                       <div className="flex flex-wrap gap-2 pt-2">
-                        {resolvedSocialLinks.map((link) => (
+                        {socialLinks.map((link) => (
                           <a
                             key={link.id}
                           href={link.url}
@@ -250,7 +243,11 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                           </a>
                         ))}
                       </div>
-                    ) : null}
+                    ) : (
+                    <p className="text-sm text-gray-500">
+                      No hay redes disponibles.
+                    </p>
+                  )}
                   </div>
                 </div>
               ) : null}
@@ -260,13 +257,14 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
       },
     ]
 
-    if (experience.length) {
-      nextSheets.push({
-        id: "corporate-experience",
-        label: "Experiencia",
-        content: (
-          <section>
-            <h3 className="text-3xl font-bold">Experiencia</h3>
+    nextSheets.push({
+      id: "corporate-experience",
+      label: "Experiencia",
+      content: (
+        <section>
+          <h3 className="text-3xl font-bold">Experiencia</h3>
+
+          {experience.length ? (
             <div className="mt-6 space-y-4">
               {experience.map((item, index) => (
                 <article
@@ -278,65 +276,91 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                       <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#8C6E46]">
                         {String(index + 1).padStart(2, "0")}
                       </p>
-                      <h4 className="mt-2 text-xl font-bold">{item.title}</h4>
-                      <p className="mt-1 text-sm font-medium text-[#5E6670]">{item.organization}</p>
+
+                      <h4 className="mt-2 text-xl font-bold">
+                        {item.title}
+                      </h4>
+
+                      <p className="mt-1 text-sm font-medium text-[#5E6670]">
+                        {item.organization}
+                      </p>
                     </div>
+
                     {item.period.trim() ? (
                       <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7C8791]">
                         {item.period}
                       </span>
                     ) : null}
                   </div>
+
                   {item.description.trim() ? (
-                    <p className="mt-4 text-sm leading-7 text-[#47515B]">{item.description}</p>
+                    <p className="mt-4 text-sm leading-7 text-[#47515B]">
+                      {item.description}
+                    </p>
                   ) : null}
                 </article>
               ))}
             </div>
-          </section>
-        ),
-      })
-    }
+          ) : (
+            <div className="mt-6 text-sm text-gray-500">
+              No hay experiencia registrada.
+            </div>
+          )}
+        </section>
+      ),
+    })
 
-    if (resolvedEducation.length) {
-      nextSheets.push({
-        id: "corporate-education",
-        label: "Formacion",
-        content: (
-          <section>
-            <h3 className="text-3xl font-bold text-white">Formacion</h3>
+    nextSheets.push({
+      id: "corporate-education",
+      label: "Formacion",
+      content: (
+        <section>
+          <h3 className="text-3xl font-bold text-white">Formacion</h3>
+
+          {education.length ? (
             <div className="mt-6 grid gap-4">
-              {resolvedEducation.map((item) => (
+              {education.map((item) => (
                 <article
                   key={item.id}
                   className="rounded-[1.6rem] border border-white/10 bg-white/3 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-white/[0.07]"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
-                    <p className="text-lg font-bold text-white">{item.title}</p>
+                    <p className="text-lg font-bold text-white">
+                      {item.title}
+                    </p>
+
                     {item.period.trim() ? (
                       <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/48">
                         {item.period}
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-2 text-sm text-white/68">{item.institution}</p>
+
+                  <p className="mt-2 text-sm text-white/68">
+                    {item.institution}
+                  </p>
                 </article>
               ))}
             </div>
-          </section>
-        ),
-      })
-    }
+          ) : (
+            <div className="mt-6 text-sm text-gray-400">
+              No hay formación registrada.
+            </div>
+          )}
+        </section>
+      ),
+    })
 
-    if (resolvedProjects.length) {
-      nextSheets.push({
-        id: "corporate-projects",
-        label: "Proyectos",
-        content: (
-          <section>
-            <h3 className="text-3xl font-bold">Proyectos</h3>
+    nextSheets.push({
+      id: "corporate-projects",
+      label: "Proyectos",
+      content: (
+        <section>
+          <h3 className="text-3xl font-bold">Proyectos</h3>
+
+          {projects.length ? (
             <div className="mt-8 grid gap-4 lg:grid-cols-2">
-              {resolvedProjects.map((project, index) => (
+              {projects.map((project, index) => (
                 <article
                   key={project.id}
                   className="rounded-[1.8rem] border border-black/10 bg-white p-6 transition duration-300 hover:-translate-y-2 hover:border-[#111111] hover:shadow-[0_24px_50px_rgba(0,0,0,0.12)]"
@@ -344,8 +368,12 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                   <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#8C6E46]">
                     Proyecto {String(index + 1).padStart(2, "0")}
                   </p>
+
                   <h4 className="mt-2 text-2xl font-bold">{project.name}</h4>
-                  <p className="mt-4 text-sm leading-7 text-[#4B545D]">{project.description}</p>
+
+                  <p className="mt-4 text-sm leading-7 text-[#4B545D]">
+                    {project.description}
+                  </p>
 
                   {project.stack.length ? (
                     <div className="mt-5 flex flex-wrap gap-2">
@@ -362,12 +390,16 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                 </article>
               ))}
             </div>
-          </section>
-        ),
-      })
-    }
+          ) : (
+            <div className="mt-6 text-sm text-gray-500">
+              No hay proyectos disponibles.
+            </div>
+          )}
+        </section>
+      ),
+    })
 
-    if (skills.length) {
+    
       nextSheets.push({
         id: "corporate-skills",
         label: "Skills",
@@ -379,22 +411,42 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              {skills.map((skill) => (
-                <span
-                  key={skill}
-                  className="rounded-full border border-white/12 bg-white/4 px-4 py-2 text-sm font-semibold text-white/86 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B] hover:bg-[#D6A96B]/12 hover:text-[#F4D8AE]"
-                >
-                  {skill}
-                </span>
-              ))}
+              {skills.length ? (
+                skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="rounded-full border border-white/12 bg-white/4 px-4 py-2 text-sm font-semibold text-white/86 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B] hover:bg-[#D6A96B]/12 hover:text-[#F4D8AE]"
+                  >
+                    {skill}
+                  </span>
+                ))
+              ) : (
+                <p className="text-sm text-white/60">
+                  No hay habilidades disponibles.
+                </p>
+              )}
             </div>
           </section>
         ),
       })
-    }
+    
 
     return nextSheets
-  }, [displayEmail, displayLocation, displayRole, displaySummary, experience, hasContactInfo, initials, resolvedEducation, resolvedProjects, resolvedSocialLinks, skills])
+ }, [
+  displayEmail,
+  displayLocation,
+  displayRole,
+  displaySummary,
+  experience,
+  education,
+  projects,
+  hasContactInfo,
+  initials,
+  resolvedEducation,
+  resolvedProjects,
+  resolvedSocialLinks,
+  skills
+])
 
   const [activeSectionId, setActiveSectionId] = useState<string | null>(sheets[0]?.id ?? null)
   const [activeSheetIndex, setActiveSheetIndex] = useState(0)
@@ -667,15 +719,18 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
         {(resolvedEducation.length || skills.length || experience.length || resolvedProjects.length) ? (
           <section className="grid border-t border-white/10 lg:grid-cols-[0.88fr_1.12fr]">
             <div className="bg-[#141414] px-8 py-10">
-              {resolvedEducation.length ? (
-                <div
-                  id="corporate-education"
-                  className={`rounded-[2rem] p-1 transition-colors duration-300 ${
-                    activeSectionId === "corporate-education" ? "bg-[#2F3E4C]" : ""
-                  }`}
-                >
-                  <div className="rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.025))] p-6">
-                    <h3 className="text-3xl font-black tracking-[-0.04em] text-white">Formacion</h3>
+              <div
+                id="corporate-education"
+                className={`rounded-[2rem] p-1 transition-colors duration-300 ${
+                  activeSectionId === "corporate-education" ? "bg-[#2F3E4C]" : ""
+                }`}
+              >
+                <div className="rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.025))] p-6">
+                  <h3 className="text-3xl font-black tracking-[-0.04em] text-white">
+                    Formacion
+                  </h3>
+
+                  {resolvedEducation.length ? (
                     <div className="mt-6 grid gap-4">
                       {resolvedEducation.map((item) => (
                         <article
@@ -685,6 +740,7 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                           <div className="flex flex-col gap-2">
                             <p className="text-lg font-bold text-white">{item.title}</p>
                             <p className="text-sm text-white/68">{item.institution}</p>
+
                             {item.period.trim() ? (
                               <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/48">
                                 {item.period}
@@ -694,20 +750,25 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                         </article>
                       ))}
                     </div>
-                  </div>
+                  ) : (
+                    <div className="mt-6 text-sm text-gray-400">
+                      No hay formación registrada.
+                    </div>
+                  )}
                 </div>
-              ) : null}
+              </div>
 
-              {experience.length ? (
-                <div
-                  id="corporate-experience"
-                  className={`mt-8 rounded-[2rem] border p-6 transition-colors duration-300 ${
-                    activeSectionId === "corporate-experience"
-                      ? "border-[#8FA4B7] bg-[#D6E0E9] text-[#111111]"
-                      : "border-black/10 bg-[#EFE8DE] text-[#111111]"
-                  }`}
-                >
-                  <h3 className="text-4xl font-black tracking-[-0.05em]">Experiencia</h3>
+              <div
+                id="corporate-experience"
+                className={`mt-8 rounded-[2rem] border p-6 transition-colors duration-300 ${
+                  activeSectionId === "corporate-experience"
+                    ? "border-[#8FA4B7] bg-[#D6E0E9] text-[#111111]"
+                    : "border-black/10 bg-[#EFE8DE] text-[#111111]"
+                }`}
+              >
+                <h3 className="text-4xl font-black tracking-[-0.05em]">Experiencia</h3>
+
+                {experience.length ? (
                   <div className="mt-6 grid gap-4">
                     {experience.map((item, index) => (
                       <article
@@ -720,67 +781,78 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                               {String(index + 1).padStart(2, "0")}
                             </p>
                             <h4 className="mt-2 text-xl font-bold">{item.title}</h4>
-                            <p className="mt-1 text-sm font-medium text-[#5E6670]">{item.organization}</p>
+                            <p className="mt-1 text-sm font-medium text-[#5E6670]">
+                              {item.organization}
+                            </p>
                           </div>
+
                           {item.period.trim() ? (
                             <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7C8791]">
                               {item.period}
                             </span>
                           ) : null}
                         </div>
+
                         {item.description.trim() ? (
-                          <p className="mt-4 text-sm leading-7 text-[#47515B]">{item.description}</p>
+                          <p className="mt-4 text-sm leading-7 text-[#47515B]">
+                            {item.description}
+                          </p>
                         ) : null}
                       </article>
                     ))}
                   </div>
-                </div>
-              ) : null}
+                ) : (
+                  <div className="mt-6 text-sm text-gray-500">
+                    No hay experiencia registrada.
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="px-8 py-10 transition-colors duration-300 bg-[#EFE8DE] text-[#111111]">
-              {skills.length ? (
-                <div
-                  id="corporate-skills"
-                  className={`rounded-[2rem] p-1 transition-colors duration-300 ${
-                    activeSectionId === "corporate-skills" ? "bg-[#8FA4B7]/35" : ""
-                  }`}
-                >
-                  <div className="rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,#1F1F1F_0%,#171717_100%)] p-6 text-white">
-                    <div>
-                      <h3 className="text-4xl font-black tracking-[-0.05em]">Skills</h3>
-                    </div>
+              <div
+                id="corporate-skills"
+                className={`rounded-[2rem] p-1 transition-colors duration-300 ${
+                  activeSectionId === "corporate-skills" ? "bg-[#8FA4B7]/35" : ""
+                }`}
+              >
+                <div className="rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,#1F1F1F_0%,#171717_100%)] p-6 text-white">
+                  <div>
+                    <h3 className="text-4xl font-black tracking-[-0.05em]">Skills</h3>
+                  </div>
 
-                    <div className="mt-6 flex flex-wrap gap-3">
-                      {skills.map((skill) => (
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    {skills.length ? (
+                      skills.map((skill) => (
                         <span
                           key={skill}
                           className="rounded-full border border-white/12 bg-white/4 px-4 py-2 text-sm font-semibold text-white/86 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B] hover:bg-[#D6A96B]/12 hover:text-[#F4D8AE]"
                         >
                           {skill}
                         </span>
-                      ))}
-                    </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-white/60">
+                        No hay habilidades disponibles.
+                      </p>
+                    )}
                   </div>
                 </div>
-              ) : (
-                <div className="flex h-full items-center justify-center rounded-[1.7rem] border border-dashed border-black/15 bg-white/40 p-10 text-center text-sm text-[#5E6670]">
-                  No hay skills disponibles.
-                </div>
-              )}
+              </div>
 
-              {resolvedProjects.length ? (
-                <div
-                  id="corporate-projects"
-                  className={`mt-10 rounded-[2rem] border p-6 transition-colors duration-300 ${
-                    activeSectionId === "corporate-projects"
-                      ? "border-[#8FA4B7] bg-[#D6E0E9]"
-                      : "border-black/10 bg-white/45"
-                  }`}
-                >
-                  <h3 className="text-4xl font-black tracking-[-0.05em]">Proyectos</h3>
-                  <div className="mt-8 grid gap-4">
-                    {resolvedProjects.map((project, index) => (
+              <div
+                id="corporate-projects"
+                className={`mt-10 rounded-[2rem] border p-6 transition-colors duration-300 ${
+                  activeSectionId === "corporate-projects"
+                    ? "border-[#8FA4B7] bg-[#D6E0E9]"
+                    : "border-black/10 bg-white/45"
+                }`}
+              >
+                <h3 className="text-4xl font-black tracking-[-0.05em]">Proyectos</h3>
+
+                <div className="mt-8 grid gap-4">
+                  {resolvedProjects.length ? (
+                    resolvedProjects.map((project, index) => (
                       <article
                         key={project.id}
                         className="rounded-[1.8rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-6 transition duration-300 hover:-translate-y-2 hover:border-[#8C6E46] hover:shadow-[0_24px_50px_rgba(0,0,0,0.12)]"
@@ -788,8 +860,13 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                         <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#8C6E46]">
                           Proyecto {String(index + 1).padStart(2, "0")}
                         </p>
+
                         <h4 className="mt-2 text-2xl font-bold">{project.name}</h4>
-                        <p className="mt-4 text-sm leading-7 text-[#4B545D]">{project.description}</p>
+
+                        <p className="mt-4 text-sm leading-7 text-[#4B545D]">
+                          {project.description}
+                        </p>
+
                         {project.stack.length ? (
                           <div className="mt-5 flex flex-wrap gap-2">
                             {project.stack.map((item) => (
@@ -803,10 +880,14 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                           </div>
                         ) : null}
                       </article>
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-gray-500">
+                      No hay proyectos disponibles.
+                    </div>
+                  )}
                 </div>
-              ) : null}
+              </div>
             </div>
           </section>
         ) : null}

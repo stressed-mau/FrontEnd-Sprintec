@@ -77,7 +77,7 @@ const PublicPortfolio = () => {
     <main className="flex-1 p-4 md:p-10">
       {isModern && <ModernTemplate data={visibilityData} profile={profile} />}
 
-      {isMinimalist && <MinimalistTemplate portfolio={portfolio} isPreview={false} />}
+      {isMinimalist && <MinimalistTemplate data={visibilityData} profile={profile} isPreview={false} />}
 
       {isCorporate && <CorporatePortfolioTemplate data={visibilityData} profile={profile} />}
 
