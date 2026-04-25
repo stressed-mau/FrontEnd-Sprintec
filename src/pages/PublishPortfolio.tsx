@@ -260,19 +260,6 @@ const PublishPortfolio = () => {
             <section className="bg-white rounded-2xl border border-[#C9E1F0] p-6 shadow-sm" aria-labelledby="visibility-config-title">
               <h2 id="visibility-config-title" className="text-[#003A6C] text-xl font-bold mb-1">Configuración de Visibilidad</h2>
               <p className="text-gray-500 text-sm mb-6">Elige qué elementos específicos mostrar en tu portafolio</p>
-              {isPublished && (
-                <div className="mb-6 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 shadow-sm">
-                  <div className="mt-0.5">
-                    <Palette className="h-5 w-5 text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm">Edición deshabilitada</p>
-                    <p className="text-xs opacity-90">
-                      Para modificar qué elementos son visibles, primero debes <strong>despublicar</strong> tu portafolio.
-                    </p>
-                  </div>
-                </div>
-              )}
               {(isLoading || isSaving) && (
                 <div className="mb-4 rounded-lg bg-[#F1F7FC] px-4 py-2 text-sm text-[#003A6C]">
                   {isLoading ? "Cargando datos..." : "Guardando cambios de visibilidad..."}
@@ -295,13 +282,7 @@ const PublishPortfolio = () => {
                   const sectionEnabled = items.some((item) => item.checked)
 
                   return (
-                    <div 
-                      key={sectionKey} 
-                      className={`transition-all duration-300 
-                        ${!sectionEnabled ? "opacity-60 grayscale-30" : "opacity-100"}
-                        ${isPublished ? "pointer-events-none opacity-50" : ""} 
-                      `}
-                    >
+                    <div key={sectionKey} className="border border-[#C9E1F0] rounded-xl overflow-hidden bg-white">
                       <div className="flex items-center justify-between p-4 border-b border-[#C9E1F0]">
                         <div className="flex items-center gap-3">
                           <label className="relative inline-flex items-center cursor-pointer">
@@ -334,7 +315,7 @@ const PublishPortfolio = () => {
                         <div className="p-4 bg-white border-t border-[#C9E1F0]">
                           <div className="flex gap-2 mb-4">
                             <button
-                              disabled={isLoading || isSaving || isPublished}
+                              disabled={isLoading || isSaving}
                               onClick={() => void handleBulkSelect(sectionKey, true)}
                               className="px-4 py-1.5 text-sm bg-[#C9E1F0] text-[#003A6C] hover:bg-[#C4A57C] rounded-md font-medium hover:bg-opacity-80 transition-colors"
                             >
@@ -354,12 +335,12 @@ const PublishPortfolio = () => {
                               <p className="text-sm text-gray-400">No hay elementos para mostrar en esta sección.</p>
                             )}
                             {items.map((item) => (
-                              <div key={`${item.sourceTable ?? sectionKey}-${item.id}`} className="flex items-center gap-3">
-                                <input
-                                  type="checkbox"
-                                  checked={item.checked}
+                              <div key={item.id} className="flex items-center gap-3">
+                                <input 
+                                  type="checkbox" 
+                                  checked={item.checked} 
                                   disabled={isLoading || isSaving}
-                                  onChange={() => void handleItemCheck(sectionKey, item.id, item.sourceTable)}
+                                  onChange={() => void handleItemCheck(sectionKey, item.id)}
                                   className="w-5 h-5 text-[#003A6C] border-gray-300 rounded focus:ring-[#003A6C] focus:ring-2 cursor-pointer"
                                 />
                                 <div className="flex flex-col md:flex-row md:items-baseline md:gap-2">

@@ -1,5 +1,15 @@
 import { api } from "@/services/api";
 
+export interface Project {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  rol: string;
+  tecnologias: { id: number; name: string }[];
+  is_public: boolean;
+  imagen: string | null;
+}
+
 const IMAGE_UPLOAD_TIMEOUT_MS = 180_000;
 
 function extractImageUrlFromResponse(body: unknown): string | null {
@@ -84,14 +94,34 @@ export const createRole = async (name: string) => {
 
   return res.data.data;
 };
-function extractProjectList(body: unknown): unknown[] | null {
-  if (Array.isArray(body)) return body;
-  if (body && typeof body === "object") {
-    const o = body as Record<string, unknown>;
-    if (Array.isArray(o.data)) return o.data;
-    if (Array.isArray(o.projects)) return o.projects;
+
+function extractProjectList(body: unknown): Project[] | null {
+  if (body == null || typeof body !== "object") return null;
+
+  const res = body as any;
+  let rawList: any[] | null = null;
+
+  // Detectar la estructura data.projects
+  if (Array.isArray(res)) {
+    rawList = res;
+  } else if (res.data && Array.isArray(res.data)) {
+    rawList = res.data;
+  } else if (res.data && res.data.projects && Array.isArray(res.data.projects)) {
+    rawList = res.data.projects;
   }
-  return null;
+
+  if (!rawList) return null;
+
+  return rawList.map((p: any) => ({
+    id: p.id,
+    nombre: p.title || p.nombre || "Proyecto sin título",
+    descripcion: p.description || p.descripcion || "",
+    rol: p.project_rol || p.rol || "",
+    
+    tecnologias: Array.isArray(p.languages) ? p.languages : (Array.isArray(p.tecnologias) ? p.tecnologias : []),
+    is_public: !!p.is_public,
+    imagen: p.photograph || p.imagen || null
+  }));
 }
 
 export const getProjects = async () => {
