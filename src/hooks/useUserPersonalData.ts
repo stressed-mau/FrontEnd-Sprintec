@@ -123,7 +123,7 @@ export const useUserPersonalData = () => {
 
       if (!session || !session.user?.id) return;
 
-      const user = await getUserInformation(String(session.user.id));
+      const user = await getUserInformation();
 
       const mappedForm = {
         fullName: user.fullname || "",
@@ -259,7 +259,7 @@ const handleChange = (e: any) => {
       if (fileInputRef.current?.files?.[0]) {
         formData.append("image_url", fileInputRef.current.files[0]);
       }
-      const updatedUser = await updateUserInformation(String(session.user.id), formData); 
+      const updatedUser = await updateUserInformation(formData);
       setForm({
         fullName: updatedUser.fullname || "", 
         occupation: updatedUser.occupation || "",
