@@ -47,7 +47,7 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   };
 
   return (
-    <article className="w-full max-w-4xl mx-auto min-h-[500px] bg-white text-zinc-900 font-sans shadow-2xl flex flex-col md:flex-row overflow-hidden border border-stone-100">
+    <article className="w-full max-w-4xl mx-auto min-h-[550px] bg-white text-zinc-900 font-sans shadow-2xl flex flex-col md:flex-row overflow-hidden border border-stone-100">
       
       {/* LATERAL IZQUIERDO - Identidad Fija */}
       <div className="w-full md:w-1/3 bg-stone-50 p-8 flex flex-col items-center text-center border-r border-stone-100">
