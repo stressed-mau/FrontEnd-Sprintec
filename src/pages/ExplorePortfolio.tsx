@@ -54,7 +54,7 @@ export default function ExplorePortfolios() {
     };
   }, []);
 
-  // Mock temporal de referencia si necesitas volver a probar sin backend:
+  // Mock temporal de referencia sin Backend
   // const mockData = Array(20).fill(null).map((_, i) => ({
   //   id: `${i}`,
   //   fullName: i % 2 === 0 ? "María García" : "Carlos Martínez",
