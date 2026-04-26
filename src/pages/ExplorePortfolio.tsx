@@ -8,19 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePagination } from "@/hooks/usePagination";
 import { isAuthenticated } from "@/services/auth";
-
-interface PortfolioCard {
-  id: string;
-  fullName: string;
-  occupation: string;
-  profileImage: string;
-  projectsCount: number;
-  skillsCount: number;
-  topSkills: string[];
-}
+import {getExplorePortfolios, getPortfolioApiDetailUrl, type ExplorePortfolioCard} from "@/services/explorePortfoliosService";
 
 export default function ExplorePortfolios() {
-  const [portfolios, setPortfolios] = useState<PortfolioCard[]>([]);
+  const [portfolios, setPortfolios] = useState<ExplorePortfolioCard[]>([]);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const isUserAuthenticated = isAuthenticated();
 
@@ -40,18 +31,39 @@ export default function ExplorePortfolios() {
   });
 
   useEffect(() => {
-    // Simulación de datos reales
-    const mockData = Array(20).fill(null).map((_, i) => ({
-      id: `${i}`,
-      fullName: i % 2 === 0 ? "María García" : "Carlos Martínez",
-      occupation: i % 2 === 0 ? "Full Stack Developer" : "Mobile Developer",
-      profileImage: `https://i.pravatar.cc/150?u=${i}`,
-      projectsCount: 5,
-      skillsCount: 10,
-      topSkills: ["React", "Node.js", "Tailwind"]
-    }));
-    setPortfolios(mockData);
+    let isMounted = true;
+
+    const fetchPortfolios = async () => {
+      try {
+        if (!isMounted) return;
+
+        const remotePortfolios = await getExplorePortfolios();
+        setPortfolios(remotePortfolios);
+      } catch (error) {
+        console.error("Error cargando portafolios:", error);
+        if (!isMounted) return;
+
+        setPortfolios([]);
+      }
+    };
+
+    void fetchPortfolios();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  // Mock temporal de referencia si necesitas volver a probar sin backend:
+  // const mockData = Array(20).fill(null).map((_, i) => ({
+  //   id: `${i}`,
+  //   fullName: i % 2 === 0 ? "María García" : "Carlos Martínez",
+  //   occupation: i % 2 === 0 ? "Full Stack Developer" : "Mobile Developer",
+  //   profileImage: `https://i.pravatar.cc/150?u=${i}`,
+  //   projectsCount: 5,
+  //   skillsCount: 10,
+  //   topSkills: ["React", "Node.js", "Tailwind"]
+  // });
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FDF8F0]">
@@ -104,8 +116,10 @@ export default function ExplorePortfolios() {
                     </div>
                   </div>
 
-                  <Button className="shrink-0 h-8 px-3 rounded-lg bg-[#003A6C] hover:bg-[#c4a57c] text-white transition-colors flex items-center gap-2 text-xs font-bold" >
-                    Ver <Eye className="size-4" />
+                  <Button asChild className="shrink-0 h-8 px-3 rounded-lg bg-[#003A6C] hover:bg-[#c4a57c] text-white transition-colors flex items-center gap-2 text-xs font-bold">
+                    <a href={getPortfolioApiDetailUrl(portfolio.id)}>
+                      Ver <Eye className="size-4" />
+                    </a>
                   </Button>
                 </div>
               ))}
