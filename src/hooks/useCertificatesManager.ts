@@ -11,7 +11,9 @@ import {
 
 export type { Certificate };
 
-export type CertificateFormValues = Omit<Certificate, 'id'>;
+export type CertificateFormValues = Omit<Certificate, 'id'> & {
+  no_expiration?: boolean;
+};
 
 export type CertificateFormErrors = Partial<Record<keyof CertificateFormValues, string>>;
 
@@ -24,19 +26,26 @@ const EMPTY_FORM: CertificateFormValues = {
   credential_id: '',
   credential_url: '',
   file_bonus_url: '',
+  no_expiration: false,
 };
 
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg'];
 const ALLOWED_FILE_EXTENSIONS = ['.pdf', '.jpg', '.jpeg'];
 
-function isValidUrl(url: string): boolean {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
+function convertDateDDMMYYYYtoISO(date: string): string {
+  if (!date) return '';
+  // Si ya está en formato ISO (YYYY-MM-DD), devuelve como está
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return date;
   }
+  // Convierte de DD/MM/YYYY a YYYY-MM-DD
+  const parts = date.split('/');
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    return `${year}-${month}-${day}`;
+  }
+  return date;
 }
 
 function validateForm(form: CertificateFormValues): CertificateFormErrors {
@@ -63,7 +72,7 @@ function validateForm(form: CertificateFormValues): CertificateFormErrors {
     }
   }
 
-  if (form.date_expired?.trim()) {
+  if (form.date_expired?.trim() && !form.no_expiration) {
     const expiredDate = new Date(form.date_expired);
     if (isNaN(expiredDate.getTime())) {
       errors.date_expired = 'La fecha de vencimiento no es válida';
@@ -145,11 +154,12 @@ export const useCertificatesManager = () => {
       name: certificate.name,
       issuer: certificate.issuer,
       description: certificate.description ?? '',
-      date_issued: certificate.date_issued,
-      date_expired: certificate.date_expired ?? '',
+      date_issued: convertDateDDMMYYYYtoISO(certificate.date_issued),
+      date_expired: convertDateDDMMYYYYtoISO(certificate.date_expired ?? ''),
       credential_id: certificate.credential_id ?? '',
       credential_url: certificate.credential_url ?? '',
       file_bonus_url: certificate.file_bonus_url ?? '',
+      no_expiration: !certificate.date_expired,
     });
     setErrors({});
     setFileInput(null);
@@ -173,7 +183,7 @@ export const useCertificatesManager = () => {
   }, [closeModal, loadCertificates]);
 
   const updateField = useCallback(
-    (field: keyof CertificateFormValues, value: string) => {
+    (field: keyof CertificateFormValues, value: string | boolean) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
       if (errors[field]) {
         setErrors((prev) => {
@@ -227,7 +237,7 @@ export const useCertificatesManager = () => {
           issuer: formData.issuer,
           description: formData.description,
           date_issued: formData.date_issued,
-          date_expired: formData.date_expired,
+          date_expired: formData.no_expiration ? undefined : formData.date_expired,
           credential_id: formData.credential_id,
           credential_url: formData.credential_url,
           file_bonus_url: fileInput,

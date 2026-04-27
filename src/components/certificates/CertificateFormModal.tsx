@@ -15,7 +15,7 @@ type CertificateFormModalProps = {
   errorMessage: string
   fileInputRef: React.RefObject<HTMLInputElement | null>
   onClose: () => void
-  onFieldChange: (field: keyof CertificateFormValues, value: string) => void
+  onFieldChange: (field: keyof CertificateFormValues, value: string | boolean) => void
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   onRemoveFile: () => void
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
@@ -140,9 +140,9 @@ export function CertificateFormModal({
                 id="certificate-date-expired"
                 type="date"
                 value={formData.date_expired}
-                disabled={isSaving}
+                disabled={isSaving || formData.no_expiration}
                 onChange={(e) => onFieldChange("date_expired", e.target.value)}
-                className="border-[#A5D7E8] focus:ring-[#A5D7E8]"
+                className="border-[#A5D7E8] focus:ring-[#A5D7E8] disabled:opacity-50"
                 aria-invalid={!!errors.date_expired}
                 aria-describedby={errors.date_expired ? "certificate-date-expired-error" : undefined}
               />
@@ -152,6 +152,19 @@ export function CertificateFormModal({
                 </p>
               )}
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="no-expiration"
+              checked={formData.no_expiration || false}
+              onChange={(e) => onFieldChange("no_expiration", e.target.checked)}
+              className="w-4 h-4 rounded border-[#A5D7E8]"
+            />
+            <label htmlFor="no-expiration" className="text-[#003A6C] font-medium text-sm">
+              Este certificado no tiene fecha de vencimiento
+            </label>
           </div>
 
           <div className="space-y-2">

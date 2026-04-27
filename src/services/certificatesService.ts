@@ -98,30 +98,39 @@ function unwrapPayload(data: unknown): unknown {
   return data;
 }
 
-function unwrapCertificateList(data: unknown): CertificateDto[] {
-  const unwrapped = unwrapPayload(data);
-
-  if (Array.isArray(unwrapped)) {
-    return unwrapped as CertificateDto[];
+function unwrapCertificateData(data: unknown): CertificateDto | CertificateDto[] | null {
+  if (!data || typeof data !== 'object') {
+    return null;
   }
 
-  if (unwrapped && typeof unwrapped === 'object') {
-    const record = unwrapped as Record<string, unknown>;
+  const record = data as Record<string, unknown>;
 
-    if (Array.isArray(record.data)) {
-      return record.data as CertificateDto[];
+  // Si tiene propiedad 'data', extraela
+  if ('data' in record && record.data) {
+    const dataValue = record.data;
+    
+    // Si data es un arreglo, devuélvelo
+    if (Array.isArray(dataValue)) {
+      return dataValue as CertificateDto[];
     }
-
-    if (Array.isArray(record.certificates)) {
-      return record.certificates as CertificateDto[];
-    }
-
-    if (Array.isArray(record.certificate)) {
-      return record.certificate as CertificateDto[];
+    
+    // Si data es un objeto, devuélvelo
+    if (typeof dataValue === 'object') {
+      return dataValue as CertificateDto;
     }
   }
 
-  return [];
+  // Si el mismo objeto tiene estructura de certificado
+  if ('id' in record || 'name' in record || 'issuer' in record) {
+    return record as CertificateDto;
+  }
+
+  // Si es un arreglo directo
+  if (Array.isArray(data)) {
+    return data as CertificateDto[];
+  }
+
+  return null;
 }
 
 export async function getCertificates(): Promise<Certificate[]> {
@@ -130,8 +139,19 @@ export async function getCertificates(): Promise<Certificate[]> {
       timeout: CERTIFICATE_MUTATION_TIMEOUT_MS,
     });
 
-    const dtos = unwrapCertificateList(response.data);
-    return dtos.map(normalizeCertificate);
+    const certificateData = unwrapCertificateData(response.data);
+    
+    if (!certificateData) {
+      return [];
+    }
+
+    // Si es un arreglo, mapéalo a Certificate[]
+    if (Array.isArray(certificateData)) {
+      return certificateData.map(normalizeCertificate);
+    }
+
+    // Si es un objeto singular, conviértelo a arreglo
+    return [normalizeCertificate(certificateData)];
   } catch (error) {
     throw formatError(error);
   }
@@ -151,9 +171,6 @@ export async function createCertificate(payload: CertificatePayload): Promise<Ce
 
     const response = await api.post(CERTIFICATES_ENDPOINT, formData, {
       timeout: CERTIFICATE_MUTATION_TIMEOUT_MS,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
     });
 
     const dto = unwrapPayload(response.data) as CertificateDto;
@@ -166,20 +183,18 @@ export async function createCertificate(payload: CertificatePayload): Promise<Ce
 export async function updateCertificate(id: string | number, payload: Partial<CertificatePayload>): Promise<Certificate> {
   try {
     const formData = new FormData();
+    formData.append('_method', 'PUT');
     if (payload.name) formData.append('name', payload.name);
     if (payload.issuer) formData.append('issuer', payload.issuer);
-    if (payload.description) formData.append('description', payload.description);
+    if (payload.description !== undefined) formData.append('description', payload.description);
     if (payload.date_issued) formData.append('date_issued', payload.date_issued);
     if (payload.date_expired) formData.append('date_expired', payload.date_expired);
-    if (payload.credential_id) formData.append('credential_id', payload.credential_id);
-    if (payload.credential_url) formData.append('credential_url', payload.credential_url);
+    if (payload.credential_id !== undefined) formData.append('credential_id', payload.credential_id);
+    if (payload.credential_url !== undefined) formData.append('credential_url', payload.credential_url);
     if (payload.file_bonus_url) formData.append('file_bonus_url', payload.file_bonus_url);
 
-    const response = await api.put(`${CERTIFICATES_ENDPOINT}/${id}`, formData, {
+    const response = await api.post(`${CERTIFICATES_ENDPOINT}/${id}`, formData, {
       timeout: CERTIFICATE_MUTATION_TIMEOUT_MS,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
     });
 
     const dto = unwrapPayload(response.data) as CertificateDto;

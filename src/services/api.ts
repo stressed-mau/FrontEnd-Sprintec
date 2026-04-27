@@ -1,7 +1,6 @@
 import axios from "axios";
 import { getAuthToken } from "@/services/auth/auth-storage";
 
-const rawBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
 // En desarrollo, usar `/api` (proxy de Vite) evita CORS.
 // En producción, `VITE_API_URL` debe apuntar al backend real (ej: https://dominio.com/api).
 const envBaseUrl = import.meta.env.VITE_API_URL as string | undefined;
@@ -11,20 +10,24 @@ const baseURL =
     : envBaseUrl || "/api";
 
 export const api = axios.create({
-  // Limpia las barras diagonales extras al final de la URL si existen
-  baseURL: rawBaseUrl ? rawBaseUrl.replace(/\/+$/, "") : "http://localhost:8000/api",
+  baseURL: baseURL.replace(/\/+$/, ""),
+  timeout: 50000,
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: "application/json",
   },
 });
 
-// Interceptor para inyectar el token de autenticación en cada petición
+// Interceptor para el token
 api.interceptors.request.use((config) => {
   const token = getAuthToken();
-
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+  } else if (!config.headers["Content-Type"]) {
+    config.headers["Content-Type"] = "application/json";
   }
 
   return config;

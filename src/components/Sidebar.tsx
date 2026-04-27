@@ -27,6 +27,7 @@ const Sidebar = () => {
   const location = useLocation()
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [skillsOpen, setSkillsOpen] = useState(location.pathname.includes('/habilidades'));
+  const [certificatesOpen, setCertificatesOpen] = useState(location.pathname.includes('/certificados'));
 
   useEffect(() => {
     setIsMobileOpen(false)
@@ -34,6 +35,10 @@ const Sidebar = () => {
 
   useEffect(() => {
     setSkillsOpen(location.pathname.includes('/habilidades'))
+  }, [location.pathname])
+
+  useEffect(() => {
+    setCertificatesOpen(location.pathname.includes('/certificados'))
   }, [location.pathname])
 
   const sidebarContent = useMemo(
@@ -80,6 +85,37 @@ const Sidebar = () => {
             );
           }
 
+          if (item.id === "certificados") {
+            return (
+              <div key={item.id} className="space-y-1">
+                <button
+                  onClick={() => setCertificatesOpen(!certificatesOpen)}
+                  className={`w-full flex items-center justify-between px-3 py-3 rounded-xl transition-all ${
+                    isActive || location.pathname.includes('/certificados')
+                      ? "bg-[#003A6C] text-white"
+                      : "text-[#4982ad] hover:bg-[#77b6e6]/30"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon className="w-5 h-5" />
+                    <span className="font-normal">{item.label}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${certificatesOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Submenú de Certificados */}
+                {certificatesOpen && (
+                  <div className="ml-9 flex flex-col gap-1 border-l-2 border-[#c2dbed] pl-2 animate-in slide-in-from-top-1">
+                    <Link to="/certificados/ver" className={`px-3 py-2 text-sm rounded-lg ${location.pathname === '/certificados/ver' ? 'bg-[#77b6e6]/30 text-[#003A6C] font-semibold' : 'text-[#4982ad] hover:text-[#003A6C]'}`}>Ver certificados</Link>
+                    <Link to="/certificados/añadir" className={`px-3 py-2 text-sm rounded-lg ${location.pathname === '/certificados/añadir' ? 'bg-[#77b6e6]/30 text-[#003A6C] font-semibold' : 'text-[#4982ad] hover:text-[#003A6C]'}`}>Añadir certificado</Link>
+                    <Link to="/certificados/editar" className={`px-3 py-2 text-sm rounded-lg ${location.pathname === '/certificados/editar' ? 'bg-[#77b6e6]/30 text-[#003A6C] font-semibold' : 'text-[#4982ad] hover:text-[#003A6C]'}`}>Editar certificado</Link>
+                    <Link to="/certificados/eliminar" className={`px-3 py-2 text-sm rounded-lg ${location.pathname === '/certificados/eliminar' ? 'bg-[#77b6e6]/30 text-[#003A6C] font-semibold' : 'text-[#4982ad] hover:text-[#003A6C]'}`}>Eliminar certificado</Link>
+                  </div>
+                )}
+              </div>
+            );
+          }
+
             return (
               <Link
                 key={item.id}
@@ -98,7 +134,7 @@ const Sidebar = () => {
         </nav>
       </>
     ),
-    [location.pathname, skillsOpen],
+    [location.pathname, skillsOpen, certificatesOpen],
   )
 
   return (
