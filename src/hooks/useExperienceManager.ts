@@ -46,6 +46,58 @@ const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 const ALLOWED_CERTIFICATE_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
 const ALLOWED_CERTIFICATE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf"]
+const EXPERIENCE_EDIT_OVERRIDES_KEY = "portfolio_experience_edit_overrides"
+
+function readExperienceEditOverrides(): Record<string, ExperienceItem> {
+  if (typeof window === "undefined") {
+    return {}
+  }
+
+  const rawOverrides = window.localStorage.getItem(EXPERIENCE_EDIT_OVERRIDES_KEY)
+
+  if (!rawOverrides) {
+    return {}
+  }
+
+  try {
+    return JSON.parse(rawOverrides) as Record<string, ExperienceItem>
+  } catch {
+    return {}
+  }
+}
+
+function writeExperienceEditOverrides(overrides: Record<string, ExperienceItem>) {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  window.localStorage.setItem(EXPERIENCE_EDIT_OVERRIDES_KEY, JSON.stringify(overrides))
+}
+
+function saveExperienceEditOverride(experience: ExperienceItem) {
+  const overrides = readExperienceEditOverrides()
+  writeExperienceEditOverrides({
+    ...overrides,
+    [experience.id]: experience,
+  })
+}
+
+function removeExperienceEditOverride(id: string) {
+  const overrides = readExperienceEditOverrides()
+
+  if (!(id in overrides)) {
+    return
+  }
+
+  delete overrides[id]
+  writeExperienceEditOverrides(overrides)
+}
+
+function applyExperienceEditOverrides(experiences: ExperienceItem[]) {
+  const overrides = readExperienceEditOverrides()
+
+  return experiences.map((experience) => overrides[experience.id] ?? experience)
+}
 
 function normalizeExperienceTypeValue(value: string): ExperienceFormValues["type"] {
   return value === "academica" ? "academica" : "laboral"
@@ -430,7 +482,7 @@ export function useExperienceManager() {
         getExperiences(),
         getEducation(),
       ])
-      setExperiences([...remoteExperiences, ...remoteEducation])
+      setExperiences(applyExperienceEditOverrides([...remoteExperiences, ...remoteEducation]))
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudieron cargar las experiencias."
       setPageError(message)
@@ -742,6 +794,29 @@ export function useExperienceManager() {
         } else {
           await updateExperience(editingExperience.id, payload)
         }
+
+        const updatedExperience: ExperienceItem = {
+          ...editingExperience,
+          type: payload.type,
+          company: payload.company,
+          email: payload.email,
+          position: payload.position,
+          location: payload.location,
+          fieldOfStudy: payload.fieldOfStudy,
+          description: payload.description,
+          startDate: payload.startDate,
+          endDate: payload.current ? "" : payload.endDate,
+          current: payload.current,
+          image: payload.removeLogo ? "" : formData.image,
+          certificate: payload.removeCertificate ? "" : formData.certificate,
+        }
+
+        setExperiences((currentExperiences) =>
+          currentExperiences.map((experience) =>
+            experience.id === editingExperience.id ? updatedExperience : experience,
+          ),
+        )
+        saveExperienceEditOverride(updatedExperience)
         closeConfirmEditModal()
         closeModal()
         showSuccessModal("Experiencia actualizada correctamente.")
@@ -755,7 +830,9 @@ export function useExperienceManager() {
         showSuccessModal("Experiencia registrada correctamente.")
       }
 
-      await loadExperiences()
+      if (!editingExperience) {
+        await loadExperiences()
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudo guardar la experiencia."
       showFeedback(message, "error")
@@ -787,7 +864,7 @@ export function useExperienceManager() {
       company: validateExperienceField("company", formData),
       email: validateExperienceField("email", formData),
       position: validateExperienceField("position", formData),
-      fieldOfStudy: editingExperience ? "" : validateExperienceField("fieldOfStudy", formData),
+      fieldOfStudy: validateExperienceField("fieldOfStudy", formData),
       description: validateExperienceField("description", formData),
       startDate: validateExperienceField("startDate", formData),
       endDate: validateExperienceField("endDate", formData),
@@ -859,6 +936,7 @@ export function useExperienceManager() {
       } else {
         await removeExperience(id)
       }
+      removeExperienceEditOverride(id)
       await loadExperiences()
       showFeedback("Experiencia eliminada correctamente.", "success")
     } catch (error) {

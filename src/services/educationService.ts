@@ -196,6 +196,35 @@ function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "
   return formData
 }
 
+function buildEducationUpdateFormData(payload: ExperiencePayload) {
+  const formData = new FormData()
+
+  formData.append("_method", "PUT")
+  formData.append("institution", payload.company.trim())
+  formData.append("title", payload.position.trim())
+  formData.append("field_to_study", payload.fieldOfStudy.trim())
+  formData.append("start_date", payload.startDate.trim())
+  formData.append("description", payload.description.trim())
+  formData.append("end_date", payload.current ? "" : payload.endDate.trim())
+
+  if (payload.certificateFile) {
+    formData.append("certificate", payload.certificateFile)
+  }
+
+  return formData
+}
+
+function buildEducationUpdateBody(payload: ExperiencePayload) {
+  return {
+    institution: payload.company.trim(),
+    title: payload.position.trim(),
+    field_to_study: payload.fieldOfStudy.trim(),
+    start_date: payload.startDate.trim(),
+    description: payload.description.trim(),
+    end_date: payload.current ? null : payload.endDate.trim() || null,
+  }
+}
+
 export async function getEducation(): Promise<ExperienceItem[]> {
   try {
     const response = await api.get(EDUCATION_ENDPOINT, {
@@ -230,15 +259,31 @@ export async function createEducation(payload: ExperiencePayload): Promise<Exper
 
 export async function updateEducation(id: string, payload: ExperiencePayload): Promise<ExperienceItem> {
   try {
-    const response = await api.put(`${EDUCATION_ENDPOINT}/${id}`, buildEducationFormData(payload, { mode: "update" }), {
+    const response = await api.put(`${EDUCATION_ENDPOINT}/${id}`, buildEducationUpdateBody(payload), {
       timeout: EDUCATION_MUTATION_TIMEOUT_MS,
       headers: {
         Accept: "application/json",
+        "Content-Type": "application/json",
       },
     })
 
     return normalizeEducation(unwrapEducation(response.data), 0)
   } catch (error) {
+    if (axios.isAxiosError(error) && [404, 405, 415, 422].includes(error.response?.status ?? 0)) {
+      try {
+        const response = await api.post(`${EDUCATION_ENDPOINT}/${id}`, buildEducationUpdateFormData(payload), {
+          timeout: EDUCATION_MUTATION_TIMEOUT_MS,
+          headers: {
+            Accept: "application/json",
+          },
+        })
+
+        return normalizeEducation(unwrapEducation(response.data), 0)
+      } catch (fallbackError) {
+        throw formatError(fallbackError)
+      }
+    }
+
     throw formatError(error)
   }
 }

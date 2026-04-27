@@ -355,13 +355,17 @@ export function ExperienceManagerModals({
           isEditing={manager.isEditing}
           isSaving={manager.isSaving}
           canRemoveImage={manager.canRemoveImage}
+          canRemoveCertificate={manager.canRemoveCertificate}
           hideTypeField={hideTypeField}
           fileInputRef={manager.fileInputRef}
+          certificateInputRef={manager.certificateInputRef}
           onClose={manager.closeModal}
           onFieldChange={manager.updateField}
           onBlur={manager.handleBlur}
           onImageChange={manager.handleImageChange}
+          onCertificateChange={manager.handleCertificateChange}
           onRemoveImage={manager.removeImage}
+          onRemoveCertificate={manager.removeCertificate}
           onSubmit={manager.handleSubmit}
         />
       ) : null}
