@@ -2,32 +2,21 @@ import { api } from "@/services/api";
 
 const IMAGE_UPLOAD_TIMEOUT_MS = 180_000;
 
-function extractImageUrlFromResponse(body: unknown): string | null {
+function extractImageIdFromResponse(body: unknown): number | null {
   if (body == null || typeof body !== "object") return null;
   const p = body as Record<string, unknown>;
 
-  const tryString = (v: unknown): string | null => {
-    if (typeof v !== "string") return null;
-    const s = v.trim();
-    return s.length > 0 ? s : null;
-  };
+  const tryNumber = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
 
-  const direct =
-    tryString(p.url) ??
-    tryString(p.image_url) ??
-    (typeof p.path === "string" && /^https?:\/\//i.test(p.path) ? p.path.trim() : null);
-  if (direct) return direct;
+  const direct = tryNumber(p.id) ?? tryNumber(p.image_id);
+  if (direct != null) return direct;
 
   const nested = p.data;
-  if (typeof nested === "string" && /^https?:\/\//i.test(nested)) return nested.trim();
   if (nested && typeof nested === "object") {
     const d = nested as Record<string, unknown>;
-    return (
-      tryString(d.url) ??
-      tryString(d.image_url) ??
-      (typeof d.path === "string" && /^https?:\/\//i.test(d.path) ? d.path.trim() : null)
-    );
+    return tryNumber(d.id) ?? tryNumber(d.image_id);
   }
+
   return null;
 }
 
@@ -133,12 +122,10 @@ export const uploadImage = async (file: File) => {
     throw new Error(msg);
   }
 
-  const url = extractImageUrlFromResponse(res.data);
-  if (!url) {
-    console.error("Respuesta de POST /images sin URL reconocible:", res.data);
-    throw new Error(
-      "La respuesta de imágenes no incluye la URL. Revisa el formato del API."
-    );
+  const imageId = extractImageIdFromResponse(res.data);
+  if (imageId == null) {
+    console.error("Respuesta de POST /images sin id reconocible:", res.data);
+    throw new Error("La respuesta de imágenes no incluye el id. Revisa el formato del API.");
   }
-  return url;
+  return imageId;
 };

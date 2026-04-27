@@ -1,4 +1,4 @@
-import { Award, Briefcase, ChevronLeft, ChevronRight, Eye, FolderGit2, Globe, LayoutTemplate, Settings2, Upload, User, GraduationCap } from "lucide-react"
+import { Award, Briefcase, ChevronLeft, ChevronRight, Eye, FolderGit2, Globe, LayoutTemplate, Settings2, Upload, User, GraduationCap, ChevronDown } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 
@@ -25,10 +25,15 @@ const navItems: NavItem[] = [
 
 const Sidebar = () => {
   const location = useLocation()
-  const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [skillsOpen, setSkillsOpen] = useState(location.pathname.includes('/habilidades'));
 
   useEffect(() => {
     setIsMobileOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    setSkillsOpen(location.pathname.includes('/habilidades'))
   }, [location.pathname])
 
   const sidebarContent = useMemo(
@@ -43,6 +48,37 @@ const Sidebar = () => {
         <nav className="space-y-2">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path
+
+          if (item.id === "habilidades") {
+            return (
+              <div key={item.id} className="space-y-1">
+                <button
+                  onClick={() => setSkillsOpen(!skillsOpen)}
+                  className={`w-full flex items-center justify-between px-3 py-3 rounded-xl transition-all ${
+                    isActive || location.pathname.includes('/habilidades')
+                      ? "bg-[#003A6C] text-white"
+                      : "text-[#4982ad] hover:bg-[#77b6e6]/30"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon className="w-5 h-5" />
+                    <span className="font-normal">{item.label}</span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${skillsOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Submenú de Habilidades */}
+                {skillsOpen && (
+                  <div className="ml-9 flex flex-col gap-1 border-l-2 border-[#c2dbed] pl-2 animate-in slide-in-from-top-1">
+                    <Link to="/habilidades/ver" className={`px-3 py-2 text-sm rounded-lg ${location.pathname === '/habilidades/ver' ? 'bg-[#77b6e6]/30 text-[#003A6C] font-semibold' : 'text-[#4982ad] hover:text-[#003A6C]'}`}>Ver habilidades</Link>
+                    <Link to="/habilidades/añadir" className={`px-3 py-2 text-sm rounded-lg ${location.pathname === '/habilidades/añadir' ? 'bg-[#77b6e6]/30 text-[#003A6C] font-semibold' : 'text-[#4982ad] hover:text-[#003A6C]'}`}>Añadir habilidad</Link>
+                    <Link to="/habilidades/editar" className={`px-3 py-2 text-sm rounded-lg ${location.pathname === '/habilidades/editar' ? 'bg-[#77b6e6]/30 text-[#003A6C] font-semibold' : 'text-[#4982ad] hover:text-[#003A6C]'}`}>Editar habilidad</Link>
+                    <Link to="/habilidades/eliminar" className={`px-3 py-2 text-sm rounded-lg ${location.pathname === '/habilidades/eliminar' ? 'bg-[#77b6e6]/30 text-[#003A6C] font-semibold' : 'text-[#4982ad] hover:text-[#003A6C]'}`}>Eliminar habilidad</Link>
+                  </div>
+                )}
+              </div>
+            );
+          }
 
             return (
               <Link
@@ -62,7 +98,7 @@ const Sidebar = () => {
         </nav>
       </>
     ),
-    [location.pathname],
+    [location.pathname, skillsOpen],
   )
 
   return (
