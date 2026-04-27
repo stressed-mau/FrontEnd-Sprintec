@@ -38,6 +38,8 @@ const ViewSkillsPage = () => {
                   </div>
                 ))}
               </div>
+              <div className="w-full py-20 border-2 border-dashed border-[#6dacbf]/50 rounded-[2rem] flex items-center justify-center bg-white/50">
+                   <p className="text-[#4B778D] font-medium">No hay habilidades técnicas registradas</p>  </div>
             </section>
 
             <section>
@@ -52,6 +54,8 @@ const ViewSkillsPage = () => {
                   </div>
                 ))}
               </div>
+              <div className="w-full py-20 border-2 border-dashed border-[#6dacbf]/50 rounded-[2rem] flex items-center justify-center bg-white/50">
+                <p className="text-[#4B778D] font-medium">No hay habilidades blandas registradas</p> </div>
             </section>
           </div>
         </main>
