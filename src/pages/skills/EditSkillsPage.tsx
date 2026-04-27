@@ -2,7 +2,7 @@ import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { Code2, Lightbulb, Search, X } from 'lucide-react';
-import { useSkillsManager } from '../../hooks/useSkillsManager';
+import { useSkillsManager } from '@/hooks/useSkillsManager';
 import ConfirmationModal from '../../components/ConfirmationModal';
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -41,7 +41,7 @@ const EditSkillsPage = () => {
     showConfirmEdit,
     setShowConfirmEdit,
     showSuccessModal,
-    setShowSuccessModal,
+    closeSuccessModal,
     successMessage,
   } = useSkillsManager();
 
@@ -335,7 +335,7 @@ const EditSkillsPage = () => {
         isOpen={showSuccessModal}
         title="Éxito"
         message={successMessage || 'La habilidad se ha actualizado correctamente.'}
-        onClose={() => setShowSuccessModal(false)}
+        onClose={closeSuccessModal}
       />
 
       <Footer />

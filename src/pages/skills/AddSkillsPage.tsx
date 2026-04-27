@@ -2,7 +2,7 @@ import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { Plus } from 'lucide-react';
-import { useSkillsManager } from '../../hooks/useSkillsManager';
+import { useSkillsManager } from '@/hooks/useSkillsManager';
 import ConfirmationModal from '../../components/ConfirmationModal';
 
 const AddSkillsPage = () => {
@@ -17,7 +17,7 @@ const AddSkillsPage = () => {
     isSaving,
     errorMessage,
     showSuccessModal,
-    setShowSuccessModal,
+    closeSuccessModal,
     successMessage,
   } = useSkillsManager();
 
@@ -47,7 +47,7 @@ const AddSkillsPage = () => {
             </div>
 
             {/* Formulario en tarjeta */}
-            <div className="bg-white rounded-[2rem] p-6 sm:p-8 shadow-sm border border-[#6dacbf]/20">
+            <div className="bg-[#D9EAF8] rounded-[2rem] p-6 sm:p-8 shadow-sm border border-[#6dacbf]/20">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -153,7 +153,7 @@ const AddSkillsPage = () => {
         isOpen={showSuccessModal}
         title="Éxito"
         message={successMessage || 'La habilidad se ha registrado correctamente.'}
-        onClose={() => setShowSuccessModal(false)}
+        onClose={closeSuccessModal}
       />
 
       <Footer />

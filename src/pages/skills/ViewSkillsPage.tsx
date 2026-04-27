@@ -2,7 +2,7 @@ import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { Code2, Lightbulb, Search } from 'lucide-react';
-import { useSkillsManager } from '../../hooks/useSkillsManager';
+import { useSkillsManager } from '@/hooks/useSkillsManager';
 
 const LEVEL_LABELS: Record<string, string> = {
   experto: 'Experto',
