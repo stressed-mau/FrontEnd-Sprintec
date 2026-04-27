@@ -29,8 +29,12 @@ import ViewSkillsPage from "@/pages/skills/ViewSkillsPage"
 import AddSkillsPage from "@/pages/skills/AddSkillsPage"
 import EditSkillsPage from "@/pages/skills/EditSkillsPage"
 import DeleteSkillsPage from "@/pages/skills/DeleteSkillsPage"
+import ViewCertificatesPage from "@/pages/certificates/ViewCertificatesPage"
+import AddCertificatesPage from "@/pages/certificates/AddCertificatesPage"
+import EditCertificatesPage from "@/pages/certificates/EditCertificatesPage"
+import DeleteCertificatesPage from "@/pages/certificates/DeleteCertificatesPage"
 
-import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE, CERTIFICATES_ROUTE } from "@/routes/route-paths"
 
 function AppRoutes() {
   return (
@@ -64,6 +68,11 @@ function AppRoutes() {
         <Route path="/experiencia/ver" element={<ViewExperiencePage />} />
         <Route path="/experiencia/editar" element={<EditExperiencePage />} />
         <Route path="/experiencia/eliminar" element={<DeleteExperiencePage />} />
+        <Route path={CERTIFICATES_ROUTE} element={<Navigate to="/certificados/ver" replace />} />
+        <Route path="/certificados/ver" element={<ViewCertificatesPage />} />
+        <Route path="/certificados/añadir" element={<AddCertificatesPage />} />
+        <Route path="/certificados/editar" element={<EditCertificatesPage />} />
+        <Route path="/certificados/eliminar" element={<DeleteCertificatesPage />} />
         <Route path="/plantillas" element={<PortfolioTemplatesPage />} />
         <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
         
