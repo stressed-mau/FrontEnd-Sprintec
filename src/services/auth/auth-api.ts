@@ -11,27 +11,21 @@ function buildLoginPayload(payload: LoginRequest): LoginRequest {
   }
 }
 
-function toFormUrlEncoded(payload: Record<string, string>) {
-  const params = new URLSearchParams()
-
-  Object.entries(payload).forEach(([key, value]) => {
-    params.append(key, value)
-  })
-
-  return params
-}
-
 async function postPublicAuth(path: string, payload: Record<string, string>) {
   const response = await axios.post<AuthResponse>(
     `${API_BASE_URL.replace(/\/+$/, "")}${path}`,
-    toFormUrlEncoded(payload),
+    payload,
     {
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "Content-Type": "application/json",
       },
     },
   )
+
+  if (!response.data || typeof response.data !== "object" || !("access_token" in response.data)) {
+    throw new Error("El backend no devolvió una respuesta JSON válida de autenticación.")
+  }
 
   return response.data
 }
