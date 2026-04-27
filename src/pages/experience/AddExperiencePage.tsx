@@ -1,18 +1,47 @@
-import { Footer } from "@/components/Footer"
-import Header from "@/components/HeaderUser"
-import Sidebar from "@/components/Sidebar"
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+
+import { ExperienceInlineForm } from "@/pages/experience/ExperienceInlineForm"
+import { ExperienceManagerModals, ExperiencePageShell, FeedbackMessage } from "@/pages/experience/ExperiencePageParts"
+import { useExperienceManager } from "@/hooks/useExperienceManager"
 
 export default function AddExperiencePage() {
+  const navigate = useNavigate()
+  const manager = useExperienceManager()
+
+  useEffect(() => {
+    manager.prepareCreateForm("laboral")
+    // Prepare the inline form once for this page.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#F7F0E1]">
-      <Header />
-      <div className="flex flex-1 flex-col lg:flex-row">
-        <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">Agregar experiencia</h1>
-        </main>
-      </div>
-      <Footer />
-    </div>
+    <ExperiencePageShell
+      title="Añadir Experiencia Profesional"
+      description="Agrega una nueva experiencia laboral a tu portafolio."
+    >
+      <FeedbackMessage message={manager.feedbackMessage || manager.pageError} type={manager.feedbackType || "error"} />
+
+      <ExperienceInlineForm
+        mode="experience"
+        formData={manager.formData}
+        errors={manager.errors}
+        isSaving={manager.isSaving}
+        canRemoveImage={manager.canRemoveImage}
+        canRemoveCertificate={manager.canRemoveCertificate}
+        fileInputRef={manager.fileInputRef}
+        certificateInputRef={manager.certificateInputRef}
+        onFieldChange={manager.updateField}
+        onBlur={manager.handleBlur}
+        onImageChange={manager.handleImageChange}
+        onCertificateChange={manager.handleCertificateChange}
+        onRemoveImage={manager.removeImage}
+        onRemoveCertificate={manager.removeCertificate}
+        onSubmit={manager.handleSubmit}
+        onCancel={() => navigate("/experiencia/ver")}
+      />
+
+      <ExperienceManagerModals manager={manager} hideTypeField onSuccessClose={() => navigate("/experiencia/ver")} />
+    </ExperiencePageShell>
   )
 }

@@ -3,15 +3,9 @@ import { buildAuthServiceError } from "@/services/auth/auth-errors"
 import type { AuthResponse, LoginRequest, RegisterRequest } from "@/services/auth/auth-types"
 
 function buildLoginPayload(payload: LoginRequest): LoginRequest {
-  const identifier = payload.user.trim()
-  const isEmail = identifier.includes("@")
-
   return {
-    user: identifier,
-    login: identifier,
+    user: payload.user.trim(),
     password: payload.password,
-    email: isEmail ? identifier : undefined,
-    username: isEmail ? undefined : identifier,
   }
 }
 

@@ -12,11 +12,14 @@ export type ExperienceItem = {
   company: string
   email: string
   position: string
+  location: string
+  fieldOfStudy: string
   description: string
   startDate: string
   endDate: string
   current: boolean
   image: string
+  certificate: string
 }
 
 export type ExperiencePayload = {
@@ -24,12 +27,16 @@ export type ExperiencePayload = {
   company: string
   email: string
   position: string
+  location: string
+  fieldOfStudy: string
   description: string
   startDate: string
   endDate: string
   current: boolean
   logoFile?: File | null
+  certificateFile?: File | null
   removeLogo?: boolean
+  removeCertificate?: boolean
 }
 
 type ExperienceDto = {
@@ -72,11 +79,21 @@ type ExperienceDto = {
   company_email?: string | null
   email?: string | null
   correo_empresa?: string | null
+  ubication?: string | null
+  location?: string | null
+  ubicacion?: string | null
+  field_of_study?: string | null
+  field?: string | null
+  campo_estudio?: string | null
   logo?: string | null
   logo_url?: string | null
   logo_path?: string | null
   image_url?: string | null
   image?: string | null
+  certificate?: string | null
+  certificate_url?: string | null
+  certificate_path?: string | null
+  document?: string | null
   current?: boolean | number | string | null
   is_current?: boolean | number | string | null
 }
@@ -122,6 +139,10 @@ function unwrapPayload(data: unknown): unknown {
 
   if ("experience" in record && record.experience && typeof record.experience === "object") {
     return unwrapPayload(record.experience)
+  }
+
+  if ("education" in record && record.education && typeof record.education === "object") {
+    return unwrapPayload(record.education)
   }
 
   return data
@@ -326,6 +347,8 @@ function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: Exper
       dto.college,
     ),
     email: asString(dto.company_email ?? dto.correo_empresa ?? dto.email),
+    location: asString(dto.ubication ?? dto.location ?? dto.ubicacion),
+    fieldOfStudy: asString(dto.field_of_study ?? dto.field ?? dto.campo_estudio),
     position: asString(
       dto.title ??
       dto.degree ??
@@ -341,46 +364,76 @@ function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: Exper
     endDate,
     current: explicitCurrent ?? !endDate,
     image: toAbsoluteAssetUrl(dto.logo_url ?? dto.logo_path ?? dto.logo ?? dto.image_url ?? dto.image),
+    certificate: toAbsoluteAssetUrl(dto.certificate_url ?? dto.certificate_path ?? dto.certificate ?? dto.document),
   }
 }
 
-function buildFormData(payload: ExperiencePayload, options?: { methodOverride?: "PUT" }) {
+function buildExperienceFormData(payload: ExperiencePayload, options?: { mode?: "create" | "update" }) {
   const formData = new FormData()
-
-  if (options?.methodOverride) {
-    formData.append("_method", options.methodOverride)
-  }
-
-  formData.append("type", payload.type)
-  formData.append("name", payload.company.trim())
-  formData.append("title", payload.position.trim())
-  formData.append("start_date", payload.startDate.trim())
 
   const description = payload.description.trim()
   const email = payload.email.trim()
   const endDate = payload.endDate.trim()
+  const location = payload.location.trim()
+
+  if (options?.mode !== "update") {
+    formData.append("company_name", payload.company.trim())
+    formData.append("role", payload.position.trim())
+    formData.append("start_date", payload.startDate.trim())
+
+    if (email) {
+      formData.append("company_email", email)
+    }
+
+    if (payload.logoFile) {
+      formData.append("logo", payload.logoFile)
+    }
+  }
 
   if (description) {
     formData.append("description", description)
   }
 
-  if (email) {
-    formData.append("company_email", email)
+  if (location) {
+    formData.append("ubication", location)
   }
 
   if (endDate) {
     formData.append("end_date", endDate)
   }
 
+  return formData
+}
+
+function buildExperienceUpdateFormData(payload: ExperiencePayload) {
+  const formData = new FormData()
+
+  formData.append("_method", "PUT")
+  formData.append("company_name", payload.company.trim())
+  formData.append("role", payload.position.trim())
+  formData.append("start_date", payload.startDate.trim())
+  formData.append("company_email", payload.email.trim())
+  formData.append("description", payload.description.trim())
+  formData.append("ubication", payload.location.trim())
+  formData.append("end_date", payload.current ? "" : payload.endDate.trim())
+
   if (payload.logoFile) {
     formData.append("logo", payload.logoFile)
   }
 
-  if (payload.removeLogo) {
-    formData.append("remove_logo", "1")
-  }
-
   return formData
+}
+
+function buildExperienceUpdateBody(payload: ExperiencePayload) {
+  return {
+    company_name: payload.company.trim(),
+    role: payload.position.trim(),
+    start_date: payload.startDate.trim(),
+    company_email: payload.email.trim(),
+    description: payload.description.trim(),
+    ubication: payload.location.trim(),
+    end_date: payload.current ? null : payload.endDate.trim() || null,
+  }
 }
 
 export async function getExperiences(): Promise<ExperienceItem[]> {
@@ -395,7 +448,7 @@ export async function getExperiences(): Promise<ExperienceItem[]> {
     }
 
     return unwrapExperienceGroups(parseResponseData(response.data)).flatMap((group) =>
-      group.items.map((item, index) => normalizeExperience(item, index, group.type)),
+      group.items.map((item, index) => normalizeExperience(item, index, group.type ?? "laboral")),
     )
   } catch (error) {
     throw formatError(error)
@@ -404,14 +457,14 @@ export async function getExperiences(): Promise<ExperienceItem[]> {
 
 export async function createExperience(payload: ExperiencePayload): Promise<ExperienceItem> {
   try {
-    const response = await api.post(EXPERIENCES_ENDPOINT, buildFormData(payload), {
+    const response = await api.post(EXPERIENCES_ENDPOINT, buildExperienceFormData(payload), {
       timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
       headers: {
         Accept: "application/json",
       },
     })
 
-    return normalizeExperience(unwrapExperience(response.data), 0)
+    return normalizeExperience(unwrapExperience(response.data), 0, payload.type)
   } catch (error) {
     throw formatError(error)
   }
@@ -419,24 +472,39 @@ export async function createExperience(payload: ExperiencePayload): Promise<Expe
 
 export async function updateExperience(id: string, payload: ExperiencePayload): Promise<ExperienceItem> {
   try {
-    const response = await api.post(`${EXPERIENCES_ENDPOINT}/${id}`, buildFormData(payload, { methodOverride: "PUT" }), {
+    const response = await api.put(`${EXPERIENCES_ENDPOINT}/${id}`, buildExperienceUpdateBody(payload), {
       timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
       headers: {
         Accept: "application/json",
+        "Content-Type": "application/json",
       },
     })
 
-    return normalizeExperience(unwrapExperience(response.data), 0)
+    return normalizeExperience(unwrapExperience(response.data), 0, payload.type)
   } catch (error) {
+    if (axios.isAxiosError(error) && [404, 405, 415, 422].includes(error.response?.status ?? 0)) {
+      try {
+        const response = await api.post(`${EXPERIENCES_ENDPOINT}/${id}`, buildExperienceUpdateFormData(payload), {
+          timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
+          headers: {
+            Accept: "application/json",
+          },
+        })
+
+        return normalizeExperience(unwrapExperience(response.data), 0, payload.type)
+      } catch (fallbackError) {
+        throw formatError(fallbackError)
+      }
+    }
+
     throw formatError(error)
   }
 }
 
-export async function removeExperience(id: string, type: ExperienceType): Promise<void> {
+export async function removeExperience(id: string): Promise<void> {
   try {
     await api.delete(`${EXPERIENCES_ENDPOINT}/${id}`, {
       timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
-      params: { type },
     })
   } catch (error) {
     throw formatError(error)

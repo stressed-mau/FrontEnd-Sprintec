@@ -27,9 +27,10 @@ type CreateProjectPayload = {
   final_date: string | null;
   url_to_project: string | null;
   url_to_deploy: string | null;
-  photograph: string | null;
+  image_id: number;
   project_rol: string | null;
   is_current: boolean;
+  technologies?: number[];
 };
 
 function projectFromCreatePayload(
@@ -48,7 +49,8 @@ function projectFromCreatePayload(
     is_current: payload.is_current,
     github: payload.url_to_project ?? undefined,
     demo: payload.url_to_deploy ?? undefined,
-    image: payload.photograph ?? undefined,
+    // El backend ahora requiere `image_id`. Si no refrescamos por GET, no tenemos URL aún.
+    image: undefined,
   };
 }
 
@@ -67,7 +69,7 @@ function mapBackendErrors(backendErrors: Record<string, string[] | string> | und
     final_date: "fechaFin",
     url_to_project: "github",
     url_to_deploy: "demo",
-    photograph: "image",
+    image_id: "image",
     image: "image",
   };
 
@@ -107,7 +109,7 @@ export const useCreateProyect = () => {
                 final_date: proy.final_date,
                 url_to_project: proy.url_to_project,
                 url_to_deploy: proy.url_to_deploy,
-                photograph: proy.photograph,
+                image_id: Number(proy.image_id ?? 0),
                 project_rol: proy.project_rol,
                 is_current: proy.is_current,
               },
@@ -360,7 +362,13 @@ export const useCreateProyect = () => {
       }
     }
 
-    if (typeof Blob !== "undefined" && file instanceof Blob && file.size > 0) {
+    const hasSelectedImage =
+      typeof File !== "undefined" && file instanceof File && file.size > 0;
+
+    // Backend: `image_id` es requerido => debemos subir imagen sí o sí.
+    if (!hasSelectedImage) {
+      newErrors.image = "La imagen del proyecto es obligatoria.";
+    } else {
       const allowedTypes = ["image/jpeg", "image/png"];
       if (!allowedTypes.includes(file.type)) {
         newErrors.image = "Formato de imagen no permitido.";
@@ -378,7 +386,7 @@ export const useCreateProyect = () => {
       const isEditing = editingIndex !== null;
       const projectId = isEditing ? projects[editingIndex].id : null;
       const technologyIds = selectedTechs.map((t) => t.id);
-      let imageUrl: string | null = null;
+      let imageId: number | null = null;
 
       const fileInput = formData.get("image");
       const hasImage =
@@ -386,9 +394,11 @@ export const useCreateProyect = () => {
         fileInput instanceof File &&
         fileInput.size > 0;
 
-      if (hasImage) {
-        imageUrl = await uploadImage(fileInput);
+      if (!hasImage) {
+        throw new Error("La imagen del proyecto es obligatoria.");
       }
+
+      imageId = await uploadImage(fileInput);
 
       const payload: CreateProjectPayload = {
         title: nombre,
@@ -397,7 +407,7 @@ export const useCreateProyect = () => {
         final_date: is_current ? null : fechaFin,
         url_to_project: github || null,
         url_to_deploy: demo || null,
-        photograph: imageUrl,
+        image_id: imageId,
         technologies: technologyIds,
         project_rol: selectedRole,
         is_current,

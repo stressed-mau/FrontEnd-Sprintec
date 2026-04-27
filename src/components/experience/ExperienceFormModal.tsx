@@ -1,4 +1,4 @@
-import { ImagePlus, X } from "lucide-react"
+import { FileText, ImagePlus, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,12 +12,17 @@ type ExperienceFormModalProps = {
   isEditing: boolean
   isSaving: boolean
   canRemoveImage: boolean
+  canRemoveCertificate: boolean
+  hideTypeField?: boolean
   fileInputRef: React.RefObject<HTMLInputElement | null>
+  certificateInputRef: React.RefObject<HTMLInputElement | null>
   onClose: () => void
   onFieldChange: (field: keyof ExperienceFormValues, value: string | boolean) => void
   onBlur: (field: keyof ExperienceFormValues) => void
   onImageChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+  onCertificateChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   onRemoveImage: () => void
+  onRemoveCertificate: () => void
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 }
 
@@ -27,12 +32,17 @@ export function ExperienceFormModal({
   isEditing,
   isSaving,
   canRemoveImage,
+  canRemoveCertificate,
+  hideTypeField = false,
   fileInputRef,
+  certificateInputRef,
   onClose,
   onFieldChange,
   onBlur,
   onImageChange,
+  onCertificateChange,
   onRemoveImage,
+  onRemoveCertificate,
   onSubmit,
 }: ExperienceFormModalProps) {
   const companyLabel = formData.type === "laboral" ? "Empresa" : "Institucion"
@@ -71,7 +81,7 @@ export function ExperienceFormModal({
         </div>
 
         <form id="formulario-experiencia" noValidate onSubmit={onSubmit} className="space-y-4 px-5 py-5 sm:px-6 sm:py-6">
-          {!isEditing ? (
+          {!isEditing && !hideTypeField ? (
             <div className="space-y-2">
               <Label id="experience-type-label" htmlFor="experience-type" className="text-[#003A6C]">
                 Tipo de experiencia <span aria-hidden="true">*</span>
@@ -132,6 +142,28 @@ export function ExperienceFormModal({
             </div>
           ) : null}
 
+          {isLaboralExperience ? (
+            <div className="space-y-2">
+              <Label id="experience-location-label" htmlFor="experience-location" className="text-[#003A6C]">
+                Ubicacion
+              </Label>
+              <Input
+                id="experience-location"
+                maxLength={100}
+                value={formData.location}
+                disabled={isSaving}
+                onBlur={() => onBlur("location")}
+                onChange={(event) => onFieldChange("location", event.target.value)}
+                placeholder="Ej: La Paz, Bolivia / Remoto"
+                className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+                aria-invalid={Boolean(errors.location)}
+                aria-labelledby="experience-location-label"
+                aria-describedby={errors.location ? "experience-location-error" : undefined}
+              />
+              {errors.location ? <p id="experience-location-error" className="text-sm text-red-600">{errors.location}</p> : null}
+            </div>
+          ) : null}
+
           <div className="space-y-2">
             <Label id="experience-position-label" htmlFor="experience-position" className="text-[#003A6C]">
               {positionLabel} <span aria-hidden="true">*</span>
@@ -150,6 +182,27 @@ export function ExperienceFormModal({
             />
             {errors.position ? <p id="experience-position-error" className="text-sm text-red-600">{errors.position}</p> : null}
           </div>
+
+          {!isLaboralExperience ? (
+            <div className="space-y-2">
+              <Label id="experience-field-label" htmlFor="experience-field" className="text-[#003A6C]">
+                Campo de estudio <span aria-hidden="true">*</span>
+              </Label>
+              <Input
+                id="experience-field"
+                maxLength={100}
+                value={formData.fieldOfStudy}
+                disabled={isSaving}
+                onBlur={() => onBlur("fieldOfStudy")}
+                onChange={(event) => onFieldChange("fieldOfStudy", event.target.value)}
+                className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+                aria-invalid={Boolean(errors.fieldOfStudy)}
+                aria-labelledby="experience-field-label"
+                aria-describedby={errors.fieldOfStudy ? "experience-field-error" : undefined}
+              />
+              {errors.fieldOfStudy ? <p id="experience-field-error" className="text-sm text-red-600">{errors.fieldOfStudy}</p> : null}
+            </div>
+          ) : null}
 
           <div className="space-y-2">
             <Label id="experience-description-label" htmlFor="experience-description" className="text-[#003A6C]">
@@ -227,61 +280,114 @@ export function ExperienceFormModal({
             </Label>
           </div>
 
-          <div className="space-y-2">
-            <Label id="experience-image-label" htmlFor="experience-image" className="text-[#003A6C]">
-              Logo de la empresa o institucion
-            </Label>
+          {isLaboralExperience ? (
+            <div className="space-y-2">
+              <Label id="experience-image-label" htmlFor="experience-image" className="text-[#003A6C]">
+                Logo de la empresa
+              </Label>
 
-            <input
-              id="experience-image"
-              ref={fileInputRef}
-              type="file"
-              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-              disabled={isSaving}
-              onChange={onImageChange}
-              className="hidden"
-            />
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                id="boton-subir-logo"
-                type="button"
-                variant="outline"
+              <input
+                id="experience-image"
+                ref={fileInputRef}
+                type="file"
+                accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                 disabled={isSaving}
-                onClick={() => fileInputRef.current?.click()}
-                className="h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
-              >
-                <ImagePlus className="mr-2 size-4" />
-                {formData.image ? "Cambiar imagen" : "Subir imagen"}
-              </Button>
+                onChange={onImageChange}
+                className="hidden"
+              />
 
-              {canRemoveImage ? (
+              <div className="flex flex-wrap items-center gap-2">
                 <Button
-                  id="boton-eliminar-logo"
+                  id="boton-subir-logo"
                   type="button"
                   variant="outline"
                   disabled={isSaving}
-                  onClick={onRemoveImage}
-                  className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
                 >
-                  <X className="mr-2 size-4" />
-                  Eliminar
+                  <ImagePlus className="mr-2 size-4" />
+                  {formData.image ? "Cambiar imagen" : "Subir imagen"}
                 </Button>
-              ) : null}
-            </div>
 
-            {formData.image ? (
-              <div className="mt-2 space-y-2">
-                <img src={formData.image} alt="Vista previa" className="size-24 rounded-lg object-cover shadow-sm" />
-                <p className="text-xs text-[#4B778D]">
-                  Puedes mantener la imagen actual, subir otra o eliminarla.
-                </p>
+                {canRemoveImage ? (
+                  <Button
+                    id="boton-eliminar-logo"
+                    type="button"
+                    variant="outline"
+                    disabled={isSaving}
+                    onClick={onRemoveImage}
+                    className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
+                  >
+                    <X className="mr-2 size-4" />
+                    Eliminar
+                  </Button>
+                ) : null}
               </div>
-            ) : null}
 
-            {errors.image ? <p className="text-sm text-red-600">{errors.image}</p> : null}
-            <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG y PNG. Tamano maximo: 2 MB.</p>
-          </div>
+              {formData.image ? (
+                <div className="mt-2 space-y-2">
+                  <img src={formData.image} alt="Vista previa" className="size-24 rounded-lg object-cover shadow-sm" />
+                  <p className="text-xs text-[#4B778D]">
+                    Puedes mantener la imagen actual, subir otra o eliminarla.
+                  </p>
+                </div>
+              ) : null}
+
+              {errors.image ? <p className="text-sm text-red-600">{errors.image}</p> : null}
+              <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG y PNG. Tamano maximo: 2 MB.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label id="experience-certificate-label" htmlFor="experience-certificate" className="text-[#003A6C]">
+                Documento de formacion
+              </Label>
+
+              <input
+                id="experience-certificate"
+                ref={certificateInputRef}
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                disabled={isSaving}
+                onChange={onCertificateChange}
+                className="hidden"
+              />
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  id="boton-subir-certificado"
+                  type="button"
+                  variant="outline"
+                  disabled={isSaving}
+                  onClick={() => certificateInputRef.current?.click()}
+                  className="h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
+                >
+                  <FileText className="mr-2 size-4" />
+                  {formData.certificate ? "Cambiar documento" : "Subir documento"}
+                </Button>
+
+                {canRemoveCertificate ? (
+                  <Button
+                    id="boton-eliminar-certificado"
+                    type="button"
+                    variant="outline"
+                    disabled={isSaving}
+                    onClick={onRemoveCertificate}
+                    className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
+                  >
+                    <X className="mr-2 size-4" />
+                    Eliminar
+                  </Button>
+                ) : null}
+              </div>
+
+              {formData.certificate ? (
+                <p className="text-xs text-[#4B778D]">Documento seleccionado o ya adjunto.</p>
+              ) : null}
+
+              {errors.certificate ? <p className="text-sm text-red-600">{errors.certificate}</p> : null}
+              <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG, PNG y PDF. Tamano maximo: 5 MB.</p>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-4">
             <Button id="boton-guardar-experiencia" type="submit" disabled={isSaving} className="h-11 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
