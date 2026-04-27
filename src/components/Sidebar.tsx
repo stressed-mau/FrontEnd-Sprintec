@@ -35,7 +35,18 @@ const navItems: NavItem[] = [
   { id: "personal", label: "Datos personales", icon: User, path: "/personal" },
   { id: "red-profesional", label: "Red profesional", icon: Globe, path: "/red-profesional" },
   { id: "proyectos", label: "Proyectos", icon: FolderGit2, path: "/proyectos" },
-  { id: "habilidades", label: "Habilidades", icon: Award, path: "/habilidades" },
+  {
+    id: "habilidades",
+    label: "Habilidades",
+    icon: Award,
+    path: "/habilidades",
+    children: [
+      { id: "habilidades-ver", label: "Ver habilidades", path: "/habilidades/ver" },
+      { id: "habilidades-agregar", label: "Añadir habilidad", path: "/habilidades/añadir" },
+      { id: "habilidades-editar", label: "Editar habilidad", path: "/habilidades/editar" },
+      { id: "habilidades-eliminar", label: "Eliminar habilidad", path: "/habilidades/eliminar" },
+    ],
+  },
   {
     id: "experiencia",
     label: "Experiencia",
@@ -65,12 +76,18 @@ const navItems: NavItem[] = [
   { id: "publicar", label: "Publicar", icon: Upload, path: "/publicar" },
 ]
 
+function getInitialExpandedSections(pathname: string) {
+  return new Set(
+    navItems
+      .filter((item) => item.children?.length && (pathname === item.path || pathname.startsWith(`${item.path}/`)))
+      .map((item) => item.id),
+  )
+}
+
 const Sidebar = () => {
   const location = useLocation()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    () => new Set(navItems.filter((item) => location.pathname.startsWith(item.path)).map((item) => item.id)),
-  )
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => getInitialExpandedSections(location.pathname))
 
   function toggleSection(id: string) {
     setExpandedSections((current) => {
@@ -97,11 +114,10 @@ const Sidebar = () => {
 
         <nav className="space-y-2">
           {navItems.map((item) => {
-            const hasChildren = Boolean(item.children?.length)
             const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
             const isExpanded = expandedSections.has(item.id) || isActive
 
-            if (hasChildren) {
+            if (item.children?.length) {
               return (
                 <div key={item.id} className="space-y-1">
                   <button
@@ -118,8 +134,8 @@ const Sidebar = () => {
                   </button>
 
                   {isExpanded ? (
-                    <div className="space-y-1 pl-10">
-                      {item.children?.map((child) => {
+                    <div className="ml-9 flex flex-col gap-1 border-l-2 border-[#c2dbed] pl-2">
+                      {item.children.map((child) => {
                         const isChildActive = location.pathname === child.path
 
                         return (
@@ -127,10 +143,10 @@ const Sidebar = () => {
                             key={child.id}
                             to={child.path}
                             onClick={() => setIsMobileOpen(false)}
-                            className={`block rounded-lg px-3 py-2 text-sm transition ${
+                            className={`rounded-lg px-3 py-2 text-sm transition ${
                               isChildActive
-                                ? "bg-[#EEF5F9] font-medium text-[#003A6C]"
-                                : "text-[#4982ad] hover:bg-[#77b6e6]/30"
+                                ? "bg-[#77b6e6]/30 font-semibold text-[#003A6C]"
+                                : "text-[#4982ad] hover:text-[#003A6C]"
                             }`}
                           >
                             {child.label}

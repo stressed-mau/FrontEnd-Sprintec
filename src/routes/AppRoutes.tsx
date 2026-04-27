@@ -21,11 +21,14 @@ import PublishPortfolio from "@/pages/PublishPortfolio"
 import RegisterPage from "@/pages/RegisterPage"
 import UserHome from "@/pages/UserHome"
 import UserPersonalData from "@/pages/UserPersonalData"
-import UserSkills from "@/pages/UserSkills"
 import MyPortfolio from "@/pages/MyPortfolio"
 import ProtectedRoute from "@/routes/ProtectedRoute"
 import PublicPortfolio from "@/pages/PublicPortfolio"
 import ExplorePortfolios from "@/pages/ExplorePortfolio"
+import ViewSkillsPage from "@/pages/skills/ViewSkillsPage"
+import AddSkillsPage from "@/pages/skills/AddSkillsPage"
+import EditSkillsPage from "@/pages/skills/EditSkillsPage"
+import DeleteSkillsPage from "@/pages/skills/DeleteSkillsPage"
 
 import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 
@@ -45,7 +48,11 @@ function AppRoutes() {
         
         <Route path="/perfil" element={<ProfilePage />} />
         
-        <Route path="/habilidades" element={<UserSkills />} />
+        <Route path="/habilidades" element={<ViewSkillsPage />} /> 
+        <Route path="/habilidades/ver" element={<ViewSkillsPage />} />
+        <Route path="/habilidades/añadir" element={<AddSkillsPage />} />
+        <Route path="/habilidades/editar" element={<EditSkillsPage />} />
+        <Route path="/habilidades/eliminar" element={<DeleteSkillsPage />} />
         <Route path="/red-profesional" element={<NetworksPage />} />
         <Route path="/formacion-academica" element={<Navigate to="/formacion-academica/ver" replace />} />
         <Route path="/formacion-academica/agregar" element={<AddEducationPage />} />
