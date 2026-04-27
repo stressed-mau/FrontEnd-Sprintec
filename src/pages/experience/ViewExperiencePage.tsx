@@ -1,18 +1,63 @@
-import { Footer } from "@/components/Footer"
-import Header from "@/components/HeaderUser"
-import Sidebar from "@/components/Sidebar"
+import { useMemo, useState } from "react"
+
+import {
+  ExperienceDetailsModal,
+  ExperiencePageShell,
+  ExperiencePagination,
+  ExperienceSearch,
+  ExperienceTable,
+  FeedbackMessage,
+} from "@/pages/experience/ExperiencePageParts"
+import { filterExperiences, paginateExperiences } from "@/pages/experience/ExperiencePageUtils"
+import { type ExperienceItem, useExperienceManager } from "@/hooks/useExperienceManager"
 
 export default function ViewExperiencePage() {
+  const manager = useExperienceManager()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedExperience, setSelectedExperience] = useState<ExperienceItem | null>(null)
+
+  const experiences = manager.laboralExperiences
+  const filteredExperiences = useMemo(() => filterExperiences(experiences, searchTerm), [experiences, searchTerm])
+  const pagination = paginateExperiences(filteredExperiences, currentPage)
+
+  function handleSearchChange(value: string) {
+    setSearchTerm(value)
+    setCurrentPage(1)
+  }
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#F7F0E1]">
-      <Header />
-      <div className="flex flex-1 flex-col lg:flex-row">
-        <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">Ver experiencia</h1>
-        </main>
-      </div>
-      <Footer />
-    </div>
+    <ExperiencePageShell
+      title="Ver experiencia"
+      description="Consulta tus experiencias laborales registradas."
+    >
+      <FeedbackMessage message={manager.pageError} type="error" />
+
+      {experiences.length > 0 ? <ExperienceSearch value={searchTerm} onChange={handleSearchChange} /> : null}
+
+      {manager.isLoading ? (
+        <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
+          Cargando experiencias...
+        </div>
+      ) : (
+        <ExperienceTable
+          experiences={pagination.items}
+          emptyMessage={searchTerm ? "No se encontraron experiencias con ese criterio." : "No hay experiencias registradas."}
+          searchTerm={searchTerm}
+          onRowClick={setSelectedExperience}
+        />
+      )}
+
+      <ExperiencePagination
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        startIndex={pagination.startIndex}
+        endIndex={pagination.endIndex}
+        totalItems={filteredExperiences.length}
+        onPageChange={setCurrentPage}
+      />
+
+      <ExperienceDetailsModal experience={selectedExperience} onClose={() => setSelectedExperience(null)} />
+    </ExperiencePageShell>
   )
 }

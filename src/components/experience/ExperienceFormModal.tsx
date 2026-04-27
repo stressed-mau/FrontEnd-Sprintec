@@ -12,6 +12,7 @@ type ExperienceFormModalProps = {
   isEditing: boolean
   isSaving: boolean
   canRemoveImage: boolean
+  hideTypeField?: boolean
   fileInputRef: React.RefObject<HTMLInputElement | null>
   onClose: () => void
   onFieldChange: (field: keyof ExperienceFormValues, value: string | boolean) => void
@@ -27,6 +28,7 @@ export function ExperienceFormModal({
   isEditing,
   isSaving,
   canRemoveImage,
+  hideTypeField = false,
   fileInputRef,
   onClose,
   onFieldChange,
@@ -71,7 +73,7 @@ export function ExperienceFormModal({
         </div>
 
         <form id="formulario-experiencia" noValidate onSubmit={onSubmit} className="space-y-4 px-5 py-5 sm:px-6 sm:py-6">
-          {!isEditing ? (
+          {!isEditing && !hideTypeField ? (
             <div className="space-y-2">
               <Label id="experience-type-label" htmlFor="experience-type" className="text-[#003A6C]">
                 Tipo de experiencia <span aria-hidden="true">*</span>
@@ -129,6 +131,28 @@ export function ExperienceFormModal({
                 aria-describedby={errors.email ? "experience-email-error" : undefined}
               />
               {errors.email ? <p id="experience-email-error" className="text-sm text-red-600">{errors.email}</p> : null}
+            </div>
+          ) : null}
+
+          {isLaboralExperience ? (
+            <div className="space-y-2">
+              <Label id="experience-location-label" htmlFor="experience-location" className="text-[#003A6C]">
+                Ubicacion
+              </Label>
+              <Input
+                id="experience-location"
+                maxLength={100}
+                value={formData.location}
+                disabled={isSaving}
+                onBlur={() => onBlur("location")}
+                onChange={(event) => onFieldChange("location", event.target.value)}
+                placeholder="Ej: La Paz, Bolivia / Remoto"
+                className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+                aria-invalid={Boolean(errors.location)}
+                aria-labelledby="experience-location-label"
+                aria-describedby={errors.location ? "experience-location-error" : undefined}
+              />
+              {errors.location ? <p id="experience-location-error" className="text-sm text-red-600">{errors.location}</p> : null}
             </div>
           ) : null}
 

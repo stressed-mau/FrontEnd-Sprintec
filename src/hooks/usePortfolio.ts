@@ -5,6 +5,7 @@ import { api } from "@/services/api";
 
 import { getUserInformation } from "@/services/PersonalDataService"; 
 import { getSkills } from "@/services/skillsService";
+import { getEducation } from "@/services/educationService";
 import { getExperiences } from "@/services/experienceService";
 import { getProjects } from "@/services/ProjectService";
 import { getUserSocialNetworks } from "@/services/socialNetworksService";
@@ -52,17 +53,18 @@ export const usePortfolio = (externalSlug?: string) => {
           });
           return; // Éxito: salimos de la función
         }
-      } catch (err) {
+      } catch {
         console.warn("No se encontró portafolio publicado o error en endpoint /p/.");
       }
 
       // --- PASO 2: CARGA DE EMERGENCIA (DATOS INDIVIDUALES) ---
       // Si no hay portafolio publicado pero tenemos sesión, traemos sus datos base
       if (session?.user?.id) {
-        const [userData, skills, experiences, projects, social] = await Promise.all([
+        const [userData, skills, experiences, education, projects, social] = await Promise.all([
           getUserInformation(session.user.id),
           getSkills(),
           getExperiences(),
+          getEducation(),
           getProjects(),
           getUserSocialNetworks(),
         ]);
@@ -80,7 +82,7 @@ export const usePortfolio = (externalSlug?: string) => {
           },
           // Forzamos el tipado para que coincida con tu interfaz Portfolio
           skills: skills as Skill[],
-          experiences: experiences as unknown as Experience[],
+          experiences: [...experiences, ...education] as unknown as Experience[],
           projects: projects as unknown as Project[],
           socialNetworks: social as SocialNetwork[],
           template: 0, // Template 0 indica que no ha elegido uno aún

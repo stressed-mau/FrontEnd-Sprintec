@@ -3,6 +3,12 @@ import type { ChangeEvent, FormEvent } from "react"
 
 import isEmail from "validator/lib/isEmail"
 import {
+  createEducation,
+  getEducation,
+  removeEducation,
+  updateEducation,
+} from "@/services/educationService"
+import {
   createExperience,
   getExperiences,
   removeExperience,
@@ -22,18 +28,24 @@ const EMPTY_FORM: ExperienceFormValues = {
   company: "",
   email: "",
   position: "",
+  location: "",
+  fieldOfStudy: "",
   description: "",
   startDate: "",
   endDate: "",
   current: false,
   image: "",
+  certificate: "",
 }
 
 const DATE_PATTERN = /^(\d{2})\/(\d{2})\/(\d{4})$/
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024
+const MAX_CERTIFICATE_SIZE_BYTES = 5 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
+const ALLOWED_CERTIFICATE_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
+const ALLOWED_CERTIFICATE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf"]
 
 function normalizeExperienceTypeValue(value: string): ExperienceFormValues["type"] {
   return value === "academica" ? "academica" : "laboral"
@@ -210,6 +222,17 @@ function hasAllowedImageFormat(file: File) {
   return ALLOWED_IMAGE_TYPES.includes(file.type.toLowerCase())
 }
 
+function hasAllowedCertificateFormat(file: File) {
+  const normalizedFileName = file.name.trim().toLowerCase()
+  const hasAllowedExtension = ALLOWED_CERTIFICATE_EXTENSIONS.some((extension) => normalizedFileName.endsWith(extension))
+
+  if (hasAllowedExtension) {
+    return true
+  }
+
+  return ALLOWED_CERTIFICATE_TYPES.includes(file.type.toLowerCase())
+}
+
 function validateImageFile(file: File | null): string {
   if (!file) {
     return ""
@@ -226,12 +249,29 @@ function validateImageFile(file: File | null): string {
   return ""
 }
 
+function validateCertificateFile(file: File | null): string {
+  if (!file) {
+    return ""
+  }
+
+  if (!hasAllowedCertificateFormat(file)) {
+    return "El certificado solo permite archivos PDF, JPG, JPEG o PNG."
+  }
+
+  if (file.size > MAX_CERTIFICATE_SIZE_BYTES) {
+    return "El certificado permite archivos de hasta 5 MB."
+  }
+
+  return ""
+}
+
 function validateExperienceField(
   field: keyof ExperienceFormValues,
   values: ExperienceFormValues,
 ): string {
   const company = values.company.trim()
   const position = values.position.trim()
+  const fieldOfStudy = values.fieldOfStudy.trim()
   const description = values.description.trim()
   const startDate = values.startDate.trim()
   const endDate = values.endDate.trim()
@@ -261,7 +301,7 @@ function validateExperienceField(
     const normalizedEmail = rawEmail.trim()
 
     if (!normalizedEmail) {
-      return "El campo Correo electrónico es obligatorio."
+      return ""
     }
 
     if (/\s/.test(rawEmail)) {
@@ -284,6 +324,16 @@ function validateExperienceField(
 
     if (position.length > 80) {
       return "El cargo no puede exceder los 80 caracteres."
+    }
+  }
+
+  if (field === "fieldOfStudy" && values.type === "academica") {
+    if (!fieldOfStudy) {
+      return "El campo de estudio es obligatorio."
+    }
+
+    if (fieldOfStudy.length > 100) {
+      return "El campo de estudio no puede exceder los 100 caracteres."
     }
   }
 
@@ -347,8 +397,11 @@ export function useExperienceManager() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+  const [selectedCertificateFile, setSelectedCertificateFile] = useState<File | null>(null)
   const [hasRemovedExistingImage, setHasRemovedExistingImage] = useState(false)
+  const [hasRemovedExistingCertificate, setHasRemovedExistingCertificate] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const certificateInputRef = useRef<HTMLInputElement | null>(null)
 
   const isEditing = useMemo(() => editingExperience !== null, [editingExperience])
   const laboralExperiences = useMemo(
@@ -363,14 +416,21 @@ export function useExperienceManager() {
     () => Boolean(selectedImageFile) || Boolean(formData.image),
     [formData.image, selectedImageFile],
   )
+  const canRemoveCertificate = useMemo(
+    () => Boolean(selectedCertificateFile) || Boolean(formData.certificate),
+    [formData.certificate, selectedCertificateFile],
+  )
 
   const loadExperiences = useCallback(async () => {
     setIsLoading(true)
     setPageError("")
 
     try {
-      const remoteExperiences = await getExperiences()
-      setExperiences(remoteExperiences)
+      const [remoteExperiences, remoteEducation] = await Promise.all([
+        getExperiences(),
+        getEducation(),
+      ])
+      setExperiences([...remoteExperiences, ...remoteEducation])
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudieron cargar las experiencias."
       setPageError(message)
@@ -426,13 +486,19 @@ export function useExperienceManager() {
   function resetForm() {
     setEditingExperience(null)
     setSelectedImageFile(null)
+    setSelectedCertificateFile(null)
     setHasRemovedExistingImage(false)
+    setHasRemovedExistingCertificate(false)
     closeConfirmEditModal()
     setFormData(EMPTY_FORM)
     setErrors({})
 
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
+    }
+
+    if (certificateInputRef.current) {
+      certificateInputRef.current.value = ""
     }
   }
 
@@ -441,13 +507,23 @@ export function useExperienceManager() {
     setIsModalOpen(false)
   }
 
-  function openCreateModal() {
+  function openCreateModal(initialType: ExperienceFormValues["type"] = "laboral") {
     clearFeedback()
     closeConfirmEditModal()
     closeSuccessModal()
     closeDuplicateModal()
     resetForm()
+    setFormData({ ...EMPTY_FORM, type: normalizeExperienceTypeValue(initialType) })
     setIsModalOpen(true)
+  }
+
+  function prepareCreateForm(initialType: ExperienceFormValues["type"] = "laboral") {
+    clearFeedback()
+    closeConfirmEditModal()
+    closeSuccessModal()
+    closeDuplicateModal()
+    resetForm()
+    setFormData({ ...EMPTY_FORM, type: normalizeExperienceTypeValue(initialType) })
   }
 
   function openEditModal(experience: ExperienceItem) {
@@ -457,22 +533,31 @@ export function useExperienceManager() {
     closeDuplicateModal()
     setEditingExperience(experience)
     setSelectedImageFile(null)
+    setSelectedCertificateFile(null)
     setHasRemovedExistingImage(false)
+    setHasRemovedExistingCertificate(false)
     setFormData({
       type: normalizeExperienceTypeValue(experience.type),
       company: experience.company,
       email: experience.email,
       position: experience.position,
+      location: experience.location,
+      fieldOfStudy: experience.fieldOfStudy,
       description: experience.description,
       startDate: normalizeFormDate(experience.startDate),
       endDate: normalizeFormDate(experience.endDate),
       current: experience.current,
       image: experience.image,
+      certificate: experience.certificate,
     })
     setErrors({})
 
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
+    }
+
+    if (certificateInputRef.current) {
+      certificateInputRef.current.value = ""
     }
 
     setIsModalOpen(true)
@@ -592,17 +677,80 @@ export function useExperienceManager() {
     }
   }
 
+  function handleCertificateChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    const certificateError = validateCertificateFile(file)
+
+    if (certificateError) {
+      setSelectedCertificateFile(null)
+      setFormData((current) => ({ ...current, certificate: editingExperience?.certificate ?? "" }))
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        certificate: certificateError,
+      }))
+
+      if (certificateInputRef.current) {
+        certificateInputRef.current.value = ""
+      }
+
+      return
+    }
+
+    setSelectedCertificateFile(file)
+    setHasRemovedExistingCertificate(false)
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      setFormData((current) => ({
+        ...current,
+        certificate: typeof reader.result === "string" ? reader.result : "",
+      }))
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        certificate: "",
+      }))
+    }
+    reader.readAsDataURL(file)
+  }
+
+  function removeCertificate() {
+    setSelectedCertificateFile(null)
+    setHasRemovedExistingCertificate(Boolean(editingExperience?.certificate))
+    setFormData((current) => ({ ...current, certificate: "" }))
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      certificate: "",
+    }))
+
+    if (certificateInputRef.current) {
+      certificateInputRef.current.value = ""
+    }
+  }
+
   async function persistExperience(payload: ExperiencePayload) {
     try {
       setIsSaving(true)
 
       if (editingExperience) {
-        await updateExperience(editingExperience.id, payload)
+        if (payload.type === "academica") {
+          await updateEducation(editingExperience.id, payload)
+        } else {
+          await updateExperience(editingExperience.id, payload)
+        }
         closeConfirmEditModal()
         closeModal()
         showSuccessModal("Experiencia actualizada correctamente.")
       } else {
-        await createExperience(payload)
+        if (payload.type === "academica") {
+          await createEducation(payload)
+        } else {
+          await createExperience(payload)
+        }
         closeModal()
         showSuccessModal("Experiencia registrada correctamente.")
       }
@@ -639,10 +787,12 @@ export function useExperienceManager() {
       company: validateExperienceField("company", formData),
       email: validateExperienceField("email", formData),
       position: validateExperienceField("position", formData),
+      fieldOfStudy: editingExperience ? "" : validateExperienceField("fieldOfStudy", formData),
       description: validateExperienceField("description", formData),
       startDate: validateExperienceField("startDate", formData),
       endDate: validateExperienceField("endDate", formData),
       image: validateImageFile(selectedImageFile),
+      certificate: validateCertificateFile(selectedCertificateFile),
     }
 
     setErrors(nextErrors)
@@ -670,14 +820,18 @@ export function useExperienceManager() {
     const payload: ExperiencePayload = {
       type: normalizeExperienceTypeValue(formData.type),
       company: formData.company.trim(),
-      email: formData.type === "laboral" ? formData.email.trim() : "",
+      email: formData.email.trim(),
       position: formData.position.trim(),
+      location: formData.location.trim(),
+      fieldOfStudy: formData.fieldOfStudy.trim(),
       description: formData.description.trim(),
       startDate: formData.startDate.trim(),
       endDate: formData.endDate.trim(),
       current: formData.current,
       logoFile: selectedImageFile,
+      certificateFile: selectedCertificateFile,
       removeLogo: hasRemovedExistingImage && !selectedImageFile,
+      removeCertificate: hasRemovedExistingCertificate && !selectedCertificateFile,
     }
 
     if (editingExperience) {
@@ -700,7 +854,11 @@ export function useExperienceManager() {
     }
 
     try {
-      await removeExperience(id, targetExperience.type)
+      if (targetExperience.type === "academica") {
+        await removeEducation(id)
+      } else {
+        await removeExperience(id)
+      }
       await loadExperiences()
       showFeedback("Experiencia eliminada correctamente.", "success")
     } catch (error) {
@@ -725,11 +883,14 @@ export function useExperienceManager() {
     isLoading,
     isSaving,
     canRemoveImage,
+    canRemoveCertificate,
     pendingEditPayload,
     laboralExperiences,
     academicExperiences,
     fileInputRef,
+    certificateInputRef,
     openCreateModal,
+    prepareCreateForm,
     openEditModal,
     closeModal,
     closeConfirmEditModal,
@@ -739,7 +900,9 @@ export function useExperienceManager() {
     updateField,
     handleBlur,
     handleImageChange,
+    handleCertificateChange,
     removeImage,
+    removeCertificate,
     handleSubmit,
     handleDelete,
     reloadExperiences: loadExperiences,

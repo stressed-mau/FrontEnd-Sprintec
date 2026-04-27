@@ -1,10 +1,16 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import AboutPage from "@/pages/AboutPage"
-import AcademicFormationPage from "@/pages/AcademicFormationPage"
 import ContactPage from "@/pages/ContactPage"
 import CreateProyect from "@/pages/CreateProyect"
-import ExperiencePage from "@/pages/ExperiencePage"
+import AddEducationPage from "@/pages/education/AddEducationPage"
+import DeleteEducationPage from "@/pages/education/DeleteEducationPage"
+import EditEducationPage from "@/pages/education/EditEducationPage"
+import ViewEducationPage from "@/pages/education/ViewEducationPage"
+import AddExperiencePage from "@/pages/experience/AddExperiencePage"
+import DeleteExperiencePage from "@/pages/experience/DeleteExperiencePage"
+import EditExperiencePage from "@/pages/experience/EditExperiencePage"
+import ViewExperiencePage from "@/pages/experience/ViewExperiencePage"
 import HomeVisitor from "@/pages/HomeVisitor"
 import LoginPage from "@/pages/LoginPage"
 import NetworksPage from "@/pages/NetworksPage"
@@ -41,8 +47,16 @@ function AppRoutes() {
         
         <Route path="/habilidades" element={<UserSkills />} />
         <Route path="/red-profesional" element={<NetworksPage />} />
-        <Route path="/formacion-academica" element={<AcademicFormationPage />} />
-        <Route path="/experiencia" element={<ExperiencePage />} />
+        <Route path="/formacion-academica" element={<Navigate to="/formacion-academica/ver" replace />} />
+        <Route path="/formacion-academica/agregar" element={<AddEducationPage />} />
+        <Route path="/formacion-academica/ver" element={<ViewEducationPage />} />
+        <Route path="/formacion-academica/editar" element={<EditEducationPage />} />
+        <Route path="/formacion-academica/eliminar" element={<DeleteEducationPage />} />
+        <Route path="/experiencia" element={<Navigate to="/experiencia/ver" replace />} />
+        <Route path="/experiencia/agregar" element={<AddExperiencePage />} />
+        <Route path="/experiencia/ver" element={<ViewExperiencePage />} />
+        <Route path="/experiencia/editar" element={<EditExperiencePage />} />
+        <Route path="/experiencia/eliminar" element={<DeleteExperiencePage />} />
         <Route path="/plantillas" element={<PortfolioTemplatesPage />} />
         <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
         

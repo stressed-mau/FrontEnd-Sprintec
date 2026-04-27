@@ -1,18 +1,63 @@
-import { Footer } from "@/components/Footer"
-import Header from "@/components/HeaderUser"
-import Sidebar from "@/components/Sidebar"
+import { useMemo, useState } from "react"
+
+import {
+  ExperienceDetailsModal,
+  ExperiencePageShell,
+  ExperiencePagination,
+  ExperienceSearch,
+  ExperienceTable,
+  FeedbackMessage,
+} from "@/pages/experience/ExperiencePageParts"
+import { filterExperiences, paginateExperiences } from "@/pages/experience/ExperiencePageUtils"
+import { type ExperienceItem, useExperienceManager } from "@/hooks/useExperienceManager"
 
 export default function ViewEducationPage() {
+  const manager = useExperienceManager()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedEducation, setSelectedEducation] = useState<ExperienceItem | null>(null)
+
+  const education = manager.academicExperiences
+  const filteredEducation = useMemo(() => filterExperiences(education, searchTerm), [education, searchTerm])
+  const pagination = paginateExperiences(filteredEducation, currentPage)
+
+  function handleSearchChange(value: string) {
+    setSearchTerm(value)
+    setCurrentPage(1)
+  }
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#F7F0E1]">
-      <Header />
-      <div className="flex flex-1 flex-col lg:flex-row">
-        <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">Ver formacion academica</h1>
-        </main>
-      </div>
-      <Footer />
-    </div>
+    <ExperiencePageShell
+      title="Ver formacion academica"
+      description="Consulta tu formacion academica registrada."
+    >
+      <FeedbackMessage message={manager.pageError} type="error" />
+
+      {education.length > 0 ? <ExperienceSearch value={searchTerm} onChange={handleSearchChange} /> : null}
+
+      {manager.isLoading ? (
+        <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
+          Cargando formacion academica...
+        </div>
+      ) : (
+        <ExperienceTable
+          experiences={pagination.items}
+          emptyMessage={searchTerm ? "No se encontro formacion con ese criterio." : "No hay formacion academica registrada."}
+          searchTerm={searchTerm}
+          onRowClick={setSelectedEducation}
+        />
+      )}
+
+      <ExperiencePagination
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        startIndex={pagination.startIndex}
+        endIndex={pagination.endIndex}
+        totalItems={filteredEducation.length}
+        onPageChange={setCurrentPage}
+      />
+
+      <ExperienceDetailsModal experience={selectedEducation} onClose={() => setSelectedEducation(null)} />
+    </ExperiencePageShell>
   )
 }

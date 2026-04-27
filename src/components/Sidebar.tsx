@@ -1,12 +1,33 @@
-import { Award, Briefcase, ChevronLeft, ChevronRight, Eye, FolderGit2, Globe, LayoutTemplate, Settings2, Upload, User, GraduationCap } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import {
+  Award,
+  Briefcase,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  FolderGit2,
+  Globe,
+  GraduationCap,
+  LayoutTemplate,
+  Settings2,
+  Upload,
+  User,
+} from "lucide-react"
+import { useMemo, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
+
+type NavChild = {
+  id: string
+  label: string
+  path: string
+}
 
 type NavItem = {
   id: string
   label: string
   path: string
   icon: typeof Eye
+  children?: NavChild[]
 }
 
 const navItems: NavItem[] = [
@@ -15,8 +36,30 @@ const navItems: NavItem[] = [
   { id: "red-profesional", label: "Red profesional", icon: Globe, path: "/red-profesional" },
   { id: "proyectos", label: "Proyectos", icon: FolderGit2, path: "/proyectos" },
   { id: "habilidades", label: "Habilidades", icon: Award, path: "/habilidades" },
-  { id: "formacion-academica", label: "Formación académica", icon: GraduationCap, path: "/formacion-academica" },
-  { id: "experiencia", label: "Experiencia", icon: Briefcase, path: "/experiencia" },
+  {
+    id: "experiencia",
+    label: "Experiencia",
+    icon: Briefcase,
+    path: "/experiencia",
+    children: [
+      { id: "experiencia-ver", label: "Ver experiencia", path: "/experiencia/ver" },
+      { id: "experiencia-agregar", label: "Añadir experiencia", path: "/experiencia/agregar" },
+      { id: "experiencia-editar", label: "Editar experiencia", path: "/experiencia/editar" },
+      { id: "experiencia-eliminar", label: "Eliminar experiencia", path: "/experiencia/eliminar" },
+    ],
+  },
+  {
+    id: "formacion-academica",
+    label: "Formación Académica",
+    icon: GraduationCap,
+    path: "/formacion-academica",
+    children: [
+      { id: "formacion-ver", label: "Ver formación", path: "/formacion-academica/ver" },
+      { id: "formacion-agregar", label: "Añadir formación", path: "/formacion-academica/agregar" },
+      { id: "formacion-editar", label: "Editar formación", path: "/formacion-academica/editar" },
+      { id: "formacion-eliminar", label: "Eliminar formación", path: "/formacion-academica/eliminar" },
+    ],
+  },
   { id: "plantillas", label: "Plantillas", icon: LayoutTemplate, path: "/plantillas" },
   { id: "configuracion-visibilidad", label: "Configuración de visibilidad", icon: Settings2, path: "/configuracion-visibilidad" },
   { id: "publicar", label: "Publicar", icon: Upload, path: "/publicar" },
@@ -25,35 +68,93 @@ const navItems: NavItem[] = [
 const Sidebar = () => {
   const location = useLocation()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    () => new Set(navItems.filter((item) => location.pathname.startsWith(item.path)).map((item) => item.id)),
+  )
 
-  useEffect(() => {
-    setIsMobileOpen(false)
-  }, [location.pathname])
+  function toggleSection(id: string) {
+    setExpandedSections((current) => {
+      const next = new Set(current)
+
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+
+      return next
+    })
+  }
 
   const sidebarContent = useMemo(
     () => (
       <>
-        <div className="mb-6 pb-4 -mx-6 px-6 border-b border-[#c2dbed]">
-          <h2 className="text-[#003A6C] font-bold text-xl leading-tight">
+        <div className="-mx-6 mb-6 border-b border-[#c2dbed] px-6 pb-4">
+          <h2 className="text-xl font-bold leading-tight text-[#003A6C]">
             Gestionar <br /> Portafolio
           </h2>
         </div>
 
         <nav className="space-y-2">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path
+            const hasChildren = Boolean(item.children?.length)
+            const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
+            const isExpanded = expandedSections.has(item.id) || isActive
+
+            if (hasChildren) {
+              return (
+                <div key={item.id} className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(item.id)}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
+                      isActive ? "text-[#003A6C]" : "text-[#4982ad] hover:bg-[#77b6e6]/30"
+                    }`}
+                    aria-expanded={isExpanded}
+                  >
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    <span className="flex-1 font-medium leading-tight">{item.label}</span>
+                    <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {isExpanded ? (
+                    <div className="space-y-1 pl-10">
+                      {item.children?.map((child) => {
+                        const isChildActive = location.pathname === child.path
+
+                        return (
+                          <Link
+                            key={child.id}
+                            to={child.path}
+                            onClick={() => setIsMobileOpen(false)}
+                            className={`block rounded-lg px-3 py-2 text-sm transition ${
+                              isChildActive
+                                ? "bg-[#EEF5F9] font-medium text-[#003A6C]"
+                                : "text-[#4982ad] hover:bg-[#77b6e6]/30"
+                            }`}
+                          >
+                            {child.label}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  ) : null}
+                </div>
+              )
+            }
 
             return (
               <Link
                 key={item.id}
                 to={item.path}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${
-                  isActive
+                onClick={() => setIsMobileOpen(false)}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-all ${
+                  location.pathname === item.path
                     ? "bg-[#003A6C] text-white"
                     : "text-[#4982ad] hover:bg-[#77b6e6]/30"
                 }`}
               >
-                <item.icon className="w-5 h-5" />
+                <item.icon className="h-5 w-5" />
                 <span className="font-normal">{item.label}</span>
               </Link>
             )
@@ -61,7 +162,7 @@ const Sidebar = () => {
         </nav>
       </>
     ),
-    [location.pathname],
+    [expandedSections, location.pathname],
   )
 
   return (
@@ -86,7 +187,7 @@ const Sidebar = () => {
         ) : null}
 
         <aside
-          className={`fixed left-0 top-26 z-40 h-[calc(100vh-104px)] w-64 border-r-2 border-[#6dacbf] bg-white p-6 transition-transform duration-300 ${
+          className={`fixed left-0 top-26 z-40 h-[calc(100vh-104px)] w-64 overflow-y-auto border-r-2 border-[#6dacbf] bg-white p-6 transition-transform duration-300 ${
             isMobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -102,7 +203,7 @@ const Sidebar = () => {
         </aside>
       </section>
 
-      <aside className="hidden lg:block w-64 bg-white border-r-2 border-[#6dacbf] min-h-[calc(100vh-64px)] p-6">
+      <aside className="hidden min-h-[calc(100vh-64px)] w-64 overflow-y-auto border-r-2 border-[#6dacbf] bg-white p-6 lg:block">
         {sidebarContent}
       </aside>
     </>
