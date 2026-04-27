@@ -1,4 +1,4 @@
-﻿import type { AuthResponse, AuthSession } from "@/services/auth/auth-types"
+import type { AuthResponse, AuthSession } from "@/services/auth/auth-types"
 
 export const AUTH_SESSION_STORAGE_KEY = "portfolio_auth_session"
 
@@ -7,10 +7,14 @@ export function saveAuthSession(response: AuthResponse) {
     return
   }
 
+  const infoIdFromNested = response.data?.user_information?.id
   const session: AuthSession = {
     accessToken: response.access_token,
     tokenType: response.token_type,
-    user: response.data,
+    user: {
+      ...response.data,
+      info_id: response.data.info_id ?? infoIdFromNested,
+    },
   }
 
   window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session))

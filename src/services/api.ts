@@ -1,8 +1,13 @@
 import axios from "axios";
 import { getAuthToken } from "@/services/auth/auth-storage";
 
-// La URL del backend se configura por entorno; si falta, usa el backend local.
-const baseURL =  "http://localhost:8000/api";
+// En desarrollo, usar `/api` (proxy de Vite) evita CORS.
+// En producción, `VITE_API_URL` debe apuntar al backend real (ej: https://dominio.com/api).
+const envBaseUrl = import.meta.env.VITE_API_URL as string | undefined;
+const baseURL =
+  import.meta.env.DEV && (!envBaseUrl || /localhost:8000\/api/i.test(envBaseUrl))
+    ? "/api"
+    : envBaseUrl || "/api";
 
 export const api = axios.create({
   baseURL: baseURL.replace(/\/+$/, ""),
