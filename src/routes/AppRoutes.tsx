@@ -2,7 +2,6 @@ import { Navigate, Route, Routes } from "react-router-dom"
 
 import AboutPage from "@/pages/AboutPage"
 import ContactPage from "@/pages/ContactPage"
-import CreateProyect from "@/pages/CreateProyect"
 import AddEducationPage from "@/pages/education/AddEducationPage"
 import DeleteEducationPage from "@/pages/education/DeleteEducationPage"
 import EditEducationPage from "@/pages/education/EditEducationPage"
@@ -33,6 +32,10 @@ import ViewCertificatesPage from "@/pages/certificates/ViewCertificatesPage"
 import AddCertificatesPage from "@/pages/certificates/AddCertificatesPage"
 import EditCertificatesPage from "@/pages/certificates/EditCertificatesPage"
 import DeleteCertificatesPage from "@/pages/certificates/DeleteCertificatesPage"
+import AddProjectsPage from "@/pages/projects/AddProjectsPage"
+import DeleteProjectsPage from "@/pages/projects/DeleteProjectsPage"
+import EditProjectsPage from "@/pages/projects/EditProjectsPage"
+import ViewProjectsPage from "@/pages/projects/ViewProjectsPage"
 
 import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE, CERTIFICATES_ROUTE } from "@/routes/route-paths"
 
@@ -58,6 +61,11 @@ function AppRoutes() {
         <Route path="/habilidades/editar" element={<EditSkillsPage />} />
         <Route path="/habilidades/eliminar" element={<DeleteSkillsPage />} />
         <Route path="/red-profesional" element={<NetworksPage />} />
+        <Route path="/proyectos" element={<Navigate to="/proyectos/ver" replace />} />
+        <Route path="/proyectos/ver" element={<ViewProjectsPage />} />
+        <Route path="/proyectos/añadir" element={<AddProjectsPage />} />
+        <Route path="/proyectos/editar" element={<EditProjectsPage />} />
+        <Route path="/proyectos/eliminar" element={<DeleteProjectsPage />} />
         <Route path="/formacion-academica" element={<Navigate to="/formacion-academica/ver" replace />} />
         <Route path="/formacion-academica/agregar" element={<AddEducationPage />} />
         <Route path="/formacion-academica/ver" element={<ViewEducationPage />} />
@@ -78,7 +86,6 @@ function AppRoutes() {
         
       </Route>
       <Route path="/personal" element={<UserPersonalData />} />
-      <Route path="/proyectos" element={<CreateProyect />} />
       <Route path="/publicar" element={<PublishPortfolio />} />
       <Route path="/portafolio" element={<MyPortfolio />} />
       <Route path="/p/:slug" element={<PublicPortfolio />} />

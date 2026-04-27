@@ -2,7 +2,6 @@ import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { Edit3, X } from 'lucide-react';
-import { useRef } from 'react';
 import { useCertificatesManager } from '../../hooks/useCertificatesManager';
 import ConfirmationModal from '../../components/ConfirmationModal';
 
@@ -21,13 +20,8 @@ export default function EditCertificatesPage() {
     openEditModal,
     closeModal,
     updateField,
-    handleFileChange,
-    removeFile,
     handleSubmit,
-    fileInput,
   } = useCertificatesManager();
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">

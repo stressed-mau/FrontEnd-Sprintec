@@ -31,7 +31,15 @@ const EMPTY_FORM: CertificateFormValues = {
 
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg'];
-const ALLOWED_FILE_EXTENSIONS = ['.pdf', '.jpg', '.jpeg'];
+
+function isValidUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 
 function convertDateDDMMYYYYtoISO(date: string): string {
   if (!date) return '';
@@ -301,6 +309,7 @@ export const useCertificatesManager = () => {
     errors,
     isModalOpen,
     isEditing,
+    editingCertificate,
     errorMessage,
     successMessage,
     showSuccessModal,
