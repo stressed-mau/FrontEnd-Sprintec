@@ -20,8 +20,9 @@ import MyPortfolio from "@/pages/MyPortfolio"
 import ProtectedRoute from "@/routes/ProtectedRoute"
 import PublicPortfolio from "@/pages/PublicPortfolio"
 import ExplorePortfolios from "@/pages/ExplorePortfolio"
+import CertificatesPage from "@/pages/CertificatesPage"
 
-import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE, CERTIFICATES_ROUTE } from "@/routes/route-paths"
 
 function AppRoutes() {
   return (
@@ -43,6 +44,7 @@ function AppRoutes() {
         <Route path="/red-profesional" element={<NetworksPage />} />
         <Route path="/formacion-academica" element={<AcademicFormationPage />} />
         <Route path="/experiencia" element={<ExperiencePage />} />
+        <Route path={CERTIFICATES_ROUTE} element={<CertificatesPage />} />
         <Route path="/plantillas" element={<PortfolioTemplatesPage />} />
         <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
         

@@ -1,28 +1,23 @@
 import axios from "axios";
 import { getAuthToken } from "@/services/auth/auth-storage";
 
-// La URL del backend se configura por entorno; si falta, usa el backend local.
-const baseURL =  "http://localhost:8000/api";
+const rawBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
 
 export const api = axios.create({
-  baseURL: baseURL.replace(/\/+$/, ""),
-  timeout: 50000,
+  // Limpia las barras diagonales extras al final de la URL si existen
+  baseURL: rawBaseUrl ? rawBaseUrl.replace(/\/+$/, "") : "http://localhost:8000/api",
   headers: {
-    Accept: "application/json",
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
-// Interceptor para el token
+// Interceptor para inyectar el token de autenticación en cada petición
 api.interceptors.request.use((config) => {
   const token = getAuthToken();
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  if (config.data instanceof FormData) {
-    delete config.headers["Content-Type"];
-  } else if (!config.headers["Content-Type"]) {
-    config.headers["Content-Type"] = "application/json";
   }
 
   return config;

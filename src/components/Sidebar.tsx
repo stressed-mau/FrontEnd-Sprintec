@@ -17,6 +17,7 @@ const navItems: NavItem[] = [
   { id: "habilidades", label: "Habilidades", icon: Award, path: "/habilidades" },
   { id: "formacion-academica", label: "Formación académica", icon: GraduationCap, path: "/formacion-academica" },
   { id: "experiencia", label: "Experiencia", icon: Briefcase, path: "/experiencia" },
+  { id: "certificados", label: "Certificados", icon: Award, path: "/certificados" },
   { id: "plantillas", label: "Plantillas", icon: LayoutTemplate, path: "/plantillas" },
   { id: "configuracion-visibilidad", label: "Configuración de visibilidad", icon: Settings2, path: "/configuracion-visibilidad" },
   { id: "publicar", label: "Publicar", icon: Upload, path: "/publicar" },
