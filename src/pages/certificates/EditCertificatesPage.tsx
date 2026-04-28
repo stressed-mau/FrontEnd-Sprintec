@@ -1,7 +1,7 @@
 import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
-import { Edit3, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, BadgeCheck } from 'lucide-react';
 import { useRef } from 'react';
 import { useCertificatesManager } from '../../hooks/useCertificatesManager';
 import ConfirmationModal from '../../components/ConfirmationModal';
@@ -17,6 +17,7 @@ export default function EditCertificatesPage() {
     errorMessage,
     isModalOpen,
     editingCertificate,
+    showConfirmEdit,
     showSuccessModal,
     closeSuccessModal,
     successMessage,
@@ -26,6 +27,7 @@ export default function EditCertificatesPage() {
     handleFileChange,
     removeFile,
     handleSubmit,
+    setShowConfirmEdit,
     fileInput,
     searchTerm,
     setSearchTerm,
@@ -44,21 +46,18 @@ export default function EditCertificatesPage() {
         <main className="flex-1 p-6 md:p-10">
           <div className="max-w-6xl mx-auto">
             <h1 className="text-3xl font-bold text-[#003A6C] mb-2">Editar Certificados</h1>
-            <p className="text-[#4B778D] mb-6">Selecciona un certificado para actualizar su información.</p>
+            <p className="text-[#4B778D] mb-6">Haz clic en una fila para editar el certificado.</p>
 
-            {/* Buscador */}
-            {filteredCertificates.length > 0 && (
-              <div className="mb-6 relative">
-                <Search className="absolute left-4 top-3.5 size-5 text-[#4B778D]" />
-                <input
-                  type="text"
-                  placeholder="Buscar por nombre, emisor o ID de credencial..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-[#6DACBF]/30 bg-white text-[#003A6C] placeholder-[#4B778D] focus:ring-2 focus:ring-[#6DACBF] outline-none"
-                />
-              </div>
-            )}
+            <div className="mb-6 relative">
+              <Search className="absolute left-4 top-3.5 size-5 text-[#4B778D]" />
+              <input
+                type="text"
+                placeholder="Buscar por nombre, emisor o ID de credencial..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 rounded-xl border border-[#6DACBF]/30 bg-white text-[#003A6C] placeholder-[#4B778D] focus:ring-2 focus:ring-[#6DACBF] outline-none"
+              />
+            </div>
 
             {filteredCertificates.length === 0 ? (
               <div className="text-center py-10 text-[#4B778D] bg-white rounded-2xl border-2 border-dashed border-[#6dacbf]">
@@ -66,30 +65,33 @@ export default function EditCertificatesPage() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {paginatedCertificates.filter(cert => cert.id).map(cert => (
+                <div className="overflow-hidden rounded-2xl border border-[#6dacbf]/30 bg-white shadow-sm">
+                  <div className="grid grid-cols-[minmax(0,2.6fr)_minmax(180px,1.5fr)_140px] gap-6 border-b border-[#6dacbf]/20 px-6 py-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#4B778D]">Certificado</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#4B778D]">Emisor</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#4B778D]">Emisión</span>
+                  </div>
+                  {paginatedCertificates.filter(cert => cert.id).map((cert, idx, arr) => (
                     <div
                       key={cert.id}
-                      className="bg-white p-5 rounded-2xl border border-[#6dacbf]/30 flex flex-col shadow-sm hover:shadow-md hover:border-[#003A6C] transition-all"
+                      onClick={() => openEditModal(cert)}
+                      className={`grid cursor-pointer grid-cols-[minmax(0,2.6fr)_minmax(180px,1.5fr)_140px] items-center gap-6 px-6 py-4 transition-colors hover:bg-[#EEF6FC] ${
+                        idx !== arr.length - 1 ? 'border-b border-[#6dacbf]/10' : ''
+                      }`}
                     >
-                      <div className="flex-1 min-w-0 mb-4">
-                        <p className="font-bold text-[#003A6C] truncate mb-1 text-lg">{cert.name}</p>
-                        <p className="text-sm text-[#4B778D] font-semibold mb-2">{cert.issuer}</p>
-                        {cert.description && (
-                          <p className="text-xs text-[#355468] line-clamp-2 mb-2">{cert.description}</p>
-                        )}
-                        <div className="text-xs text-[#6B7E8E] space-y-1">
-                          <p>Emitido: {new Date(cert.date_issued).toLocaleDateString('es-ES')}</p>
-                          {cert.credential_id && <p>ID: {cert.credential_id}</p>}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <BadgeCheck className="size-4 shrink-0 text-[#4B778D]" />
+                          <span className="truncate font-semibold text-[#003A6C]">{cert.name}</span>
                         </div>
+                        {cert.credential_id && (
+                          <p className="mt-1 truncate text-xs text-[#6B7E8E]">ID: {cert.credential_id}</p>
+                        )}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => openEditModal(cert)}
-                        className="w-full px-4 py-2.5 bg-[#C2DBED] text-[#003A6C] rounded-lg hover:bg-[#9ec8e0] font-semibold transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Edit3 size={16} /> Editar
-                      </button>
+                      <span className="truncate text-sm text-[#4B778D]">{cert.issuer}</span>
+                      <span className="text-sm tabular-nums text-[#4B778D]">
+                        {new Date(cert.date_issued).toLocaleDateString('es-ES')}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -152,6 +154,32 @@ export default function EditCertificatesPage() {
           onRemoveFile={removeFile}
           onSubmit={handleSubmit}
         />
+      )}
+
+      {showConfirmEdit && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
+            <h3 className="mb-4 text-lg font-bold text-[#003A6C]">
+              ¿Estás seguro de que deseas guardar los cambios realizados?
+            </h3>
+            <div className="flex gap-3">
+              <button
+                onClick={() => void handleSubmit()}
+                disabled={isSaving}
+                className="flex-1 rounded-lg bg-[#003A6C] py-2 text-white font-semibold hover:bg-[#002a50] disabled:opacity-60"
+              >
+                {isSaving ? 'Guardando...' : 'Confirmar'}
+              </button>
+              <button
+                onClick={() => setShowConfirmEdit(false)}
+                disabled={isSaving}
+                className="flex-1 rounded-lg bg-gray-200 py-2 text-gray-700 font-semibold hover:bg-gray-300 disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <ConfirmationModal

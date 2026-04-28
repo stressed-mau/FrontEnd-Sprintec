@@ -126,7 +126,9 @@ export const useCertificatesManager = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [showConfirmEdit, setShowConfirmEdit] = useState(false);
   const [certificateToDelete, setCertificateToDelete] = useState<Certificate | null>(null);
+  const [selectedCertificateIds, setSelectedCertificateIds] = useState<Set<string>>(new Set());
 
   const isEditing = useMemo(() => editingCertificate !== null, [editingCertificate]);
 
@@ -206,6 +208,7 @@ export const useCertificatesManager = () => {
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
     setEditingCertificate(null);
+    setShowConfirmEdit(false);
     setFormData(EMPTY_FORM);
     setErrors({});
     setFileInput(null);
@@ -265,13 +268,18 @@ export const useCertificatesManager = () => {
   }, []);
 
   const handleSubmit = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
+    async (e?: FormEvent<HTMLFormElement>) => {
+      e?.preventDefault();
       setErrorMessage('');
 
       const newErrors = validateForm(formData);
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors);
+        return;
+      }
+
+      if (isEditing && editingCertificate && !showConfirmEdit) {
+        setShowConfirmEdit(true);
         return;
       }
 
@@ -298,6 +306,7 @@ export const useCertificatesManager = () => {
         }
 
         setShowSuccessModal(true);
+        setShowConfirmEdit(false);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Error al guardar el certificado';
         setErrorMessage(message);
@@ -305,11 +314,46 @@ export const useCertificatesManager = () => {
         setIsSaving(false);
       }
     },
-    [formData, fileInput, isEditing, editingCertificate]
+    [formData, fileInput, isEditing, editingCertificate, showConfirmEdit]
   );
 
   const requestDelete = useCallback((certificate: Certificate) => {
     setCertificateToDelete(certificate);
+    setShowConfirmDelete(true);
+  }, []);
+
+  const toggleSelectCertificate = useCallback((certificateId: string) => {
+    setSelectedCertificateIds((prev) => {
+      const next = new Set(prev);
+
+      if (next.has(certificateId)) {
+        next.delete(certificateId);
+      } else {
+        next.add(certificateId);
+      }
+
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAllCertificates = useCallback((certificateIds: string[]) => {
+    setSelectedCertificateIds((prev) => {
+      const allSelected = certificateIds.length > 0 && certificateIds.every((id) => prev.has(id));
+
+      if (allSelected) {
+        const next = new Set(prev);
+        certificateIds.forEach((id) => next.delete(id));
+        return next;
+      }
+
+      const next = new Set(prev);
+      certificateIds.forEach((id) => next.add(id));
+      return next;
+    });
+  }, []);
+
+  const requestDeleteSelected = useCallback(() => {
+    setCertificateToDelete(null);
     setShowConfirmDelete(true);
   }, []);
 
@@ -319,16 +363,29 @@ export const useCertificatesManager = () => {
   }, []);
 
   const confirmDelete = useCallback(async () => {
-    if (!certificateToDelete) return;
+    const idsToDelete = certificateToDelete
+      ? [certificateToDelete.id]
+      : Array.from(selectedCertificateIds);
+
+    if (idsToDelete.length === 0) return;
 
     setIsDeleting(true);
 
     try {
-      await removeCertificate(certificateToDelete.id);
-      setSuccessMessage('Certificado eliminado exitosamente');
-      setCertificates((prev) =>
-        prev.filter((cert) => cert.id !== certificateToDelete.id)
+      await Promise.all(idsToDelete.map((id) => removeCertificate(id)));
+      setSuccessMessage(
+        idsToDelete.length > 1
+          ? 'Certificados eliminados exitosamente'
+          : 'Certificado eliminado exitosamente'
       );
+      setCertificates((prev) =>
+        prev.filter((cert) => !idsToDelete.includes(cert.id))
+      );
+      setSelectedCertificateIds((prev) => {
+        const next = new Set(prev);
+        idsToDelete.forEach((id) => next.delete(id));
+        return next;
+      });
       setShowConfirmDelete(false);
       setCertificateToDelete(null);
       setShowSuccessModal(true);
@@ -338,7 +395,7 @@ export const useCertificatesManager = () => {
     } finally {
       setIsDeleting(false);
     }
-  }, [certificateToDelete]);
+  }, [certificateToDelete, selectedCertificateIds]);
 
   return {
     // State
@@ -358,7 +415,9 @@ export const useCertificatesManager = () => {
     isSaving,
     isDeleting,
     showConfirmDelete,
+    showConfirmEdit,
     certificateToDelete,
+    selectedCertificateIds,
     fileInput,
     searchTerm,
     currentPage,
@@ -374,8 +433,12 @@ export const useCertificatesManager = () => {
     removeFile,
     handleSubmit,
     requestDelete,
+    requestDeleteSelected,
     cancelDelete,
     confirmDelete,
+    setShowConfirmEdit,
+    toggleSelectCertificate,
+    toggleSelectAllCertificates,
     setSearchTerm,
     setCurrentPage,
   };

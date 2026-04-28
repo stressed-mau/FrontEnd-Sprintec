@@ -1,8 +1,6 @@
 import type { ReactNode } from "react"
-import { Award, Edit, Trash2, Download } from "lucide-react"
+import { BadgeCheck, Download } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Certificate } from "@/hooks/useCertificatesManager"
 
 type CertificatesSectionProps = {
@@ -11,7 +9,6 @@ type CertificatesSectionProps = {
   icon: ReactNode
   items: Certificate[]
   onEdit: (certificate: Certificate) => void
-  onDelete: (certificate: Certificate) => void
 }
 
 export function CertificatesSection({
@@ -20,7 +17,6 @@ export function CertificatesSection({
   icon,
   items,
   onEdit,
-  onDelete,
 }: CertificatesSectionProps) {
   return (
     <section className="space-y-4">
@@ -30,97 +26,83 @@ export function CertificatesSection({
       </div>
 
       {items.length === 0 ? (
-        <Card className="rounded-3xl border-2 border-dashed border-[#6dacbf] bg-white py-0 shadow-sm">
-          <CardContent className="px-6 py-12 text-center sm:py-14">
-            <p className="py-4 text-center text-sm text-[#4B778D] sm:text-base">{emptyMessage}</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-3xl border-2 border-dashed border-[#6dacbf] bg-white px-6 py-12 text-center shadow-sm sm:py-14">
+          <p className="py-4 text-center text-sm text-[#4B778D] sm:text-base">{emptyMessage}</p>
+        </div>
       ) : (
-        <div className="grid gap-4">
-          {items.map((certificate) => (
-            <Card key={certificate.id} className="rounded-3xl border border-[#A5D7E8] bg-white py-0 shadow-sm">
-              <CardHeader className="px-5 py-5 sm:px-6 sm:py-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex min-w-0 items-start gap-4">
-                    <div className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-[#D9EAF4] text-[#003A6C] sm:size-16">
-                      <Award className="size-7" />
-                    </div>
+        <div className="overflow-hidden rounded-3xl border border-[#A5D7E8] bg-white shadow-sm">
+          <div className="grid grid-cols-[minmax(0,2.2fr)_minmax(0,1.3fr)_minmax(0,1fr)_auto] gap-4 border-b border-[#6dacbf]/20 px-5 py-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#4B778D]">Certificado</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#4B778D]">Emisor</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#4B778D]">Emisión</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#4B778D] text-right">Detalles</span>
+          </div>
 
-                    <div className="min-w-0 flex-1">
-                      <CardTitle className="text-lg font-semibold text-[#003A6C]">
-                        {certificate.name}
-                      </CardTitle>
-                      <p className="mt-1 text-[#4B778D]">{certificate.issuer}</p>
-                      
-                      {certificate.description && (
-                        <p className="mt-2 text-sm leading-6 text-[#355468]">{certificate.description}</p>
-                      )}
-
-                      <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-[#6B7E8E]">
-                        <span>Emitido: {new Date(certificate.date_issued).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                        {certificate.date_expired && (
-                          <span>Vencimiento: {new Date(certificate.date_expired).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                        )}
-                      </div>
-
-                      {certificate.credential_id && (
-                        <p className="mt-2 text-xs text-[#6B7E8E]">
-                          ID: <span className="font-mono">{certificate.credential_id}</span>
-                        </p>
-                      )}
-
-                      {certificate.credential_url && (
-                        <div className="mt-2">
-                          <a
-                            href={certificate.credential_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-[#003A6C] hover:underline"
-                          >
-                            Ver credencial ↗
-                          </a>
-                        </div>
-                      )}
-
-                      {certificate.file_bonus_url && (
-                        <div className="mt-2">
-                          <a
-                            href={certificate.file_bonus_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-[#003A6C] hover:underline"
-                          >
-                            <Download className="size-3" />
-                            Descargar archivo
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 self-end sm:self-start">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEdit(certificate)}
-                      className="border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
-                    >
-                      <Edit className="size-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onDelete(certificate)}
-                      className="border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
+          {items.map((certificate, idx) => (
+            <div
+              key={certificate.id}
+              onClick={() => onEdit(certificate)}
+              className={`grid cursor-pointer grid-cols-[minmax(0,2.4fr)_minmax(180px,1.3fr)_140px_auto] items-center gap-6 px-6 py-4 transition-colors hover:bg-[#EEF6FC] ${
+                idx !== items.length - 1 ? "border-b border-[#6dacbf]/10" : ""
+              }`}
+            >
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <BadgeCheck className="size-4 shrink-0 text-[#4B778D]" />
+                  <span className="truncate font-semibold text-[#003A6C]">{certificate.name}</span>
                 </div>
-              </CardHeader>
-            </Card>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#6B7E8E]">
+                  {certificate.credential_id && <span className="truncate">ID: {certificate.credential_id}</span>}
+                  {certificate.credential_url && (
+                    <a
+                      href={certificate.credential_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#003A6C] hover:underline"
+                    >
+                      Ver credencial
+                    </a>
+                  )}
+                  {certificate.file_bonus_url && (
+                    <a
+                      href={certificate.file_bonus_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[#003A6C] hover:underline"
+                    >
+                      <Download className="size-3" />
+                      Archivo
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              <span className="truncate text-sm text-[#4B778D]">{certificate.issuer}</span>
+              <span className="text-sm text-[#4B778D]">
+                {new Date(certificate.date_issued).toLocaleDateString("es-ES", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </span>
+
+              <div
+                className="flex min-w-[120px] justify-end gap-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {certificate.file_bonus_url && (
+                  <a
+                    href={certificate.file_bonus_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-lg border border-[#A5D7E8] px-3 py-1.5 text-xs font-semibold text-[#003A6C] hover:bg-[#EEF5F9]"
+                  >
+                    <Download className="size-3" />
+                    Archivo
+                  </a>
+                )}
+              </div>
+            </div>
           ))}
         </div>
       )}
