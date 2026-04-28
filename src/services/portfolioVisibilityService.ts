@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { api } from './api';
 
-export type SectionKey = 'projects' | 'skills' | 'experience' | 'networks';
-type VisibilityTable = 'skills' | 'projects' | 'educations' | 'social_networks' | 'work_experiences';
+export type SectionKey = 'projects' | 'skills' | 'experience' | 'education' | 'certificates' | 'networks';
+type VisibilityTable = 'skills' | 'projects' | 'educations' | 'social_networks' | 'work_experiences' | 'certificates';
 
 export interface VisibilityItem {
   id: number;
@@ -14,7 +14,7 @@ export interface VisibilityItem {
 
 const USER_INFORMATION_ENDPOINT = '/visibility';
 
-// --- FUNCIONES DE UTILIDAD REFINADAS ---
+// --- UTILIDADES ---
 
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {
@@ -28,82 +28,74 @@ function asBoolean(value: unknown): boolean {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'number') return value === 1;
   if (typeof value === 'string') return value === '1' || value.toLowerCase() === 'true';
-  return false;
+  // Por defecto, si el campo no existe (como en tus certificados), lo ponemos como visible o falso según prefieras
+  return value === undefined ? true : false; 
 }
 
 // --- NORMALIZADORES BASADOS EN TU JSON ---
 
-function normalizeProjects(data: any): VisibilityItem[] {
-  const list = data?.projects || [];
-  return list.map((item: any) => ({
-    id: item.id,
-    label: item.name || item.title || 'Proyecto sin título',
-    sublabel: item.role || item.description || '',
-    checked: asBoolean(item.is_public),
-    sourceTable: 'projects',
-  }));
-}
+const normalizeProjects = (data: any) => (data?.projects || []).map((item: any) => ({
+  id: item.id,
+  label: item.name || item.title || 'Proyecto',
+  sublabel: item.role || item.description || '',
+  checked: asBoolean(item.is_public),
+  sourceTable: 'projects',
+}));
 
-function normalizeSkills(data: any): VisibilityItem[] {
-  const list = data?.skills || [];
-  return list.map((item: any) => ({
-    id: item.id,
-    label: item.name || 'Habilidad',
-    sublabel: item.type === 'blanda' ? 'Habilidad Blanda' : (item.level_of_domain || 'Técnica'),
-    checked: asBoolean(item.is_public),
-    sourceTable: 'skills',
-  }));
-}
+const normalizeSkills = (data: any) => (data?.skills || []).map((item: any) => ({
+  id: item.id,
+  label: item.name || 'Habilidad',
+  sublabel: item.type === 'tecnica' ? `Técnica (${item.level_of_domain})` : 'Blanda',
+  checked: asBoolean(item.is_public),
+  sourceTable: 'skills',
+}));
 
-function normalizeExperience(data: any): VisibilityItem[] {
-  const workList = data?.work_experiences || [];
-  const eduList = data?.educations || [];
+const normalizeWorkExperience = (data: any) => (data?.work_experiences || []).map((item: any) => ({
+  id: item.id,
+  label: item.role || 'Cargo',
+  sublabel: item.company_name || 'Empresa',
+  checked: asBoolean(item.is_public),
+  sourceTable: 'work_experiences',
+}));
 
-  const workItems = workList.map((item: any) => ({
-    id: item.id,
-    label: item.role || 'Cargo no especificado',
-    sublabel: `${item.company_name || 'Empresa'} - Laboral`,
-    checked: asBoolean(item.is_public),
-    sourceTable: 'work_experiences',
-  }));
+const normalizeEducation = (data: any) => (data?.educations || []).map((item: any) => ({
+  id: item.id,
+  label: item.title || 'Título',
+  sublabel: item.institution || 'Institución',
+  checked: asBoolean(item.is_public),
+  sourceTable: 'educations',
+}));
 
-  const eduItems = eduList.map((item: any) => ({
-    id: item.id,
-    label: item.degree || item.title || 'Título académico',
-    sublabel: `${item.institution_name || item.university || 'Institución'} - Académica`,
-    checked: asBoolean(item.is_public),
-    sourceTable: 'educations',
-  }));
+const normalizeCertificates = (data: any) => (data?.certificates || []).map((item: any) => ({
+  id: item.id,
+  label: item.name || 'Certificado',
+  sublabel: item.issuer || 'Emisor',
+  // Como en tu JSON los certificados no tienen is_public, usamos una lógica segura
+  checked: item.is_public !== undefined ? asBoolean(item.is_public) : true,
+  sourceTable: 'certificates',
+}));
 
-  return [...workItems, ...eduItems];
-}
+const normalizeNetworks = (data: any) => (data?.social_networks || []).map((item: any) => ({
+  id: item.id,
+  label: item.name || item.platform || 'Red Social',
+  sublabel: item.url || '',
+  checked: asBoolean(item.is_public),
+  sourceTable: 'social_networks',
+}));
 
-function normalizeNetworks(data: any): VisibilityItem[] {
-  const list = data?.social_networks || [];
-  return list.map((item: any) => ({
-    id: item.id,
-    label: item.name || item.platform || 'Red Social',
-    sublabel: item.url || item.link || '',
-    checked: asBoolean(item.is_public),
-    sourceTable: 'social_networks',
-  }));
-}
-
-// --- FUNCIONES PRINCIPALES ---
+// --- FUNCIONES EXPORTADAS ---
 
 export async function getPortfolioVisibilityData(): Promise<Record<SectionKey, VisibilityItem[]>> {
   try {
-    // CAMBIO CLAVE: Ya no enviamos el ID en la URL. 
-    // Laravel ahora debería identificar al usuario por el Bearer Token.
     const response = await api.get(USER_INFORMATION_ENDPOINT);
-    
-    // Accedemos a response.data.data porque tu JSON viene envuelto en "data"
     const payload = response.data?.data || {};
 
     return {
       projects: normalizeProjects(payload),
       skills: normalizeSkills(payload),
-      experience: normalizeExperience(payload),
+      experience: normalizeWorkExperience(payload),
+      education: normalizeEducation(payload),
+      certificates: normalizeCertificates(payload),
       networks: normalizeNetworks(payload),
     };
   } catch (error) {
@@ -117,8 +109,6 @@ export async function savePortfolioVisibilitySection(
   itemId?: number,
   sourceTable?: VisibilityTable,
 ): Promise<void> {
-  
-  // Filtramos el item que queremos actualizar
   const targetItems = itemId != null 
     ? items.filter((item) => item.id === itemId && item.sourceTable === sourceTable) 
     : items;
@@ -127,12 +117,8 @@ export async function savePortfolioVisibilitySection(
     await Promise.all(
       targetItems.map((item) =>
         api.put(
-          // El PUT sigue usando el ID del recurso (skill, proyecto, etc.) y la tabla por query param
           `${USER_INFORMATION_ENDPOINT}/${item.id}?table=${item.sourceTable ?? section}`,
-          { 
-            // NO mandamos el ID en el body, solo el estado
-            is_public: item.checked 
-          }
+          { is_public: item.checked }
         )
       )
     );
