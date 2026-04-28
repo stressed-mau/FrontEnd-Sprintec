@@ -140,24 +140,73 @@ function unwrapPayload(data: unknown): unknown {
   return data;
 }
 
+function looksLikeSkillDtoArray(value: unknown): value is SkillDto[] {
+  if (!Array.isArray(value)) {
+    return false;
+  }
+
+  if (value.length === 0) {
+    return true;
+  }
+
+  return value.every((item) => {
+    if (!item || typeof item !== 'object') {
+      return false;
+    }
+
+    const record = item as Record<string, unknown>;
+    return (
+      'id' in record ||
+      'name' in record ||
+      'nombre' in record ||
+      'type' in record ||
+      'tipo' in record ||
+      'level' in record ||
+      'nivel' in record ||
+      'level_of_domain' in record
+    );
+  });
+}
+
+function findSkillArray(value: unknown, seen = new WeakSet<object>()): SkillDto[] | null {
+  const unwrapped = unwrapPayload(value);
+
+  if (looksLikeSkillDtoArray(unwrapped)) {
+    return unwrapped;
+  }
+
+  if (!unwrapped || typeof unwrapped !== 'object') {
+    return null;
+  }
+
+  const record = unwrapped as Record<string, unknown>;
+  if (seen.has(record)) {
+    return null;
+  }
+
+  seen.add(record);
+
+  const preferredKeys = ['data', 'skills', 'items', 'results', 'records'];
+  for (const key of preferredKeys) {
+    const candidate = record[key];
+    const found = findSkillArray(candidate, seen);
+    if (found) {
+      return found;
+    }
+  }
+
+  for (const candidate of Object.values(record)) {
+    const found = findSkillArray(candidate, seen);
+    if (found) {
+      return found;
+    }
+  }
+
+  return null;
+}
+
 function unwrapSkillList(data: unknown): SkillDto[] {
-  const unwrapped = unwrapPayload(data);
-
-  if (Array.isArray(unwrapped)) {
-    return unwrapped as SkillDto[];
-  }
-
-  if (unwrapped && typeof unwrapped === 'object') {
-    if ('data' in unwrapped && Array.isArray((unwrapped as { data: unknown }).data)) {
-      return (unwrapped as { data: SkillDto[] }).data;
-    }
-
-    if ('skills' in unwrapped && Array.isArray((unwrapped as { skills: unknown }).skills)) {
-      return (unwrapped as { skills: SkillDto[] }).skills;
-    }
-  }
-
-  return [];
+  return findSkillArray(data) ?? [];
 }
 
 function unwrapSkill(data: unknown): SkillDto {
@@ -194,10 +243,12 @@ function parseResponseData(data: unknown): unknown {
 
 export async function getSkills(): Promise<Skill[]> {
   try {
-    const response = await api.get(SKILLS_ENDPOINT, {
-      responseType: 'text',
-      transformResponse: (value) => value,
-    });
+    const response = await api.get(SKILLS_ENDPOINT);
+
+    if (response.data && typeof response.data === 'object' && (response.data as { success?: boolean }).success === false) {
+      const body = response.data as { message?: string };
+      throw new Error(body.message || 'Error al obtener habilidades');
+    }
 
     if (response.status === 204) {
       return [];

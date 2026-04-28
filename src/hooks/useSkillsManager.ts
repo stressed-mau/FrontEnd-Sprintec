@@ -1,6 +1,10 @@
-import { useCallback, useEffect, useState, useMemo} from 'react';
-import type { FormEvent } from 'react';
-import {createSkill,  getSkills, removeSkill, updateSkill,
+import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { FormEvent, ReactNode } from 'react';
+import {
+  createSkill,
+  getSkills,
+  removeSkill,
+  updateSkill,
   type Skill,
   type SkillType,
 } from '../services/skillsService';
@@ -14,45 +18,135 @@ const technicalLevelPriority: Record<string, number> = {
   experto: 4,
 };
 
-export const useSkillsManager = () => {
+function normalizeSkillName(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function normalizeText(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function levenshtein(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+  );
+
+  for (let i = 1; i <= m; i += 1) {
+    for (let j = 1; j <= n; j += 1) {
+      dp[i][j] =
+        a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+
+  return dp[m][n];
+}
+
+function isSimilarToOriginal(original: string, newName: string): boolean {
+  const orig = normalizeText(original);
+  const next = normalizeText(newName);
+
+  if (!next) return false;
+
+  const prefixLength = Math.min(3, orig.length);
+  if (next.startsWith(orig.slice(0, prefixLength))) return true;
+
+  if (next.includes(orig) || orig.includes(next)) return true;
+
+  return levenshtein(orig, next) <= 3;
+}
+
+interface SkillsManagerContextValue {
+  isModalOpen: boolean;
+  skills: Skill[];
+  editingSkill: Skill | null;
+  skillType: SkillType;
+  skillName: string;
+  skillLevel: string;
+  errorMessage: string;
+  successMessage: string;
+  showSuccessModal: boolean;
+  pageError: string;
+  isLoading: boolean;
+  isSaving: boolean;
+  isDeleting: boolean;
+  technicalSkills: Skill[];
+  softSkills: Skill[];
+  filteredSkills: Skill[];
+  filteredTechnicalSkills: Skill[];
+  filteredSoftSkills: Skill[];
+  showConfirmEdit: boolean;
+  showConfirmDelete: boolean;
+  skillToDelete: Skill | null;
+  selectedSkillIds: Set<string>;
+  searchQuery: string;
+  setSkillType: (value: SkillType) => void;
+  setSkillName: (value: string) => void;
+  setSkillLevel: (value: string) => void;
+  setSearchQuery: (value: string) => void;
+  handleSkillNameChange: (value: string) => void;
+  setShowConfirmEdit: (value: boolean) => void;
+  setShowSuccessModal: (value: boolean) => void;
+  closeSuccessModal: () => void;
+  setShowConfirmDelete: (value: boolean) => void;
+  openModal: (skill?: Skill) => void;
+  closeModal: () => void;
+  handleSave: (e?: FormEvent<HTMLFormElement>) => Promise<void>;
+  requestDelete: (skill: Skill) => void;
+  cancelDelete: () => void;
+  confirmDelete: () => Promise<void>;
+  toggleSelectSkill: (id: string) => void;
+  toggleSelectAll: (visibleIds: string[]) => void;
+  confirmDeleteSelected: () => Promise<void>;
+}
+
+const SkillsManagerContext = createContext<SkillsManagerContextValue | null>(null);
+
+export function SkillsProvider({ children }: { children: ReactNode }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
-  // Estados del formulario del modal
-  const [skillType, setSkillType] = useState<SkillType>("tecnica");
-  const [skillName, setSkillName] = useState("");
-  const [skillLevel, setSkillLevel] = useState("basico");
-  // Estados de validación y mensajes
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [skillType, setSkillType] = useState<SkillType>('tecnica');
+  const [skillName, setSkillName] = useState('');
+  const [skillLevel, setSkillLevel] = useState('basico');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-//Modal de confirmacion
   const [showConfirmEdit, setShowConfirmEdit] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null);
-  const [pageError, setPageError] = useState("");
+  const [selectedSkillIds, setSelectedSkillIds] = useState<Set<string>>(new Set());
+  const [pageError, setPageError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const normalizeErrorMessage = useCallback((message: string) => {
-    return message
-      .replace(/infoemacion/gi, 'información')
-      .replace(/informacion/gi, 'información');
+    return message.replace(/infoemacion/gi, 'información').replace(/informacion/gi, 'información');
   }, []);
 
   const loadSkills = useCallback(async () => {
     setIsLoading(true);
-    setPageError("");
-    console.log('[loadSkills] Iniciando carga de habilidades');
+    setPageError('');
 
     try {
       const remoteSkills = await getSkills();
-      console.log('[loadSkills] Habilidades cargadas exitosamente:', remoteSkills);
       setSkills(remoteSkills);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudieron cargar las habilidades.';
-      console.error('[loadSkills] Error al cargar habilidades:', message);
       setPageError(normalizeErrorMessage(message));
     } finally {
       setIsLoading(false);
@@ -60,119 +154,143 @@ export const useSkillsManager = () => {
   }, [normalizeErrorMessage]);
 
   useEffect(() => {
-    console.log('[useSkillsManager] Component montado, llamando loadSkills');
     void loadSkills();
   }, [loadSkills]);
 
   useEffect(() => {
-    if (!pageError) {
-      return;
-    }
+    if (!pageError) return;
 
-    const timeoutId = window.setTimeout(() => {
-      setPageError('');
-    }, 5000);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
+    const id = window.setTimeout(() => setPageError(''), 5000);
+    return () => window.clearTimeout(id);
   }, [pageError]);
+
+  const resetForm = useCallback(() => {
+    setEditingSkill(null);
+    setSkillType('tecnica');
+    setSkillName('');
+    setSkillLevel('basico');
+    setErrorMessage('');
+    setShowConfirmEdit(false);
+  }, []);
+
+  const closeSuccessModal = useCallback(() => {
+    setShowSuccessModal(false);
+    resetForm();
+  }, [resetForm]);
 
   const openModal = (skill?: Skill) => {
     if (skill) {
       setEditingSkill(skill);
       setSkillType(skill.type);
       setSkillName(skill.name);
-      setSkillLevel(skill.level || "basico");
+      setSkillLevel(skill.level ?? 'basico');
     } else {
-      setEditingSkill(null);
-      setSkillName("");
-      setSkillType("tecnica");
-      setSkillLevel("basico");
+      resetForm();
     }
-    setErrorMessage("");
+
+    setErrorMessage('');
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setEditingSkill(null);
-    setErrorMessage('');
+    resetForm();
   };
 
-const handleSkillNameChange = (value: string) => {
-  setSkillName(value);
-  if (skillType === "blanda") {
-    const hasNumbers = /\d/.test(value);
-    const hasSpecialChars = /[^a-zA-ZÀ-ÿ\s]/.test(value);
-    if (hasNumbers) {
-      setErrorMessage("El Nombre de la habilidad contiene numeros. Solo se permiten letras.");
-    } else if (hasSpecialChars) {
-      setErrorMessage("El Nombre de la habilidad contiene caracteres especiales. Solo se permiten letras.");
-    } else {
-      setErrorMessage("");
+  const handleSkillNameChange = (value: string) => {
+    setSkillName(value);
+
+    if (editingSkill?.type === 'blanda' || skillType === 'blanda') {
+      const hasNumbers = /\d/.test(value);
+      const hasSpecial = /[^a-zA-ZÀ-ÿ\s]/.test(value);
+
+      if (hasNumbers) {
+        setErrorMessage('El Nombre de la habilidad contiene números. Solo se permiten letras.');
+      } else if (hasSpecial) {
+        setErrorMessage(
+          'El Nombre de la habilidad contiene caracteres especiales. Solo se permiten letras.'
+        );
+      } else {
+        setErrorMessage('');
+      }
+    } else if (errorMessage) {
+      setErrorMessage('');
     }
-  } else {
-    if (errorMessage) setErrorMessage("");
-  }
-};
+  };
 
   const handleSave = async (e?: FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
-    if (errorMessage) return;
-    if (isSaving) return;
-    setErrorMessage("");  
-    // Validación 1: Campo obligatorio
+    if (errorMessage || isSaving) return;
+
+    setErrorMessage('');
+
     if (!skillName.trim()) {
-      setErrorMessage("El campo Nombre de habilidad es obligatorio.");
+      setErrorMessage('El campo Nombre de la habilidad es obligatorio.');
       return;
     }
-if (skillType === "blanda") {
-   const onlyLettersRegex = /^[a-zA-ZÀ-ÿ\s]+$/;
-  if (!onlyLettersRegex.test(skillName.trim())) {
-   const hasNumbers = /\d/.test(skillName);
-    if (hasNumbers) {setErrorMessage("El Nombre de la habilidad contiene números. Solo se permiten letras.");
-    } else { setErrorMessage("El Nombre de la habilidad contiene caracteres especiales. Solo se permiten letras."); }
-    return;
-  }
-}
-    // Validación 2: No permitir duplicados
-    const skillNameLower = skillName.trim().toLowerCase();
-    const exists = skills.some(s => 
-      s.name.toLowerCase() === skillNameLower && 
-      (!editingSkill || s.id !== editingSkill.id)
+
+    if (skillType === 'blanda') {
+      const onlyLetters = /^[a-zA-ZÀ-ÿ\s]+$/;
+
+      if (!onlyLetters.test(skillName.trim())) {
+        const hasNumbers = /\d/.test(skillName);
+        setErrorMessage(
+          hasNumbers
+            ? 'El Nombre de la habilidad contiene números. Solo se permiten letras.'
+            : 'El Nombre de la habilidad contiene caracteres especiales. Solo se permiten letras.'
+        );
+        return;
+      }
+    }
+
+    if (editingSkill && editingSkill.type === 'blanda') {
+      if (!isSimilarToOriginal(editingSkill.name, skillName.trim())) {
+        setErrorMessage('No se puede cambiar el nombre de la habilidad, solo se permiten correcciones.');
+        return;
+      }
+    }
+
+    const normalizedName = normalizeSkillName(skillName);
+    const exists = skills.some(
+      (skill) =>
+        normalizeSkillName(skill.name) === normalizedName &&
+        (!editingSkill || skill.id !== editingSkill.id)
     );
+
     if (exists) {
-      setErrorMessage("Ya existe una habilidad registrada con ese nombre.");
+      setErrorMessage('Ya existe una habilidad registrada con ese nombre.');
       return;
     }
+
     if (editingSkill && !showConfirmEdit) {
       setShowConfirmEdit(true);
-      return; 
+      return;
     }
+
     const payload = {
       name: skillName.trim(),
       type: skillType,
-      level: skillType === "tecnica" ? skillLevel.toLowerCase() : undefined,
+      level: skillType === 'tecnica' ? skillLevel.toLowerCase() : undefined,
     };
 
     try {
       setIsSaving(true);
 
       if (editingSkill) {
-        const updatedSkill = await updateSkill(editingSkill.id, payload);
-        setSkills(prev => prev.map(s => s.id === editingSkill.id ? updatedSkill : s));
-        setSuccessMessage("Habilidad actualizada correctamente.");
+        const updated = await updateSkill(editingSkill.id, payload);
+        setSkills((prev) => prev.map((skill) => (skill.id === editingSkill.id ? updated : skill)));
+        setSuccessMessage('La habilidad se ha actualizado correctamente.');
       } else {
-        const createdSkill = await createSkill(payload);
-        setSkills(prev => [...prev, createdSkill]);
-        setSuccessMessage("Habilidad agregada correctamente.");
+        const created = await createSkill(payload);
+        setSkills((prev) => [...prev, created]);
+        setSuccessMessage('La habilidad se ha registrado correctamente.');
       }
 
+      await loadSkills();
       setIsModalOpen(false);
       setShowConfirmEdit(false);
       setShowSuccessModal(true);
-      setEditingSkill(null);
+      resetForm();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo guardar la habilidad.';
       setErrorMessage(message);
@@ -183,6 +301,7 @@ if (skillType === "blanda") {
 
   const requestDelete = (skill: Skill) => {
     if (isDeleting) return;
+
     setSkillToDelete(skill);
     setShowConfirmDelete(true);
     setPageError('');
@@ -194,17 +313,22 @@ if (skillType === "blanda") {
   };
 
   const confirmDelete = async () => {
-    if (!skillToDelete || isDeleting) {
-      return;
-    }
+    if (!skillToDelete || isDeleting) return;
 
     try {
       setIsDeleting(true);
       await removeSkill(skillToDelete.id);
-      setSkills((currentSkills) => currentSkills.filter((skill) => skill.id !== skillToDelete.id));
-      setPageError('');
+      setSkills((prev) => prev.filter((skill) => skill.id !== skillToDelete.id));
+      setSelectedSkillIds((prev) => {
+        const next = new Set(prev);
+        next.delete(skillToDelete.id);
+        return next;
+      });
       setShowConfirmDelete(false);
       setSkillToDelete(null);
+      setSuccessMessage('Habilidad eliminada correctamente.');
+      setShowSuccessModal(true);
+      await loadSkills();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo eliminar la habilidad.';
       setPageError(normalizeErrorMessage(message));
@@ -213,29 +337,149 @@ if (skillType === "blanda") {
     }
   };
 
-const technicalSkills = useMemo(() => {
-  console.log('[useMemo] Recalculando habilidades técnicas');
-  return skills
-    .filter((skill) => skill.type === "tecnica")
-    .sort((a, b) => {
-      const aP = technicalLevelPriority[a.level?.toLowerCase() ?? ''] ?? 0;
-      const bP = technicalLevelPriority[b.level?.toLowerCase() ?? ''] ?? 0;
-      // Si tienen distinto nivel, ordena por nivel (Experto a Basico)
-      if (bP !== aP) return aP - bP; 
-      return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+  const toggleSelectSkill = (id: string) => {
+    setSelectedSkillIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
-}, [skills]);
-
-const softSkills = useMemo(() => {
-  return skills
-    .filter((skill) => skill.type === "blanda")
-    .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
-}, [skills]);
-
-  return {
-    isModalOpen,skills,editingSkill,skillType,skillName,skillLevel,errorMessage,successMessage,showSuccessModal,pageError,isLoading,isSaving,isDeleting,technicalSkills,softSkills,showConfirmEdit,showConfirmDelete,skillToDelete,// Estados
-    setSkillType,setSkillName, setSkillLevel, handleSkillNameChange,setShowConfirmEdit,setShowSuccessModal,setShowConfirmDelete,// Setters
-    openModal,closeModal,handleSave,requestDelete,cancelDelete,confirmDelete,// Métodos
   };
-  
-};
+
+  const toggleSelectAll = (visibleIds: string[]) => {
+    const allSelected = visibleIds.every((id) => selectedSkillIds.has(id));
+
+    if (allSelected) {
+      setSelectedSkillIds((prev) => {
+        const next = new Set(prev);
+        visibleIds.forEach((id) => next.delete(id));
+        return next;
+      });
+      return;
+    }
+
+    setSelectedSkillIds((prev) => {
+      const next = new Set(prev);
+      visibleIds.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+
+  const confirmDeleteSelected = async () => {
+    if (isDeleting || selectedSkillIds.size === 0) return;
+
+    try {
+      setIsDeleting(true);
+      const ids = Array.from(selectedSkillIds);
+      await Promise.all(ids.map((id) => removeSkill(id)));
+      setSkills((prev) => prev.filter((skill) => !selectedSkillIds.has(skill.id)));
+      setSelectedSkillIds(new Set());
+      setShowConfirmDelete(false);
+      setSuccessMessage('Habilidad eliminada correctamente.');
+      setShowSuccessModal(true);
+      await loadSkills();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'No se pudieron eliminar las habilidades.';
+      setPageError(normalizeErrorMessage(message));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const technicalSkills = useMemo(() => {
+    return skills
+      .filter((skill) => skill.type === 'tecnica')
+      .sort((a, b) => {
+        const aPriority = technicalLevelPriority[a.level?.toLowerCase() ?? ''] ?? 0;
+        const bPriority = technicalLevelPriority[b.level?.toLowerCase() ?? ''] ?? 0;
+
+        if (bPriority !== aPriority) return aPriority - bPriority;
+        return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+      });
+  }, [skills]);
+
+  const softSkills = useMemo(() => {
+    return skills
+      .filter((skill) => skill.type === 'blanda')
+      .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+  }, [skills]);
+
+  const filteredSkills = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return skills;
+
+    return skills.filter(
+      (skill) =>
+        skill.name.toLowerCase().includes(query) ||
+        (skill.level ?? '').toLowerCase().includes(query) ||
+        skill.type.toLowerCase().includes(query)
+    );
+  }, [skills, searchQuery]);
+
+  const filteredTechnicalSkills = useMemo(
+    () => filteredSkills.filter((skill) => skill.type === 'tecnica'),
+    [filteredSkills]
+  );
+
+  const filteredSoftSkills = useMemo(
+    () => filteredSkills.filter((skill) => skill.type === 'blanda'),
+    [filteredSkills]
+  );
+
+  const value: SkillsManagerContextValue = {
+    isModalOpen,
+    skills,
+    editingSkill,
+    skillType,
+    skillName,
+    skillLevel,
+    errorMessage,
+    successMessage,
+    showSuccessModal,
+    pageError,
+    isLoading,
+    isSaving,
+    isDeleting,
+    technicalSkills,
+    softSkills,
+    filteredSkills,
+    filteredTechnicalSkills,
+    filteredSoftSkills,
+    showConfirmEdit,
+    showConfirmDelete,
+    skillToDelete,
+    selectedSkillIds,
+    searchQuery,
+    setSkillType,
+    setSkillName,
+    setSkillLevel,
+    setSearchQuery,
+    handleSkillNameChange,
+    setShowConfirmEdit,
+    setShowSuccessModal,
+    closeSuccessModal,
+    setShowConfirmDelete,
+    openModal,
+    closeModal,
+    handleSave,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
+    toggleSelectSkill,
+    toggleSelectAll,
+    confirmDeleteSelected,
+  };
+
+  return createElement(SkillsManagerContext.Provider, { value }, children);
+}
+
+export function useSkillsManager() {
+  const context = useContext(SkillsManagerContext);
+
+  if (!context) {
+    throw new Error('useSkillsManager must be used within SkillsProvider');
+  }
+
+  return context;
+}
