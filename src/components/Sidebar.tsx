@@ -1,8 +1,6 @@
 import {
   Award,
   Briefcase,
-  ChevronDown,
-  ChevronLeft,
   ChevronRight,
   Eye,
   FolderGit2,
@@ -12,8 +10,9 @@ import {
   Settings2,
   Upload,
   User,
+  X
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 type NavChild = {
@@ -26,13 +25,22 @@ type NavItem = {
   id: string;
   label: string;
   path: string;
-  icon: typeof Eye;
+  icon: any;
   children?: NavChild[];
 };
 
 const navItems: NavItem[] = [
   { id: "portafolio", label: "Ver mi portafolio", icon: Eye, path: "/portafolio" },
-  { id: "personal", label: "Datos personales", icon: User, path: "/personal" },
+  { 
+    id: "personal", 
+    label: "Datos personales", 
+    icon: User, 
+    path: "/personal",
+    children: [
+      { id: "personal-ver", label: "Ver datos personales", path: "/personal/ver" },
+      { id: "personal-editar", label: "Editar datos personales", path: "/personal/editar" }
+    ]
+  },
   { id: "red-profesional", label: "Red profesional", icon: Globe, path: "/red-profesional" },
   {
     id: "proyectos",
@@ -99,145 +107,129 @@ const navItems: NavItem[] = [
   { id: "publicar", label: "Publicar", icon: Upload, path: "/publicar" },
 ];
 
-function getInitialExpandedSections(pathname: string) {
-  return new Set(
-    navItems
-      .filter((item) => item.children?.length && (pathname === item.path || pathname.startsWith(`${item.path}/`)))
-      .map((item) => item.id),
-  );
-}
-
 const Sidebar = () => {
   const location = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => getInitialExpandedSections(location.pathname));
+  
+  // Estado para controlar qué sección está expandida
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["personal"]));
 
-  function toggleSection(id: string) {
+  // Cerrar menú móvil al navegar
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [location.pathname]);
+
+  const toggleSection = (id: string) => {
     setExpandedSections((current) => {
       const next = new Set(current);
-
       if (next.has(id)) next.delete(id);
       else next.add(id);
-
       return next;
     });
-  }
+  };
 
-  const sidebarContent = useMemo(
-    () => (
-      <>
-        <div className="-mx-6 mb-6 border-b border-[#c2dbed] px-6 pb-4">
-          <h2 className="text-xl font-bold leading-tight text-[#003A6C]">
-            Gestionar <br /> Portafolio
-          </h2>
-        </div>
+  const sidebarContent = useMemo(() => (
+    <div className="flex flex-col h-full">
+      {/* Cabecera */}
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#c2dbed]">
+        <h2 className="text-[#003A6C] font-bold text-xl leading-tight">
+          Gestionar <br /> Portafolio
+        </h2>
+        <button onClick={() => setIsMobileOpen(false)} className="lg:hidden text-[#003A6C] p-1">
+          <X className="w-6 h-6" />
+        </button>
+      </div>
 
-        <nav className="space-y-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
-            const isExpanded = expandedSections.has(item.id) || isActive;
+      <nav className="space-y-1 overflow-y-auto flex-1 pr-2 custom-scrollbar">
+        {navItems.map((item) => {
+          const isParentActive = location.pathname.startsWith(item.path);
+          const hasChildren = item.children && item.children.length > 0;
+          const isExpanded = expandedSections.has(item.id);
 
-            if (item.children?.length) {
-              return (
-                <div key={item.id} className="space-y-1">
-                  <button
-                    type="button"
-                    onClick={() => toggleSection(item.id)}
-                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
-                      isActive ? "text-[#003A6C]" : "text-[#4982ad] hover:bg-[#77b6e6]/30"
-                    }`}
-                    aria-expanded={isExpanded}
-                  >
-                    <item.icon className="h-5 w-5 shrink-0" />
-                    <span className="flex-1 font-medium leading-tight">{item.label}</span>
-                    <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                  </button>
+          return (
+            <div key={item.id} className="space-y-1">
+              {hasChildren ? (
+                <button
+                  onClick={() => toggleSection(item.id)}
+                  className={`w-full flex items-center justify-between px-3 py-3 rounded-xl transition-all ${
+                    isParentActive ? "bg-[#003A6C] text-white" : "text-[#4982ad] hover:bg-[#77b6e6]/10"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="font-medium text-[15px] truncate">{item.label}</span>
+                  </div>
+                  <ChevronRight className={`w-4 h-4 flex-shrink-0 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                </button>
+              ) : (
+                <Link
+                  to={item.path}
+                  className={`w-full flex items-center gap-2 px-3 py-3 rounded-xl transition-all ${
+                    location.pathname === item.path ? "bg-[#003A6C] text-white" : "text-[#4982ad] hover:bg-[#77b6e6]/10"
+                  }`}
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="font-medium text-[15px]">{item.label}</span>
+                </Link>
+              )}
 
-                  {isExpanded ? (
-                    <div className="ml-9 flex flex-col gap-1 border-l-2 border-[#c2dbed] pl-2">
-                      {item.children.map((child) => {
-                        const isChildActive = location.pathname === child.path;
-
-                        return (
-                          <Link
-                            key={child.id}
-                            to={child.path}
-                            onClick={() => setIsMobileOpen(false)}
-                            className={`rounded-lg px-3 py-2 text-sm transition ${
-                              isChildActive
-                                ? "bg-[#77b6e6]/30 font-semibold text-[#003A6C]"
-                                : "text-[#4982ad] hover:text-[#003A6C]"
-                            }`}
-                          >
-                            {child.label}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  ) : null}
+              {/* Submenú Renderizado */}
+              {hasChildren && isExpanded && (
+                <div className="ml-4 space-y-1 mt-1 border-l-2 border-[#c2dbed] pl-2">
+                  {item.children?.map((child) => (
+                    <Link
+                      key={child.id}
+                      to={child.path}
+                      className={`block px-4 py-2 text-sm rounded-xl transition-all ${
+                        location.pathname === child.path 
+                          ? "bg-[#6dacbf] text-white shadow-sm" 
+                          : "text-[#4982ad] hover:bg-[#77b6e6]/10"
+                      }`}
+                    >
+                      {child.label}
+                    </Link>
+                  ))}
                 </div>
-              );
-            }
-
-            return (
-              <Link
-                key={item.id}
-                to={item.path}
-                onClick={() => setIsMobileOpen(false)}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-all ${
-                  location.pathname === item.path ? "bg-[#003A6C] text-white" : "text-[#4982ad] hover:bg-[#77b6e6]/30"
-                }`}
-              >
-                <item.icon className="h-5 w-5" />
-                <span className="font-normal">{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-      </>
-    ),
-    [expandedSections, location.pathname],
-  );
+              )}
+            </div>
+          );
+        })}
+      </nav>
+    </div>
+  ), [location.pathname, expandedSections]);
 
   return (
     <>
+      {/* Mobile Trigger */}
       <section className="lg:hidden">
-        <button
-          type="button"
-          onClick={() => setIsMobileOpen((current) => !current)}
-          aria-label={isMobileOpen ? "Cerrar menú lateral" : "Abrir menú lateral"}
-          className="fixed left-0 top-28 z-40 flex items-center justify-center rounded-r-2xl border border-l-0 border-[#003A6C] bg-[#003A6C] px-2 py-4 text-white shadow-sm"
-        >
-          {isMobileOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-        </button>
-
-        {isMobileOpen ? (
+        {!isMobileOpen && (
           <button
             type="button"
-            aria-label="Cerrar menú lateral"
+            onClick={() => setIsMobileOpen(true)}
+            className="fixed left-0 top-[30%] z-40 bg-[#003A6C] text-white p-3 rounded-r-2xl shadow-lg flex items-center justify-center border border-l-0 border-white/10"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        )}
+
+        {isMobileOpen && (
+          <div 
+            className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-[2px]"
             onClick={() => setIsMobileOpen(false)}
-            className="fixed inset-x-0 bottom-0 top-26 z-30 bg-black/20"
           />
-        ) : null}
+        )}
 
         <aside
-          className={`fixed left-0 top-26 z-40 h-[calc(100vh-104px)] w-64 overflow-y-auto border-r-2 border-[#6dacbf] bg-white p-6 transition-transform duration-300 ${
+          className={`fixed left-0 top-0 z-[70] h-full w-[280px] bg-white p-6 shadow-2xl transition-transform duration-300 ease-in-out ${
             isMobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <button
-            type="button"
-            onClick={() => setIsMobileOpen(false)}
-            aria-label="Ocultar menú lateral"
-            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full border border-[#003A6C] bg-[#003A6C] text-white shadow-sm"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
           {sidebarContent}
         </aside>
       </section>
 
-      <aside className="hidden min-h-[calc(100vh-64px)] w-64 overflow-y-auto border-r-2 border-[#6dacbf] bg-white p-6 lg:block">
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block w-64 bg-white border-r-2 border-[#6dacbf] min-h-screen p-6 sticky top-0">
         {sidebarContent}
       </aside>
     </>

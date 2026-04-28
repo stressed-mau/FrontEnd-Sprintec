@@ -19,7 +19,6 @@ import ProfilePage from "@/pages/ProfilePage"
 import PublishPortfolio from "@/pages/PublishPortfolio"
 import RegisterPage from "@/pages/RegisterPage"
 import UserHome from "@/pages/UserHome"
-import UserPersonalData from "@/pages/UserPersonalData"
 import MyPortfolio from "@/pages/MyPortfolio"
 import ProtectedRoute from "@/routes/ProtectedRoute"
 import PublicPortfolio from "@/pages/PublicPortfolio"
@@ -36,8 +35,10 @@ import AddProjectsPage from "@/pages/projects/AddProjectsPage"
 import DeleteProjectsPage from "@/pages/projects/DeleteProjectsPage"
 import EditProjectsPage from "@/pages/projects/EditProjectsPage"
 import ViewProjectsPage from "@/pages/projects/ViewProjectsPage"
-
-import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE, CERTIFICATES_ROUTE } from "@/routes/route-paths"
+import RegisterProfilePage from '@/pages/profile/RegisterProfilePage';
+import EditProfilePage from '@/pages/profile/EditProfilePage';
+import ViewProfilePage from '@/pages/profile/ViewProfilePage';
+import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE, REGISTER_PROFILE_ROUTE, CERTIFICATES_ROUTE } from "@/routes/route-paths"
 
 function AppRoutes() {
   return (
@@ -48,13 +49,15 @@ function AppRoutes() {
       <Route path={LOGIN_ROUTE} element={<LoginPage />} />
       <Route path={REGISTER_ROUTE} element={<RegisterPage />} />
       <Route path="/explore" element={<ExplorePortfolios />} />
-
+      <Route path={USER_HOME_ROUTE} element={<UserHome />} />
+      <Route path="/publicar" element={<PublishPortfolio />} />
+      <Route path="/plantillas" element={<PortfolioTemplatesPage />} />
+      <Route path="/perfil" element={<ProfilePage />} /> 
       <Route element={<ProtectedRoute />}>
-        <Route path={USER_HOME_ROUTE} element={<UserHome />} />
+        
         <Route path={LEGACY_DASHBOARD_ROUTE} element={<Navigate to={USER_HOME_ROUTE} replace />} />
-        
-        <Route path="/perfil" element={<ProfilePage />} />
-        
+        <Route path={REGISTER_PROFILE_ROUTE} element={<RegisterProfilePage />} />
+         
         <Route path="/habilidades" element={<ViewSkillsPage />} /> 
         <Route path="/habilidades/ver" element={<ViewSkillsPage />} />
         <Route path="/habilidades/añadir" element={<AddSkillsPage />} />
@@ -81,13 +84,13 @@ function AppRoutes() {
         <Route path="/certificados/añadir" element={<AddCertificatesPage />} />
         <Route path="/certificados/editar" element={<EditCertificatesPage />} />
         <Route path="/certificados/eliminar" element={<DeleteCertificatesPage />} />
-        <Route path="/plantillas" element={<PortfolioTemplatesPage />} />
-        <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
         
-      </Route>
-      <Route path="/personal" element={<UserPersonalData />} />
-      <Route path="/publicar" element={<PublishPortfolio />} />
-      <Route path="/portafolio" element={<MyPortfolio />} />
+        <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
+        <Route path="/personal/ver" element={<ViewProfilePage />} />
+        <Route path="/personal/editar" element={<EditProfilePage />} />
+        
+        <Route path="/portafolio" element={<MyPortfolio />} />
+      </Route>   
       <Route path="/p/:slug" element={<PublicPortfolio />} />
     </Routes>
   )

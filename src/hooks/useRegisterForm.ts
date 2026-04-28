@@ -3,7 +3,7 @@
 import { useNavigate } from "react-router-dom"
 
 import { useEmailValidation } from "@/hooks/useEmailValidation"
-import { USER_HOME_ROUTE } from "@/routes/route-paths"
+import { REGISTER_PROFILE_ROUTE } from "@/routes/route-paths"
 import {
   AuthServiceError,
   registerUser,
@@ -224,7 +224,7 @@ export function useRegisterForm() {
 
   function closeSuccessModal() {
     setShowSuccessModal(false)
-    navigate(USER_HOME_ROUTE, { replace: true })
+    navigate(REGISTER_PROFILE_ROUTE, { replace: true })
   }
 
   function applyEmailSuggestion(suggestedEmail: string) {

@@ -43,7 +43,11 @@ export const usePortfolio = (externalSlug?: string) => {
               phone_number: d.profile.phone || "",
               image_url: d.profile.image || "",
             },
-            projects: d.projects, // El endpoint /p/ ya suele venir normalizado
+            projects: d.projects.map((p: any) => ({
+              ...p,
+              nombre: p.title,
+              descripcion: p.description, 
+            })),
             skills: d.skills,
             experiences: d.work_experiences,
             socialNetworks: d.social_networks,
@@ -80,7 +84,7 @@ export const usePortfolio = (externalSlug?: string) => {
             phone_number: userData.phone || "",
             image_url: userData.image || "",
           },
-          // Forzamos el tipado para que coincida con tu interfaz Portfolio
+          
           skills: skills as Skill[],
           experiences: [...experiences, ...education] as unknown as Experience[],
           projects: projects as unknown as Project[],
