@@ -176,9 +176,9 @@ export function ExperienceTable({
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         {experience.image ? (
-                          <img src={experience.image} alt="" className="size-10 rounded-lg object-cover" />
+                          <img src={experience.image} alt="" className="size-10 shrink-0 rounded-lg border border-[#D7E6F2] bg-white object-contain p-1" />
                         ) : (
-                          <div className="flex size-10 items-center justify-center rounded-lg bg-[#D9EAF4] text-[#003A6C]">
+                          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#D9EAF4] text-[#003A6C]">
                             {experience.type === "academica" ? <GraduationCap className="size-5" /> : <Briefcase className="size-5" />}
                           </div>
                         )}
@@ -293,10 +293,10 @@ export function ExperienceDetailsModal({ experience, onClose }: ExperienceDetail
         <div className="space-y-6">
           <div className="flex items-start gap-4">
             {experience.image ? (
-              <img src={experience.image} alt="" className="size-20 rounded-lg object-cover shadow-sm" />
+              <img src={experience.image} alt="" className="size-16 shrink-0 rounded-lg border border-[#D7E6F2] bg-white object-contain p-1 shadow-sm" />
             ) : (
-              <div className="flex size-20 items-center justify-center rounded-lg bg-[#D9EAF4] text-[#003A6C]">
-                {experience.type === "academica" ? <GraduationCap className="size-9" /> : <Briefcase className="size-9" />}
+              <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-[#D9EAF4] text-[#003A6C]">
+                {experience.type === "academica" ? <GraduationCap className="size-8" /> : <Briefcase className="size-8" />}
               </div>
             )}
             <div>

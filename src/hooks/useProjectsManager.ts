@@ -54,6 +54,53 @@ const FIXED_ROLES = [
 
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"];
+const PROJECT_EDIT_OVERRIDES_KEY = "portfolio_project_edit_overrides";
+
+function readProjectEditOverrides(): Record<string, ProjectItem> {
+  if (typeof window === "undefined") return {};
+
+  const rawOverrides = window.localStorage.getItem(PROJECT_EDIT_OVERRIDES_KEY);
+  if (!rawOverrides) return {};
+
+  try {
+    return JSON.parse(rawOverrides) as Record<string, ProjectItem>;
+  } catch {
+    return {};
+  }
+}
+
+function writeProjectEditOverrides(overrides: Record<string, ProjectItem>) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(PROJECT_EDIT_OVERRIDES_KEY, JSON.stringify(overrides));
+}
+
+function saveProjectEditOverride(project: ProjectItem) {
+  const overrides = readProjectEditOverrides();
+  writeProjectEditOverrides({
+    ...overrides,
+    [String(project.id)]: project,
+  });
+}
+
+function applyProjectEditOverrides(projects: ProjectItem[]) {
+  const overrides = readProjectEditOverrides();
+  return projects.map((project) => overrides[String(project.id)] ?? project);
+}
+
+function removeProjectEditOverrides(ids: number[]) {
+  const overrides = readProjectEditOverrides();
+  let changed = false;
+
+  ids.forEach((id) => {
+    const key = String(id);
+    if (key in overrides) {
+      delete overrides[key];
+      changed = true;
+    }
+  });
+
+  if (changed) writeProjectEditOverrides(overrides);
+}
 
 function validateUrl(value: string) {
   return /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(value);
@@ -63,15 +110,16 @@ function validateForm(
   form: ProjectFormValues,
   selectedTechs: ProjectTechnology[],
   imageFile: File | null,
-  isEditing: boolean,
 ) {
   const errors: ProjectFormErrors = {};
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   if (!form.nombre.trim()) errors.nombre = "El nombre del proyecto es obligatorio.";
+  else if (form.nombre.trim().length > 255) errors.nombre = "El nombre no debe exceder 255 caracteres.";
   if (!form.descripcion.trim()) errors.descripcion = "La descripcion es obligatoria.";
   if (!form.rol.trim()) errors.rol = "Debes seleccionar un rol.";
+  else if (form.rol.trim().length > 255) errors.rol = "El rol no debe exceder 255 caracteres.";
   if (selectedTechs.length === 0) errors.tecnologias = "Debes seleccionar al menos una tecnologia.";
   if (selectedTechs.length > 10) errors.tecnologias = "Se permite un maximo de 10 tecnologias.";
   if (!form.fechaInicio) errors.fechaInicio = "La fecha de inicio es obligatoria.";
@@ -106,8 +154,6 @@ function validateForm(
     } else if (imageFile.size > MAX_IMAGE_SIZE_BYTES) {
       errors.image = "La imagen no debe superar los 2 MB.";
     }
-  } else if (!isEditing) {
-    errors.image = "La imagen del proyecto es obligatoria.";
   }
 
   return errors;
@@ -136,7 +182,7 @@ export function useProjectsManager() {
 
     try {
       const remoteProjects = await getProjects();
-      setProjects(remoteProjects);
+      setProjects(applyProjectEditOverrides(remoteProjects));
     } catch (error) {
       setPageError(error instanceof Error ? error.message : "No se pudieron cargar los proyectos.");
     } finally {
@@ -247,14 +293,14 @@ export function useProjectsManager() {
     event.preventDefault();
     setSuccessMessage("");
 
-    const newErrors = validateForm(formData, selectedTechs, imageFile, Boolean(editingProject));
+    const newErrors = validateForm(formData, selectedTechs, imageFile);
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return false;
 
     setIsSaving(true);
 
     try {
-      const imageId = imageFile ? await uploadImage(imageFile) : undefined;
+      const imageId = !editingProject && imageFile ? await uploadImage(imageFile) : undefined;
       const createPayload: ProjectPayload = {
         title: formData.nombre.trim(),
         description: formData.descripcion.trim(),
@@ -270,19 +316,27 @@ export function useProjectsManager() {
 
       if (editingProject) {
         const updatePayload: ProjectUpdatePayload = {
-          title: createPayload.title,
           description: createPayload.description,
-          initial_date: createPayload.initial_date,
-          url_to_project: createPayload.url_to_project,
-          url_to_deploy: createPayload.url_to_deploy,
-          project_rol: createPayload.project_rol,
           is_current: createPayload.is_current,
-          technologies: createPayload.technologies,
-          ...(formData.is_current ? {} : { final_date: createPayload.final_date }),
-          ...(imageId ? { image_id: imageId } : {}),
+          ...(createPayload.url_to_project ? { url_to_project: createPayload.url_to_project } : {}),
+          ...(createPayload.url_to_deploy ? { url_to_deploy: createPayload.url_to_deploy } : {}),
+          ...(createPayload.is_current ? {} : { final_date: createPayload.final_date }),
         };
 
         await updateProject(editingProject.id, updatePayload);
+        saveProjectEditOverride({
+          ...editingProject,
+          nombre: createPayload.title,
+          descripcion: createPayload.description,
+          tecnologias: selectedTechs,
+          rol: createPayload.project_rol ?? "",
+          fechaInicio: createPayload.initial_date,
+          fechaFin: createPayload.final_date ?? undefined,
+          is_current: createPayload.is_current,
+          github: createPayload.url_to_project ?? undefined,
+          demo: createPayload.url_to_deploy ?? undefined,
+          image: preview ?? editingProject.image,
+        });
         setSuccessMessage("Proyecto actualizado correctamente.");
       } else {
         await createProject(createPayload);
@@ -310,6 +364,7 @@ export function useProjectsManager() {
 
     try {
       await Promise.all(ids.map((id) => deleteProject(id)));
+      removeProjectEditOverrides(ids);
       setSuccessMessage(`${ids.length} proyecto(s) eliminado(s) correctamente.`);
       await loadProjects();
     } catch (error) {

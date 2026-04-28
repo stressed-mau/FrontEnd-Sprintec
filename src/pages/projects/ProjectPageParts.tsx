@@ -1,4 +1,4 @@
-import { Calendar, ExternalLink, FolderGit2, GitBranch, Search, X } from "lucide-react";
+import { Calendar, Edit3, ExternalLink, FolderGit2, GitBranch, Search, X } from "lucide-react";
 import { type ChangeEvent, type FormEvent, type ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,24 @@ import Sidebar from "@/components/Sidebar";
 import type { ProjectFormErrors, ProjectFormValues, ProjectItem, ProjectTechnology } from "@/hooks/useProjectsManager";
 
 const ITEMS_PER_PAGE = 10;
+const inputClassName = (hasError?: boolean) =>
+  hasError
+    ? "border-red-500 bg-white focus-visible:border-red-500 focus-visible:ring-red-200"
+    : "border-[#A5D7E8] bg-white focus-visible:border-[#003A6C] focus-visible:ring-[#A5D7E8]";
+const modalInputClassName = (hasError?: boolean) =>
+  hasError
+    ? "border-red-500 bg-white focus-visible:border-red-500 focus-visible:ring-red-200"
+    : "border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30";
+
+function selectClassName(hasError?: boolean, tone: "page" | "modal" = "page") {
+  if (hasError) {
+    return "h-9 w-full rounded-md border border-red-500 bg-white px-2.5 text-sm text-gray-900 outline-none focus:border-red-500 focus:ring-3 focus:ring-red-200";
+  }
+
+  return tone === "modal"
+    ? "h-9 w-full rounded-md border border-gray-300 bg-white px-2.5 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/30"
+    : "h-9 w-full rounded-md border border-[#A5D7E8] bg-white px-2.5 text-sm text-[#003A6C] outline-none focus:border-[#003A6C] focus:ring-3 focus:ring-[#A5D7E8]";
+}
 
 export function filterProjects(projects: ProjectItem[], searchTerm: string) {
   const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -155,6 +173,7 @@ export function ProjectTable({
   selectedIds,
   onToggleSelect,
   onRowClick,
+  onEdit,
 }: {
   projects: ProjectItem[];
   emptyMessage: string;
@@ -162,6 +181,7 @@ export function ProjectTable({
   selectedIds?: Set<number>;
   onToggleSelect?: (id: number, selected: boolean) => void;
   onRowClick?: (project: ProjectItem) => void;
+  onEdit?: (project: ProjectItem) => void;
 }) {
   if (projects.length === 0) {
     return (
@@ -183,6 +203,7 @@ export function ProjectTable({
             <th className="px-4 py-3">Tecnologias</th>
             <th className="px-4 py-3">Periodo</th>
             <th className="px-4 py-3">Estado</th>
+            {onEdit ? <th className="px-4 py-3 text-right">Acciones</th> : null}
           </tr>
         </thead>
         <tbody>
@@ -227,10 +248,52 @@ export function ProjectTable({
                   {project.is_current ? "En curso" : "Finalizado"}
                 </Badge>
               </td>
+              {onEdit ? (
+                <td className="px-4 py-3 text-right" onClick={(event) => event.stopPropagation()}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onEdit(project)}
+                    className="h-9 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
+                  >
+                    <Edit3 className="size-4" />
+                    Editar
+                  </Button>
+                </td>
+              ) : null}
             </tr>
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+export function ProjectFormModal({
+  title,
+  description,
+  children,
+  onClose,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-3 backdrop-blur-sm sm:items-center sm:px-4">
+      <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border border-[#6DACBF] bg-[#C2DBED] shadow-2xl sm:rounded-3xl">
+        <div className="flex items-start justify-between gap-4 border-b border-[#D7E6F2] px-5 py-5 sm:px-6">
+          <div>
+            <h2 className="text-2xl font-bold text-[#003A6C]">{title}</h2>
+            <p className="mt-1 text-sm text-[#4B778D]">{description}</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-full p-1 text-[#003A6C] transition hover:bg-[#EEF5F9]">
+            <X className="size-5" />
+          </button>
+        </div>
+        <div className="p-5 sm:p-6">{children}</div>
+      </div>
     </div>
   );
 }
@@ -252,7 +315,13 @@ export function ProjectDetailsModal({ project, onClose }: { project: ProjectItem
         </div>
 
         <div className="space-y-5 text-sm text-[#355468]">
-          {project.image ? <img src={project.image} alt={project.nombre} className="h-56 w-full rounded-2xl object-cover" /> : null}
+          {project.image ? (
+            <img
+              src={project.image}
+              alt={project.nombre}
+              className="h-36 w-full max-w-md rounded-xl border border-[#D7E6F2] bg-white object-cover shadow-sm"
+            />
+          ) : null}
           <Detail label="Rol en el proyecto">{project.rol}</Detail>
           <Detail label="Descripcion">{project.descripcion}</Detail>
           <Detail label="Tecnologias">
@@ -319,6 +388,8 @@ export function ProjectForm({
   onTechnologyRemove,
   onImageChange,
   onImageRemove,
+  tone = "page",
+  readOnlyFields = false,
 }: {
   formData: ProjectFormValues;
   errors: ProjectFormErrors;
@@ -335,16 +406,44 @@ export function ProjectForm({
   onTechnologyRemove: (id: number) => void;
   onImageChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onImageRemove: () => void;
+  tone?: "page" | "modal";
+  readOnlyFields?: boolean;
 }) {
+  const isModalTone = tone === "modal";
+  const fieldInputClassName = isModalTone ? modalInputClassName : inputClassName;
+  const disabledInputClassName = isModalTone
+    ? "border-gray-200 bg-gray-100 text-gray-500"
+    : "border-[#D7E6F2] bg-[#EEF5F9] text-[#6B7E8E]";
+
   return (
-    <form onSubmit={onSubmit} className="space-y-5 rounded-2xl border border-[#A5D7E8] bg-white p-5 shadow-sm sm:p-6">
+    <form
+      onSubmit={onSubmit}
+      className={
+        isModalTone
+          ? "space-y-6 bg-white"
+          : "space-y-5 rounded-2xl border border-[#A5D7E8] bg-white p-5 shadow-sm sm:p-6"
+      }
+    >
       <FeedbackMessage message={errors.form ?? ""} type="error" />
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Nombre del proyecto" error={errors.nombre} required>
-          <Input value={formData.nombre} onChange={(event) => onFieldChange("nombre", event.target.value)} className="border-[#A5D7E8]" maxLength={60} />
+        <Field label="Nombre del proyecto" error={errors.nombre} required tone={tone}>
+          <Input
+            value={formData.nombre}
+            onChange={(event) => onFieldChange("nombre", event.target.value)}
+            disabled={readOnlyFields}
+            className={readOnlyFields ? disabledInputClassName : fieldInputClassName(Boolean(errors.nombre))}
+            maxLength={255}
+            aria-invalid={Boolean(errors.nombre)}
+          />
         </Field>
-        <Field label="Tu rol en el proyecto" error={errors.rol} required>
-          <select value={formData.rol} onChange={(event) => onFieldChange("rol", event.target.value)} className="h-9 w-full rounded-md border border-[#A5D7E8] bg-white px-2.5 text-sm text-[#003A6C]">
+        <Field label="Tu rol en el proyecto" error={errors.rol} required tone={tone}>
+          <select
+            value={formData.rol}
+            onChange={(event) => onFieldChange("rol", event.target.value)}
+            disabled={readOnlyFields}
+            className={readOnlyFields ? `h-9 w-full rounded-md border px-2.5 text-sm outline-none ${disabledInputClassName}` : selectClassName(Boolean(errors.rol), tone)}
+            aria-invalid={Boolean(errors.rol)}
+          >
             <option value="">Selecciona un rol</option>
             {roleOptions.map((role) => (
               <option key={role} value={role}>
@@ -355,12 +454,24 @@ export function ProjectForm({
         </Field>
       </div>
 
-      <Field label="Descripcion" error={errors.descripcion} required>
-        <Textarea value={formData.descripcion} onChange={(event) => onFieldChange("descripcion", event.target.value)} rows={4} maxLength={250} className="border-[#A5D7E8]" />
+      <Field label="Descripcion" error={errors.descripcion} required tone={tone}>
+        <Textarea
+          value={formData.descripcion}
+          onChange={(event) => onFieldChange("descripcion", event.target.value)}
+          rows={4}
+          className={fieldInputClassName(Boolean(errors.descripcion))}
+          aria-invalid={Boolean(errors.descripcion)}
+        />
       </Field>
 
-      <Field label="Tecnologias" error={errors.tecnologias} required>
-        <select value="" onChange={(event) => onTechnologyAdd(event.target.value)} className="h-9 w-full rounded-md border border-[#A5D7E8] bg-white px-2.5 text-sm text-[#003A6C]">
+      <Field label="Tecnologias" error={errors.tecnologias} required tone={tone}>
+        <select
+          value=""
+          onChange={(event) => onTechnologyAdd(event.target.value)}
+          disabled={readOnlyFields}
+          className={selectClassName(Boolean(errors.tecnologias), tone)}
+          aria-invalid={Boolean(errors.tecnologias)}
+        >
           <option value="">Selecciona tecnologias para agregar</option>
           {technologies
             .filter((technology) => !selectedTechs.some((selected) => selected.id === technology.id))
@@ -371,13 +482,15 @@ export function ProjectForm({
             ))}
         </select>
         {selectedTechs.length > 0 ? (
-          <div className="mt-3 flex flex-wrap gap-2 rounded-xl border border-[#D7E6F2] bg-[#EEF5F9] p-3">
+          <div className={`mt-3 flex flex-wrap gap-2 rounded-xl border p-3 ${isModalTone ? "border-gray-200 bg-gray-50" : "border-[#D7E6F2] bg-[#EEF5F9]"}`}>
             {selectedTechs.map((technology) => (
-              <Badge key={technology.id} className="gap-1 bg-[#D9EAF4] text-[#003A6C]">
+              <Badge key={technology.id} className={`gap-1 ${isModalTone ? "bg-gray-100 text-gray-700 hover:bg-gray-100" : "bg-[#D9EAF4] text-[#003A6C]"}`}>
                 {technology.name}
-                <button type="button" onClick={() => onTechnologyRemove(technology.id)} className="rounded-full p-0.5 hover:bg-[#A5D7E8]">
-                  <X className="size-3" />
-                </button>
+                {!readOnlyFields ? (
+                  <button type="button" onClick={() => onTechnologyRemove(technology.id)} className={`rounded-full p-0.5 ${isModalTone ? "hover:bg-gray-200" : "hover:bg-[#A5D7E8]"}`}>
+                    <X className="size-3" />
+                  </button>
+                ) : null}
               </Badge>
             ))}
           </div>
@@ -385,48 +498,78 @@ export function ProjectForm({
       </Field>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Field label="Fecha de inicio" error={errors.fechaInicio} required>
-          <Input type="date" value={formData.fechaInicio} onChange={(event) => onFieldChange("fechaInicio", event.target.value)} className="border-[#A5D7E8]" />
+        <Field label="Fecha de inicio" error={errors.fechaInicio} required tone={tone}>
+          <Input
+            type="date"
+            value={formData.fechaInicio}
+            onChange={(event) => onFieldChange("fechaInicio", event.target.value)}
+            disabled={readOnlyFields}
+            className={readOnlyFields ? disabledInputClassName : fieldInputClassName(Boolean(errors.fechaInicio))}
+            aria-invalid={Boolean(errors.fechaInicio)}
+          />
         </Field>
-        <Field label="Fecha de finalizacion" error={errors.fechaFin} required={!formData.is_current}>
-          <Input type="date" value={formData.fechaFin} disabled={formData.is_current} onChange={(event) => onFieldChange("fechaFin", event.target.value)} className="border-[#A5D7E8]" />
+        <Field label="Fecha de finalizacion" error={errors.fechaFin} required={!formData.is_current} tone={tone}>
+          <Input
+            type="date"
+            value={formData.fechaFin}
+            disabled={formData.is_current}
+            onChange={(event) => onFieldChange("fechaFin", event.target.value)}
+            className={fieldInputClassName(Boolean(errors.fechaFin))}
+            aria-invalid={Boolean(errors.fechaFin)}
+          />
         </Field>
-        <label className="flex items-center gap-2 self-end pb-2 text-sm font-medium text-[#003A6C]">
-          <input type="checkbox" checked={formData.is_current} onChange={(event) => onFieldChange("is_current", event.target.checked)} className="size-4 rounded border-[#A5D7E8]" />
+        <label className={`flex items-center gap-2 self-end pb-2 text-sm font-medium ${isModalTone ? "text-gray-700" : "text-[#003A6C]"}`}>
+          <input type="checkbox" checked={formData.is_current} onChange={(event) => onFieldChange("is_current", event.target.checked)} className={`size-4 rounded ${isModalTone ? "border-gray-300" : "border-[#A5D7E8]"}`} />
           En curso
         </label>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="URL del repositorio" error={errors.github}>
-          <Input type="url" value={formData.github} onChange={(event) => onFieldChange("github", event.target.value)} placeholder="https://github.com/usuario/proyecto" className="border-[#A5D7E8]" />
+        <Field label="URL del repositorio" error={errors.github} tone={tone}>
+          <Input
+            type="url"
+            value={formData.github}
+            onChange={(event) => onFieldChange("github", event.target.value)}
+            placeholder="https://github.com/usuario/proyecto"
+            className={fieldInputClassName(Boolean(errors.github))}
+            aria-invalid={Boolean(errors.github)}
+          />
         </Field>
-        <Field label="URL de la demo" error={errors.demo}>
-          <Input type="url" value={formData.demo} onChange={(event) => onFieldChange("demo", event.target.value)} placeholder="https://proyecto-demo.com" className="border-[#A5D7E8]" />
+        <Field label="URL de la demo" error={errors.demo} tone={tone}>
+          <Input
+            type="url"
+            value={formData.demo}
+            onChange={(event) => onFieldChange("demo", event.target.value)}
+            placeholder="https://proyecto-demo.com"
+            className={fieldInputClassName(Boolean(errors.demo))}
+            aria-invalid={Boolean(errors.demo)}
+          />
         </Field>
       </div>
 
-      <Field label="Imagen del proyecto" error={errors.image} required={!preview}>
-        {preview ? <img src={preview} alt="Vista previa del proyecto" className="mb-3 h-44 w-full rounded-xl object-cover" /> : null}
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="cursor-pointer rounded-lg bg-[#003A6C] px-4 py-2 text-sm font-medium text-white hover:bg-[#1a4f7a]">
+      <Field label="Imagen del proyecto" error={errors.image} tone={tone}>
+        <div className={`rounded-xl border p-3 ${errors.image ? "border-red-500 bg-red-50" : isModalTone ? "border-gray-200 bg-gray-50" : "border-[#D7E6F2] bg-[#EEF5F9]"}`}>
+          {preview ? <img src={preview} alt="Vista previa del proyecto" className="mb-3 h-28 w-full max-w-xs rounded-xl object-cover shadow-sm" /> : null}
+          <div className="flex flex-wrap items-center gap-3">
+          <label className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${readOnlyFields ? "cursor-not-allowed bg-gray-400" : "cursor-pointer bg-[#003A6C] hover:bg-[#4982AD]"}`}>
             Seleccionar archivo
-            <input type="file" accept="image/png,image/jpeg" onChange={onImageChange} className="hidden" />
+            <input type="file" accept="image/png,image/jpeg" onChange={onImageChange} disabled={readOnlyFields} className="hidden" />
           </label>
-          {preview ? (
-            <Button type="button" variant="outline" onClick={onImageRemove} className="border-[#A5D7E8] bg-white text-[#003A6C]">
+          {preview && !readOnlyFields ? (
+            <Button type="button" variant="outline" onClick={onImageRemove} className={isModalTone ? "border-gray-300 bg-white text-gray-700 hover:bg-gray-50" : "border-[#A5D7E8] bg-white text-[#003A6C]"}>
               Quitar imagen
             </Button>
           ) : null}
-          <span className="text-xs text-[#4B778D]">JPG o PNG, maximo 2 MB</span>
+          <span className={`text-xs ${isModalTone ? "text-gray-500" : "text-[#4B778D]"}`}>JPG o PNG, maximo 2 MB</span>
+          </div>
         </div>
       </Field>
 
-      <div className="flex flex-wrap gap-3 border-t border-[#D7E6F2] pt-5">
-        <Button type="submit" disabled={isSaving} className="bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
+      <div className={`flex flex-wrap gap-3 border-t pt-5 ${isModalTone ? "border-gray-200" : "border-[#D7E6F2]"}`}>
+        <Button type="submit" disabled={isSaving} className="bg-[#003A6C] text-white shadow-sm hover:bg-[#4982AD]">
           {isSaving ? "Guardando..." : submitLabel}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving} className="border-[#A5D7E8] bg-white text-[#003A6C]">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving} className={isModalTone ? "border-gray-300 bg-white text-gray-700 hover:bg-gray-50" : "border-[#A5D7E8] bg-white text-[#003A6C]"}>
           Cancelar
         </Button>
       </div>
@@ -439,15 +582,17 @@ function Field({
   error,
   required,
   children,
+  tone = "page",
 }: {
   label: string;
   error?: string;
   required?: boolean;
   children: ReactNode;
+  tone?: "page" | "modal";
 }) {
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-[#003A6C]">
+      <label className={`text-sm font-medium ${tone === "modal" ? "text-gray-700" : "text-[#003A6C]"}`}>
         {label} {required ? <span aria-hidden="true">*</span> : null}
       </label>
       {children}

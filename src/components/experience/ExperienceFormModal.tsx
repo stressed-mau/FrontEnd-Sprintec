@@ -6,6 +6,88 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { ExperienceFormErrors, ExperienceFormValues } from "@/hooks/useExperienceManager"
 
+const POSITION_OPTIONS = [
+  "Desarrollador Frontend",
+  "Desarrollador Backend",
+  "Desarrollador Full Stack",
+  "Desarrollador Mobile",
+  "Ingeniero de Software",
+  "Arquitecto de Software",
+  "Tech Lead",
+  "Lider Tecnico",
+  "Gerente de Proyecto",
+  "Product Manager",
+  "Scrum Master",
+  "DevOps Engineer",
+  "Data Scientist",
+  "Data Analyst",
+  "Ingeniero de Datos",
+  "Ingeniero de Machine Learning",
+  "QA Engineer",
+  "QA Tester",
+  "Disenador UI/UX",
+  "Disenador de Producto",
+  "Analista de Sistemas",
+  "Consultor IT",
+  "Administrador de Sistemas",
+  "Administrador de Redes",
+  "Especialista en Ciberseguridad",
+  "Soporte Tecnico",
+  "CTO",
+  "Director de Tecnologia",
+  "VP de Ingenieria",
+  "Otro",
+]
+
+const DEGREE_OPTIONS = [
+  "Bachillerato",
+  "Tecnico Superior",
+  "Tecnico Profesional",
+  "Licenciatura",
+  "Ingenieria",
+  "Grado",
+  "Maestria",
+  "Master",
+  "Doctorado",
+  "Posgrado",
+  "Diplomado",
+  "Certificacion Profesional",
+]
+
+const FIELD_OPTIONS = [
+  "Ingenieria de Software",
+  "Ciencias de la Computacion",
+  "Ingenieria Informatica",
+  "Desarrollo de Software",
+  "Sistemas de Informacion",
+  "Inteligencia Artificial",
+  "Ciencia de Datos",
+  "Ciberseguridad",
+  "Redes y Telecomunicaciones",
+  "Ingenieria de Sistemas",
+  "Administracion de Empresas",
+  "Marketing",
+  "Finanzas",
+  "Economia",
+  "Contabilidad",
+  "Recursos Humanos",
+  "Diseno Grafico",
+  "Diseno Industrial",
+  "Arquitectura",
+  "Ingenieria Civil",
+  "Ingenieria Mecanica",
+  "Ingenieria Electrica",
+  "Ingenieria Electronica",
+  "Medicina",
+  "Enfermeria",
+  "Psicologia",
+  "Derecho",
+  "Educacion",
+  "Comunicacion Social",
+  "Periodismo",
+  "Otro",
+]
+
 type ExperienceFormModalProps = {
   formData: ExperienceFormValues
   errors: ExperienceFormErrors
@@ -49,6 +131,15 @@ export function ExperienceFormModal({
   const positionLabel = formData.type === "laboral" ? "Cargo" : "Titulo"
   const isLaboralExperience = formData.type === "laboral"
   const isCurrentActive = formData.current
+  const positionOptions = isLaboralExperience ? POSITION_OPTIONS : DEGREE_OPTIONS
+  const resolvedPositionOptions =
+    formData.position && !positionOptions.includes(formData.position)
+      ? [formData.position, ...positionOptions]
+      : positionOptions
+  const resolvedFieldOptions =
+    formData.fieldOfStudy && !FIELD_OPTIONS.includes(formData.fieldOfStudy)
+      ? [formData.fieldOfStudy, ...FIELD_OPTIONS]
+      : FIELD_OPTIONS
 
   return (
     <div
@@ -168,18 +259,24 @@ export function ExperienceFormModal({
             <Label id="experience-position-label" htmlFor="experience-position" className="text-[#003A6C]">
               {positionLabel} <span aria-hidden="true">*</span>
             </Label>
-            <Input
+            <select
               id="experience-position"
-              maxLength={80}
               value={formData.position}
               disabled={isSaving}
               onBlur={() => onBlur("position")}
               onChange={(event) => onFieldChange("position", event.target.value)}
-              className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+              className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8] disabled:opacity-50"
               aria-invalid={Boolean(errors.position)}
               aria-labelledby="experience-position-label"
               aria-describedby={errors.position ? "experience-position-error" : undefined}
-            />
+            >
+              <option value="">{isLaboralExperience ? "Selecciona un cargo" : "Selecciona un titulo"}</option>
+              {resolvedPositionOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
             {errors.position ? <p id="experience-position-error" className="text-sm text-red-600">{errors.position}</p> : null}
           </div>
 
@@ -188,18 +285,24 @@ export function ExperienceFormModal({
               <Label id="experience-field-label" htmlFor="experience-field" className="text-[#003A6C]">
                 Campo de estudio <span aria-hidden="true">*</span>
               </Label>
-              <Input
+              <select
                 id="experience-field"
-                maxLength={100}
                 value={formData.fieldOfStudy}
                 disabled={isSaving}
                 onBlur={() => onBlur("fieldOfStudy")}
                 onChange={(event) => onFieldChange("fieldOfStudy", event.target.value)}
-                className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+                className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8] disabled:opacity-50"
                 aria-invalid={Boolean(errors.fieldOfStudy)}
                 aria-labelledby="experience-field-label"
                 aria-describedby={errors.fieldOfStudy ? "experience-field-error" : undefined}
-              />
+              >
+                <option value="">Selecciona un campo de estudio</option>
+                {resolvedFieldOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
               {errors.fieldOfStudy ? <p id="experience-field-error" className="text-sm text-red-600">{errors.fieldOfStudy}</p> : null}
             </div>
           ) : null}
@@ -326,7 +429,7 @@ export function ExperienceFormModal({
 
               {formData.image ? (
                 <div className="mt-2 space-y-2">
-                  <img src={formData.image} alt="Vista previa" className="size-24 rounded-lg object-cover shadow-sm" />
+                  <img src={formData.image} alt="Vista previa" className="size-20 rounded-lg object-cover shadow-sm" />
                   <p className="text-xs text-[#4B778D]">
                     Puedes mantener la imagen actual, subir otra o eliminarla.
                   </p>

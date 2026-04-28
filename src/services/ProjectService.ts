@@ -90,14 +90,42 @@ export const createProject = async (data: ProjectPayload) => {
   }
 };
 
-export const getLanguages = async (search = "") => {
-  const res = await api.get(`/languages?search=${search}`);
+function extractLanguageList(body: unknown): unknown[] | null {
+  if (Array.isArray(body)) return body;
+  if (body && typeof body === "object") {
+    const record = body as Record<string, unknown>;
+    if (Array.isArray(record.data)) return record.data;
+    if (Array.isArray(record.languages)) return record.languages;
+    if (Array.isArray(record.technologies)) return record.technologies;
 
-  if (!res.data.success) {
-    throw new Error("Error al obtener tecnologías");
+    if (record.data && typeof record.data === "object") {
+      const data = record.data as Record<string, unknown>;
+      if (Array.isArray(data.languages)) return data.languages;
+      if (Array.isArray(data.technologies)) return data.technologies;
+      if (Array.isArray(data.data)) return data.data;
+    }
   }
 
-  return res.data.data;
+  return null;
+}
+
+export const getLanguages = async (search = "") => {
+  try {
+    const res = await api.get("/languages", {
+      params: search.trim() ? { search } : undefined,
+    });
+
+    if (res.data?.success === false) {
+      throw new Error(typeof res.data?.message === "string" ? res.data.message : "Error al obtener tecnologias");
+    }
+
+    const list = extractLanguageList(res.data);
+    if (list) return list.map(normalizeTechnology).filter((tech): tech is ProjectTechnology => Boolean(tech));
+
+    throw new Error("Formato de respuesta inesperado al listar tecnologias");
+  } catch (error) {
+    throw formatProjectError(error, "Error al obtener tecnologias");
+  }
 };
 
 export const createLanguage = async (name: string) => {

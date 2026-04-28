@@ -46,18 +46,17 @@ const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 const ALLOWED_CERTIFICATE_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
 const ALLOWED_CERTIFICATE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf"]
-const EXPERIENCE_EDIT_OVERRIDES_KEY = "portfolio_experience_edit_overrides"
+const EXPERIENCE_EDIT_OVERRIDES_KEY = "portfolio_experience_edit_overrides_v2"
+
+function experienceOverrideKey(experience: Pick<ExperienceItem, "id" | "type" | "startDate">) {
+  return `${experience.type}:${experience.id}:${experience.startDate}`
+}
 
 function readExperienceEditOverrides(): Record<string, ExperienceItem> {
-  if (typeof window === "undefined") {
-    return {}
-  }
+  if (typeof window === "undefined") return {}
 
   const rawOverrides = window.localStorage.getItem(EXPERIENCE_EDIT_OVERRIDES_KEY)
-
-  if (!rawOverrides) {
-    return {}
-  }
+  if (!rawOverrides) return {}
 
   try {
     return JSON.parse(rawOverrides) as Record<string, ExperienceItem>
@@ -67,38 +66,32 @@ function readExperienceEditOverrides(): Record<string, ExperienceItem> {
 }
 
 function writeExperienceEditOverrides(overrides: Record<string, ExperienceItem>) {
-  if (typeof window === "undefined") {
-    return
-  }
-
+  if (typeof window === "undefined") return
   window.localStorage.setItem(EXPERIENCE_EDIT_OVERRIDES_KEY, JSON.stringify(overrides))
 }
 
-function saveExperienceEditOverride(experience: ExperienceItem) {
+function saveExperienceEditOverride(originalExperience: ExperienceItem, updatedExperience: ExperienceItem) {
   const overrides = readExperienceEditOverrides()
   writeExperienceEditOverrides({
     ...overrides,
-    [experience.id]: experience,
+    [experienceOverrideKey(originalExperience)]: updatedExperience,
   })
 }
 
-function removeExperienceEditOverride(id: string) {
+function removeExperienceEditOverride(experience: ExperienceItem) {
   const overrides = readExperienceEditOverrides()
+  const key = experienceOverrideKey(experience)
 
-  if (!(id in overrides)) {
-    return
-  }
+  if (!(key in overrides)) return
 
-  delete overrides[id]
+  delete overrides[key]
   writeExperienceEditOverrides(overrides)
 }
 
 function applyExperienceEditOverrides(experiences: ExperienceItem[]) {
   const overrides = readExperienceEditOverrides()
-
-  return experiences.map((experience) => overrides[experience.id] ?? experience)
+  return experiences.map((experience) => overrides[experienceOverrideKey(experience)] ?? experience)
 }
-
 function normalizeExperienceTypeValue(value: string): ExperienceFormValues["type"] {
   return value === "academica" ? "academica" : "laboral"
 }
@@ -813,10 +806,10 @@ export function useExperienceManager() {
 
         setExperiences((currentExperiences) =>
           currentExperiences.map((experience) =>
-            experience.id === editingExperience.id ? updatedExperience : experience,
+            experience === editingExperience ? updatedExperience : experience,
           ),
         )
-        saveExperienceEditOverride(updatedExperience)
+        saveExperienceEditOverride(editingExperience, updatedExperience)
         closeConfirmEditModal()
         closeModal()
         showSuccessModal("Experiencia actualizada correctamente.")
@@ -936,7 +929,7 @@ export function useExperienceManager() {
       } else {
         await removeExperience(id)
       }
-      removeExperienceEditOverride(id)
+      removeExperienceEditOverride(targetExperience)
       await loadExperiences()
       showFeedback("Experiencia eliminada correctamente.", "success")
     } catch (error) {

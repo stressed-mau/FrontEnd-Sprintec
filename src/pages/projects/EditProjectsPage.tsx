@@ -1,12 +1,12 @@
 import { useMemo, useState, type FormEvent } from "react";
 
-import { Button } from "@/components/ui/button";
 import { useProjectsManager, type ProjectItem } from "@/hooks/useProjectsManager";
 import {
   FeedbackMessage,
   filterProjects,
   paginateProjects,
   ProjectForm,
+  ProjectFormModal,
   ProjectPageShell,
   ProjectPagination,
   ProjectSearch,
@@ -37,36 +37,8 @@ export default function EditProjectsPage() {
     if (saved) setIsEditing(false);
   }
 
-  if (isEditing && manager.editingProject) {
-    return (
-      <ProjectPageShell title="Editar proyecto" description={`Actualiza la informacion de ${manager.editingProject.nombre}.`}>
-        <FeedbackMessage message={manager.successMessage} type="success" />
-        <ProjectForm
-          formData={manager.formData}
-          errors={manager.errors}
-          technologies={manager.technologies}
-          roleOptions={manager.roleOptions}
-          selectedTechs={manager.selectedTechs}
-          preview={manager.preview}
-          isSaving={manager.isSaving}
-          submitLabel="Guardar cambios"
-          onSubmit={handleSubmit}
-          onCancel={() => {
-            manager.resetForm();
-            setIsEditing(false);
-          }}
-          onFieldChange={manager.updateField}
-          onTechnologyAdd={manager.addTechnology}
-          onTechnologyRemove={manager.removeTechnology}
-          onImageChange={manager.handleImageChange}
-          onImageRemove={manager.removeImage}
-        />
-      </ProjectPageShell>
-    );
-  }
-
   return (
-    <ProjectPageShell title="Editar proyectos" description="Selecciona un proyecto para actualizar sus datos.">
+    <ProjectPageShell title="Editar proyectos" description="Haz clic en una fila para editar.">
       <FeedbackMessage message={manager.pageError} type="error" />
       <FeedbackMessage message={manager.successMessage} type="success" />
 
@@ -93,10 +65,37 @@ export default function EditProjectsPage() {
         onPageChange={setCurrentPage}
       />
 
-      {manager.projects.length > 0 ? (
-        <Button type="button" variant="outline" className="border-[#A5D7E8] bg-white text-[#003A6C]" onClick={() => setCurrentPage(1)}>
-          Volver al inicio
-        </Button>
+      {isEditing && manager.editingProject ? (
+        <ProjectFormModal
+          title="Editar proyecto"
+          description={`Actualiza la informacion de ${manager.editingProject.nombre}.`}
+          onClose={() => {
+            manager.resetForm();
+            setIsEditing(false);
+          }}
+        >
+          <ProjectForm
+            formData={manager.formData}
+            errors={manager.errors}
+            technologies={manager.technologies}
+            roleOptions={manager.roleOptions}
+            selectedTechs={manager.selectedTechs}
+            preview={manager.preview}
+            isSaving={manager.isSaving}
+            submitLabel="Guardar cambios"
+            onSubmit={handleSubmit}
+            onCancel={() => {
+              manager.resetForm();
+              setIsEditing(false);
+            }}
+            onFieldChange={manager.updateField}
+            onTechnologyAdd={manager.addTechnology}
+            onTechnologyRemove={manager.removeTechnology}
+            onImageChange={manager.handleImageChange}
+            onImageRemove={manager.removeImage}
+            readOnlyFields
+          />
+        </ProjectFormModal>
       ) : null}
     </ProjectPageShell>
   );

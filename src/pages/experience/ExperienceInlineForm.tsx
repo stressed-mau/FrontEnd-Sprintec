@@ -207,11 +207,11 @@ export function ExperienceInlineForm({
                 </Label>
                 <div className="space-y-3">
                   {formData.image ? (
-                    <div className="relative mx-auto h-24 w-24">
+                    <div className="relative mx-auto h-20 w-20">
                       <img
                         src={formData.image}
                         alt="Vista previa"
-                        className="h-24 w-24 rounded-lg border border-gray-300 bg-white object-contain p-2"
+                        className="h-20 w-20 rounded-lg border border-gray-300 bg-white object-contain p-2"
                       />
                       {canRemoveImage ? (
                         <button
@@ -226,7 +226,7 @@ export function ExperienceInlineForm({
                       ) : null}
                     </div>
                   ) : (
-                    <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
                       <Upload className="h-8 w-8 text-gray-400" />
                     </div>
                   )}
