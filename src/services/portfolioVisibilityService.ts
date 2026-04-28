@@ -1,9 +1,7 @@
 import axios from 'axios';
 import { api } from './api';
-import { getAuthSession } from '@/services/auth/auth-storage';
 
 export type SectionKey = 'projects' | 'skills' | 'experience' | 'networks';
-
 type VisibilityTable = 'skills' | 'projects' | 'educations' | 'social_networks' | 'work_experiences';
 
 export interface VisibilityItem {
@@ -14,290 +12,95 @@ export interface VisibilityItem {
   sourceTable?: VisibilityTable;
 }
 
-type UnknownRecord = Record<string, unknown>;
-
-interface BaseVisibilityDto {
-  id?: number | string;
-  is_public?: boolean;
-}
-
-interface SkillDto extends BaseVisibilityDto {
-  name?: string;
-  level_of_domain?: string;
-  type?: string;
-}
-
-interface ProjectDto extends BaseVisibilityDto {
-  name?: string;
-  title?: string;
-  role?: string;
-  description?: string;
-}
-
-interface WorkExperienceDto extends BaseVisibilityDto {
-  title?: string;
-  job_title?: string;
-  position?: string;
-  cargo?: string;
-  company?: string;
-  name?: string;
-  organization?: string;
-  institution?: string;
-  company_name?: string;
-  role?: string;
-}
-
-interface EducationDto extends BaseVisibilityDto {
-  title?: string;
-  role?: string;
-  job_title?: string;
-  position?: string;
-  cargo?: string;
-  institution_name?: string;
-  name?: string;
-  school?: string;
-  university?: string;
-  college?: string;
-  institution?: string;
-  degree?: string;
-  career?: string;
-}
-
-interface SocialNetworkDto extends BaseVisibilityDto {
-  name?: string;
-  platform?: string;
-  url?: string;
-  link?: string;
-}
-
 const USER_INFORMATION_ENDPOINT = '/visibility';
+
+// --- FUNCIONES DE UTILIDAD REFINADAS ---
 
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {
-    if (error.code === 'ECONNABORTED') {
-      return new Error('La solicitud tardó demasiado. Intenta nuevamente.');
-    }
-
-    if (error.code === 'ERR_NETWORK') {
-      return new Error('No se pudo conectar con el backend configurado. Verifica que la API desplegada est\xe9 disponible.');
-    }
-
-    const backendMessage =
-      (error.response?.data as { message?: string } | undefined)?.message ??
-      error.message;
-
-    return new Error(backendMessage || 'Error inesperado al consumir portfolio visibility API.');
+    const backendMessage = error.response?.data?.message || error.message;
+    return new Error(backendMessage || 'Error en la API de visibilidad.');
   }
-
-  return new Error('Error inesperado al consumir portfolio visibility API.');
+  return new Error('Error inesperado.');
 }
 
-function unwrapPayload(data: unknown): unknown {
-  if (!data || typeof data !== 'object') {
-    return data;
-  }
-
-  const record = data as UnknownRecord;
-
-  if ('data' in record && record.data && typeof record.data === 'object') {
-    return unwrapPayload(record.data);
-  }
-
-  return data;
+function asBoolean(value: unknown): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value === 1;
+  if (typeof value === 'string') return value === '1' || value.toLowerCase() === 'true';
+  return false;
 }
 
-function unwrapList(data: unknown, collectionKey?: string): unknown[] {
-  const unwrapped = unwrapPayload(data);
+// --- NORMALIZADORES BASADOS EN TU JSON ---
 
-  if (Array.isArray(unwrapped)) {
-    return unwrapped;
-  }
-
-  if (!unwrapped || typeof unwrapped !== 'object') {
-    return [];
-  }
-
-  const record = unwrapped as UnknownRecord;
-
-  if (collectionKey && Array.isArray(record[collectionKey])) {
-    return record[collectionKey] as unknown[];
-  }
-
-  if (Array.isArray(record.data)) {
-    return record.data;
-  }
-
-  return [];
+function normalizeProjects(data: any): VisibilityItem[] {
+  const list = data?.projects || [];
+  return list.map((item: any) => ({
+    id: item.id,
+    label: item.name || item.title || 'Proyecto sin título',
+    sublabel: item.role || item.description || '',
+    checked: asBoolean(item.is_public),
+    sourceTable: 'projects',
+  }));
 }
 
-function asString(value: unknown): string {
-  if (typeof value === 'string') {
-    return value;
-  }
-
-  if (typeof value === 'number') {
-    return String(value);
-  }
-
-  return '';
+function normalizeSkills(data: any): VisibilityItem[] {
+  const list = data?.skills || [];
+  return list.map((item: any) => ({
+    id: item.id,
+    label: item.name || 'Habilidad',
+    sublabel: item.type === 'blanda' ? 'Habilidad Blanda' : (item.level_of_domain || 'Técnica'),
+    checked: asBoolean(item.is_public),
+    sourceTable: 'skills',
+  }));
 }
 
-function firstNonEmpty(...values: unknown[]): string {
-  for (const value of values) {
-    const normalized = asString(value).trim();
-    if (normalized) {
-      return normalized;
-    }
-  }
+function normalizeExperience(data: any): VisibilityItem[] {
+  const workList = data?.work_experiences || [];
+  const eduList = data?.educations || [];
 
-  return '';
+  const workItems = workList.map((item: any) => ({
+    id: item.id,
+    label: item.role || 'Cargo no especificado',
+    sublabel: `${item.company_name || 'Empresa'} - Laboral`,
+    checked: asBoolean(item.is_public),
+    sourceTable: 'work_experiences',
+  }));
+
+  const eduItems = eduList.map((item: any) => ({
+    id: item.id,
+    label: item.degree || item.title || 'Título académico',
+    sublabel: `${item.institution_name || item.university || 'Institución'} - Académica`,
+    checked: asBoolean(item.is_public),
+    sourceTable: 'educations',
+  }));
+
+  return [...workItems, ...eduItems];
 }
 
-function asId(value: unknown, fallback: number): number {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === 'string' && value.trim() !== '') {
-    const parsed = Number(value);
-    if (!Number.isNaN(parsed) && Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-
-  return fallback;
+function normalizeNetworks(data: any): VisibilityItem[] {
+  const list = data?.social_networks || [];
+  return list.map((item: any) => ({
+    id: item.id,
+    label: item.name || item.platform || 'Red Social',
+    sublabel: item.url || item.link || '',
+    checked: asBoolean(item.is_public),
+    sourceTable: 'social_networks',
+  }));
 }
 
-function asBoolean(value: unknown, fallback = true): boolean {
-  if (typeof value === 'boolean') {
-    return value;
-  }
+// --- FUNCIONES PRINCIPALES ---
 
-  if (typeof value === 'number') {
-    return value === 1;  }
-
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (normalized === 'true' || normalized === '1') {
-      return true; }
-
-    if (normalized === 'false' || normalized === '0') {
-      return false; }
-  }
-
-  return fallback;
-}
-
-function normalizeProjects(data: unknown): VisibilityItem[] {
-  const list = unwrapList(data, 'projects');
-
-  return list.map((item, index) => {
-    const record = (item ?? {}) as ProjectDto;
-    return {
-      id: asId(record.id, index + 1),
-      label: asString(record.name ?? record.title) || `Proyecto ${index + 1}`,
-      sublabel: asString(record.role ?? record.description),
-      checked: asBoolean(record.is_public),
-      sourceTable: 'projects',
-    } as VisibilityItem;
-  });
-}
-
-function normalizeSkills(data: unknown): VisibilityItem[] {
-  const list = unwrapList(data, 'skills');
-
-  return list.map((item, index) => {
-    const record = (item ?? {}) as SkillDto;
-    const normalizedType = asString(record.type).toLowerCase().trim();
-    const isSoftSkill = normalizedType === 'blanda';
-    return {
-      id: asId(record.id, index + 1),
-      label: asString(record.name) || `Habilidad ${index + 1}`,
-      sublabel: isSoftSkill ? '' : asString(record.level_of_domain),
-      checked: asBoolean(record.is_public),
-      sourceTable: 'skills',
-    } as VisibilityItem;
-  });
-}
-
-function normalizeExperience(data: unknown): VisibilityItem[] {
-  const workList = unwrapList(data, 'work_experiences');
-  const educationList = unwrapList(data, 'educations');
-
-  const workItems = workList.map((item, index) => {
-    const record = (item ?? {}) as WorkExperienceDto;
-    const role = firstNonEmpty(record.role, record.title, record.job_title, record.position, record.cargo) || 'Sin cargo';
-    const organization =
-      firstNonEmpty(record.company_name, record.company, record.name, record.organization, record.institution) ||
-      'Sin empresa';
-    return {
-      id: asId(record.id, index + 1),
-      label: role,
-      sublabel: `${organization} - Laboral`,
-      checked: asBoolean(record.is_public),
-      sourceTable: 'work_experiences',
-    } as VisibilityItem;
-  });
-
-  const educationItems = educationList.map((item, index) => {
-    const record = (item ?? {}) as EducationDto;
-    const title =
-      firstNonEmpty(record.title, record.degree, record.career, record.role, record.job_title, record.position, record.cargo) ||
-      'Sin título';
-    const institution =
-      firstNonEmpty(record.institution, record.institution_name, record.name, record.school, record.university, record.college) ||
-      'Sin institución';
-    return {
-      id: asId(record.id, index + 1),
-      label: title,
-      sublabel: `${institution} - Académica`,
-      checked: asBoolean(record.is_public),
-      sourceTable: 'educations',
-    } as VisibilityItem;
-  });
-
-  return [...workItems, ...educationItems];
-}
-
-function normalizeNetworks(data: unknown): VisibilityItem[] {
-  const list = unwrapList(data, 'social_networks');
-
-  return list.map((item, index) => {
-    const record = (item ?? {}) as SocialNetworkDto;
-    // Preserve DB id identity and avoid collisions with persisted positive ids if backend id is missing.
-    const realId = asId(record.id, -(index + 1));
-    return {
-      id: realId,
-      label: asString(record.name ?? record.platform) || `Red ${index + 1}`,
-      sublabel: asString(record.url ?? record.link),
-      checked: asBoolean(record.is_public),
-      sourceTable: 'social_networks',
-    } as VisibilityItem;
-  });
-}
-
-export type PortfolioVisibilityData = Record<SectionKey, VisibilityItem[]>;
-
-export async function getPortfolioVisibilityData(): Promise<PortfolioVisibilityData> {
+export async function getPortfolioVisibilityData(): Promise<Record<SectionKey, VisibilityItem[]>> {
   try {
-    const session = getAuthSession();
-
-    if (!session?.user?.id) {
-      throw new Error('No se pudo obtener el id del usuario autenticado.');
-    }
-
-    const response = await api.get(`${USER_INFORMATION_ENDPOINT}/${session.user.id}`);
-    const payload = unwrapPayload(response.data);
-
-    const baseData: PortfolioVisibilityData = {
-      projects: [],
-      skills: [],
-      experience: [],
-      networks: [],
-    };
+    // CAMBIO CLAVE: Ya no enviamos el ID en la URL. 
+    // Laravel ahora debería identificar al usuario por el Bearer Token.
+    const response = await api.get(USER_INFORMATION_ENDPOINT);
+    
+    // Accedemos a response.data.data porque tu JSON viene envuelto en "data"
+    const payload = response.data?.data || {};
 
     return {
-      ...baseData,
       projects: normalizeProjects(payload),
       skills: normalizeSkills(payload),
       experience: normalizeExperience(payload),
@@ -314,13 +117,9 @@ export async function savePortfolioVisibilitySection(
   itemId?: number,
   sourceTable?: VisibilityTable,
 ): Promise<void> {
-  const session = getAuthSession();
-
-  if (!session?.user?.id) {
-    throw new Error('Usuario no autenticado.');
-  }
-
- const targetItems = itemId != null 
+  
+  // Filtramos el item que queremos actualizar
+  const targetItems = itemId != null 
     ? items.filter((item) => item.id === itemId && item.sourceTable === sourceTable) 
     : items;
 
@@ -328,12 +127,14 @@ export async function savePortfolioVisibilitySection(
     await Promise.all(
       targetItems.map((item) =>
         api.put(
+          // El PUT sigue usando el ID del recurso (skill, proyecto, etc.) y la tabla por query param
           `${USER_INFORMATION_ENDPOINT}/${item.id}?table=${item.sourceTable ?? section}`,
-          { id: item.id,
-            is_public: item.checked,
-          },
-        ),
-      ),
+          { 
+            // NO mandamos el ID en el body, solo el estado
+            is_public: item.checked 
+          }
+        )
+      )
     );
   } catch (error) {
     throw formatError(error);
