@@ -38,23 +38,38 @@ const SKILLS_ENDPOINT = '/skills';
 const SKILL_MUTATION_TIMEOUT_MS = 30_000;
 
 function mapApiTypeToUi(type?: SkillDto['type']): SkillType {
-  const normalizedType = typeof type === 'string'
-    ? type
-        .toLowerCase()
-        .trim()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-    : '';
+  const normalizedType =
+    typeof type === 'string'
+      ? type
+          .toLowerCase()
+          .trim()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+      : '';
 
-  if (normalizedType === 'tecnica') {
+  // Técnicas
+  if (
+    normalizedType === 'tecnica' ||
+    normalizedType === 'tecnico' ||
+    normalizedType === 'technical'
+  ) {
     return 'tecnica';
   }
 
-  if (normalizedType === 'blanda') {
+  // Blandas
+  if (
+    normalizedType === 'blanda' ||
+    normalizedType === 'blando' ||
+    normalizedType === 'soft' ||
+    normalizedType === 'softskill' ||
+    normalizedType === 'softskills'
+  ) {
     return 'blanda';
   }
 
-  return 'tecnica';
+  console.warn('Tipo de habilidad no reconocido:', type);
+
+  return 'blanda'; // mejor fallback
 }
 
 function mapUiTypeToApi(type: SkillType): ApiSkillType {
@@ -110,6 +125,7 @@ function formatError(error: unknown): Error {
 }
 
 function normalizeSkill(dto: SkillDto): Skill {
+  console.log("NORMALIZANDO:", dto);
   return {
     id: String(dto.id ?? crypto.randomUUID()),
     name: dto.name ?? dto.nombre ?? '',
@@ -170,6 +186,7 @@ function looksLikeSkillDtoArray(value: unknown): value is SkillDto[] {
 
 function findSkillArray(value: unknown, seen = new WeakSet<object>()): SkillDto[] | null {
   const unwrapped = unwrapPayload(value);
+  console.log('Skills recibidas del backend:', unwrapped);
 
   if (looksLikeSkillDtoArray(unwrapped)) {
     return unwrapped;
@@ -186,7 +203,15 @@ function findSkillArray(value: unknown, seen = new WeakSet<object>()): SkillDto[
 
   seen.add(record);
 
-  const preferredKeys = ['data', 'skills', 'items', 'results', 'records'];
+  const preferredKeys = [
+  'data',
+  'skills',
+  'items',
+  'results',
+  'records',
+  'tecnicas',
+  'blandas'
+];
   for (const key of preferredKeys) {
     const candidate = record[key];
     const found = findSkillArray(candidate, seen);
@@ -206,7 +231,36 @@ function findSkillArray(value: unknown, seen = new WeakSet<object>()): SkillDto[
 }
 
 function unwrapSkillList(data: unknown): SkillDto[] {
-  return findSkillArray(data) ?? [];
+  const parsed = parseResponseData(data);
+
+  if (
+    parsed &&
+    typeof parsed === 'object' &&
+    'data' in parsed
+  ) {
+    const payload = (parsed as any).data;
+
+    // Caso especial backend:
+    // { data: { tecnicas: [], blandas: [] } }
+
+    if (
+      payload &&
+      typeof payload === 'object' &&
+      ('tecnicas' in payload || 'blandas' in payload)
+    ) {
+      const tecnicas = Array.isArray(payload.tecnicas)
+        ? payload.tecnicas
+        : [];
+
+      const blandas = Array.isArray(payload.blandas)
+        ? payload.blandas
+        : [];
+
+      return [...tecnicas, ...blandas];
+    }
+  }
+
+  return findSkillArray(parsed) ?? [];
 }
 
 function unwrapSkill(data: unknown): SkillDto {
@@ -245,7 +299,11 @@ export async function getSkills(): Promise<Skill[]> {
   try {
     const response = await api.get(SKILLS_ENDPOINT);
 
-    if (response.data && typeof response.data === 'object' && (response.data as { success?: boolean }).success === false) {
+    if (
+      response.data &&
+      typeof response.data === 'object' &&
+      (response.data as { success?: boolean }).success === false
+    ) {
       const body = response.data as { message?: string };
       throw new Error(body.message || 'Error al obtener habilidades');
     }
@@ -255,7 +313,16 @@ export async function getSkills(): Promise<Skill[]> {
     }
 
     const unwrapped = unwrapSkillList(parseResponseData(response.data));
-    return unwrapped.map(normalizeSkill);
+
+    console.log("DATOS CRUDOS DEL BACKEND:");
+    console.log(unwrapped);
+
+    const normalized = unwrapped.map(normalizeSkill);
+
+    console.log("DATOS NORMALIZADOS:");
+    console.log(normalized);
+
+    return normalized;
   } catch (error) {
     throw formatError(error);
   }
