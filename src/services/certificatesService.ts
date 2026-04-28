@@ -188,7 +188,7 @@ export async function updateCertificate(id: string | number, payload: Partial<Ce
     if (payload.issuer) formData.append('issuer', payload.issuer);
     if (payload.description !== undefined) formData.append('description', payload.description);
     if (payload.date_issued) formData.append('date_issued', payload.date_issued);
-    if (payload.date_expired) formData.append('date_expired', payload.date_expired);
+    if (payload.date_expired !== undefined) formData.append('date_expired', payload.date_expired);
     if (payload.credential_id !== undefined) formData.append('credential_id', payload.credential_id);
     if (payload.credential_url !== undefined) formData.append('credential_url', payload.credential_url);
     if (payload.file_bonus_url) formData.append('file_bonus_url', payload.file_bonus_url);

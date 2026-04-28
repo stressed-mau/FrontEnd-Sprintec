@@ -29,7 +29,7 @@ export default function AddCertificatesPage() {
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
         <main className="flex-1 p-6 md:p-10">
-          <div className="max-w-2xl mx-auto bg-white rounded-[2rem] p-8 shadow-sm border border-[#6dacbf]/20">
+          <div className="max-w-2xl mx-auto bg-[#C2DBED] rounded-[2rem] p-8 shadow-sm border border-[#6dacbf]/20">
             <h1 className="text-3xl font-bold text-[#003A6C] mb-2">Agregar Certificado</h1>
             <p className="text-[#4982AD] mb-8">Completa la información para registrar un nuevo certificado o credencial.</p>
 
@@ -48,7 +48,7 @@ export default function AddCertificatesPage() {
                   onChange={(e) => updateField('name', e.target.value)}
                   placeholder="Ej: AWS Solutions Architect"
                   maxLength={255}
-                  className={`w-full p-3.5 rounded-xl border bg-white outline-none focus:ring-2 ${
+                  className={`w-full rounded-xl border bg-white p-3.5 outline-none focus:ring-2 ${
                     errors.name
                       ? 'border-red-400 focus:ring-red-100'
                       : 'border-[#0E7D96]/20 focus:ring-[#0E7D96]/30'
@@ -65,7 +65,7 @@ export default function AddCertificatesPage() {
                   onChange={(e) => updateField('issuer', e.target.value)}
                   placeholder="Ej: Amazon Web Services"
                   maxLength={255}
-                  className={`w-full p-3.5 rounded-xl border bg-white outline-none focus:ring-2 ${
+                  className={`w-full rounded-xl border bg-white p-3.5 outline-none focus:ring-2 ${
                     errors.issuer
                       ? 'border-red-400 focus:ring-red-100'
                       : 'border-[#0E7D96]/20 focus:ring-[#0E7D96]/30'
@@ -81,7 +81,7 @@ export default function AddCertificatesPage() {
                     type="date"
                     value={formData.date_issued}
                     onChange={(e) => updateField('date_issued', e.target.value)}
-                    className={`w-full p-3.5 rounded-xl border bg-white outline-none focus:ring-2 ${
+                    className={`w-full rounded-xl border bg-white p-3.5 outline-none focus:ring-2 ${
                       errors.date_issued
                         ? 'border-red-400 focus:ring-red-100'
                         : 'border-[#0E7D96]/20 focus:ring-[#0E7D96]/30'
@@ -97,7 +97,7 @@ export default function AddCertificatesPage() {
                     value={formData.date_expired}
                     onChange={(e) => updateField('date_expired', e.target.value)}
                     disabled={formData.no_expiration}
-                    className={`w-full p-3.5 rounded-xl border bg-white outline-none focus:ring-2 disabled:opacity-50 ${
+                    className={`w-full rounded-xl border bg-white p-3.5 outline-none focus:ring-2 disabled:opacity-50 ${
                       errors.date_expired
                         ? 'border-red-400 focus:ring-red-100'
                         : 'border-[#0E7D96]/20 focus:ring-[#0E7D96]/30'
@@ -127,7 +127,7 @@ export default function AddCertificatesPage() {
                   onChange={(e) => updateField('description', e.target.value)}
                   placeholder="Describe las habilidades o conocimientos que acredita este certificado"
                   rows={3}
-                  className="w-full p-3.5 rounded-xl border border-[#0E7D96]/20 bg-white outline-none focus:ring-2 focus:ring-[#0E7D96]/30"
+                  className="w-full rounded-xl border border-[#0E7D96]/20 bg-white p-3.5 outline-none focus:ring-2 focus:ring-[#0E7D96]/30"
                 />
               </div>
 
@@ -139,7 +139,7 @@ export default function AddCertificatesPage() {
                   onChange={(e) => updateField('credential_id', e.target.value)}
                   placeholder="Ej: AWS-12345-67890"
                   maxLength={255}
-                  className="w-full p-3.5 rounded-xl border border-[#0E7D96]/20 bg-white outline-none focus:ring-2 focus:ring-[#0E7D96]/30"
+                  className="w-full rounded-xl border border-[#0E7D96]/20 bg-white p-3.5 outline-none focus:ring-2 focus:ring-[#0E7D96]/30"
                 />
               </div>
 
@@ -150,7 +150,7 @@ export default function AddCertificatesPage() {
                   value={formData.credential_url}
                   onChange={(e) => updateField('credential_url', e.target.value)}
                   placeholder="Ej: https://verify.provider.com/certificate/12345"
-                  className={`w-full p-3.5 rounded-xl border bg-white outline-none focus:ring-2 ${
+                  className={`w-full rounded-xl border bg-white p-3.5 outline-none focus:ring-2 ${
                     errors.credential_url
                       ? 'border-red-400 focus:ring-red-100'
                       : 'border-[#0E7D96]/20 focus:ring-[#0E7D96]/30'
@@ -160,7 +160,7 @@ export default function AddCertificatesPage() {
               </div>
 
               <div>
-                <label className="block text-[#003A6C] font-semibold mb-2">Archivo (PDF, JPG, JPEG - máx 2MB)</label>
+                <label className="block text-[#003A6C] font-semibold mb-2">Archivo Adicional</label>
                 <div className="rounded-xl border-2 border-dashed border-[#0E7D96]/20 bg-[#F8FAFC] p-4">
                   {fileInput ? (
                     <div className="flex items-center justify-between gap-3">
@@ -178,7 +178,10 @@ export default function AddCertificatesPage() {
                     </div>
                   ) : (
                     <div className="text-center">
-                      <p className="text-sm text-[#4B778D] mb-2">Haz clic o arrastra un archivo</p>
+                      <p className="text-sm text-[#4B778D]">
+                        Haz clic o arrastra un archivo (PDF, JPG, JPEG)
+                      </p>
+                      <p className="text-xs text-[#6B7E8E]">Máximo 2MB</p>
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}

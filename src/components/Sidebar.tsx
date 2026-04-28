@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {
   Award,
   Briefcase,
@@ -20,6 +21,11 @@ type NavChild = {
   label: string;
   path: string;
 };
+=======
+import { Award, BadgeCheck, Briefcase, ChevronLeft, ChevronRight, Eye, FolderGit2, Globe, LayoutTemplate, Settings2, Upload, User, GraduationCap, ChevronDown } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Link, useLocation } from "react-router-dom"
+>>>>>>> brandon-2doSprint
 
 type NavItem = {
   id: string;
@@ -42,6 +48,7 @@ const navItems: NavItem[] = [
     ]
   },
   { id: "red-profesional", label: "Red profesional", icon: Globe, path: "/red-profesional" },
+<<<<<<< HEAD
   {
     id: "proyectos",
     label: "Proyectos",
@@ -102,6 +109,13 @@ const navItems: NavItem[] = [
       { id: "certificados-eliminar", label: "Eliminar certificado", path: "/certificados/eliminar" },
     ],
   },
+=======
+  { id: "proyectos", label: "Proyectos", icon: FolderGit2, path: "/proyectos" },
+  { id: "habilidades", label: "Habilidades", icon: Award, path: "/habilidades" },
+  { id: "formacion-academica", label: "Formación académica", icon: GraduationCap, path: "/formacion-academica" },
+  { id: "experiencia", label: "Experiencia", icon: Briefcase, path: "/experiencia" },
+  { id: "certificados", label: "Certificados", icon: BadgeCheck, path: "/certificados" },
+>>>>>>> brandon-2doSprint
   { id: "plantillas", label: "Plantillas", icon: LayoutTemplate, path: "/plantillas" },
   { id: "configuracion-visibilidad", label: "Configuración de visibilidad", icon: Settings2, path: "/configuracion-visibilidad" },
   { id: "publicar", label: "Publicar", icon: Upload, path: "/publicar" },

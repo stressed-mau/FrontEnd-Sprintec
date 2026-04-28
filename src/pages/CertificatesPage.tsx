@@ -1,4 +1,4 @@
-import { Award, Plus } from "lucide-react"
+import { BadgeCheck, Plus } from "lucide-react"
 import { useRef } from "react"
 
 import Header from "@/components/HeaderUser"
@@ -34,7 +34,6 @@ export default function CertificatesPage() {
     handleFileChange,
     removeFile,
     handleSubmit,
-    requestDelete,
     cancelDelete,
     confirmDelete,
   } = useCertificatesManager()
@@ -84,10 +83,9 @@ export default function CertificatesPage() {
                 <CertificatesSection
                   title="Certificados"
                   emptyMessage="No hay certificados registrados. ¡Agrega uno para mostrar tus credenciales!"
-                  icon={<Award className="size-5" />}
+                  icon={<BadgeCheck className="size-5" />}
                   items={certificates}
                   onEdit={openEditModal}
-                  onDelete={requestDelete}
                 />
               )}
             </div>

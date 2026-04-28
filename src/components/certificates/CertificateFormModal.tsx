@@ -77,7 +77,7 @@ export function CertificateFormModal({
               disabled={isSaving}
               onChange={(e) => onFieldChange("name", e.target.value)}
               placeholder="Ej: AWS Solutions Architect"
-              className="border-[#A5D7E8] focus:ring-[#A5D7E8]"
+              className="border-[#A5D7E8] bg-white focus:ring-[#A5D7E8]"
               aria-invalid={!!errors.name}
               aria-describedby={errors.name ? "certificate-name-error" : undefined}
             />
@@ -99,7 +99,7 @@ export function CertificateFormModal({
               disabled={isSaving}
               onChange={(e) => onFieldChange("issuer", e.target.value)}
               placeholder="Ej: Amazon Web Services"
-              className="border-[#A5D7E8] focus:ring-[#A5D7E8]"
+              className="border-[#A5D7E8] bg-white focus:ring-[#A5D7E8]"
               aria-invalid={!!errors.issuer}
               aria-describedby={errors.issuer ? "certificate-issuer-error" : undefined}
             />
@@ -121,7 +121,7 @@ export function CertificateFormModal({
                 value={formData.date_issued}
                 disabled={isSaving}
                 onChange={(e) => onFieldChange("date_issued", e.target.value)}
-                className="border-[#A5D7E8] focus:ring-[#A5D7E8]"
+                className="border-[#A5D7E8] bg-white focus:ring-[#A5D7E8]"
                 aria-invalid={!!errors.date_issued}
                 aria-describedby={errors.date_issued ? "certificate-date-issued-error" : undefined}
               />
@@ -142,7 +142,7 @@ export function CertificateFormModal({
                 value={formData.date_expired}
                 disabled={isSaving || formData.no_expiration}
                 onChange={(e) => onFieldChange("date_expired", e.target.value)}
-                className="border-[#A5D7E8] focus:ring-[#A5D7E8] disabled:opacity-50"
+                className="border-[#A5D7E8] bg-white focus:ring-[#A5D7E8] disabled:opacity-50"
                 aria-invalid={!!errors.date_expired}
                 aria-describedby={errors.date_expired ? "certificate-date-expired-error" : undefined}
               />
@@ -177,7 +177,7 @@ export function CertificateFormModal({
               disabled={isSaving}
               onChange={(e) => onFieldChange("description", e.target.value)}
               placeholder="Describe las habilidades o conocimientos que acredita este certificado"
-              className="border-[#A5D7E8] focus:ring-[#A5D7E8]"
+              className="border-[#A5D7E8] bg-white focus:ring-[#A5D7E8]"
               rows={3}
             />
           </div>
@@ -193,7 +193,7 @@ export function CertificateFormModal({
               disabled={isSaving}
               onChange={(e) => onFieldChange("credential_id", e.target.value)}
               placeholder="Ej: AWS-12345-67890"
-              className="border-[#A5D7E8] focus:ring-[#A5D7E8]"
+              className="border-[#A5D7E8] bg-white focus:ring-[#A5D7E8]"
             />
           </div>
 
@@ -208,7 +208,7 @@ export function CertificateFormModal({
               disabled={isSaving}
               onChange={(e) => onFieldChange("credential_url", e.target.value)}
               placeholder="Ej: https://verify.provider.com/certificate/12345"
-              className="border-[#A5D7E8] focus:ring-[#A5D7E8]"
+              className="border-[#A5D7E8] bg-white focus:ring-[#A5D7E8]"
               aria-invalid={!!errors.credential_url}
               aria-describedby={errors.credential_url ? "certificate-credential-url-error" : undefined}
             />
@@ -221,7 +221,7 @@ export function CertificateFormModal({
 
           <div className="space-y-2">
             <Label className="text-[#003A6C]">
-              Archivo del certificado
+              Archivo adicional
             </Label>
             <div className="rounded-lg border-2 border-dashed border-[#A5D7E8] bg-[#EEF5F9] p-4">
               {fileInput ? (
