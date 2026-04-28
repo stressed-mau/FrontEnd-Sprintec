@@ -9,10 +9,6 @@ type CertificatesSectionProps = {
   icon: ReactNode
   items: Certificate[]
   onEdit: (certificate: Certificate) => void
-<<<<<<< HEAD
-  onDelete: (certificate: Certificate) => void
-=======
->>>>>>> brandon-2doSprint
 }
 
 export function CertificatesSection({
@@ -42,80 +38,6 @@ export function CertificatesSection({
             <span className="text-xs font-bold uppercase tracking-wider text-[#4B778D] text-right">Detalles</span>
           </div>
 
-<<<<<<< HEAD
-                    <div className="min-w-0 flex-1">
-                      <CardTitle className="text-lg font-semibold text-[#003A6C]">
-                        {certificate.name}
-                      </CardTitle>
-                      <p className="mt-1 text-[#4B778D]">{certificate.issuer}</p>
-                      
-                      {certificate.description && (
-                        <p className="mt-2 text-sm leading-6 text-[#355468]">{certificate.description}</p>
-                      )}
-
-                      <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-[#6B7E8E]">
-                        <span>Emitido: {new Date(certificate.date_issued).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                        {certificate.date_expired && (
-                          <span>Vencimiento: {new Date(certificate.date_expired).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                        )}
-                      </div>
-
-                      {certificate.credential_id && (
-                        <p className="mt-2 text-xs text-[#6B7E8E]">
-                          ID: <span className="font-mono">{certificate.credential_id}</span>
-                        </p>
-                      )}
-
-                      {certificate.credential_url && (
-                        <div className="mt-2">
-                          <a
-                            href={certificate.credential_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-[#003A6C] hover:underline"
-                          >
-                            Ver credencial ↗
-                          </a>
-                        </div>
-                      )}
-
-                      {certificate.file_bonus_url && (
-                        <div className="mt-2">
-                          <a
-                            href={certificate.file_bonus_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-[#003A6C] hover:underline"
-                          >
-                            <Download className="size-3" />
-                            Descargar archivo
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 self-end sm:self-start">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEdit(certificate)}
-                      className="border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
-                    >
-                      <Edit className="size-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onDelete(certificate)}
-                      className="border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-=======
           {items.map((certificate, idx) => (
             <div
               key={certificate.id}
@@ -128,7 +50,6 @@ export function CertificatesSection({
                 <div className="flex items-center gap-2">
                   <BadgeCheck className="size-4 shrink-0 text-[#4B778D]" />
                   <span className="truncate font-semibold text-[#003A6C]">{certificate.name}</span>
->>>>>>> brandon-2doSprint
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#6B7E8E]">
                   {certificate.credential_id && <span className="truncate">ID: {certificate.credential_id}</span>}

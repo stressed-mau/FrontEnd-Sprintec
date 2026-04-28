@@ -407,7 +407,6 @@ export const useCertificatesManager = () => {
     errors,
     isModalOpen,
     isEditing,
-    editingCertificate,
     errorMessage,
     successMessage,
     showSuccessModal,
