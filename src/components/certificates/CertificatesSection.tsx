@@ -11,7 +11,7 @@ type CertificatesSectionProps = {
   icon: ReactNode
   items: Certificate[]
   onEdit: (certificate: Certificate) => void
-  onDelete: (id: string) => void
+  onDelete: (certificate: Certificate) => void
 }
 
 export function CertificatesSection({
@@ -112,7 +112,7 @@ export function CertificatesSection({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => onDelete(certificate.id)}
+                      onClick={() => onDelete(certificate)}
                       className="border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
                     >
                       <Trash2 className="size-4" />

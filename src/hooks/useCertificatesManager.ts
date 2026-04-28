@@ -31,7 +31,15 @@ const EMPTY_FORM: CertificateFormValues = {
 
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg'];
-const ALLOWED_FILE_EXTENSIONS = ['.pdf', '.jpg', '.jpeg'];
+
+function isValidUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
 
 function convertDateDDMMYYYYtoISO(date: string): string {
   if (!date) return '';
@@ -43,7 +51,12 @@ function convertDateDDMMYYYYtoISO(date: string): string {
   const parts = date.split('/');
   if (parts.length === 3) {
     const [day, month, year] = parts;
-    return `${year}-${month}-${day}`;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  // Si es una fecha ISO con time, extrae la fecha
+  const parsedDate = new Date(date);
+  if (!isNaN(parsedDate.getTime())) {
+    return parsedDate.toISOString().split('T')[0];
   }
   return date;
 }
@@ -95,6 +108,9 @@ export const useCertificatesManager = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [editingCertificate, setEditingCertificate] = useState<Certificate | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   // Form state
   const [formData, setFormData] = useState<CertificateFormValues>(EMPTY_FORM);
@@ -113,6 +129,26 @@ export const useCertificatesManager = () => {
   const [certificateToDelete, setCertificateToDelete] = useState<Certificate | null>(null);
 
   const isEditing = useMemo(() => editingCertificate !== null, [editingCertificate]);
+
+  const filteredCertificates = useMemo(() => {
+    return certificates.filter(cert => 
+      cert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cert.issuer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (cert.credential_id?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false)
+    );
+  }, [certificates, searchTerm]);
+
+  const totalPages = Math.ceil(filteredCertificates.length / itemsPerPage);
+  
+  const paginatedCertificates = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredCertificates.slice(startIndex, endIndex);
+  }, [filteredCertificates, currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const loadCertificates = useCallback(async () => {
     setIsLoading(true);
@@ -184,7 +220,17 @@ export const useCertificatesManager = () => {
 
   const updateField = useCallback(
     (field: keyof CertificateFormValues, value: string | boolean) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
+      setFormData((prev) => {
+        if (field === 'no_expiration') {
+          return {
+            ...prev,
+            no_expiration: Boolean(value),
+            date_expired: value ? '' : prev.date_expired,
+          };
+        }
+
+        return { ...prev, [field]: value };
+      });
       if (errors[field]) {
         setErrors((prev) => {
           const newErrors = { ...prev };
@@ -297,6 +343,9 @@ export const useCertificatesManager = () => {
   return {
     // State
     certificates,
+    paginatedCertificates,
+    filteredCertificates,
+    editingCertificate,
     formData,
     errors,
     isModalOpen,
@@ -311,6 +360,9 @@ export const useCertificatesManager = () => {
     showConfirmDelete,
     certificateToDelete,
     fileInput,
+    searchTerm,
+    currentPage,
+    totalPages,
 
     // Actions
     openCreateModal,
@@ -324,5 +376,7 @@ export const useCertificatesManager = () => {
     requestDelete,
     cancelDelete,
     confirmDelete,
+    setSearchTerm,
+    setCurrentPage,
   };
 };
