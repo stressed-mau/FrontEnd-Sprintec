@@ -415,6 +415,8 @@ function buildExperienceUpdateFormData(payload: ExperiencePayload) {
   formData.append("company_email", payload.email.trim())
   formData.append("description", payload.description.trim())
   formData.append("ubication", payload.location.trim())
+  formData.append("is_current", payload.current ? "1" : "0")
+  formData.append("current", payload.current ? "1" : "0")
   formData.append("end_date", payload.current ? "" : payload.endDate.trim())
 
   if (payload.logoFile) {
@@ -432,6 +434,8 @@ function buildExperienceUpdateBody(payload: ExperiencePayload) {
     company_email: payload.email.trim(),
     description: payload.description.trim(),
     ubication: payload.location.trim(),
+    is_current: payload.current,
+    current: payload.current,
     end_date: payload.current ? null : payload.endDate.trim() || null,
   }
 }

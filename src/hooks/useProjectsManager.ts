@@ -54,53 +54,6 @@ const FIXED_ROLES = [
 
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"];
-const PROJECT_EDIT_OVERRIDES_KEY = "portfolio_project_edit_overrides";
-
-function readProjectEditOverrides(): Record<string, ProjectItem> {
-  if (typeof window === "undefined") return {};
-
-  const rawOverrides = window.localStorage.getItem(PROJECT_EDIT_OVERRIDES_KEY);
-  if (!rawOverrides) return {};
-
-  try {
-    return JSON.parse(rawOverrides) as Record<string, ProjectItem>;
-  } catch {
-    return {};
-  }
-}
-
-function writeProjectEditOverrides(overrides: Record<string, ProjectItem>) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(PROJECT_EDIT_OVERRIDES_KEY, JSON.stringify(overrides));
-}
-
-function saveProjectEditOverride(project: ProjectItem) {
-  const overrides = readProjectEditOverrides();
-  writeProjectEditOverrides({
-    ...overrides,
-    [String(project.id)]: project,
-  });
-}
-
-function applyProjectEditOverrides(projects: ProjectItem[]) {
-  const overrides = readProjectEditOverrides();
-  return projects.map((project) => overrides[String(project.id)] ?? project);
-}
-
-function removeProjectEditOverrides(ids: number[]) {
-  const overrides = readProjectEditOverrides();
-  let changed = false;
-
-  ids.forEach((id) => {
-    const key = String(id);
-    if (key in overrides) {
-      delete overrides[key];
-      changed = true;
-    }
-  });
-
-  if (changed) writeProjectEditOverrides(overrides);
-}
 
 function validateUrl(value: string) {
   return /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(value);
@@ -182,7 +135,7 @@ export function useProjectsManager() {
 
     try {
       const remoteProjects = await getProjects();
-      setProjects(applyProjectEditOverrides(remoteProjects));
+      setProjects(remoteProjects);
     } catch (error) {
       setPageError(error instanceof Error ? error.message : "No se pudieron cargar los proyectos.");
     } finally {
@@ -324,19 +277,6 @@ export function useProjectsManager() {
         };
 
         await updateProject(editingProject.id, updatePayload);
-        saveProjectEditOverride({
-          ...editingProject,
-          nombre: createPayload.title,
-          descripcion: createPayload.description,
-          tecnologias: selectedTechs,
-          rol: createPayload.project_rol ?? "",
-          fechaInicio: createPayload.initial_date,
-          fechaFin: createPayload.final_date ?? undefined,
-          is_current: createPayload.is_current,
-          github: createPayload.url_to_project ?? undefined,
-          demo: createPayload.url_to_deploy ?? undefined,
-          image: preview ?? editingProject.image,
-        });
         setSuccessMessage("Proyecto actualizado correctamente.");
       } else {
         await createProject(createPayload);
@@ -364,7 +304,6 @@ export function useProjectsManager() {
 
     try {
       await Promise.all(ids.map((id) => deleteProject(id)));
-      removeProjectEditOverrides(ids);
       setSuccessMessage(`${ids.length} proyecto(s) eliminado(s) correctamente.`);
       await loadProjects();
     } catch (error) {

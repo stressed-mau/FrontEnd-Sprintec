@@ -46,52 +46,6 @@ const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 const ALLOWED_CERTIFICATE_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
 const ALLOWED_CERTIFICATE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf"]
-const EXPERIENCE_EDIT_OVERRIDES_KEY = "portfolio_experience_edit_overrides_v2"
-
-function experienceOverrideKey(experience: Pick<ExperienceItem, "id" | "type" | "startDate">) {
-  return `${experience.type}:${experience.id}:${experience.startDate}`
-}
-
-function readExperienceEditOverrides(): Record<string, ExperienceItem> {
-  if (typeof window === "undefined") return {}
-
-  const rawOverrides = window.localStorage.getItem(EXPERIENCE_EDIT_OVERRIDES_KEY)
-  if (!rawOverrides) return {}
-
-  try {
-    return JSON.parse(rawOverrides) as Record<string, ExperienceItem>
-  } catch {
-    return {}
-  }
-}
-
-function writeExperienceEditOverrides(overrides: Record<string, ExperienceItem>) {
-  if (typeof window === "undefined") return
-  window.localStorage.setItem(EXPERIENCE_EDIT_OVERRIDES_KEY, JSON.stringify(overrides))
-}
-
-function saveExperienceEditOverride(originalExperience: ExperienceItem, updatedExperience: ExperienceItem) {
-  const overrides = readExperienceEditOverrides()
-  writeExperienceEditOverrides({
-    ...overrides,
-    [experienceOverrideKey(originalExperience)]: updatedExperience,
-  })
-}
-
-function removeExperienceEditOverride(experience: ExperienceItem) {
-  const overrides = readExperienceEditOverrides()
-  const key = experienceOverrideKey(experience)
-
-  if (!(key in overrides)) return
-
-  delete overrides[key]
-  writeExperienceEditOverrides(overrides)
-}
-
-function applyExperienceEditOverrides(experiences: ExperienceItem[]) {
-  const overrides = readExperienceEditOverrides()
-  return experiences.map((experience) => overrides[experienceOverrideKey(experience)] ?? experience)
-}
 function normalizeExperienceTypeValue(value: string): ExperienceFormValues["type"] {
   return value === "academica" ? "academica" : "laboral"
 }
@@ -475,7 +429,7 @@ export function useExperienceManager() {
         getExperiences(),
         getEducation(),
       ])
-      setExperiences(applyExperienceEditOverrides([...remoteExperiences, ...remoteEducation]))
+      setExperiences([...remoteExperiences, ...remoteEducation])
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudieron cargar las experiencias."
       setPageError(message)
@@ -788,30 +742,9 @@ export function useExperienceManager() {
           await updateExperience(editingExperience.id, payload)
         }
 
-        const updatedExperience: ExperienceItem = {
-          ...editingExperience,
-          type: payload.type,
-          company: payload.company,
-          email: payload.email,
-          position: payload.position,
-          location: payload.location,
-          fieldOfStudy: payload.fieldOfStudy,
-          description: payload.description,
-          startDate: payload.startDate,
-          endDate: payload.current ? "" : payload.endDate,
-          current: payload.current,
-          image: payload.removeLogo ? "" : formData.image,
-          certificate: payload.removeCertificate ? "" : formData.certificate,
-        }
-
-        setExperiences((currentExperiences) =>
-          currentExperiences.map((experience) =>
-            experience === editingExperience ? updatedExperience : experience,
-          ),
-        )
-        saveExperienceEditOverride(editingExperience, updatedExperience)
         closeConfirmEditModal()
         closeModal()
+        await loadExperiences()
         showSuccessModal("Experiencia actualizada correctamente.")
       } else {
         if (payload.type === "academica") {
@@ -929,7 +862,6 @@ export function useExperienceManager() {
       } else {
         await removeExperience(id)
       }
-      removeExperienceEditOverride(targetExperience)
       await loadExperiences()
       showFeedback("Experiencia eliminada correctamente.", "success")
     } catch (error) {

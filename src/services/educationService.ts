@@ -205,6 +205,8 @@ function buildEducationUpdateFormData(payload: ExperiencePayload) {
   formData.append("field_to_study", payload.fieldOfStudy.trim())
   formData.append("start_date", payload.startDate.trim())
   formData.append("description", payload.description.trim())
+  formData.append("is_current", payload.current ? "1" : "0")
+  formData.append("current", payload.current ? "1" : "0")
   formData.append("end_date", payload.current ? "" : payload.endDate.trim())
 
   if (payload.certificateFile) {
@@ -221,6 +223,8 @@ function buildEducationUpdateBody(payload: ExperiencePayload) {
     field_to_study: payload.fieldOfStudy.trim(),
     start_date: payload.startDate.trim(),
     description: payload.description.trim(),
+    is_current: payload.current,
+    current: payload.current,
     end_date: payload.current ? null : payload.endDate.trim() || null,
   }
 }
