@@ -3,10 +3,11 @@ import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { useUserPersonalData } from '../../hooks/useUserPersonalData';
-
+import { getAuthSession } from '@/services/auth';
 const ViewProfilePage = () => {
   const { form, phoneNumber, countryCode, loading } = useUserPersonalData();
-
+  const session = getAuthSession();
+  const accountEmail = session?.user?.email || "No disponible";
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
       <Header />
@@ -47,7 +48,7 @@ const ViewProfilePage = () => {
 
               {/* Grid de detalles */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-12">
-                <InfoItem icon={<Mail className="text-blue-500" />} label="Email" value={form.email} />
+              <InfoItem icon={<Mail className="text-blue-500" />} label="Email de cuenta" value={accountEmail} />
                 <InfoItem icon={<Mail className="text-purple-500" />} label="Email Público" value="No especificado" />
                 <InfoItem icon={<Phone className="text-green-500" />} label="Teléfono" value={phoneNumber ? `+${countryCode} ${phoneNumber}` : "No especificado"} />
                 <InfoItem icon={<MapPin className="text-orange-500" />} label="Ubicación" value={form.location} />
