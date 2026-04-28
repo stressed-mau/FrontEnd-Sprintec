@@ -168,7 +168,7 @@ export const createRole = async (name: string) => {
   return res.data.data;
 };
 
-function extractProjectList(body: unknown): Project[] | null {
+function extractProjectList(body: unknown): unknown[] | null {
   if (body == null || typeof body !== "object") return null;
 
   const res = body as any;
@@ -184,17 +184,7 @@ function extractProjectList(body: unknown): Project[] | null {
   }
 
   if (!rawList) return null;
-
-  return rawList.map((p: any) => ({
-    id: p.id,
-    nombre: p.title || p.nombre || "Proyecto sin título",
-    descripcion: p.description || p.descripcion || "",
-    rol: p.project_rol || p.rol || "",
-    
-    tecnologias: Array.isArray(p.languages) ? p.languages : (Array.isArray(p.tecnologias) ? p.tecnologias : []),
-    is_public: !!p.is_public,
-    imagen: p.photograph || p.imagen || null
-  }));
+  return rawList;
 }
 
 function normalizeTechnology(value: unknown): ProjectTechnology | null {
@@ -221,22 +211,42 @@ function extractImageUrl(value: Record<string, unknown>): string | undefined {
   return undefined;
 }
 
+function normalizeDate(value: unknown): string {
+  if (typeof value !== "string" || !value.trim()) return "";
+  const trimmed = value.trim();
+  const isoDate = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (isoDate) return isoDate[1];
+
+  const slashDate = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (slashDate) return `${slashDate[3]}-${slashDate[2]}-${slashDate[1]}`;
+
+  return trimmed;
+}
+
+function normalizeBoolean(value: unknown): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  if (typeof value === "string") return ["1", "true", "si", "sí", "yes"].includes(value.trim().toLowerCase());
+  return false;
+}
+
 export function normalizeProject(value: unknown): ProjectItem {
   const record = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
   const technologiesSource = record.languages ?? record.technologies ?? record.tecnologias;
   const technologies = Array.isArray(technologiesSource)
     ? technologiesSource.map(normalizeTechnology).filter((tech): tech is ProjectTechnology => Boolean(tech))
     : [];
+  const finalDate = normalizeDate(record.final_date ?? record.end_date ?? record.fechaFin);
 
   return {
     id: Number(record.id ?? 0),
-    nombre: String(record.title ?? record.nombre ?? ""),
+    nombre: String(record.title ?? record.nombre ?? "Proyecto sin titulo"),
     descripcion: String(record.description ?? record.descripcion ?? ""),
     tecnologias: technologies,
     rol: String(record.project_rol ?? record.rol ?? ""),
-    fechaInicio: String(record.initial_date ?? record.start_date ?? record.fechaInicio ?? ""),
-    fechaFin: record.final_date || record.end_date || record.fechaFin ? String(record.final_date ?? record.end_date ?? record.fechaFin) : undefined,
-    is_current: Boolean(record.is_current ?? record.current),
+    fechaInicio: normalizeDate(record.initial_date ?? record.start_date ?? record.fechaInicio),
+    fechaFin: finalDate || undefined,
+    is_current: normalizeBoolean(record.is_current ?? record.current),
     github: record.url_to_project || record.github ? String(record.url_to_project ?? record.github) : undefined,
     demo: record.url_to_deploy || record.demo ? String(record.url_to_deploy ?? record.demo) : undefined,
     image: extractImageUrl(record),

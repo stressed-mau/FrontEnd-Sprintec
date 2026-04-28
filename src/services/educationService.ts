@@ -17,9 +17,14 @@ type EducationDto = {
   field?: string | null
   description?: string | null
   start_date?: string | null
+  initial_date?: string | null
   end_date?: string | null
+  final_date?: string | null
+  startDate?: string | null
+  endDate?: string | null
   current?: boolean | number | string | null
   is_current?: boolean | number | string | null
+  isCurrent?: boolean | number | string | null
   company_email?: string | null
   email?: string | null
   certificate?: string | null
@@ -141,6 +146,28 @@ function asBoolean(value: unknown): boolean | null {
   return null
 }
 
+function normalizeDateValue(value: unknown): string {
+  const rawValue = asString(value)
+
+  if (!rawValue) {
+    return ""
+  }
+
+  const isoDateMatch = rawValue.match(/^(\d{4}-\d{2}-\d{2})/)
+
+  if (isoDateMatch) {
+    return isoDateMatch[1]
+  }
+
+  const slashDateMatch = rawValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+
+  if (slashDateMatch) {
+    return `${slashDateMatch[3]}-${slashDateMatch[2]}-${slashDateMatch[1]}`
+  }
+
+  return rawValue
+}
+
 function toAbsoluteAssetUrl(value: unknown): string {
   const rawValue = asString(value)
 
@@ -163,8 +190,8 @@ function toAbsoluteAssetUrl(value: unknown): string {
 }
 
 function normalizeEducation(dto: EducationDto, index: number): ExperienceItem {
-  const endDate = asString(dto.end_date)
-  const explicitCurrent = asBoolean(dto.current ?? dto.is_current)
+  const endDate = normalizeDateValue(dto.end_date ?? dto.final_date ?? dto.endDate)
+  const explicitCurrent = asBoolean(dto.current ?? dto.is_current ?? dto.isCurrent)
 
   return {
     id: asString(dto.id ?? dto.education_id) || `education-${index + 1}`,
@@ -175,7 +202,7 @@ function normalizeEducation(dto: EducationDto, index: number): ExperienceItem {
     location: "",
     fieldOfStudy: asString(dto.field_to_study ?? dto.field_of_study ?? dto.field),
     description: asString(dto.description),
-    startDate: asString(dto.start_date),
+    startDate: normalizeDateValue(dto.start_date ?? dto.initial_date ?? dto.startDate),
     endDate,
     current: explicitCurrent ?? !endDate,
     image: "",
@@ -208,6 +235,9 @@ function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "
     formData.append("end_date", endDate)
   }
 
+  formData.append("is_current", payload.current ? "1" : "0")
+  formData.append("current", payload.current ? "1" : "0")
+
   return formData
 }
 
@@ -226,6 +256,10 @@ function buildEducationUpdateFormData(payload: ExperiencePayload) {
 
   if (payload.certificateFile) {
     formData.append("certificate", payload.certificateFile)
+  }
+
+  if (payload.removeCertificate) {
+    formData.append("remove_certificate", "1")
   }
 
   return formData
@@ -278,11 +312,10 @@ export async function createEducation(payload: ExperiencePayload): Promise<Exper
 
 export async function updateEducation(id: string, payload: ExperiencePayload): Promise<ExperienceItem> {
   try {
-    const response = await api.put(`${EDUCATION_ENDPOINT}/${id}`, buildEducationUpdateBody(payload), {
+    const response = await api.post(`${EDUCATION_ENDPOINT}/${id}`, buildEducationUpdateFormData(payload), {
       timeout: EDUCATION_MUTATION_TIMEOUT_MS,
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/json",
       },
     })
 
@@ -290,10 +323,11 @@ export async function updateEducation(id: string, payload: ExperiencePayload): P
   } catch (error) {
     if (axios.isAxiosError(error) && [404, 405, 415, 422].includes(error.response?.status ?? 0)) {
       try {
-        const response = await api.post(`${EDUCATION_ENDPOINT}/${id}`, buildEducationUpdateFormData(payload), {
+        const response = await api.put(`${EDUCATION_ENDPOINT}/${id}`, buildEducationUpdateBody(payload), {
           timeout: EDUCATION_MUTATION_TIMEOUT_MS,
           headers: {
             Accept: "application/json",
+            "Content-Type": "application/json",
           },
         })
 

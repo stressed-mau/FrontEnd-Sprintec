@@ -60,6 +60,14 @@ export function paginateProjects(projects: ProjectItem[], currentPage: number) {
 
 export function formatProjectDate(date?: string) {
   if (!date) return "-";
+  const isoDate = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoDate) {
+    return new Date(Number(isoDate[1]), Number(isoDate[2]) - 1, Number(isoDate[3])).toLocaleDateString("es-ES", {
+      month: "short",
+      year: "numeric",
+    });
+  }
+
   return new Date(date).toLocaleDateString("es-ES", { month: "short", year: "numeric" });
 }
 

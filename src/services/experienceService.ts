@@ -71,12 +71,15 @@ type ExperienceDto = {
   details?: string | null
   content?: string | null
   start_date?: string | null
+  initial_date?: string | null
   startDate?: string | null
   fecha_inicio?: string | null
   end_date?: string | null
+  final_date?: string | null
   endDate?: string | null
   fecha_fin?: string | null
   company_email?: string | null
+  companyEmail?: string | null
   email?: string | null
   correo_empresa?: string | null
   ubication?: string | null
@@ -88,6 +91,7 @@ type ExperienceDto = {
   logo?: string | null
   logo_url?: string | null
   logo_path?: string | null
+  photograph?: string | null
   image_url?: string | null
   image?: string | null
   certificate?: string | null
@@ -96,6 +100,7 @@ type ExperienceDto = {
   document?: string | null
   current?: boolean | number | string | null
   is_current?: boolean | number | string | null
+  isCurrent?: boolean | number | string | null
 }
 
 type ExperienceGroup = {
@@ -332,8 +337,8 @@ function toAbsoluteAssetUrl(value: unknown): string {
 }
 
 function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: ExperienceType): ExperienceItem {
-  const endDate = normalizeDateValue(dto.end_date ?? dto.endDate ?? dto.fecha_fin)
-  const explicitCurrent = asBoolean(dto.current ?? dto.is_current)
+  const endDate = normalizeDateValue(dto.end_date ?? dto.final_date ?? dto.endDate ?? dto.fecha_fin)
+  const explicitCurrent = asBoolean(dto.current ?? dto.is_current ?? dto.isCurrent)
   const normalizedType = typeHint ?? normalizeType(dto.type ?? dto.category ?? dto.experience_type)
 
   return {
@@ -353,7 +358,7 @@ function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: Exper
       dto.university ??
       dto.college,
     ),
-    email: asString(dto.company_email ?? dto.correo_empresa ?? dto.email),
+    email: asString(dto.company_email ?? dto.companyEmail ?? dto.correo_empresa ?? dto.email),
     location: asString(dto.ubication ?? dto.location ?? dto.ubicacion),
     fieldOfStudy: asString(dto.field_of_study ?? dto.field ?? dto.campo_estudio),
     position: asString(
@@ -367,10 +372,10 @@ function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: Exper
       dto.puesto,
     ),
     description: asString(dto.description ?? dto.descripcion ?? dto.summary ?? dto.details ?? dto.content),
-    startDate: normalizeDateValue(dto.start_date ?? dto.startDate ?? dto.fecha_inicio),
+    startDate: normalizeDateValue(dto.start_date ?? dto.initial_date ?? dto.startDate ?? dto.fecha_inicio),
     endDate,
     current: explicitCurrent ?? !endDate,
-    image: toAbsoluteAssetUrl(dto.logo_url ?? dto.logo_path ?? dto.logo ?? dto.image_url ?? dto.image),
+    image: toAbsoluteAssetUrl(dto.logo_url ?? dto.logo_path ?? dto.logo ?? dto.image_url ?? dto.image ?? dto.photograph),
     certificate: toAbsoluteAssetUrl(dto.certificate_url ?? dto.certificate_path ?? dto.certificate ?? dto.document),
   }
 }
@@ -407,6 +412,9 @@ function buildExperienceFormData(payload: ExperiencePayload, options?: { mode?: 
     formData.append("end_date", endDate)
   }
 
+  formData.append("is_current", payload.current ? "1" : "0")
+  formData.append("current", payload.current ? "1" : "0")
+
   return formData
 }
 
@@ -426,6 +434,18 @@ function buildExperienceUpdateFormData(payload: ExperiencePayload) {
 
   if (payload.logoFile) {
     formData.append("logo", payload.logoFile)
+  }
+
+  if (payload.certificateFile) {
+    formData.append("certificate", payload.certificateFile)
+  }
+
+  if (payload.removeLogo) {
+    formData.append("remove_logo", "1")
+  }
+
+  if (payload.removeCertificate) {
+    formData.append("remove_certificate", "1")
   }
 
   return formData
@@ -481,11 +501,10 @@ export async function createExperience(payload: ExperiencePayload): Promise<Expe
 
 export async function updateExperience(id: string, payload: ExperiencePayload): Promise<ExperienceItem> {
   try {
-    const response = await api.put(`${EXPERIENCES_ENDPOINT}/${id}`, buildExperienceUpdateBody(payload), {
+    const response = await api.post(`${EXPERIENCES_ENDPOINT}/${id}`, buildExperienceUpdateFormData(payload), {
       timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/json",
       },
     })
 
@@ -493,10 +512,11 @@ export async function updateExperience(id: string, payload: ExperiencePayload): 
   } catch (error) {
     if (axios.isAxiosError(error) && [404, 405, 415, 422].includes(error.response?.status ?? 0)) {
       try {
-        const response = await api.post(`${EXPERIENCES_ENDPOINT}/${id}`, buildExperienceUpdateFormData(payload), {
+        const response = await api.put(`${EXPERIENCES_ENDPOINT}/${id}`, buildExperienceUpdateBody(payload), {
           timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
           headers: {
             Accept: "application/json",
+            "Content-Type": "application/json",
           },
         })
 
