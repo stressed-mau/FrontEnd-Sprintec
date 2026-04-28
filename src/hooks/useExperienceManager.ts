@@ -300,7 +300,7 @@ function validateExperienceField(
     const normalizedEmail = rawEmail.trim()
 
     if (!normalizedEmail) {
-      return ""
+      return "El campo Correo electronico es obligatorio."
     }
 
     if (/\s/.test(rawEmail)) {

@@ -18,6 +18,8 @@ type EducationDto = {
   description?: string | null
   start_date?: string | null
   end_date?: string | null
+  current?: boolean | number | string | null
+  is_current?: boolean | number | string | null
   company_email?: string | null
   email?: string | null
   certificate?: string | null
@@ -127,6 +129,18 @@ function asString(value: unknown): string {
   return ""
 }
 
+function asBoolean(value: unknown): boolean | null {
+  if (typeof value === "boolean") return value
+  if (typeof value === "number") return value === 1
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase()
+    if (["1", "true", "yes", "si", "sÃ­"].includes(normalized)) return true
+    if (["0", "false", "no"].includes(normalized)) return false
+  }
+
+  return null
+}
+
 function toAbsoluteAssetUrl(value: unknown): string {
   const rawValue = asString(value)
 
@@ -150,6 +164,7 @@ function toAbsoluteAssetUrl(value: unknown): string {
 
 function normalizeEducation(dto: EducationDto, index: number): ExperienceItem {
   const endDate = asString(dto.end_date)
+  const explicitCurrent = asBoolean(dto.current ?? dto.is_current)
 
   return {
     id: asString(dto.id ?? dto.education_id) || `education-${index + 1}`,
@@ -162,7 +177,7 @@ function normalizeEducation(dto: EducationDto, index: number): ExperienceItem {
     description: asString(dto.description),
     startDate: asString(dto.start_date),
     endDate,
-    current: !endDate,
+    current: explicitCurrent ?? !endDate,
     image: "",
     certificate: toAbsoluteAssetUrl(dto.certificate_url ?? dto.certificate_path ?? dto.certificate ?? dto.document),
   }

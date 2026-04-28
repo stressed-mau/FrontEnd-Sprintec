@@ -65,7 +65,7 @@ export const usePortfolio = (externalSlug?: string) => {
       // Si no hay portafolio publicado pero tenemos sesión, traemos sus datos base
       if (session?.user?.id) {
         const [userData, skills, experiences, education, projects, social] = await Promise.all([
-          getUserInformation(session.user.id),
+          getUserInformation(String(session.user.id)),
           getSkills(),
           getExperiences(),
           getEducation(),

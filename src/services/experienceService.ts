@@ -178,12 +178,19 @@ function unwrapExperienceGroups(data: unknown): ExperienceGroup[] {
     ]
   }
 
-  if (Array.isArray(record.work_experience) || Array.isArray(record.education)) {
+  if (
+    Array.isArray(record.work_experience) ||
+    Array.isArray(record.work_experiences) ||
+    Array.isArray(record.education) ||
+    Array.isArray(record.educations)
+  ) {
     const workExperience = Array.isArray(record.work_experience) ? record.work_experience as ExperienceDto[] : []
+    const workExperiences = workExperience.length ? workExperience : Array.isArray(record.work_experiences) ? record.work_experiences as ExperienceDto[] : []
     const education = Array.isArray(record.education) ? record.education as ExperienceDto[] : []
+    const educations = education.length ? education : Array.isArray(record.educations) ? record.educations as ExperienceDto[] : []
     return [
-      { items: workExperience, type: "laboral" },
-      { items: education, type: "academica" },
+      { items: workExperiences, type: "laboral" },
+      { items: educations, type: "academica" },
     ]
   }
 
@@ -381,9 +388,7 @@ function buildExperienceFormData(payload: ExperiencePayload, options?: { mode?: 
     formData.append("role", payload.position.trim())
     formData.append("start_date", payload.startDate.trim())
 
-    if (email) {
-      formData.append("company_email", email)
-    }
+    formData.append("company_email", email)
 
     if (payload.logoFile) {
       formData.append("logo", payload.logoFile)

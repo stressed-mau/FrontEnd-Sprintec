@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import type { PortfolioVisibilityData } from '@/services/portfolioVisibilityService';
-import { ArrowLeft, ArrowRight, Layers3, Globe, Code2, Link, Mail, Phone, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, Globe, Code2, Link, Mail, MapPin } from "lucide-react";
 
 interface MinimalistTemplateProps {
   data: PortfolioVisibilityData;

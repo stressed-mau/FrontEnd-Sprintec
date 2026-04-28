@@ -63,6 +63,7 @@ function validateForm(
   form: ProjectFormValues,
   selectedTechs: ProjectTechnology[],
   imageFile: File | null,
+  isEditing: boolean,
 ) {
   const errors: ProjectFormErrors = {};
   const today = new Date();
@@ -107,6 +108,8 @@ function validateForm(
     } else if (imageFile.size > MAX_IMAGE_SIZE_BYTES) {
       errors.image = "La imagen no debe superar los 2 MB.";
     }
+  } else if (!isEditing) {
+    errors.image = "La imagen del proyecto es obligatoria.";
   }
 
   return errors;
@@ -246,7 +249,7 @@ export function useProjectsManager() {
     event.preventDefault();
     setSuccessMessage("");
 
-    const newErrors = validateForm(formData, selectedTechs, imageFile);
+    const newErrors = validateForm(formData, selectedTechs, imageFile, Boolean(editingProject));
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return false;
 
@@ -280,8 +283,8 @@ export function useProjectsManager() {
         setSuccessMessage("Proyecto actualizado correctamente.");
       } else {
         await createProject(createPayload);
-        setSuccessMessage("Proyecto agregado correctamente.");
         resetForm();
+        setSuccessMessage("Proyecto agregado correctamente.");
       }
 
       await loadProjects();

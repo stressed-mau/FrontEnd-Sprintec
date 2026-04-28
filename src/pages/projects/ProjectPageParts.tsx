@@ -547,7 +547,7 @@ export function ProjectForm({
         </Field>
       </div>
 
-      <Field label="Imagen del proyecto" error={errors.image} tone={tone}>
+      <Field label="Imagen del proyecto" error={errors.image} required={!readOnlyFields} tone={tone}>
         <div className={`rounded-xl border p-3 ${errors.image ? "border-red-500 bg-red-50" : isModalTone ? "border-gray-200 bg-gray-50" : "border-[#D7E6F2] bg-[#EEF5F9]"}`}>
           {preview ? <img src={preview} alt="Vista previa del proyecto" className="mb-3 h-28 w-full max-w-xs rounded-xl object-cover shadow-sm" /> : null}
           <div className="flex flex-wrap items-center gap-3">

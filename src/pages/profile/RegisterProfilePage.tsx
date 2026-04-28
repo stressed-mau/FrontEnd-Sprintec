@@ -19,7 +19,6 @@ export default function RegisterProfilePage() {
   const {
     form,
     errors,
-    setSuccess, // Aunque no usaremos el estado success visualmente, el hook lo usa
     preview,
     countryCode,
     phoneNumber,

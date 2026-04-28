@@ -70,6 +70,12 @@ const FALLBACK_PROJECTS = [
   },
 ]
 
+void FALLBACK_SOCIAL_LINKS
+void FALLBACK_SKILLS
+void FALLBACK_EXPERIENCE
+void FALLBACK_EDUCATION
+void FALLBACK_PROJECTS
+
 function getInitials(name: string) {
   const trimmedName = name.trim()
 

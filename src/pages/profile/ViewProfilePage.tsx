@@ -5,7 +5,7 @@ import { Footer } from '@/components/Footer';
 import { useUserPersonalData } from '../../hooks/useUserPersonalData';
 import { getAuthSession } from '@/services/auth';
 const ViewProfilePage = () => {
-  const { form, phoneNumber, countryCode, loading } = useUserPersonalData();
+  const { form, phoneNumber, countryCode } = useUserPersonalData();
   const session = getAuthSession();
   const accountEmail = session?.user?.email || "No disponible";
   return (

@@ -1,16 +1,18 @@
-import { type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
+import ConfirmationModal from "@/components/ConfirmationModal";
 import { useProjectsManager } from "@/hooks/useProjectsManager";
 import { FeedbackMessage, ProjectForm, ProjectPageShell } from "@/pages/projects/ProjectPageParts";
 
 export default function AddProjectsPage() {
   const navigate = useNavigate();
   const manager = useProjectsManager();
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     const saved = await manager.submitProject(event);
-    if (saved) navigate("/proyectos/ver");
+    if (saved) setShowSuccessModal(true);
   }
 
   return (
@@ -32,6 +34,14 @@ export default function AddProjectsPage() {
         onTechnologyRemove={manager.removeTechnology}
         onImageChange={manager.handleImageChange}
         onImageRemove={manager.removeImage}
+      />
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        message="Proyecto registrado correctamente."
+        onClose={() => {
+          setShowSuccessModal(false);
+          navigate("/proyectos/ver");
+        }}
       />
     </ProjectPageShell>
   );

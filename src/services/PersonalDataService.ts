@@ -2,7 +2,7 @@ import { api } from './api';
 
 const USER_ENDPOINT = '/user_information';
 
-export const getUserInformation = async (id?: string) => {
+export const getUserInformation = async (_id?: string) => {
 
   const res = await api.get(USER_ENDPOINT);
   if (!res.data.success) {
