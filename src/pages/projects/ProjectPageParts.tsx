@@ -194,7 +194,7 @@ export function ProjectTable({
 
   return (
     <div className="overflow-x-auto rounded-2xl border border-[#A5D7E8] bg-white shadow-sm">
-      <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+      <table className="w-full min-w-190 border-collapse text-left text-sm">
         <thead className="bg-[#EEF5F9] text-xs uppercase text-[#003A6C]">
           <tr>
             {selectable ? <th className="w-12 px-4 py-3">Sel.</th> : null}

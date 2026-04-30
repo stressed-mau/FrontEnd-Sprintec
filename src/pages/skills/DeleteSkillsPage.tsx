@@ -4,6 +4,7 @@ import { Footer } from '@/components/Footer';
 import { Code2, Lightbulb, Search, Trash2 } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/useSkillsManager';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import ConfirmActionModal from '../../components/ConfirmActionModal';
 
 const LEVEL_LABELS: Record<string, string> = {
   experto: 'Experto',
@@ -21,27 +22,11 @@ const LEVEL_COLORS: Record<string, string> = {
 
 const DeleteSkillsPage = () => {
   const {
-    filteredSkills,
-    isLoading,
-    pageError,
-    searchQuery,
-    setSearchQuery,
-    selectedSkillIds,
-    toggleSelectSkill,
-    toggleSelectAll,
-    showConfirmDelete,
-    setShowConfirmDelete,
-    confirmDeleteSelected,
-    cancelDelete,
-    isDeleting,
-    showSuccessModal,
-    closeSuccessModal,
-    successMessage,
+    filteredSkills, isLoading, pageError, searchQuery, setSearchQuery, selectedSkillIds,toggleSelectSkill,
+    showConfirmDelete, setShowConfirmDelete, confirmDeleteSelected,  cancelDelete, isDeleting,
+    showSuccessModal, closeSuccessModal, successMessage,
   } = useSkillsManager();
 
-  const visibleIds = filteredSkills.map((s) => s.id);
-  const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedSkillIds.has(id));
-  const someSelected = visibleIds.some((id) => selectedSkillIds.has(id));
   const selectedCount = selectedSkillIds.size;
 
   return (
@@ -61,7 +46,7 @@ const DeleteSkillsPage = () => {
                 <p className="text-sm text-[#4B778D] md:text-base">
                   {selectedCount > 0
                     ? `${selectedCount} habilidad${selectedCount > 1 ? 'es' : ''} seleccionada${selectedCount > 1 ? 's' : ''}`
-                    : 'Selecciona habilidades para eliminar'}
+                    : 'Selecciona una habilidad para eliminar'}
                 </p>
               </div>
 
@@ -104,7 +89,6 @@ const DeleteSkillsPage = () => {
                 <p className="text-sm text-[#4B778D]">Cargando habilidades...</p>
               </div>
             ) : filteredSkills.length === 0 ? (
-              /* Empty state con ícono — mockup imagen 4 */
               <div className="rounded-2xl bg-white py-20 shadow-sm border border-[#6dacbf]/20 flex flex-col items-center justify-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
                   <Code2 className="size-8" />
@@ -121,18 +105,8 @@ const DeleteSkillsPage = () => {
             ) : (
               /* Tabla con checkboxes */
               <div className="rounded-2xl border border-[#6dacbf]/30 bg-white shadow-sm overflow-hidden">
-                {/* Cabecera con checkbox "seleccionar todo" */}
                 <div className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_120px_140px] px-5 py-3 border-b border-[#6dacbf]/20 gap-4 items-center">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    ref={(el) => {
-                      if (el) el.indeterminate = someSelected && !allSelected;
-                    }}
-                    onChange={() => toggleSelectAll(visibleIds)}
-                    className="w-4 h-4 accent-[#003A6C] cursor-pointer rounded"
-                    aria-label="Seleccionar todas las habilidades"
-                  />
+                  <input />
                   <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider">
                     Habilidad
                   </span>
@@ -212,47 +186,20 @@ const DeleteSkillsPage = () => {
         </main>
       </div>
 
-      {/* Modal de confirmación de eliminación — Criterios 14, 15, 16, 17 */}
-      {showConfirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center">
-            <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="size-7 text-red-600" />
-            </div>
-            <h3 className="text-lg font-bold text-[#003A6C] mb-2">
-              ¿Está seguro de que desea eliminar{' '}
-              {selectedCount > 1 ? `estas ${selectedCount} habilidades` : 'esta habilidad'}?
-            </h3>
-            <p className="text-sm text-gray-500 mb-6">Esta acción no se puede deshacer.</p>
-            <div className="flex gap-3">
-              {/* Criterio 16: botón Eliminar */}
-              <button
-                onClick={() => void confirmDeleteSelected()}
-                disabled={isDeleting}
-                className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-semibold hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {isDeleting ? 'Eliminando...' : 'Eliminar'}
-              </button>
-              {/* Criterio 17: botón Cancelar */}
-              <button
-                onClick={cancelDelete}
-                disabled={isDeleting}
-                className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold hover:bg-gray-200 disabled:opacity-60"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    <ConfirmActionModal
+         isOpen={showConfirmDelete}
+        title="Eliminar habilidad"
+        message="¿Está seguro de que desea eliminar esta habilidad? Esta acción no se puede deshacer."
+        confirmText={isDeleting ? 'Eliminando...' : 'Eliminar'}
+        cancelText="Cancelar"
+        onConfirm={() => void confirmDeleteSelected()}
+        onCancel={cancelDelete}/>
 
-      {/* Modal de éxito — Criterio 16 */}
       <ConfirmationModal
         isOpen={showSuccessModal}
         title="Éxito"
         message={successMessage || 'Habilidad eliminada correctamente.'}
-        onClose={closeSuccessModal}
-      />
+        onClose={closeSuccessModal}      />
 
       <Footer />
     </div>

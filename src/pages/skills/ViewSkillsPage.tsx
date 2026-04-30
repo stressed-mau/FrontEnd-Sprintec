@@ -3,6 +3,7 @@ import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { Code2, Lightbulb, Search } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/useSkillsManager';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
 const LEVEL_LABELS: Record<string, string> = {
   experto: 'Experto',
@@ -20,12 +21,7 @@ const LEVEL_COLORS: Record<string, string> = {
 
 const ViewSkillsPage = () => {
   const {
-    filteredTechnicalSkills,
-    filteredSoftSkills,
-    pageError,
-    isLoading,
-    searchQuery,
-    setSearchQuery,
+    filteredTechnicalSkills, filteredSoftSkills, pageError, setPageError,isLoading, searchQuery, setSearchQuery,
   } = useSkillsManager();
 
   return (
@@ -46,14 +42,6 @@ const ViewSkillsPage = () => {
               </p>
             </div>
 
-            {/* Error de página */}
-            {pageError && (
-              <div className="mb-6 rounded-2xl border-2 border-red-400 bg-red-100 px-4 py-4 text-sm text-red-900 font-semibold shadow-md">
-                <p className="font-bold mb-1">Error cargando habilidades:</p>
-                <p>{pageError}</p>
-              </div>
-            )}
-
             {/* Buscador */}
             <div className="relative mb-8">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-[#4B778D]" />
@@ -62,8 +50,7 @@ const ViewSkillsPage = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar por nombre o nivel..."
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#0E7D96]/20 bg-white text-[#003A6C] placeholder:text-[#4B778D]/60 outline-none focus:ring-2 focus:ring-[#0E7D96]/30 shadow-sm"
-              />
+                className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#0E7D96]/20 bg-white text-[#003A6C] placeholder:text-[#4B778D]/60 outline-none focus:ring-2 focus:ring-[#0E7D96]/30 shadow-sm"  />
             </div>
 
             {/* Sección Técnicas */}
@@ -171,6 +158,12 @@ const ViewSkillsPage = () => {
           </div>
         </main>
       </div>
+      <ConfirmationModal
+         isOpen={!!pageError}
+         title="Error"
+          message={pageError}
+          buttonText="Cerrar"
+          onClose={() => setPageError('')}/>
       <Footer />
     </div>
   );
