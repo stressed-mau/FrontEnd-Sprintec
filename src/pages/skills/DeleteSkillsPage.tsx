@@ -35,10 +35,9 @@ const DeleteSkillsPage = () => {
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <div className="max-w-5xl mx-auto">
+          <div className="mx-auto max-w-6xl space-y-6">
 
             {/* Encabezado */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
               <div>
                 <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl mb-2">
                   Eliminar Habilidades
@@ -48,7 +47,7 @@ const DeleteSkillsPage = () => {
                     ? `${selectedCount} habilidad${selectedCount > 1 ? 'es' : ''} seleccionada${selectedCount > 1 ? 's' : ''}`
                     : 'Selecciona una habilidad para eliminar'}
                 </p>
-              </div>
+             
 
               {/* Botón Eliminar — aparece cuando hay selección */}
               {selectedCount > 0 && (

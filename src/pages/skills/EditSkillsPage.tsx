@@ -36,12 +36,10 @@ const EditSkillsPage = () => {
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <div className="max-w-5xl mx-auto">
+          <div className="mx-auto max-w-6xl space-y-6">
            
-            <div className="mb-8">
               <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl mb-2">  Editar Habilidades </h1>
               <p className="text-sm text-[#4B778D] md:text-base"> Haz clic en una fila para editar </p>
-            </div>
 
             {pageError && (
               <div className="mb-6 rounded-2xl border-2 border-red-400 bg-red-100 px-4 py-4 text-sm text-red-900 font-semibold shadow-md">
