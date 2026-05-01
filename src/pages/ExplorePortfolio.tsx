@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Eye } from "lucide-react"; 
 import { Header } from "@/components/Header"; 
 import HeaderUser from "@/components/HeaderUser";
@@ -8,21 +9,46 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePagination } from "@/hooks/usePagination";
 import { isAuthenticated } from "@/services/auth";
-import {getExplorePortfolios, getPortfolioApiDetailUrl, type ExplorePortfolioCard} from "@/services/explorePortfoliosService";
+import { getExplorePortfolios } from "@/services/explorePortfoliosService";
+
+interface PortfolioCard {
+  id: string;
+  slug: string;
+  fullName: string;
+  occupation: string;
+  profileImage: string;
+  projectsCount: number;
+  skillsCount: number;
+  topSkills: string[];
+}
 
 export default function ExplorePortfolios() {
-  const [portfolios, setPortfolios] = useState<ExplorePortfolioCard[]>([]);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const navigate = useNavigate();
+  const [portfolios, setPortfolios] = useState<PortfolioCard[]>([]);
+  const [itemsPerPage] = useState(12);
   const isUserAuthenticated = isAuthenticated();
 
   useEffect(() => {
-    const updateLimit = () => { 
-      setItemsPerPage(window.innerWidth < 640 ? 5 : 12); 
-    };
-    updateLimit(); 
-    window.addEventListener("resize", updateLimit);
-    return () => window.removeEventListener("resize", updateLimit);
-  }, []);
+  let isMounted = true;
+
+  const fetchPortfolios = async () => {
+    try {
+      const data = await getExplorePortfolios();
+      if (!isMounted) return;
+      setPortfolios(data);
+    } catch (error) {
+      console.error("Error cargando portafolios:", error);
+      if (!isMounted) return;
+      setPortfolios([]);
+    }
+  };
+
+  fetchPortfolios();
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
 
   // Extraemos goToPage para que los botones numéricos funcionen
   const { currentData, currentPage, totalPages, next, prev, goToPage } = usePagination({ 
@@ -30,41 +56,27 @@ export default function ExplorePortfolios() {
     itemsPerPage 
   });
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchPortfolios = async () => {
-      try {
-        if (!isMounted) return;
-
-        const remotePortfolios = await getExplorePortfolios();
-        setPortfolios(remotePortfolios);
-      } catch (error) {
-        console.error("Error cargando portafolios:", error);
-        if (!isMounted) return;
-
-        setPortfolios([]);
-      }
-    };
-
-    void fetchPortfolios();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // Mock temporal de referencia sin Backend
-  // const mockData = Array(20).fill(null).map((_, i) => ({
-  //   id: `${i}`,
-  //   fullName: i % 2 === 0 ? "María García" : "Carlos Martínez",
-  //   occupation: i % 2 === 0 ? "Full Stack Developer" : "Mobile Developer",
-  //   profileImage: `https://i.pravatar.cc/150?u=${i}`,
-  //   projectsCount: 5,
-  //   skillsCount: 10,
-  //   topSkills: ["React", "Node.js", "Tailwind"]
-  // });
-
+  //useEffect(() => {
+    // Simulación de datos reales
+    //const mockData = Array(20).fill(null).map((_, i) => ({
+    //  id: `${i}`,
+    //  fullName: i % 2 === 0 ? "María García" : "Carlos Martínez",
+    //  occupation: i % 2 === 0 ? "Full Stack Developer" : "Mobile Developer",
+    //  profileImage: `https://i.pravatar.cc/150?u=${i}`,
+    //  projectsCount: 5,
+     // skillsCount: 10,
+     // topSkills: ["React", "Node.js", "Tailwind"]
+   // }));
+   // setPortfolios(mockData);
+  //}, []);
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(word => word[0].toUpperCase())
+    .join("");
+}
   return (
     <div className="flex min-h-screen flex-col bg-[#FDF8F0]">
       {isUserAuthenticated ? <HeaderUser /> : <Header />}
@@ -86,10 +98,17 @@ export default function ExplorePortfolios() {
                   key={portfolio.id} 
                   className="group mx-auto flex w-full max-w-md items-center gap-4 rounded-2xl bg-white p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all hover:border-[#4982AD]/30"  >
                   <div className="shrink-0">
-                    <img 
-                      src={portfolio.profileImage} 
-                      className="size-16 rounded-full object-cover ring-2 ring-[#FDF8F0] md:size-18" 
-                      alt="Perfil" />
+                    {portfolio.profileImage ? (
+                      <img 
+                        src={portfolio.profileImage}
+                        className="size-16 rounded-full object-cover ring-2 ring-[#FDF8F0] md:size-18"
+                        alt="Perfil"
+                      />
+                    ) : (
+                      <div className="size-16 md:size-18 rounded-full bg-[#003A6C] text-white flex items-center justify-center font-bold text-lg">
+                        {getInitials(portfolio.fullName)}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -116,10 +135,11 @@ export default function ExplorePortfolios() {
                     </div>
                   </div>
 
-                  <Button asChild className="shrink-0 h-8 px-3 rounded-lg bg-[#003A6C] hover:bg-[#c4a57c] text-white transition-colors flex items-center gap-2 text-xs font-bold">
-                    <a href={getPortfolioApiDetailUrl(portfolio.id)}>
-                      Ver <Eye className="size-4" />
-                    </a>
+                  <Button
+                    onClick={() => navigate(`/p/${portfolio.slug}`)}
+                    className="shrink-0 h-8 px-3 rounded-lg bg-[#003A6C] hover:bg-[#c4a57c] text-white flex items-center gap-2 text-xs font-bold"
+                  >
+                    Ver <Eye className="size-4" />
                   </Button>
                 </div>
               ))}

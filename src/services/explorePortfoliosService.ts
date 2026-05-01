@@ -2,7 +2,7 @@ import axios from "axios";
 import { api } from "@/services/api";
 
 const publicApi = axios.create({
-  baseURL: (api.defaults.baseURL ?? "http://localhost:8000/api").replace(/\/+$/, ""),
+  baseURL: (api.defaults.baseURL ?? "http://localhost:5173/api").replace(/\/+$/, ""),
   timeout: 30_000,
   headers: {
     Accept: "application/json",
@@ -41,6 +41,7 @@ interface PortfoliosResponseDto {
 
 export interface ExplorePortfolioCard {
   id: string;
+  slug: string;
   fullName: string;
   occupation: string;
   profileImage: string;
@@ -61,9 +62,10 @@ function normalizePortfolio(dto: PortfolioApiDto, index: number): ExplorePortfol
 
   return {
     id: toStringValue(dto.user_id ?? dto.id ?? index),
+    slug: toStringValue(dto.slug),
     fullName: toStringValue(dto.name, "Sin nombre"),
     occupation: toStringValue(dto.occupation, "Sin cargo"),
-    profileImage: toStringValue(dto.photo, `https://i.pravatar.cc/150?u=${index}`),
+    profileImage: toStringValue(dto.photo, ""),
     projectsCount: Number(dto.projects_count ?? 0),
     skillsCount: Number(dto.skills_count ?? topSkills.length),
     topSkills: topSkills.length ? topSkills : ["Sin habilidades"],
@@ -106,7 +108,4 @@ export async function getExplorePortfolios(): Promise<ExplorePortfolioCard[]> {
   }
 }
 
-export function getPortfolioApiDetailUrl(id: string): string {
-  const baseUrl = (api.defaults.baseURL ?? "http://localhost:8000/api").replace(/\/+$/, "");
-  return `${baseUrl}/portfolios/${id}`;
-}
+
