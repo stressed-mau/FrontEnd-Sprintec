@@ -1,4 +1,4 @@
-import { X, HelpCircle } from 'lucide-react'; // Importamos un icono para la acción
+import { X, HelpCircle } from 'lucide-react'; // Importamos un icono para la accion
 
 interface ConfirmActionModalProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ interface ConfirmActionModalProps {
 
 const ConfirmActionModal = ({
   isOpen,
-  title = 'Confirmar acción',
+  title = 'Confirmar accion',
   message,
   confirmText = 'Guardar',
   cancelText = 'Cancelar',
@@ -25,7 +25,7 @@ const ConfirmActionModal = ({
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl p-8 relative animate-in zoom-in-95 duration-200">
         
-        {/* Botón cerrar */}
+        {/* Boton cerrar */}
         <button
           onClick={onCancel}
           className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition-colors"
@@ -35,7 +35,7 @@ const ConfirmActionModal = ({
         </button>
 
         <div className="flex flex-col items-center text-center">
-          {/* Icono superior - Mismo estilo que el de Éxito pero con otro icono */}
+          {/* Icono superior - Mismo estilo que el de Exito pero con otro icono */}
           <div className="w-16 h-16 bg-[#E1EFFE] rounded-full flex items-center justify-center mb-6">
             <HelpCircle className="size-8 text-[#003A6C] stroke-[2.5px]" />
           </div>

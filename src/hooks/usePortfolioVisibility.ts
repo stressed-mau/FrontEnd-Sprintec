@@ -13,6 +13,8 @@ const initialData: PortfolioVisibilityData = {
   projects: [],
   skills: [],
   experience: [],
+  education: [],
+  certificates: [],
   networks: [],
 };
 
@@ -20,6 +22,8 @@ const initialOpenSections: OpenSections = {
   projects: false,
   skills: false,
   experience: false,
+  education: false,
+  certificates: false,
   networks: false,
 };
 
@@ -27,6 +31,8 @@ const sectionsArray: { key: SectionKey; title: string }[] = [
   { key: 'projects', title: 'Proyectos' },
   { key: 'skills', title: 'Habilidades' },
   { key: 'experience', title: 'Experiencias' },
+  { key: 'education', title: 'Educacion' },
+  { key: 'certificates', title: 'Certificados' },
   { key: 'networks', title: 'Redes profesionales' },
 ];
 

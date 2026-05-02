@@ -12,6 +12,8 @@ export interface VisibilityItem {
   sourceTable?: VisibilityTable;
 }
 
+export type PortfolioVisibilityData = Record<SectionKey, VisibilityItem[]>;
+
 const USER_INFORMATION_ENDPOINT = '/visibility';
 
 // --- UTILIDADES ---
@@ -85,7 +87,7 @@ const normalizeNetworks = (data: any) => (data?.social_networks || []).map((item
 
 // --- FUNCIONES EXPORTADAS ---
 
-export async function getPortfolioVisibilityData(): Promise<Record<SectionKey, VisibilityItem[]>> {
+export async function getPortfolioVisibilityData(): Promise<PortfolioVisibilityData> {
   try {
     const response = await api.get(USER_INFORMATION_ENDPOINT);
     const payload = response.data?.data || {};

@@ -31,6 +31,8 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
     checked: true,
     sourceTable: e.type === "academica" ? "educations" : "work_experiences",
   })),
+  education: [],
+  certificates: [],
   networks: portfolio.socialNetworks.map((n, index) => ({
     id: Number(n.id ?? index),
     label: n.name ?? "",

@@ -1,5 +1,5 @@
-import { Calendar, Edit3, ExternalLink, FolderGit2, GitBranch, Search, X } from "lucide-react";
-import { type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { Edit3, ExternalLink, FolderGit2, GitBranch, Search, X } from "lucide-react";
+import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import Sidebar from "@/components/Sidebar";
 import type { ProjectFormErrors, ProjectFormValues, ProjectItem, ProjectTechnology } from "@/hooks/useProjectsManager";
 
 const ITEMS_PER_PAGE = 10;
+const MAX_PROJECT_NAME_LENGTH = 60;
 const inputClassName = (hasError?: boolean) =>
   hasError
     ? "border-red-500 bg-white focus-visible:border-red-500 focus-visible:ring-red-200"
@@ -85,11 +86,11 @@ export function ProjectPageShell({
       <Header />
       <div className="flex flex-1 flex-col lg:flex-row">
         <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <div className="mx-auto max-w-6xl space-y-6">
+        <main className="flex-1 p-4 sm:p-6">
+          <div className="mx-auto max-w-7xl space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">{title}</h1>
-              <p className="mt-2 text-sm text-[#4B778D] md:text-base">{description}</p>
+              <h1 className="mb-1 text-2xl font-semibold text-gray-900">{title}</h1>
+              <p className="text-sm text-gray-500">{description}</p>
             </div>
             {children}
           </div>
@@ -117,12 +118,12 @@ export function FeedbackMessage({ message, type }: { message: string; type: "err
 export function ProjectSearch({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#4982AD]" />
+      <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
       <Input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Buscar por nombre, rol o tecnologia..."
-        className="h-11 border-[#A5D7E8] bg-white pl-10 text-[#003A6C]"
+        className="h-11 border-gray-300 bg-white pl-10 text-gray-900 focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
       />
     </div>
   );
@@ -146,26 +147,43 @@ export function ProjectPagination({
   if (totalItems === 0 || totalPages <= 1) return null;
 
   return (
-    <div className="flex flex-col gap-3 px-1 text-sm text-[#4B778D] sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 px-2 text-sm text-gray-700 sm:flex-row sm:items-center sm:justify-between">
       <span>
         Mostrando {startIndex + 1} a {endIndex} de {totalItems} resultados
       </span>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           type="button"
           variant="outline"
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
-          className="border-[#A5D7E8] bg-white text-[#003A6C]"
+          className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
         >
           Anterior
         </Button>
+        <div className="flex flex-wrap gap-1">
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+            <Button
+              key={page}
+              type="button"
+              variant={currentPage === page ? "default" : "outline"}
+              onClick={() => onPageChange(page)}
+              className={
+                currentPage === page
+                  ? "bg-[#003A6C] text-white hover:bg-[#4982AD]"
+                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+              }
+            >
+              {page}
+            </Button>
+          ))}
+        </div>
         <Button
           type="button"
           variant="outline"
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(currentPage + 1)}
-          className="border-[#A5D7E8] bg-white text-[#003A6C]"
+          className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
         >
           Siguiente
         </Button>
@@ -182,6 +200,7 @@ export function ProjectTable({
   onToggleSelect,
   onRowClick,
   onEdit,
+  variant = "default",
 }: {
   projects: ProjectItem[];
   emptyMessage: string;
@@ -190,20 +209,42 @@ export function ProjectTable({
   onToggleSelect?: (id: number, selected: boolean) => void;
   onRowClick?: (project: ProjectItem) => void;
   onEdit?: (project: ProjectItem) => void;
+  variant?: "default" | "edit";
 }) {
+  const isEditVariant = variant === "edit";
+
   if (projects.length === 0) {
     return (
-      <div className="rounded-2xl border-2 border-dashed border-[#6dacbf] bg-white px-6 py-14 text-center text-[#4B778D]">
-        <FolderGit2 className="mx-auto mb-3 size-10 text-[#4982AD]" />
-        {emptyMessage}
+      <div
+        className={
+          isEditVariant
+            ? "rounded-xl border border-gray-200 bg-white px-6 py-16 text-center shadow-sm"
+            : "rounded-2xl border-2 border-dashed border-[#6dacbf] bg-white px-6 py-14 text-center text-[#4B778D]"
+        }
+      >
+        {isEditVariant ? (
+          <>
+            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gray-100">
+              <FolderGit2 className="size-8 text-gray-400" />
+            </div>
+            <h3 className="mb-1 text-sm font-medium text-gray-900">No hay proyectos</h3>
+            <p className="text-sm text-gray-500">{emptyMessage}</p>
+          </>
+        ) : (
+          <>
+            <FolderGit2 className="mx-auto mb-3 size-10 text-[#4982AD]" />
+            {emptyMessage}
+          </>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-[#A5D7E8] bg-white shadow-sm">
+    <div className={isEditVariant ? "overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm" : "overflow-x-auto rounded-2xl border border-[#A5D7E8] bg-white shadow-sm"}>
+      <div className="overflow-x-auto">
       <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-        <thead className="bg-[#EEF5F9] text-xs uppercase text-[#003A6C]">
+        <thead className={isEditVariant ? "border-b border-gray-200 bg-gray-50/50 text-xs uppercase tracking-wide text-gray-700" : "bg-[#EEF5F9] text-xs uppercase text-[#003A6C]"}>
           <tr>
             {selectable ? <th className="w-12 px-4 py-3">Sel.</th> : null}
             <th className="px-4 py-3">Nombre</th>
@@ -219,7 +260,11 @@ export function ProjectTable({
             <tr
               key={project.id}
               onClick={() => onRowClick?.(project)}
-              className={`border-t border-[#D7E6F2] transition ${onRowClick ? "cursor-pointer hover:bg-[#F7FBFD]" : ""}`}
+              className={
+                isEditVariant
+                  ? `border-b border-gray-100 transition last:border-0 ${onRowClick ? "cursor-pointer hover:bg-gray-50" : ""}`
+                  : `border-t border-[#D7E6F2] transition ${onRowClick ? "cursor-pointer hover:bg-[#F7FBFD]" : ""}`
+              }
             >
               {selectable ? (
                 <td className="px-4 py-3" onClick={(event) => event.stopPropagation()}>
@@ -227,32 +272,32 @@ export function ProjectTable({
                     type="checkbox"
                     checked={selectedIds?.has(project.id) ?? false}
                     onChange={(event) => onToggleSelect?.(project.id, event.target.checked)}
-                    className="size-4 rounded border-[#A5D7E8]"
+                    className={isEditVariant ? "size-4 rounded border-gray-300" : "size-4 rounded border-[#A5D7E8]"}
                     aria-label={`Seleccionar ${project.nombre}`}
                   />
                 </td>
               ) : null}
-              <td className="px-4 py-3 font-semibold text-[#003A6C]">{project.nombre}</td>
-              <td className="px-4 py-3 text-[#355468]">{project.rol}</td>
+              <td className={isEditVariant ? "px-4 py-3 font-medium text-gray-900" : "px-4 py-3 font-semibold text-[#003A6C]"}>{project.nombre}</td>
+              <td className={isEditVariant ? "px-4 py-3 text-gray-600" : "px-4 py-3 text-[#355468]"}>{project.rol}</td>
               <td className="px-4 py-3">
                 <div className="flex flex-wrap gap-1.5">
                   {project.tecnologias.slice(0, 3).map((technology) => (
-                    <Badge key={technology.id} variant="secondary" className="bg-[#D9EAF4] text-[#003A6C]">
+                    <Badge key={technology.id} variant="secondary" className={isEditVariant ? "bg-gray-100 text-gray-700 hover:bg-gray-100" : "bg-[#D9EAF4] text-[#003A6C]"}>
                       {technology.name}
                     </Badge>
                   ))}
                   {project.tecnologias.length > 3 ? (
-                    <Badge variant="secondary" className="bg-[#D9EAF4] text-[#003A6C]">
+                    <Badge variant="secondary" className={isEditVariant ? "bg-gray-100 text-gray-700 hover:bg-gray-100" : "bg-[#D9EAF4] text-[#003A6C]"}>
                       +{project.tecnologias.length - 3}
                     </Badge>
                   ) : null}
                 </div>
               </td>
-              <td className="px-4 py-3 text-[#4B778D]">
-                {formatProjectDate(project.fechaInicio)} - {project.is_current ? "Actualidad" : formatProjectDate(project.fechaFin)}
+              <td className={isEditVariant ? "px-4 py-3 text-gray-600" : "px-4 py-3 text-[#4B778D]"}>
+                {formatProjectDate(project.fechaInicio)} - {project.is_current ? (isEditVariant ? "Presente" : "Actualidad") : formatProjectDate(project.fechaFin)}
               </td>
               <td className="px-4 py-3">
-                <Badge className={project.is_current ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"}>
+                <Badge className={isEditVariant ? (project.is_current ? "bg-blue-100 text-blue-700 hover:bg-blue-100" : "bg-gray-100 text-gray-700 hover:bg-gray-100") : (project.is_current ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700")}>
                   {project.is_current ? "En curso" : "Finalizado"}
                 </Badge>
               </td>
@@ -262,7 +307,7 @@ export function ProjectTable({
                     type="button"
                     variant="outline"
                     onClick={() => onEdit(project)}
-                    className="h-9 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
+                    className={isEditVariant ? "h-9 border-gray-300 bg-white text-gray-700 hover:bg-gray-50" : "h-9 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"}
                   >
                     <Edit3 className="size-4" />
                     Editar
@@ -273,6 +318,7 @@ export function ProjectTable({
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -290,10 +336,10 @@ export function ProjectFormModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-3 backdrop-blur-sm sm:items-center sm:px-4">
-      <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-3xl border border-[#6DACBF] bg-[#C2DBED] shadow-2xl sm:rounded-3xl">
-        <div className="flex items-start justify-between gap-4 border-b border-[#D7E6F2] px-5 py-5 sm:px-6">
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl border border-[#6DACBF] bg-[#C2DBED] shadow-2xl sm:rounded-2xl">
+        <div className="flex items-start justify-between gap-4 border-b border-[#D7E6F2] px-5 pb-4 pt-5 sm:px-6">
           <div>
-            <h2 className="text-2xl font-bold text-[#003A6C]">{title}</h2>
+            <h2 className="text-xl font-semibold text-[#003A6C]">{title}</h2>
             <p className="mt-1 text-sm text-[#4B778D]">{description}</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-full p-1 text-[#003A6C] transition hover:bg-[#EEF5F9]">
@@ -310,43 +356,69 @@ export function ProjectDetailsModal({ project, onClose }: { project: ProjectItem
   if (!project) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 backdrop-blur-sm sm:items-center">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-3 backdrop-blur-sm sm:items-center sm:px-4">
+      <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-[#6DACBF] bg-white p-6 shadow-2xl sm:rounded-3xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-[#003A6C]">{project.nombre}</h2>
-            <p className="mt-1 text-sm text-[#4B778D]">Informacion detallada del proyecto</p>
+            <h2 className="text-2xl font-bold text-[#003A6C]">Detalle de proyecto</h2>
+            <p className="mt-1 text-sm text-[#4B778D]">Informacion completa del proyecto seleccionado.</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-full p-1 text-[#003A6C] hover:bg-[#EEF5F9]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1 text-[#003A6C] transition hover:bg-[#EEF5F9]"
+            aria-label="Cerrar detalle de proyecto"
+          >
             <X className="size-5" />
           </button>
         </div>
 
-        <div className="space-y-5 text-sm text-[#355468]">
-          {project.image ? (
-            <img
-              src={project.image}
-              alt={project.nombre}
-              className="h-36 w-full max-w-md rounded-xl border border-[#D7E6F2] bg-white object-cover shadow-sm"
-            />
-          ) : null}
-          <Detail label="Rol en el proyecto">{project.rol}</Detail>
-          <Detail label="Descripcion">{project.descripcion}</Detail>
-          <Detail label="Tecnologias">
-            <div className="flex flex-wrap gap-2">
-              {project.tecnologias.map((technology) => (
-                <Badge key={technology.id} className="bg-[#D9EAF4] text-[#003A6C]">
-                  {technology.name}
-                </Badge>
-              ))}
+        <div className="space-y-6">
+          <div className="flex items-start gap-4">
+            {project.image ? (
+            <div className="size-16 shrink-0 overflow-hidden rounded-lg border border-[#D7E6F2] bg-white p-1 shadow-sm">
+              <img
+                src={project.image}
+                alt={project.nombre}
+                className="h-full w-full rounded-md object-cover"
+              />
             </div>
-          </Detail>
-          <Detail label="Periodo">
-            <span className="inline-flex items-center gap-2">
-              <Calendar className="size-4 text-[#4982AD]" />
-              {formatProjectDate(project.fechaInicio)} - {project.is_current ? "Actualidad" : formatProjectDate(project.fechaFin)}
-            </span>
-          </Detail>
+            ) : (
+              <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-[#D9EAF4] text-[#003A6C]">
+                <FolderGit2 className="size-8" />
+              </div>
+            )}
+            <div>
+              <p className="text-xl font-semibold text-[#003A6C]">{project.nombre}</p>
+              <p className="text-[#4B778D]">{project.rol || "Rol no especificado"}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Badge className={project.is_current ? "bg-[#D9EAF4] text-[#003A6C]" : "bg-slate-100 text-slate-700"}>
+                  {project.is_current ? "En curso" : "Finalizado"}
+                </Badge>
+                {project.tecnologias.slice(0, 3).map((technology) => (
+                  <Badge key={technology.id} className="bg-[#EEF5F9] text-[#003A6C]">
+                    {technology.name}
+                  </Badge>
+                ))}
+                {project.tecnologias.length > 3 ? (
+                  <Badge className="bg-[#EEF5F9] text-[#003A6C]">+{project.tecnologias.length - 3}</Badge>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <DetailItem label="Inicio" value={formatProjectDate(project.fechaInicio)} />
+            <DetailItem label="Fin" value={project.is_current ? "Actualidad" : formatProjectDate(project.fechaFin)} />
+            <DetailItem label="Rol" value={project.rol || "No especificado"} />
+            <DetailItem
+              label="Tecnologias"
+              value={project.tecnologias.length ? project.tecnologias.map((technology) => technology.name).join(", ") : "No especificadas"}
+            />
+          </div>
+
+          <DetailItem label="Descripcion" value={project.descripcion || "No especificada"} />
+
           {(project.github || project.demo) ? (
             <Detail label="Enlaces">
               <div className="flex flex-wrap gap-3">
@@ -367,6 +439,15 @@ export function ProjectDetailsModal({ project, onClose }: { project: ProjectItem
           ) : null}
         </div>
       </div>
+    </div>
+  );
+}
+
+function DetailItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase text-[#6B7E8E]">{label}</p>
+      <p className="mt-1 text-sm leading-6 text-[#003A6C]">{value}</p>
     </div>
   );
 }
@@ -418,47 +499,109 @@ export function ProjectForm({
   readOnlyFields?: boolean;
 }) {
   const isModalTone = tone === "modal";
+  const [technologySearch, setTechnologySearch] = useState("");
+  const [showTechnologyDropdown, setShowTechnologyDropdown] = useState(false);
+  const [activeTechnologyIndex, setActiveTechnologyIndex] = useState(0);
   const fieldInputClassName = isModalTone ? modalInputClassName : inputClassName;
   const disabledInputClassName = isModalTone
-    ? "border-gray-200 bg-gray-100 text-gray-500"
+    ? "cursor-not-allowed border-[#D7E6F2] bg-[#EEF5F9] text-[#7F97AB] opacity-100"
     : "border-[#D7E6F2] bg-[#EEF5F9] text-[#6B7E8E]";
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+  const filteredTechnologies = technologies.filter((technology) => {
+    const search = technologySearch.trim().toLowerCase();
+    return (
+      search &&
+      technology.name.toLowerCase().includes(search) &&
+      !selectedTechs.some((selected) => selected.id === technology.id)
+    );
+  });
+
+  function handleTechnologySelect(technologyId: number) {
+    onTechnologyAdd(String(technologyId));
+    setTechnologySearch("");
+    setShowTechnologyDropdown(false);
+    setActiveTechnologyIndex(0);
+  }
+
+  function handleTechnologyKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (!showTechnologyDropdown && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      setShowTechnologyDropdown(true);
+    }
+
+    if (!filteredTechnologies.length) {
+      if (event.key === "Escape") {
+        setShowTechnologyDropdown(false);
+      }
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveTechnologyIndex((current) => (current + 1) % filteredTechnologies.length);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveTechnologyIndex((current) => (current - 1 + filteredTechnologies.length) % filteredTechnologies.length);
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleTechnologySelect(filteredTechnologies[activeTechnologyIndex]?.id ?? filteredTechnologies[0].id);
+      return;
+    }
+
+    if (event.key === "Escape") {
+      setShowTechnologyDropdown(false);
+    }
+  }
 
   return (
     <form
       onSubmit={onSubmit}
       className={
         isModalTone
-          ? "space-y-6 bg-white"
+          ? "space-y-6 rounded-2xl bg-[#C2DBED]"
           : "space-y-5 rounded-2xl border border-[#A5D7E8] bg-white p-5 shadow-sm sm:p-6"
       }
     >
       <FeedbackMessage message={errors.form ?? ""} type="error" />
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className={isModalTone ? "space-y-6" : "grid gap-4 md:grid-cols-2"}>
         <Field label="Nombre del proyecto" error={errors.nombre} required tone={tone}>
           <Input
             value={formData.nombre}
             onChange={(event) => onFieldChange("nombre", event.target.value)}
             disabled={readOnlyFields}
             className={readOnlyFields ? disabledInputClassName : fieldInputClassName(Boolean(errors.nombre))}
-            maxLength={255}
+            maxLength={MAX_PROJECT_NAME_LENGTH}
             aria-invalid={Boolean(errors.nombre)}
           />
         </Field>
         <Field label="Tu rol en el proyecto" error={errors.rol} required tone={tone}>
-          <select
-            value={formData.rol}
-            onChange={(event) => onFieldChange("rol", event.target.value)}
-            disabled={readOnlyFields}
-            className={readOnlyFields ? `h-9 w-full rounded-md border px-2.5 text-sm outline-none ${disabledInputClassName}` : selectClassName(Boolean(errors.rol), tone)}
-            aria-invalid={Boolean(errors.rol)}
-          >
-            <option value="">Selecciona un rol</option>
-            {roleOptions.map((role) => (
-              <option key={role} value={role}>
-                {role}
-              </option>
-            ))}
-          </select>
+          {readOnlyFields ? (
+            <Input
+              value={formData.rol}
+              disabled
+              className={disabledInputClassName}
+              aria-invalid={Boolean(errors.rol)}
+            />
+          ) : (
+            <select
+              value={formData.rol}
+              onChange={(event) => onFieldChange("rol", event.target.value)}
+              className={selectClassName(Boolean(errors.rol), tone)}
+              aria-invalid={Boolean(errors.rol)}
+            >
+              <option value="">Selecciona un rol</option>
+              {roleOptions.map((role) => (
+                <option key={role} value={role}>
+                  {role}
+                </option>
+              ))}
+            </select>
+          )}
         </Field>
       </div>
 
@@ -473,45 +616,82 @@ export function ProjectForm({
       </Field>
 
       <Field label="Tecnologias" error={errors.tecnologias} required tone={tone}>
-        <select
-          value=""
-          onChange={(event) => onTechnologyAdd(event.target.value)}
-          disabled={readOnlyFields}
-          className={selectClassName(Boolean(errors.tecnologias), tone)}
-          aria-invalid={Boolean(errors.tecnologias)}
-        >
-          <option value="">Selecciona tecnologias para agregar</option>
-          {technologies
-            .filter((technology) => !selectedTechs.some((selected) => selected.id === technology.id))
-            .map((technology) => (
-              <option key={technology.id} value={technology.id}>
-                {technology.name}
-              </option>
-            ))}
-        </select>
-        {selectedTechs.length > 0 ? (
-          <div className={`mt-3 flex flex-wrap gap-2 rounded-xl border p-3 ${isModalTone ? "border-gray-200 bg-gray-50" : "border-[#D7E6F2] bg-[#EEF5F9]"}`}>
-            {selectedTechs.map((technology) => (
-              <Badge key={technology.id} className={`gap-1 ${isModalTone ? "bg-gray-100 text-gray-700 hover:bg-gray-100" : "bg-[#D9EAF4] text-[#003A6C]"}`}>
-                {technology.name}
-                {!readOnlyFields ? (
-                  <button type="button" onClick={() => onTechnologyRemove(technology.id)} className={`rounded-full p-0.5 ${isModalTone ? "hover:bg-gray-200" : "hover:bg-[#A5D7E8]"}`}>
-                    <X className="size-3" />
-                  </button>
-                ) : null}
-              </Badge>
-            ))}
-          </div>
-        ) : null}
+        {readOnlyFields ? (
+          <Input
+            value={selectedTechs.length > 0 ? selectedTechs.map((technology) => technology.name).join(", ") : "Sin tecnologias"}
+            disabled
+            className={disabledInputClassName}
+            aria-invalid={Boolean(errors.tecnologias)}
+          />
+        ) : (
+          <>
+            <div className="relative">
+              <Input
+                value={technologySearch}
+                onChange={(event) => {
+                  setTechnologySearch(event.target.value);
+                  setActiveTechnologyIndex(0);
+                  setShowTechnologyDropdown(true);
+                }}
+                onFocus={() => setShowTechnologyDropdown(true)}
+                onKeyDown={handleTechnologyKeyDown}
+                onBlur={() => {
+                  window.setTimeout(() => setShowTechnologyDropdown(false), 120);
+                }}
+                disabled={selectedTechs.length >= 10}
+                placeholder={selectedTechs.length >= 10 ? "Limite alcanzado (max 10)" : "Buscar tecnologia..."}
+                className={fieldInputClassName(Boolean(errors.tecnologias))}
+                aria-invalid={Boolean(errors.tecnologias)}
+              />
+              {showTechnologyDropdown && technologySearch.trim() ? (
+                <div className="absolute z-20 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl">
+                  {filteredTechnologies.length ? (
+                    filteredTechnologies.map((technology) => (
+                      <button
+                        key={technology.id}
+                        type="button"
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          handleTechnologySelect(technology.id);
+                        }}
+                        onMouseEnter={() => setActiveTechnologyIndex(filteredTechnologies.findIndex((item) => item.id === technology.id))}
+                        className={`block w-full px-3 py-2 text-left text-sm text-[#003A6C] transition-colors ${
+                          filteredTechnologies[activeTechnologyIndex]?.id === technology.id ? "bg-blue-50" : "hover:bg-blue-50"
+                        }`}
+                      >
+                        {technology.name}
+                      </button>
+                    ))
+                  ) : (
+                    <p className="px-3 py-2 text-xs text-gray-400">No se encontro la tecnologia</p>
+                  )}
+                </div>
+              ) : null}
+            </div>
+            {selectedTechs.length > 0 ? (
+              <div className={`mt-3 flex flex-wrap gap-2 rounded-xl border p-3 ${isModalTone ? "border-gray-200 bg-gray-50" : "border-[#D7E6F2] bg-[#EEF5F9]"}`}>
+                {selectedTechs.map((technology) => (
+                  <Badge key={technology.id} className={`gap-1 ${isModalTone ? "bg-gray-100 text-gray-700 hover:bg-gray-100" : "bg-[#D9EAF4] text-[#003A6C]"}`}>
+                    {technology.name}
+                    <button type="button" onClick={() => onTechnologyRemove(technology.id)} className={`rounded-full p-0.5 ${isModalTone ? "hover:bg-gray-200" : "hover:bg-[#A5D7E8]"}`}>
+                      <X className="size-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            ) : null}
+          </>
+        )}
       </Field>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className={isModalTone ? "grid gap-6 md:grid-cols-2" : "grid gap-4 md:grid-cols-3"}>
         <Field label="Fecha de inicio" error={errors.fechaInicio} required tone={tone}>
           <Input
             type="date"
             value={formData.fechaInicio}
             onChange={(event) => onFieldChange("fechaInicio", event.target.value)}
             disabled={readOnlyFields}
+            max={today}
             className={readOnlyFields ? disabledInputClassName : fieldInputClassName(Boolean(errors.fechaInicio))}
             aria-invalid={Boolean(errors.fechaInicio)}
           />
@@ -520,20 +700,22 @@ export function ProjectForm({
           <Input
             type="date"
             value={formData.fechaFin}
-            disabled={formData.is_current}
+            disabled={readOnlyFields || formData.is_current}
+            max={today}
             onChange={(event) => onFieldChange("fechaFin", event.target.value)}
-            className={fieldInputClassName(Boolean(errors.fechaFin))}
+            className={readOnlyFields || formData.is_current ? disabledInputClassName : fieldInputClassName(Boolean(errors.fechaFin))}
             aria-invalid={Boolean(errors.fechaFin)}
           />
         </Field>
-        <label className={`flex items-center gap-2 self-end pb-2 text-sm font-medium ${isModalTone ? "text-gray-700" : "text-[#003A6C]"}`}>
-          <input type="checkbox" checked={formData.is_current} onChange={(event) => onFieldChange("is_current", event.target.checked)} className={`size-4 rounded ${isModalTone ? "border-gray-300" : "border-[#A5D7E8]"}`} />
-          En curso
-        </label>
       </div>
 
+      <label className={`flex items-center gap-2 text-sm font-medium ${isModalTone ? "text-gray-700" : "text-[#003A6C]"}`}>
+        <input type="checkbox" checked={formData.is_current} onChange={(event) => onFieldChange("is_current", event.target.checked)} className={`size-4 rounded ${isModalTone ? "border-gray-300 accent-[#003A6C]" : "border-[#A5D7E8]"}`} />
+        Proyecto en curso
+      </label>
+
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="URL del repositorio" error={errors.github} tone={tone}>
+        <Field label="URL de GitHub" error={errors.github} tone={tone}>
           <Input
             type="url"
             value={formData.github}
@@ -543,7 +725,7 @@ export function ProjectForm({
             aria-invalid={Boolean(errors.github)}
           />
         </Field>
-        <Field label="URL de la demo" error={errors.demo} tone={tone}>
+        <Field label="URL de demo" error={errors.demo} tone={tone}>
           <Input
             type="url"
             value={formData.demo}
@@ -555,7 +737,7 @@ export function ProjectForm({
         </Field>
       </div>
 
-      <Field label="Imagen del proyecto" error={errors.image} required={!readOnlyFields} tone={tone}>
+      <Field label="Imagen del proyecto" error={errors.image} tone={tone}>
         <div className={`rounded-xl border p-3 ${errors.image ? "border-red-500 bg-red-50" : isModalTone ? "border-gray-200 bg-gray-50" : "border-[#D7E6F2] bg-[#EEF5F9]"}`}>
           {preview ? <img src={preview} alt="Vista previa del proyecto" className="mb-3 h-28 w-full max-w-xs rounded-xl object-cover shadow-sm" /> : null}
           <div className="flex flex-wrap items-center gap-3">
