@@ -96,6 +96,7 @@ type ExperienceDto = {
   image?: string | null
   certificate?: string | null
   certificate_url?: string | null
+  certification_url?: string | null
   certificate_path?: string | null
   document?: string | null
   current?: boolean | number | string | null
@@ -376,7 +377,7 @@ function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: Exper
     endDate,
     current: explicitCurrent ?? !endDate,
     image: toAbsoluteAssetUrl(dto.logo_url ?? dto.logo_path ?? dto.logo ?? dto.image_url ?? dto.image ?? dto.photograph),
-    certificate: toAbsoluteAssetUrl(dto.certificate_url ?? dto.certificate_path ?? dto.certificate ?? dto.document),
+    certificate: toAbsoluteAssetUrl(dto.certification_url ?? dto.certificate_url ?? dto.certificate_path ?? dto.certificate ?? dto.document),
   }
 }
 
@@ -418,49 +419,10 @@ function buildExperienceFormData(payload: ExperiencePayload, options?: { mode?: 
   return formData
 }
 
-function buildExperienceUpdateFormData(payload: ExperiencePayload) {
-  const formData = new FormData()
-
-  formData.append("_method", "PUT")
-  formData.append("company_name", payload.company.trim())
-  formData.append("role", payload.position.trim())
-  formData.append("start_date", payload.startDate.trim())
-  formData.append("company_email", payload.email.trim())
-  formData.append("description", payload.description.trim())
-  formData.append("ubication", payload.location.trim())
-  formData.append("is_current", payload.current ? "1" : "0")
-  formData.append("current", payload.current ? "1" : "0")
-  formData.append("end_date", payload.current ? "" : payload.endDate.trim())
-
-  if (payload.logoFile) {
-    formData.append("logo", payload.logoFile)
-  }
-
-  if (payload.certificateFile) {
-    formData.append("certificate", payload.certificateFile)
-  }
-
-  if (payload.removeLogo) {
-    formData.append("remove_logo", "1")
-  }
-
-  if (payload.removeCertificate) {
-    formData.append("remove_certificate", "1")
-  }
-
-  return formData
-}
-
 function buildExperienceUpdateBody(payload: ExperiencePayload) {
   return {
-    company_name: payload.company.trim(),
-    role: payload.position.trim(),
-    start_date: payload.startDate.trim(),
-    company_email: payload.email.trim(),
     description: payload.description.trim(),
     ubication: payload.location.trim(),
-    is_current: payload.current,
-    current: payload.current,
     end_date: payload.current ? null : payload.endDate.trim() || null,
   }
 }
@@ -501,31 +463,16 @@ export async function createExperience(payload: ExperiencePayload): Promise<Expe
 
 export async function updateExperience(id: string, payload: ExperiencePayload): Promise<ExperienceItem> {
   try {
-    const response = await api.post(`${EXPERIENCES_ENDPOINT}/${id}`, buildExperienceUpdateFormData(payload), {
+    const response = await api.put(`${EXPERIENCES_ENDPOINT}/${id}`, buildExperienceUpdateBody(payload), {
       timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
       headers: {
         Accept: "application/json",
+        "Content-Type": "application/json",
       },
     })
 
     return normalizeExperience(unwrapExperience(response.data), 0, payload.type)
   } catch (error) {
-    if (axios.isAxiosError(error) && [404, 405, 415, 422].includes(error.response?.status ?? 0)) {
-      try {
-        const response = await api.put(`${EXPERIENCES_ENDPOINT}/${id}`, buildExperienceUpdateBody(payload), {
-          timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        })
-
-        return normalizeExperience(unwrapExperience(response.data), 0, payload.type)
-      } catch (fallbackError) {
-        throw formatError(fallbackError)
-      }
-    }
-
     throw formatError(error)
   }
 }

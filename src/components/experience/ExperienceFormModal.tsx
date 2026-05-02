@@ -130,6 +130,9 @@ export function ExperienceFormModal({
   const companyLabel = formData.type === "laboral" ? "Empresa" : "Institucion"
   const positionLabel = formData.type === "laboral" ? "Cargo" : "Titulo"
   const isLaboralExperience = formData.type === "laboral"
+  const isLaboralUpdate = isEditing && isLaboralExperience
+  const isAcademicUpdate = isEditing && !isLaboralExperience
+  const isLimitedUpdate = isLaboralUpdate || isAcademicUpdate
   const isCurrentActive = formData.current
   const positionOptions = isLaboralExperience ? POSITION_OPTIONS : DEGREE_OPTIONS
   const resolvedPositionOptions =
@@ -199,7 +202,7 @@ export function ExperienceFormModal({
               id="experience-company"
               maxLength={100}
               value={formData.company}
-              disabled={isSaving}
+              disabled={isSaving || isLimitedUpdate}
               onBlur={() => onBlur("company")}
               onChange={(event) => onFieldChange("company", event.target.value)}
               className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -220,7 +223,7 @@ export function ExperienceFormModal({
                 type="email"
                 maxLength={60}
                 value={formData.email}
-                disabled={isSaving}
+                disabled={isSaving || isLaboralUpdate}
                 onBlur={() => onBlur("email")}
                 onChange={(event) => onFieldChange("email", event.target.value)}
                 placeholder="Ej: contacto@empresa.com"
@@ -262,7 +265,7 @@ export function ExperienceFormModal({
             <select
               id="experience-position"
               value={formData.position}
-              disabled={isSaving}
+              disabled={isSaving || isLimitedUpdate}
               onBlur={() => onBlur("position")}
               onChange={(event) => onFieldChange("position", event.target.value)}
               className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8] disabled:opacity-50"
@@ -288,7 +291,7 @@ export function ExperienceFormModal({
               <select
                 id="experience-field"
                 value={formData.fieldOfStudy}
-                disabled={isSaving}
+                disabled={isSaving || isAcademicUpdate}
                 onBlur={() => onBlur("fieldOfStudy")}
                 onChange={(event) => onFieldChange("fieldOfStudy", event.target.value)}
                 className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8] disabled:opacity-50"
@@ -338,7 +341,7 @@ export function ExperienceFormModal({
                 id="experience-start-date"
                 type="date"
                 value={formData.startDate}
-                disabled={isSaving}
+                disabled={isSaving || isLimitedUpdate}
                 onBlur={() => onBlur("startDate")}
                 onChange={(event) => onFieldChange("startDate", event.target.value)}
                 className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
@@ -394,7 +397,7 @@ export function ExperienceFormModal({
                 ref={fileInputRef}
                 type="file"
                 accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-                disabled={isSaving}
+                disabled={isSaving || isLaboralUpdate}
                 onChange={onImageChange}
                 className="hidden"
               />
@@ -404,7 +407,7 @@ export function ExperienceFormModal({
                   id="boton-subir-logo"
                   type="button"
                   variant="outline"
-                  disabled={isSaving}
+                  disabled={isSaving || isLaboralUpdate}
                   onClick={() => fileInputRef.current?.click()}
                   className="h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
                 >
@@ -417,7 +420,7 @@ export function ExperienceFormModal({
                     id="boton-eliminar-logo"
                     type="button"
                     variant="outline"
-                    disabled={isSaving}
+                    disabled={isSaving || isLaboralUpdate}
                     onClick={onRemoveImage}
                     className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
                   >
@@ -450,7 +453,7 @@ export function ExperienceFormModal({
                 ref={certificateInputRef}
                 type="file"
                 accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                disabled={isSaving}
+                disabled={isSaving || isAcademicUpdate}
                 onChange={onCertificateChange}
                 className="hidden"
               />
@@ -460,7 +463,7 @@ export function ExperienceFormModal({
                   id="boton-subir-certificado"
                   type="button"
                   variant="outline"
-                  disabled={isSaving}
+                  disabled={isSaving || isAcademicUpdate}
                   onClick={() => certificateInputRef.current?.click()}
                   className="h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
                 >
@@ -473,7 +476,7 @@ export function ExperienceFormModal({
                     id="boton-eliminar-certificado"
                     type="button"
                     variant="outline"
-                    disabled={isSaving}
+                    disabled={isSaving || isAcademicUpdate}
                     onClick={onRemoveCertificate}
                     className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
                   >
