@@ -143,6 +143,8 @@ export interface Portfolio {
   skills: any[];
   experiences: any[];
   socialNetworks: any[];
+  isPublished?: boolean;
+  template?: number;
 }
 
 // =========================
