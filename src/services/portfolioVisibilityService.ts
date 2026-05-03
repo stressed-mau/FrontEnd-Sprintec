@@ -26,11 +26,6 @@ export interface VisibilityItem {
 }
 
 export type PortfolioVisibilityData = Record<SectionKey, VisibilityItem[]>;
-<<<<<<< HEAD
-
-const USER_INFORMATION_ENDPOINT = '/visibility';
-=======
->>>>>>> mel-2doSprint
 
 const USER_INFORMATION_ENDPOINT = '/visibility';
 
@@ -100,26 +95,13 @@ const normalizeCertificates = (data: any) =>
 const normalizeNetworks = (data: any) =>
   (data?.social_networks || []).map((item: any) => ({
     id: item.id,
-    label: item.name || item.platform,
+    label: item.name || item.platform || 'Red Social',
     sublabel: item.url || '',
     checked: asBoolean(item.is_public),
     sourceTable: 'social_networks',
   }));
 
-<<<<<<< HEAD
-const normalizeNetworks = (data: any) => (data?.social_networks || []).map((item: any) => ({
-  id: item.id,
-  label: item.name || item.platform || 'Red Social',
-  sublabel: item.url || '',
-  checked: asBoolean(item.is_public),
-  sourceTable: 'social_networks',
-}));
-
-// --- FUNCIONES EXPORTADAS ---
-
-=======
 // ---------------- API ----------------
->>>>>>> mel-2doSprint
 export async function getPortfolioVisibilityData(): Promise<PortfolioVisibilityData> {
   try {
     const res = await api.get(USER_INFORMATION_ENDPOINT);

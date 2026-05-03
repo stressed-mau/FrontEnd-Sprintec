@@ -241,16 +241,10 @@ export function ProjectTable({
   }
 
   return (
-<<<<<<< HEAD
     <div className={isEditVariant ? "overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm" : "overflow-x-auto rounded-2xl border border-[#A5D7E8] bg-white shadow-sm"}>
       <div className="overflow-x-auto">
-      <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-        <thead className={isEditVariant ? "border-b border-gray-200 bg-gray-50/50 text-xs uppercase tracking-wide text-gray-700" : "bg-[#EEF5F9] text-xs uppercase text-[#003A6C]"}>
-=======
-    <div className="overflow-x-auto rounded-2xl border border-[#A5D7E8] bg-white shadow-sm">
-      <table className="w-full min-w-190 border-collapse text-left text-sm">
-        <thead className="bg-[#EEF5F9] text-xs uppercase text-[#003A6C]">
->>>>>>> mel-2doSprint
+        <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+          <thead className={isEditVariant ? "border-b border-gray-200 bg-gray-50/50 text-xs uppercase tracking-wide text-gray-700" : "bg-[#EEF5F9] text-xs uppercase text-[#003A6C]"}>
           <tr>
             {selectable ? <th className="w-12 px-4 py-3">Sel.</th> : null}
             <th className="px-4 py-3">Nombre</th>
