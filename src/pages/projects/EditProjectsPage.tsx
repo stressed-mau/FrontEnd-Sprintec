@@ -1,5 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 
+import ConfirmActionModal from "@/components/ConfirmActionModal";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import { useProjectsManager, type ProjectItem } from "@/hooks/useProjectsManager";
 import {
   FeedbackMessage,
@@ -18,6 +20,8 @@ export default function EditProjectsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isEditing, setIsEditing] = useState(false);
+  const [showConfirmEdit, setShowConfirmEdit] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const filteredProjects = useMemo(() => filterProjects(manager.projects, searchTerm), [manager.projects, searchTerm]);
   const pagination = paginateProjects(filteredProjects, currentPage);
@@ -32,13 +36,24 @@ export default function EditProjectsPage() {
     setIsEditing(true);
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    const saved = await manager.submitProject(event);
-    if (saved) setIsEditing(false);
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (manager.validateProjectForm()) {
+      setShowConfirmEdit(true);
+    }
+  }
+
+  async function handleConfirmEdit() {
+    const saved = await manager.saveProject();
+    setShowConfirmEdit(false);
+    if (saved) {
+      setIsEditing(false);
+      setShowSuccessModal(true);
+    }
   }
 
   return (
-    <ProjectPageShell title="Editar proyectos" description="Haz clic en una fila para editar.">
+    <ProjectPageShell title="Editar Proyectos" description="Haz clic en una fila para editar">
       <FeedbackMessage message={manager.pageError} type="error" />
       <FeedbackMessage message={manager.successMessage} type="success" />
 
@@ -53,6 +68,7 @@ export default function EditProjectsPage() {
           projects={pagination.items}
           emptyMessage={searchTerm ? "No se encontraron proyectos con ese criterio." : "No hay proyectos para editar."}
           onRowClick={handleProjectSelect}
+          variant="edit"
         />
       )}
 
@@ -67,8 +83,8 @@ export default function EditProjectsPage() {
 
       {isEditing && manager.editingProject ? (
         <ProjectFormModal
-          title="Editar proyecto"
-          description={`Actualiza la informacion de ${manager.editingProject.nombre}.`}
+          title="Editar Proyecto"
+          description="Actualiza la informacion del proyecto"
           onClose={() => {
             manager.resetForm();
             setIsEditing(false);
@@ -93,10 +109,28 @@ export default function EditProjectsPage() {
             onTechnologyRemove={manager.removeTechnology}
             onImageChange={manager.handleImageChange}
             onImageRemove={manager.removeImage}
+            tone="modal"
             readOnlyFields
           />
         </ProjectFormModal>
       ) : null}
+
+      <ConfirmActionModal
+        isOpen={showConfirmEdit}
+        title="Confirmar cambios"
+        message="¿Está seguro de que desea guardar los cambios realizados?"
+        confirmText={manager.isSaving ? "Guardando..." : "Aceptar"}
+        cancelText="Cancelar"
+        onConfirm={() => void handleConfirmEdit()}
+        onCancel={() => setShowConfirmEdit(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        title="Éxito"
+        message={manager.successMessage || "Proyecto actualizado correctamente."}
+        onClose={() => setShowSuccessModal(false)}
+      />
     </ProjectPageShell>
   );
 }

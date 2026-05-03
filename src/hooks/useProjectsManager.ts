@@ -54,6 +54,7 @@ const FIXED_ROLES = [
 
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"];
+const MAX_PROJECT_NAME_LENGTH = 60;
 
 function validateUrl(value: string) {
   return /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(value);
@@ -63,21 +64,24 @@ function validateForm(
   form: ProjectFormValues,
   selectedTechs: ProjectTechnology[],
   imageFile: File | null,
-  isEditing: boolean,
 ) {
   const errors: ProjectFormErrors = {};
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  if (!form.nombre.trim()) errors.nombre = "El nombre del proyecto es obligatorio.";
-  else if (form.nombre.trim().length > 255) errors.nombre = "El nombre no debe exceder 255 caracteres.";
-  if (!form.descripcion.trim()) errors.descripcion = "La descripcion es obligatoria.";
-  if (!form.rol.trim()) errors.rol = "Debes seleccionar un rol.";
+  if (!form.nombre.trim()) errors.nombre = "El campo Nombre del proyecto es obligatorio.";
+  else if (form.nombre.trim().length > MAX_PROJECT_NAME_LENGTH) {
+    errors.nombre = `El campo Nombre del proyecto permite ingresar un máximo de ${MAX_PROJECT_NAME_LENGTH} caracteres.`;
+  }
+  if (!form.descripcion.trim()) errors.descripcion = "Este campo no puede quedar vacío.";
+  if (!form.rol.trim()) errors.rol = "Debes seleccionar al menos un rol.";
   else if (form.rol.trim().length > 255) errors.rol = "El rol no debe exceder 255 caracteres.";
   if (selectedTechs.length === 0) errors.tecnologias = "Debes seleccionar al menos una tecnologia.";
   if (selectedTechs.length > 10) errors.tecnologias = "Se permite un maximo de 10 tecnologias.";
-  if (!form.fechaInicio) errors.fechaInicio = "La fecha de inicio es obligatoria.";
-  if (!form.is_current && !form.fechaFin) errors.fechaFin = "La fecha final es obligatoria si el proyecto no esta en curso.";
+  if (!form.fechaInicio) errors.fechaInicio = "El campo Fecha de inicio es obligatorio.";
+  if (!form.is_current && !form.fechaFin) {
+    errors.fechaFin = "El campo Fecha de finalización es obligatorio, si el proyecto no está en curso.";
+  }
 
   if (form.fechaInicio) {
     const startDate = new Date(form.fechaInicio);
@@ -108,8 +112,6 @@ function validateForm(
     } else if (imageFile.size > MAX_IMAGE_SIZE_BYTES) {
       errors.image = "La imagen no debe superar los 2 MB.";
     }
-  } else if (!isEditing) {
-    errors.image = "La imagen del proyecto es obligatoria.";
   }
 
   return errors;
@@ -174,6 +176,7 @@ export function useProjectsManager() {
       ...current,
       [field]: value,
       ...(field === "is_current" && value === true ? { fechaFin: "" } : {}),
+      ...(field === "fechaFin" && typeof value === "string" && value.trim() ? { is_current: false } : {}),
     }));
     setErrors((current) => {
       const next = { ...current };
@@ -247,11 +250,21 @@ export function useProjectsManager() {
 
   async function submitProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    return saveProject();
+  }
+
+  function validateProjectForm() {
     setSuccessMessage("");
 
-    const newErrors = validateForm(formData, selectedTechs, imageFile, Boolean(editingProject));
+    const newErrors = validateForm(formData, selectedTechs, imageFile);
     setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return false;
+    return Object.keys(newErrors).length === 0;
+  }
+
+  async function saveProject() {
+    setSuccessMessage("");
+
+    if (!validateProjectForm()) return false;
 
     setIsSaving(true);
 
@@ -261,7 +274,7 @@ export function useProjectsManager() {
         title: formData.nombre.trim(),
         description: formData.descripcion.trim(),
         initial_date: formData.fechaInicio,
-        final_date: formData.is_current ? null : formData.fechaFin,
+        final_date: formData.fechaFin || null,
         url_to_project: formData.github.trim() || null,
         url_to_deploy: formData.demo.trim() || null,
         project_rol: formData.rol,
@@ -276,7 +289,7 @@ export function useProjectsManager() {
           is_current: createPayload.is_current,
           ...(createPayload.url_to_project ? { url_to_project: createPayload.url_to_project } : {}),
           ...(createPayload.url_to_deploy ? { url_to_deploy: createPayload.url_to_deploy } : {}),
-          ...(createPayload.is_current ? {} : { final_date: createPayload.final_date }),
+          final_date: createPayload.final_date,
         };
 
         await updateProject(editingProject.id, updatePayload);
@@ -301,7 +314,7 @@ export function useProjectsManager() {
   }
 
   async function removeProjects(ids: number[]) {
-    if (ids.length === 0) return;
+    if (ids.length === 0) return false;
     setIsDeleting(true);
     setPageError("");
 
@@ -309,8 +322,10 @@ export function useProjectsManager() {
       await Promise.all(ids.map((id) => deleteProject(id)));
       setSuccessMessage(`${ids.length} proyecto(s) eliminado(s) correctamente.`);
       await loadProjects();
+      return true;
     } catch (error) {
       setPageError(error instanceof Error ? error.message : "No se pudieron eliminar los proyectos.");
+      return false;
     } finally {
       setIsDeleting(false);
     }
@@ -339,6 +354,8 @@ export function useProjectsManager() {
     startEdit,
     resetForm,
     submitProject,
+    validateProjectForm,
+    saveProject,
     removeProjects,
   };
 }

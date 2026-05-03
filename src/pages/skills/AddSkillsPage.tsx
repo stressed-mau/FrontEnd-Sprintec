@@ -6,25 +6,12 @@ import { useSkillsManager } from '@/hooks/useSkillsManager';
 import ConfirmationModal from '../../components/ConfirmationModal';
 
 const AddSkillsPage = () => {
-  const {
-    skillType,
-    setSkillType,
-    skillName,
-    handleSkillNameChange,
-    skillLevel,
-    setSkillLevel,
-    handleSave,
-    isSaving,
-    errorMessage,
-    showSuccessModal,
-    closeSuccessModal,
-    successMessage,
-  } = useSkillsManager();
+  const { skillType,setSkillType,skillName,handleSkillNameChange,skillLevel,setSkillLevel,handleSave,
+          isSaving,errorMessage,showSuccessModal,closeSuccessModal,successMessage, } = useSkillsManager();
 
   const hasNameError = Boolean(errorMessage);
 
   const handleCancel = () => {
-    // Criterio 12: descartar y cerrar — navegar atrás en el historial
     window.history.back();
   };
 
@@ -34,28 +21,23 @@ const AddSkillsPage = () => {
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <div className="max-w-5xl mx-auto">
+          <div className="mx-auto max-w-6xl space-y-6">
 
-            {/* Encabezado */}
-            <div className="mb-8">
               <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl mb-2">
                 Añadir Habilidad
               </h1>
               <p className="text-sm text-[#4B778D] md:text-base">
                 Agrega una nueva habilidad a tu portafolio
               </p>
-            </div>
 
-            {/* Formulario en tarjeta */}
-            <div className="bg-[#D9EAF8] rounded-[2rem] p-6 sm:p-8 shadow-sm border border-[#6dacbf]/20">
+            <div className="bg-white rounded-2xl p-5 shadow-sm sm:p-6 border border-[#a5d7e8]">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   void handleSave(e as any);
                 }}
-                className="space-y-6"
-              >
-                {/* Tipo de habilidad — Criterio 1 */}
+                className="space-y-6">
+              
                 <div>
                   <label className="block text-[#003A6C] font-semibold text-sm mb-1.5">
                     Tipo de habilidad *
@@ -63,14 +45,12 @@ const AddSkillsPage = () => {
                   <select
                     value={skillType}
                     onChange={(e) => setSkillType(e.target.value as any)}
-                    className="w-full py-2.5 px-4 border border-[#0E7D96]/20 rounded-xl bg-[#F8FAFC] text-[#003A6C] focus:ring-2 focus:ring-[#0E7D96]/40 outline-none"
-                  >
+                    className="w-full py-2.5 px-4 border border-[#0E7D96]/20 rounded-xl bg-[#F8FAFC] text-[#003A6C] focus:ring-2 focus:ring-[#0E7D96]/40 outline-none" >
                     <option value="tecnica">Técnica</option>
                     <option value="blanda">Blanda</option>
                   </select>
                 </div>
 
-                {/* Nombre — Criterios 2, 3, 4, 8, 9 */}
                 <div>
                   <label className="block text-[#003A6C] font-semibold text-sm mb-1.5">
                     Nombre de la habilidad *
@@ -103,7 +83,6 @@ const AddSkillsPage = () => {
                   )}
                 </div>
 
-                {/* Nivel de dominio — Criterios 5, 6, 7 */}
                 {skillType === 'tecnica' && (
                   <div className="animate-in fade-in slide-in-from-top-2">
                     <label className="block text-[#003A6C] font-semibold text-sm mb-1.5">
@@ -122,13 +101,11 @@ const AddSkillsPage = () => {
                   </div>
                 )}
 
-                {/* Botones — Criterios 10, 11, 12 */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="flex items-center justify-center gap-2 flex-1 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60"
-                  >
+                    className="flex items-center justify-center gap-2 flex-1 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60" >
                     <Plus className="size-4" />
                     {isSaving ? 'Guardando...' : 'Agregar habilidad'}
                   </button>
@@ -136,8 +113,7 @@ const AddSkillsPage = () => {
                     type="button"
                     onClick={handleCancel}
                     disabled={isSaving}
-                    className="flex-1 bg-[#C2DBED] text-[#003A6C] py-3 rounded-xl font-bold border border-[#6dacbf] hover:bg-[#b0cfeb] transition-all disabled:opacity-60"
-                  >
+                    className="flex-1 bg-[#C2DBED] text-[#003A6C] py-3 rounded-xl font-bold border border-[#6dacbf] hover:bg-[#b0cfeb] transition-all disabled:opacity-60" >
                     Cancelar
                   </button>
                 </div>
@@ -152,7 +128,7 @@ const AddSkillsPage = () => {
       <ConfirmationModal
         isOpen={showSuccessModal}
         title="Éxito"
-        message={successMessage || 'La habilidad se ha registrado correctamente.'}
+        message={successMessage}
         onClose={closeSuccessModal}
       />
 

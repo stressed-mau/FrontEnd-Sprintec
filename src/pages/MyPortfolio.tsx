@@ -24,24 +24,15 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
     checked: true,
     sourceTable: "skills",
   })),
-  experience: portfolio.experiences
-    .filter((e) => e.type !== "academica")
-    .map((e, index) => ({
-      id: Number(e.id ?? index),
-      label: e.position ?? "",
-      sublabel: e.company ?? "",
-      checked: true,
-      sourceTable: "work_experiences",
-    })),
-  education: portfolio.experiences
-    .filter((e) => e.type === "academica")
-    .map((e, index) => ({
-      id: Number(e.id ?? index),
-      label: e.position ?? "",
-      sublabel: e.company ?? "",
-      checked: true,
-      sourceTable: "educations",
-    })),
+  experience: portfolio.experiences.map((e, index) => ({
+    id: Number(e.id ?? index),
+    label: e.position ?? "",
+    sublabel: e.company ?? "",
+    checked: true,
+    sourceTable: e.type === "academica" ? "educations" : "work_experiences",
+  })),
+  education: [],
+  certificates: [],
   networks: portfolio.socialNetworks.map((n, index) => ({
     id: Number(n.id ?? index),
     label: n.name ?? "",
@@ -49,7 +40,6 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
     checked: true,
     sourceTable: "social_networks",
   })),
-  certificates: []
 })
 const MyPortfolio = () => {
   const { slug } = useParams()

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react"
 import { Briefcase, GraduationCap, Search, X } from "lucide-react"
 
+import ConfirmActionModal from "@/components/ConfirmActionModal"
+import ConfirmationModal from "@/components/ConfirmationModal"
 import { Footer } from "@/components/Footer"
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
@@ -21,6 +23,7 @@ type ExperiencePageShellProps = {
   title: string
   description: string
   children: ReactNode
+  compact?: boolean
 }
 
 type ExperienceSearchProps = {
@@ -52,17 +55,17 @@ type ExperienceDetailsModalProps = {
   onClose: () => void
 }
 
-export function ExperiencePageShell({ title, description, children }: ExperiencePageShellProps) {
+export function ExperiencePageShell({ title, description, children, compact = false }: ExperiencePageShellProps) {
   return (
     <div className="flex min-h-screen flex-col bg-[#F7F0E1]">
       <Header />
       <div className="flex flex-1 flex-col lg:flex-row">
         <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <div className="mx-auto max-w-6xl space-y-6">
+        <main className={compact ? "flex-1 p-3 sm:p-4 md:p-5" : "flex-1 p-4 sm:p-6 md:p-10"}>
+          <div className={compact ? "mx-auto max-w-6xl space-y-3" : "mx-auto max-w-6xl space-y-6"}>
             <div className="text-center sm:text-left">
-              <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">{title}</h1>
-              <p className="mt-2 text-sm text-[#4B778D] md:text-base">{description}</p>
+              <h1 className={compact ? "text-2xl font-bold text-[#003A6C] md:text-3xl" : "text-3xl font-bold text-[#003A6C] md:text-4xl"}>{title}</h1>
+              <p className={compact ? "mt-1 text-sm text-[#4B778D]" : "mt-2 text-sm text-[#4B778D] md:text-base"}>{description}</p>
             </div>
             {children}
           </div>
@@ -118,9 +121,10 @@ export function ExperienceTable({
   onSelectAll,
   onRowClick,
 }: ExperienceTableProps) {
-  const selectable = Boolean(selectedIds && onSelect && onSelectAll)
+  const selectable = Boolean(selectedIds && onSelect)
   const currentSelectedIds = selectedIds ?? new Set<string>()
-  const allSelected = selectable && experiences.length > 0 && experiences.every((experience) => currentSelectedIds.has(experience.id))
+  const canSelectAll = Boolean(onSelectAll)
+  const allSelected = canSelectAll && experiences.length > 0 && experiences.every((experience) => currentSelectedIds.has(experience.id))
 
   return (
     <Card className="rounded-2xl border border-[#A5D7E8] bg-white py-0 shadow-sm">
@@ -139,13 +143,17 @@ export function ExperienceTable({
                 <tr>
                   {selectable ? (
                     <th className="w-12 px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={allSelected}
-                        onChange={(event) => onSelectAll?.(event.target.checked)}
-                        className="size-4 rounded border-[#A5D7E8]"
-                        aria-label="Seleccionar todas las experiencias visibles"
-                      />
+                      {canSelectAll ? (
+                        <input
+                          type="checkbox"
+                          checked={allSelected}
+                          onChange={(event) => onSelectAll?.(event.target.checked)}
+                          className="size-4 rounded border-[#A5D7E8]"
+                          aria-label="Seleccionar todas las experiencias visibles"
+                        />
+                      ) : (
+                        <span>Sel.</span>
+                      )}
                     </th>
                   ) : null}
                   <th className="px-4 py-3 font-semibold">Empresa o institucion</th>
@@ -356,6 +364,7 @@ export function ExperienceManagerModals({
           isSaving={manager.isSaving}
           canRemoveImage={manager.canRemoveImage}
           canRemoveCertificate={manager.canRemoveCertificate}
+          originalEditingValues={manager.originalEditingValues}
           hideTypeField={hideTypeField}
           fileInputRef={manager.fileInputRef}
           certificateInputRef={manager.certificateInputRef}
@@ -371,32 +380,34 @@ export function ExperienceManagerModals({
       ) : null}
 
       {manager.isConfirmEditModalOpen ? (
-        <SimpleModal
+        <ConfirmActionModal
+          isOpen={manager.isConfirmEditModalOpen}
           title="Confirmar cambios"
           message="Estas seguro de que deseas guardar los cambios realizados?"
-          primaryLabel={manager.isSaving ? "Guardando..." : "Aceptar"}
-          secondaryLabel="Cancelar"
-          onPrimary={manager.confirmEditSave}
-          onSecondary={manager.closeConfirmEditModal}
-          disabled={manager.isSaving}
+          confirmText={manager.isSaving ? "Guardando..." : "Aceptar"}
+          cancelText="Cancelar"
+          onConfirm={() => void manager.confirmEditSave()}
+          onCancel={manager.closeConfirmEditModal}
         />
       ) : null}
 
       {manager.isDuplicateModalOpen ? (
-        <SimpleModal
+        <ConfirmationModal
+          isOpen={manager.isDuplicateModalOpen}
           title="Registro duplicado"
           message={manager.duplicateMessage}
-          primaryLabel="Aceptar"
-          onPrimary={manager.closeDuplicateModal}
+          buttonText="Aceptar"
+          onClose={manager.closeDuplicateModal}
         />
       ) : null}
 
       {manager.isSuccessModalOpen ? (
-        <SimpleModal
+        <ConfirmationModal
+          isOpen={manager.isSuccessModalOpen}
           title="Exito"
           message={manager.successMessage}
-          primaryLabel="Aceptar"
-          onPrimary={() => {
+          buttonText="Aceptar"
+          onClose={() => {
             manager.closeSuccessModal()
             onSuccessClose?.()
           }}
@@ -429,54 +440,6 @@ function DetailItem({ label, value }: { label: string; value: string }) {
     <div>
       <p className="text-xs font-semibold uppercase text-[#6B7E8E]">{label}</p>
       <p className="mt-1 text-sm leading-6 text-[#003A6C]">{value}</p>
-    </div>
-  )
-}
-
-function SimpleModal({
-  title,
-  message,
-  primaryLabel,
-  secondaryLabel,
-  onPrimary,
-  onSecondary,
-  disabled,
-}: {
-  title: string
-  message: string
-  primaryLabel: string
-  secondaryLabel?: string
-  onPrimary: () => void
-  onSecondary?: () => void
-  disabled?: boolean
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
-        <h2 className="text-xl font-bold text-[#003A6C]">{title}</h2>
-        <p className="mt-2 text-sm text-[#4B778D]">{message}</p>
-        <div className="mt-6 flex gap-3">
-          <Button
-            type="button"
-            onClick={onPrimary}
-            disabled={disabled}
-            className="h-11 flex-1 bg-[#003A6C] text-white hover:bg-[#1a4f7a]"
-          >
-            {primaryLabel}
-          </Button>
-          {secondaryLabel && onSecondary ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onSecondary}
-              disabled={disabled}
-              className="h-11 flex-1 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
-            >
-              {secondaryLabel}
-            </Button>
-          ) : null}
-        </div>
-      </div>
     </div>
   )
 }

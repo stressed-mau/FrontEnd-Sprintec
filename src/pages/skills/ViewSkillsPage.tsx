@@ -3,6 +3,7 @@ import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { Code2, Lightbulb, Search } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/useSkillsManager';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
 const LEVEL_LABELS: Record<string, string> = {
   experto: 'Experto',
@@ -20,12 +21,7 @@ const LEVEL_COLORS: Record<string, string> = {
 
 const ViewSkillsPage = () => {
   const {
-    filteredTechnicalSkills,
-    filteredSoftSkills,
-    pageError,
-    isLoading,
-    searchQuery,
-    setSearchQuery,
+    filteredTechnicalSkills, filteredSoftSkills, pageError, setPageError,isLoading, searchQuery, setSearchQuery,
   } = useSkillsManager();
 
   return (
@@ -34,25 +30,15 @@ const ViewSkillsPage = () => {
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <div className="max-w-5xl mx-auto">
+          <div className="mx-auto max-w-6xl space-y-6">
 
             {/* Encabezado */}
-            <div className="mb-8">
               <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl mb-2">
                 Habilidades
               </h1>
               <p className="text-sm text-[#4B778D] md:text-base">
                 Gestiona tus habilidades técnicas y blandas
               </p>
-            </div>
-
-            {/* Error de página */}
-            {pageError && (
-              <div className="mb-6 rounded-2xl border-2 border-red-400 bg-red-100 px-4 py-4 text-sm text-red-900 font-semibold shadow-md">
-                <p className="font-bold mb-1">Error cargando habilidades:</p>
-                <p>{pageError}</p>
-              </div>
-            )}
 
             {/* Buscador */}
             <div className="relative mb-8">
@@ -62,8 +48,7 @@ const ViewSkillsPage = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar por nombre o nivel..."
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#0E7D96]/20 bg-white text-[#003A6C] placeholder:text-[#4B778D]/60 outline-none focus:ring-2 focus:ring-[#0E7D96]/30 shadow-sm"
-              />
+                className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#0E7D96]/20 bg-white text-[#003A6C] placeholder:text-[#4B778D]/60 outline-none focus:ring-2 focus:ring-[#0E7D96]/30 shadow-sm"  />
             </div>
 
             {/* Sección Técnicas */}
@@ -171,6 +156,12 @@ const ViewSkillsPage = () => {
           </div>
         </main>
       </div>
+      <ConfirmationModal
+         isOpen={!!pageError}
+         title="Error"
+          message={pageError}
+          buttonText="Cerrar"
+          onClose={() => setPageError('')}/>
       <Footer />
     </div>
   );

@@ -128,27 +128,29 @@ export function ExperienceInlineForm({
   onCancel,
 }: ExperienceInlineFormProps) {
   const isEducation = mode === "education"
-  const companyLabel = isEducation ? "Institucion" : "Empresa"
-  const positionLabel = isEducation ? "Titulo" : "Cargo"
+  const companyLabel = isEducation ? "Institución académica" : "Empresa"
+  const positionLabel = isEducation ? "Nivel de formación" : "Cargo"
   const currentLabel = isEducation ? "Cursando actualmente" : "Trabajo actual"
   const submitLabel = isEducation ? "Agregar formacion" : "Agregar experiencia"
   const descriptionPlaceholder = isEducation
     ? "Describe tu experiencia academica, logros, especializaciones..."
     : "Describe tus responsabilidades y logros..."
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
 
   return (
     <Card className="overflow-hidden rounded-xl border border-gray-200 bg-white py-0 shadow-sm">
-      <CardContent className="p-6">
-        <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      <CardContent className="p-4 sm:p-5">
+        <form onSubmit={onSubmit} className="space-y-3" noValidate>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FieldError label={companyLabel} id="company" error={errors.company} required>
               <Input
                 id="company"
+                maxLength={100}
                 value={formData.company}
                 disabled={isSaving}
                 onBlur={() => onBlur("company")}
                 onChange={(event) => onFieldChange("company", event.target.value)}
-                placeholder={isEducation ? "Ej: Universidad Mayor de San Andres" : "Ej: Google, Microsoft, Startup XYZ"}
+                placeholder={isEducation ? "Ej: Universidad Mayor de San Andres 2" : "Ej: Google, Microsoft, Startup XYZ"}
                 aria-invalid={Boolean(errors.company)}
                 className="h-10 border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
               />
@@ -166,7 +168,7 @@ export function ExperienceInlineForm({
                   errors.position ? "border-red-500 ring-3 ring-red-100" : "border-gray-300"
                 }`}
               >
-                <option value="">{isEducation ? "Selecciona un titulo" : "Selecciona un cargo"}</option>
+                <option value="">{isEducation ? "Selecciona un nivel de formación" : "Selecciona un cargo"}</option>
                 {(isEducation ? DEGREE_OPTIONS : POSITION_OPTIONS).map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -177,7 +179,7 @@ export function ExperienceInlineForm({
           </div>
 
           {isEducation ? (
-            <FieldError label="Campo de estudio" id="field" error={errors.fieldOfStudy} required>
+            <FieldError label="Área de estudio" id="field" error={errors.fieldOfStudy} required>
               <select
                 id="field"
                 value={formData.fieldOfStudy}
@@ -189,7 +191,7 @@ export function ExperienceInlineForm({
                   errors.fieldOfStudy ? "border-red-500 ring-3 ring-red-100" : "border-gray-300"
                 }`}
               >
-                <option value="">Selecciona un campo de estudio</option>
+                <option value="">Selecciona un área de estudio</option>
                 {FIELD_OPTIONS.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -205,43 +207,37 @@ export function ExperienceInlineForm({
                 <Label htmlFor="logo" className="text-sm font-medium text-gray-700">
                   Logo de la empresa
                 </Label>
-                <div className="space-y-3">
+                <div className={`rounded-xl border p-3 ${errors.image ? "border-red-500 bg-red-50" : "border-gray-200 bg-gray-50"}`}>
                   {formData.image ? (
-                    <div className="relative mx-auto h-20 w-20">
-                      <img
-                        src={formData.image}
-                        alt="Vista previa"
-                        className="h-20 w-20 rounded-lg border border-gray-300 bg-white object-contain p-2"
+                    <img
+                      src={formData.image}
+                      alt="Vista previa de la empresa"
+                      className="mb-3 h-20 w-full max-w-36 rounded-xl object-contain shadow-sm"
+                    />
+                  ) : null}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className={`inline-flex cursor-pointer items-center rounded-lg px-4 py-2 text-sm font-medium text-white ${isSaving ? "cursor-not-allowed bg-gray-400" : "bg-[#003A6C] hover:bg-[#4982AD]"}`}>
+                      <Upload className="mr-2 size-4" />
+                      Seleccionar archivo
+                      <input
+                        id="logo"
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                        disabled={isSaving}
+                        onChange={onImageChange}
+                        aria-invalid={Boolean(errors.image)}
+                        className="hidden"
                       />
-                      {canRemoveImage ? (
-                        <button
-                          type="button"
-                          onClick={onRemoveImage}
-                          disabled={isSaving}
-                          className="absolute right-0 top-0 rounded-full bg-red-600 p-1 text-white transition hover:bg-red-700 disabled:opacity-50"
-                          aria-label="Eliminar imagen"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-                      <Upload className="h-8 w-8 text-gray-400" />
-                    </div>
-                  )}
-
-                  <Input
-                    id="logo"
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-                    disabled={isSaving}
-                    onChange={onImageChange}
-                    aria-invalid={Boolean(errors.image)}
-                    className="border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
-                  />
-                  <p className="text-xs text-gray-500">JPG, PNG, JPEG (max. 2MB)</p>
+                    </label>
+                    {formData.image && canRemoveImage ? (
+                      <Button type="button" variant="outline" onClick={onRemoveImage} disabled={isSaving} className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                        <X className="mr-2 size-4" />
+                        Quitar imagen
+                      </Button>
+                    ) : null}
+                    <span className="text-xs text-gray-500">JPG o PNG, maximo 2 MB</span>
+                  </div>
                   {errors.image ? <p className="text-sm text-red-600">{errors.image}</p> : null}
                 </div>
               </div>
@@ -249,7 +245,7 @@ export function ExperienceInlineForm({
 
             <div className={`space-y-2 ${isEducation ? "md:col-span-3" : "md:col-span-2"}`}>
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                Descripcion
+                Descripción
               </Label>
               <Textarea
                 id="description"
@@ -282,10 +278,11 @@ export function ExperienceInlineForm({
                 />
               </FieldError>
 
-              <FieldError label="Correo electronico de la empresa" id="email" error={errors.email}>
+              <FieldError label="Correo electronico de la empresa" id="email" error={errors.email} required>
               <Input
                 id="email"
                 type="email"
+                maxLength={60}
                 value={formData.email}
                 disabled={isSaving}
                 onBlur={() => onBlur("email")}
@@ -305,6 +302,7 @@ export function ExperienceInlineForm({
                 type="date"
                 value={formData.startDate}
                 disabled={isSaving}
+                max={today}
                 onBlur={() => onBlur("startDate")}
                 onChange={(event) => onFieldChange("startDate", event.target.value)}
                 aria-invalid={Boolean(errors.startDate)}
@@ -312,12 +310,13 @@ export function ExperienceInlineForm({
               />
             </FieldError>
 
-            <FieldError label="Fecha de finalizacion" id="endDate" error={errors.endDate}>
+            <FieldError label="Fecha de finalizacion" id="endDate" error={errors.endDate} required={!formData.current}>
               <Input
                 id="endDate"
                 type="date"
                 value={formData.endDate}
                 disabled={formData.current || isSaving}
+                max={today}
                 onBlur={() => onBlur("endDate")}
                 onChange={(event) => onFieldChange("endDate", event.target.value)}
                 aria-invalid={Boolean(errors.endDate)}
@@ -380,7 +379,7 @@ export function ExperienceInlineForm({
             </div>
           ) : null}
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-2">
             <Button type="submit" disabled={isSaving} className="h-10 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
               {isEducation ? <Award className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}
               {isSaving ? "Guardando..." : submitLabel}

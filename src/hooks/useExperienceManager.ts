@@ -22,6 +22,7 @@ export type { ExperienceItem, ExperienceType } from "@/services/experienceServic
 export type ExperienceFormValues = Omit<ExperienceItem, "id">
 
 export type ExperienceFormErrors = Partial<Record<keyof ExperienceFormValues, string>>
+export type ExperienceEditableFieldState = Partial<Record<keyof ExperienceFormValues, boolean>>
 
 const EMPTY_FORM: ExperienceFormValues = {
   type: "laboral",
@@ -46,8 +47,19 @@ const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 const ALLOWED_CERTIFICATE_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
 const ALLOWED_CERTIFICATE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf"]
+const COMPANY_MAX_LENGTH = 100
+const COMPANY_ALLOWED_CHARACTERS = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/
+const ACADEMIC_INSTITUTION_ALLOWED_CHARACTERS = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9\s]+$/
 function normalizeExperienceTypeValue(value: string): ExperienceFormValues["type"] {
   return value === "academica" ? "academica" : "laboral"
+}
+
+function sanitizeCompanyInput(value: string, type: ExperienceFormValues["type"]) {
+  const allowedCharacters = type === "academica"
+    ? /[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9\s]/g
+    : /[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]/g
+
+  return value.replace(allowedCharacters, "").slice(0, COMPANY_MAX_LENGTH)
 }
 
 function normalizeFormDate(value: string) {
@@ -283,11 +295,25 @@ function validateExperienceField(
 
   if (field === "company") {
     if (!company) {
-      return "El campo empresa o institución es obligatorio."
+      return values.type === "laboral"
+        ? "El campo empresa es obligatorio."
+        : "El campo institucion es obligatorio."
     }
 
-    if (company.length > 100) {
-      return "El nombre de la empresa no puede exceder los 100 caracteres."
+    const hasValidCompanyCharacters = values.type === "academica"
+      ? ACADEMIC_INSTITUTION_ALLOWED_CHARACTERS.test(company)
+      : COMPANY_ALLOWED_CHARACTERS.test(company)
+
+    if (!hasValidCompanyCharacters) {
+      return values.type === "laboral"
+        ? "El campo empresa solo permite caracteres literales."
+        : "El campo Institución académica contiene caracteres no válidos."
+    }
+
+    if (company.length > COMPANY_MAX_LENGTH) {
+      return values.type === "laboral"
+        ? "El nombre de la empresa no puede exceder los 100 caracteres."
+        : ""
     }
   }
 
@@ -299,12 +325,12 @@ function validateExperienceField(
     const rawEmail = values.email
     const normalizedEmail = rawEmail.trim()
 
-    if (!normalizedEmail) {
-      return "El campo Correo electronico es obligatorio."
+    if (rawEmail.length > 0 && /\s/.test(rawEmail)) {
+      return "El campo Correo electronico de la empresa no puede contener espacios en blanco."
     }
 
-    if (/\s/.test(rawEmail)) {
-      return "El campo Correo electrónico no puede contener espacios en blanco."
+    if (!normalizedEmail) {
+      return "El campo Correo electrónico de la empresa es obligatorio."
     }
 
     if (normalizedEmail.length > 60) {
@@ -318,21 +344,25 @@ function validateExperienceField(
 
   if (field === "position") {
     if (!position) {
-      return "El campo cargo es obligatorio."
+      return values.type === "academica"
+        ? "Se debe seleccionar un nivel de formación."
+        : "El campo cargo es obligatorio."
     }
 
     if (position.length > 80) {
-      return "El cargo no puede exceder los 80 caracteres."
+      return values.type === "academica"
+        ? "El nivel de formación no puede exceder los 80 caracteres."
+        : "El cargo no puede exceder los 80 caracteres."
     }
   }
 
   if (field === "fieldOfStudy" && values.type === "academica") {
     if (!fieldOfStudy) {
-      return "El campo de estudio es obligatorio."
+      return "El campo Área de estudio es obligatorio."
     }
 
     if (fieldOfStudy.length > 100) {
-      return "El campo de estudio no puede exceder los 100 caracteres."
+      return "El área de estudio no puede exceder los 100 caracteres."
     }
   }
 
@@ -355,6 +385,10 @@ function validateExperienceField(
   }
 
   if (field === "endDate") {
+    if (!endDate && !values.current) {
+      return "El campo Fecha de finalización es obligatorio."
+    }
+
     if (!endDate) {
       return ""
     }
@@ -385,6 +419,7 @@ export function useExperienceManager() {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false)
   const [editingExperience, setEditingExperience] = useState<ExperienceItem | null>(null)
+  const [originalEditingValues, setOriginalEditingValues] = useState<ExperienceFormValues | null>(null)
   const [pendingEditPayload, setPendingEditPayload] = useState<ExperiencePayload | null>(null)
   const [formData, setFormData] = useState<ExperienceFormValues>(EMPTY_FORM)
   const [errors, setErrors] = useState<ExperienceFormErrors>({})
@@ -484,6 +519,7 @@ export function useExperienceManager() {
 
   function resetForm() {
     setEditingExperience(null)
+    setOriginalEditingValues(null)
     setSelectedImageFile(null)
     setSelectedCertificateFile(null)
     setHasRemovedExistingImage(false)
@@ -530,12 +566,7 @@ export function useExperienceManager() {
     closeConfirmEditModal()
     closeSuccessModal()
     closeDuplicateModal()
-    setEditingExperience(experience)
-    setSelectedImageFile(null)
-    setSelectedCertificateFile(null)
-    setHasRemovedExistingImage(false)
-    setHasRemovedExistingCertificate(false)
-    setFormData({
+    const nextFormData = {
       type: normalizeExperienceTypeValue(experience.type),
       company: experience.company,
       email: experience.email,
@@ -548,7 +579,15 @@ export function useExperienceManager() {
       current: experience.current,
       image: experience.image,
       certificate: experience.certificate,
-    })
+    }
+
+    setEditingExperience(experience)
+    setOriginalEditingValues(nextFormData)
+    setSelectedImageFile(null)
+    setSelectedCertificateFile(null)
+    setHasRemovedExistingImage(false)
+    setHasRemovedExistingCertificate(false)
+    setFormData(nextFormData)
     setErrors({})
 
     if (fileInputRef.current) {
@@ -563,9 +602,31 @@ export function useExperienceManager() {
   }
 
   function updateField(field: keyof ExperienceFormValues, value: string | boolean) {
+    if (editingExperience && originalEditingValues) {
+      const lockedFields: Array<keyof ExperienceFormValues> = ["type", "company", "email", "position", "startDate"]
+
+      if (lockedFields.includes(field)) {
+        return
+      }
+
+      if (field !== "endDate" && field !== "description" && typeof value === "string" && typeof originalEditingValues[field] === "string") {
+        const originalValue = originalEditingValues[field]
+
+        if (!originalValue.trim()) {
+          return
+        }
+
+        if (originalValue.trim() && !value.trim()) {
+          return
+        }
+      }
+    }
+
     const normalizedValue =
       field === "type" && typeof value === "string"
         ? normalizeExperienceTypeValue(value)
+        : field === "company" && typeof value === "string"
+          ? sanitizeCompanyInput(value, formData.type)
         : field === "email" && typeof value === "string"
           ? value.slice(0, 60)
           : value
@@ -581,6 +642,10 @@ export function useExperienceManager() {
 
     if (field === "current" && value === true) {
       nextValues.endDate = ""
+    }
+
+    if (field === "endDate" && typeof normalizedValue === "string" && normalizedValue.trim()) {
+      nextValues.current = false
     }
 
     setFormData(nextValues)
@@ -663,6 +728,10 @@ export function useExperienceManager() {
   }
 
   function removeImage() {
+    if (editingExperience?.image) {
+      return false
+    }
+
     setSelectedImageFile(null)
     setHasRemovedExistingImage(Boolean(editingExperience?.image))
     setFormData((current) => ({ ...current, image: "" }))
@@ -718,6 +787,10 @@ export function useExperienceManager() {
   }
 
   function removeCertificate() {
+    if (editingExperience?.certificate) {
+      return false
+    }
+
     setSelectedCertificateFile(null)
     setHasRemovedExistingCertificate(Boolean(editingExperience?.certificate))
     setFormData((current) => ({ ...current, certificate: "" }))
@@ -798,6 +871,21 @@ export function useExperienceManager() {
       certificate: validateCertificateFile(selectedCertificateFile),
     }
 
+    if (editingExperience && originalEditingValues) {
+      const protectedFields: Array<keyof ExperienceFormValues> = ["location", "fieldOfStudy", "description", "image", "certificate"]
+
+      protectedFields.forEach((field) => {
+        const originalValue = originalEditingValues[field]
+        const currentValue = formData[field]
+
+        if (typeof originalValue === "string" && originalValue.trim() && typeof currentValue === "string" && !currentValue.trim()) {
+          nextErrors[field] = field === "description"
+            ? "Este campo no puede quedar vacío."
+            : "La informacion guardada previamente no puede ser borrada."
+        }
+      })
+    }
+
     setErrors(nextErrors)
 
     if (Object.values(nextErrors).some(Boolean)) {
@@ -853,7 +941,7 @@ export function useExperienceManager() {
 
     if (!targetExperience) {
       setPageError("No se encontró la experiencia seleccionada.")
-      return
+      return false
     }
 
     try {
@@ -864,9 +952,11 @@ export function useExperienceManager() {
       }
       await loadExperiences()
       showFeedback("Experiencia eliminada correctamente.", "success")
+      return true
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudo eliminar la experiencia."
       setPageError(message)
+      return false
     }
   }
 
@@ -875,6 +965,7 @@ export function useExperienceManager() {
     errors,
     isModalOpen,
     isEditing,
+    originalEditingValues,
     isConfirmEditModalOpen,
     feedbackMessage,
     feedbackType,
