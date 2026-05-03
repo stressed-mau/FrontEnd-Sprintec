@@ -4,6 +4,7 @@ import { Footer } from '@/components/Footer';
 import { Code2, Lightbulb, Search, X } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/useSkillsManager';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import ConfirmActionModal from '../../components/ConfirmActionModal';
 
 const LEVEL_LABELS: Record<string, string> = {
   experto: 'Experto',
@@ -21,28 +22,9 @@ const LEVEL_COLORS: Record<string, string> = {
 
 const EditSkillsPage = () => {
   const {
-    filteredTechnicalSkills,
-    filteredSoftSkills,
-    isLoading,
-    pageError,
-    searchQuery,
-    setSearchQuery,
-    openModal,
-    isModalOpen,
-    closeModal,
-    editingSkill,
-    skillName,
-    handleSkillNameChange,
-    skillLevel,
-    setSkillLevel,
-    handleSave,
-    isSaving,
-    errorMessage,
-    showConfirmEdit,
-    setShowConfirmEdit,
-    showSuccessModal,
-    closeSuccessModal,
-    successMessage,
+    filteredTechnicalSkills, filteredSoftSkills, isLoading, pageError, searchQuery, setSearchQuery, openModal,
+    isModalOpen, closeModal, editingSkill, skillName, handleSkillNameChange, skillLevel, setSkillLevel, handleSave,
+    isSaving, errorMessage, showConfirmEdit, setShowConfirmEdit, showSuccessModal, closeSuccessModal, successMessage,
   } = useSkillsManager();
 
   const hasNameError = Boolean(errorMessage);
@@ -54,19 +36,11 @@ const EditSkillsPage = () => {
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <div className="max-w-5xl mx-auto">
+          <div className="mx-auto max-w-6xl space-y-6">
+           
+              <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl mb-2">  Editar Habilidades </h1>
+              <p className="text-sm text-[#4B778D] md:text-base"> Haz clic en una fila para editar </p>
 
-            {/* Encabezado */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl mb-2">
-                Editar Habilidades
-              </h1>
-              <p className="text-sm text-[#4B778D] md:text-base">
-                Haz clic en una fila para editar
-              </p>
-            </div>
-
-            {/* Error de página */}
             {pageError && (
               <div className="mb-6 rounded-2xl border-2 border-red-400 bg-red-100 px-4 py-4 text-sm text-red-900 font-semibold shadow-md">
                 <p className="font-bold mb-1">Error:</p>
@@ -74,7 +48,6 @@ const EditSkillsPage = () => {
               </div>
             )}
 
-            {/* Buscador */}
             <div className="relative mb-8">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-[#4B778D]" />
               <input
@@ -196,25 +169,22 @@ const EditSkillsPage = () => {
         </main>
       </div>
 
-      {/* ── Modal de Edición ── */}
+      {/* Modal de Edición*/}
       {isModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 px-3 backdrop-blur-[2px] sm:items-center sm:px-4"
           onClick={(e) => {
-            // Criterio 25: clic fuera cierra el modal
             if (e.target === e.currentTarget) closeModal();
           }}
         >
           <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-white/20 bg-[#D9EAF8] shadow-xl animate-in zoom-in-95 duration-200 sm:rounded-[2rem]">
             <div className="px-8 pt-8 pb-2 flex justify-between items-start">
               <div>
-                {/* Criterios 19 y 28: título diferenciado */}
                 <h2 className="text-[#003A6C] text-2xl font-bold">
                   {isTechnical ? 'Editar Habilidad Técnica' : 'Editar Habilidad Blanda'}
                 </h2>
                 <p className="text-[#4982AD] text-sm">Actualiza la habilidad seleccionada</p>
               </div>
-              {/* Criterio 25: botón X */}
               <button
                 onClick={closeModal}
                 className="text-[#003A6C] hover:bg-white/30 p-1 rounded-full"
@@ -229,9 +199,7 @@ const EditSkillsPage = () => {
                 e.preventDefault();
                 void handleSave(e as any);
               }}
-              className="p-8 pt-4 space-y-5"
-            >
-              {/* Nombre — Criterios 20, 21 (técnica deshabilitado), 29, 30, 31 */}
+              className="p-8 pt-4 space-y-5" >
               <div>
                 <label className="block text-[#003A6C] font-semibold text-sm mb-1.5">
                   Nombre de la habilidad *
@@ -263,7 +231,6 @@ const EditSkillsPage = () => {
                 )}
               </div>
 
-              {/* Nivel — Criterios 22, 23, 24, 26 (solo para técnicas) */}
               {isTechnical && (
                 <div className="animate-in fade-in slide-in-from-top-2">
                   <label className="block text-[#003A6C] font-semibold text-sm mb-1.5">
@@ -304,39 +271,20 @@ const EditSkillsPage = () => {
         </div>
       )}
 
-      {/* Confirmación antes de guardar edición */}
-      {showConfirmEdit && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center">
-            <h3 className="text-lg font-bold text-[#003A6C] mb-4">
-              ¿Estás seguro de que deseas guardar los cambios realizados?
-            </h3>
-            <div className="flex gap-3">
-              <button
-                onClick={() => void handleSave()}
-                disabled={isSaving}
-                className="flex-1 bg-[#003A6C] text-white py-2 rounded-lg font-semibold hover:bg-[#002a50] disabled:opacity-60"
-              >
-                {isSaving ? 'Guardando...' : 'Confirmar'}
-              </button>
-              <button
-                onClick={() => setShowConfirmEdit(false)}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmActionModal
+              isOpen={showConfirmEdit}
+              title="Confirmar cambios"
+              message="¿Estás seguro de que deseas guardar los cambios realizados?"
+              confirmText={isSaving ? 'Guardando...' : 'Guardar'}
+              cancelText="Cancelar"
+              onConfirm={() => void handleSave()}
+              onCancel={() => setShowConfirmEdit(false)}/>
 
-      {/* Modal de éxito — Criterio 27 */}
       <ConfirmationModal
         isOpen={showSuccessModal}
         title="Éxito"
         message={successMessage || 'La habilidad se ha actualizado correctamente.'}
-        onClose={closeSuccessModal}
-      />
+        onClose={closeSuccessModal} />
 
       <Footer />
     </div>

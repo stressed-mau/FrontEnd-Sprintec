@@ -1,13 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  getPortfolioVisibilityData,
-  savePortfolioVisibilitySection,
+import { getPortfolioVisibilityData, savePortfolioVisibilitySection,
   type PortfolioVisibilityData,
   type SectionKey,
   type VisibilityItem,
 } from '../services/portfolioVisibilityService';
-
-type OpenSections = Record<SectionKey, boolean>;
 
 const initialData: PortfolioVisibilityData = {
   projects: [],
@@ -18,133 +14,107 @@ const initialData: PortfolioVisibilityData = {
   networks: [],
 };
 
-const initialOpenSections: OpenSections = {
-  projects: false,
-  skills: false,
-  experience: false,
-  education: false,
-  certificates: false,
-  networks: false,
-};
-
-const sectionsArray: { key: SectionKey; title: string }[] = [
-  { key: 'projects', title: 'Proyectos' },
-  { key: 'skills', title: 'Habilidades' },
-  { key: 'experience', title: 'Experiencias' },
-  { key: 'education', title: 'Educacion' },
-  { key: 'certificates', title: 'Certificados' },
-  { key: 'networks', title: 'Redes profesionales' },
-];
-
-const MIN_VISIBLE_MESSAGE = 'Debe mantener al menos una sección visible en el portafolio.';
+const MIN_VISIBLE_MESSAGE =
+  'Debe mantener al menos un elemento visible en el portafolio.';
 
 export const usePortfolioVisibility = () => {
-  const [data, setData] = useState<PortfolioVisibilityData>(initialData);
-  const [openSections, setOpenSections] = useState<OpenSections>(initialOpenSections);
+  const [data, setData] = useState(initialData);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [pageError, setPageError] = useState('');
 
-  const loadVisibilityData = useCallback(async () => {
+  const load = useCallback(async () => {
     setIsLoading(true);
-    setPageError('');
-
     try {
-      const remoteData = await getPortfolioVisibilityData();
-      setData(remoteData);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'No se pudo cargar la visibilidad del portafolio.';
-      setPageError(message);
+      const res = await getPortfolioVisibilityData();
+      setData(res);
+    } catch (e: any) {
+      setPageError(e.message);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void loadVisibilityData();
-  }, [loadVisibilityData]);
+    void load();
+  }, [load]);
 
-  const toggleSection = (sectionKey: SectionKey) => {
-    setOpenSections((prev) => {
-      const next = { ...prev };
-      next[sectionKey] = !prev[sectionKey];
-      return next;
-    });
+  const persist = async (
+    section: SectionKey,
+    next: VisibilityItem[],
+    prev: VisibilityItem[],
+    itemId?: number,
+    sourceTable?: VisibilityItem['sourceTable']
+  ) => {
+    try {
+      setIsSaving(true);
+      await savePortfolioVisibilitySection(section, next, itemId, sourceTable);
+    } catch (e: any) {
+      setPageError(e.message);
+      setData((p) => ({ ...p, [section]: prev }));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const persistSection = useCallback(
-    async (
-      sectionKey: SectionKey,
-      nextItems: VisibilityItem[],
-      previousItems: VisibilityItem[],
-      itemId?: number,
-      sourceTable?: VisibilityItem['sourceTable'],
-    ) => {
-      try {
-        setIsSaving(true);
-        setPageError('');
-        await savePortfolioVisibilitySection(sectionKey, nextItems, itemId, sourceTable);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'No se pudo guardar la configuración de visibilidad.';
-        setPageError(message);
-        setData((prev) => ({ ...prev, [sectionKey]: previousItems }));
-      } finally {
-        setIsSaving(false);
-      }
-    },
-    [],
-  );
+  const handleItemCheck = async (
+    section: SectionKey,
+    id: number,
+    sourceTable?: VisibilityItem['sourceTable']
+  ) => {
+    const prev = data[section];
 
-  const handleItemCheck = async (sectionKey: SectionKey, itemId: number, sourceTable?: VisibilityItem['sourceTable']) => {
-    const previousItems = data[sectionKey];
-    const clickedItem = previousItems.find(
-      (item) => item.id === itemId && (sourceTable ? item.sourceTable === sourceTable : true),
+    const totalChecked = Object.values(data)
+      .flat()
+      .filter((i) => i.checked).length;
+
+    const target = prev.find(
+      (i) => i.id === id && i.sourceTable === sourceTable
     );
-    if (!clickedItem) return;
-    const totalChecked = Object.values(data).flat().filter((item) => item.checked).length;
-    const targetItem = previousItems.find(
-      (item) => item.id === itemId && item.sourceTable === clickedItem.sourceTable,
-    );
-    if (totalChecked === 1 && targetItem?.checked) {
+
+    if (!target) return;
+
+    if (totalChecked === 1 && target.checked) {
       setPageError(MIN_VISIBLE_MESSAGE);
       return;
     }
-    if (!targetItem) return;
-    const nextItems = previousItems.map((item) =>
-      (item.id === itemId && item.sourceTable === clickedItem.sourceTable) 
-        ? { ...item, checked: !item.checked } 
-        : item,
+
+    const next = prev.map((i) =>
+      i.id === id && i.sourceTable === sourceTable
+        ? { ...i, checked: !i.checked }
+        : i
     );
-    
-    setData((prev) => ({ ...prev, [sectionKey]: nextItems }));
-    await persistSection(sectionKey, nextItems, previousItems, itemId, clickedItem.sourceTable);
+
+    setData((p) => ({ ...p, [section]: next }));
+    await persist(section, next, prev, id, sourceTable);
   };
 
-  const handleBulkSelect = async (sectionKey: SectionKey, selectAll: boolean) => {
-    const previousItems = data[sectionKey];
-    const nextItems = previousItems.map((item) => ({ ...item, checked: selectAll }));
+  const handleBulkSelect = async (
+    section: SectionKey,
+    selectAll: boolean
+  ) => {
+    const prev = data[section];
+    const next = prev.map((i) => ({ ...i, checked: selectAll }));
 
     if (!selectAll) {
-      const totalChecked = Object.values(data).flat().filter((item) => item.checked).length;
-      const sectionChecked = previousItems.filter((item) => item.checked).length;
+      const totalChecked = Object.values(data)
+        .flat()
+        .filter((i) => i.checked).length;
+
+      const sectionChecked = prev.filter((i) => i.checked).length;
+
       if (totalChecked - sectionChecked <= 0) {
         setPageError(MIN_VISIBLE_MESSAGE);
         return;
       }
     }
 
-    setData((prev) => ({ ...prev, [sectionKey]: nextItems }));
-    await persistSection(sectionKey, nextItems, previousItems);
-  };
-
-  const getVisibleCountText = (sectionKey: SectionKey): string => {
-    const items = data[sectionKey];
-    const visibleCount = items.filter((item) => item.checked).length;
-    return `${visibleCount} de ${items.length} visibles`;
+    setData((p) => ({ ...p, [section]: next }));
+    await persist(section, next, prev);
   };
 
   return {
-    data, openSections, sectionsArray, isLoading, isSaving, pageError, 
-    toggleSection, handleItemCheck, handleBulkSelect, getVisibleCountText, reloadVisibilityData: loadVisibilityData,
+    data, isLoading, isSaving,  pageError,
+    handleItemCheck,  handleBulkSelect, reload: load,
   };
 };
