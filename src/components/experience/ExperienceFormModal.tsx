@@ -95,6 +95,7 @@ type ExperienceFormModalProps = {
   isSaving: boolean
   canRemoveImage: boolean
   canRemoveCertificate: boolean
+  originalEditingValues?: ExperienceFormValues | null
   hideTypeField?: boolean
   fileInputRef: React.RefObject<HTMLInputElement | null>
   certificateInputRef: React.RefObject<HTMLInputElement | null>
@@ -115,6 +116,7 @@ export function ExperienceFormModal({
   isSaving,
   canRemoveImage,
   canRemoveCertificate,
+  originalEditingValues,
   hideTypeField = false,
   fileInputRef,
   certificateInputRef,
@@ -134,6 +136,11 @@ export function ExperienceFormModal({
   const isAcademicUpdate = isEditing && !isLaboralExperience
   const isLimitedUpdate = isLaboralUpdate || isAcademicUpdate
   const isCurrentActive = formData.current
+  const disabledControlClassName =
+    "disabled:cursor-not-allowed disabled:border-[#A5D7E8] disabled:bg-[#C2DBED] disabled:text-[#003A6C] disabled:opacity-100"
+  const disabledButtonClassName = "disabled:cursor-not-allowed disabled:border-[#A5D7E8] disabled:bg-[#C2DBED] disabled:text-[#003A6C] disabled:opacity-100"
+  const editingTitle = isLaboralExperience ? "Editar experiencia laboral" : "Editar experiencia academica"
+  const createTitle = isLaboralExperience ? "Nueva experiencia laboral" : "Nueva experiencia academica"
   const positionOptions = isLaboralExperience ? POSITION_OPTIONS : DEGREE_OPTIONS
   const resolvedPositionOptions =
     formData.position && !positionOptions.includes(formData.position)
@@ -143,6 +150,20 @@ export function ExperienceFormModal({
     formData.fieldOfStudy && !FIELD_OPTIONS.includes(formData.fieldOfStudy)
       ? [formData.fieldOfStudy, ...FIELD_OPTIONS]
       : FIELD_OPTIONS
+  const wasEmptyOriginally = (field: keyof ExperienceFormValues) => {
+    if (!isEditing || !originalEditingValues) {
+      return false
+    }
+
+    const originalValue = originalEditingValues[field]
+    return typeof originalValue === "string" && !originalValue.trim()
+  }
+  const isLocationDisabled = isSaving || wasEmptyOriginally("location")
+  const isDescriptionDisabled = isSaving || wasEmptyOriginally("description")
+  const isEndDateDisabled = isSaving || isCurrentActive || wasEmptyOriginally("endDate") || (isEditing && originalEditingValues?.current === false)
+  const isCurrentDisabled = isSaving || isEditing
+  const isImageDisabled = isSaving || isLaboralUpdate || wasEmptyOriginally("image")
+  const isCertificateDisabled = isSaving || isAcademicUpdate || wasEmptyOriginally("certificate")
 
   return (
     <div
@@ -156,7 +177,7 @@ export function ExperienceFormModal({
         <div className="flex items-start justify-between gap-4 border-b border-[#D7E6F2] px-5 py-5 sm:px-6">
           <div>
             <h2 id="titulo-modal-experiencia" className="text-2xl font-bold text-[#003A6C]">
-              {isEditing ? "Editar experiencia" : "Nueva experiencia"}
+              {isEditing ? editingTitle : createTitle}
             </h2>
             <p id="descripcion-modal-experiencia" className="mt-1 text-sm text-[#4B778D]">
               {isEditing ? "Actualiza" : "Agrega"} tu experiencia laboral o academica.
@@ -185,7 +206,7 @@ export function ExperienceFormModal({
                 value={formData.type}
                 disabled={isSaving}
                 onChange={(event) => onFieldChange("type", event.target.value)}
-                className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8]"
+                className={`h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8] ${disabledControlClassName}`}
                 aria-labelledby="experience-type-label"
               >
                 <option value="laboral">Experiencia laboral</option>
@@ -205,7 +226,7 @@ export function ExperienceFormModal({
               disabled={isSaving || isLimitedUpdate}
               onBlur={() => onBlur("company")}
               onChange={(event) => onFieldChange("company", event.target.value)}
-              className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+              className={`h-11 border-[#A5D7E8] bg-white text-[#003A6C] ${disabledControlClassName}`}
               aria-invalid={Boolean(errors.company)}
               aria-labelledby="experience-company-label"
               aria-describedby={errors.company ? "experience-company-error" : undefined}
@@ -216,7 +237,7 @@ export function ExperienceFormModal({
           {isLaboralExperience ? (
             <div className="space-y-2">
               <Label id="experience-email-label" htmlFor="experience-email" className="text-[#003A6C]">
-                Correo electronico <span aria-hidden="true">*</span>
+                Correo electronico de la empresa <span aria-hidden="true">*</span>
               </Label>
               <Input
                 id="experience-email"
@@ -227,7 +248,7 @@ export function ExperienceFormModal({
                 onBlur={() => onBlur("email")}
                 onChange={(event) => onFieldChange("email", event.target.value)}
                 placeholder="Ej: contacto@empresa.com"
-                className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+                className={`h-11 border-[#A5D7E8] bg-white text-[#003A6C] ${disabledControlClassName}`}
                 aria-invalid={Boolean(errors.email)}
                 aria-labelledby="experience-email-label"
                 aria-describedby={errors.email ? "experience-email-error" : undefined}
@@ -245,11 +266,11 @@ export function ExperienceFormModal({
                 id="experience-location"
                 maxLength={100}
                 value={formData.location}
-                disabled={isSaving}
+                disabled={isLocationDisabled}
                 onBlur={() => onBlur("location")}
                 onChange={(event) => onFieldChange("location", event.target.value)}
                 placeholder="Ej: La Paz, Bolivia / Remoto"
-                className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+                className={`h-11 border-[#A5D7E8] bg-white text-[#003A6C] ${disabledControlClassName}`}
                 aria-invalid={Boolean(errors.location)}
                 aria-labelledby="experience-location-label"
                 aria-describedby={errors.location ? "experience-location-error" : undefined}
@@ -268,7 +289,7 @@ export function ExperienceFormModal({
               disabled={isSaving || isLimitedUpdate}
               onBlur={() => onBlur("position")}
               onChange={(event) => onFieldChange("position", event.target.value)}
-              className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8] disabled:opacity-50"
+              className={`h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8] ${disabledControlClassName}`}
               aria-invalid={Boolean(errors.position)}
               aria-labelledby="experience-position-label"
               aria-describedby={errors.position ? "experience-position-error" : undefined}
@@ -291,10 +312,10 @@ export function ExperienceFormModal({
               <select
                 id="experience-field"
                 value={formData.fieldOfStudy}
-                disabled={isSaving || isAcademicUpdate}
+                disabled={isSaving || isAcademicUpdate || wasEmptyOriginally("fieldOfStudy")}
                 onBlur={() => onBlur("fieldOfStudy")}
                 onChange={(event) => onFieldChange("fieldOfStudy", event.target.value)}
-                className="h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8] disabled:opacity-50"
+                className={`h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8] ${disabledControlClassName}`}
                 aria-invalid={Boolean(errors.fieldOfStudy)}
                 aria-labelledby="experience-field-label"
                 aria-describedby={errors.fieldOfStudy ? "experience-field-error" : undefined}
@@ -319,10 +340,10 @@ export function ExperienceFormModal({
               rows={3}
               maxLength={300}
               value={formData.description}
-              disabled={isSaving}
+              disabled={isDescriptionDisabled}
               onBlur={() => onBlur("description")}
               onChange={(event) => onFieldChange("description", event.target.value)}
-              className="resize-none border-[#A5D7E8] bg-white text-[#003A6C]"
+              className={`resize-none border-[#A5D7E8] bg-white text-[#003A6C] ${disabledControlClassName}`}
               aria-invalid={Boolean(errors.description)}
               aria-labelledby="experience-description-label"
               aria-describedby={errors.description ? "experience-description-error" : undefined}
@@ -344,7 +365,7 @@ export function ExperienceFormModal({
                 disabled={isSaving || isLimitedUpdate}
                 onBlur={() => onBlur("startDate")}
                 onChange={(event) => onFieldChange("startDate", event.target.value)}
-                className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+                className={`h-11 border-[#A5D7E8] bg-white text-[#003A6C] ${disabledControlClassName}`}
                 aria-invalid={Boolean(errors.startDate)}
                 aria-labelledby="experience-start-date-label"
                 aria-describedby={errors.startDate ? "experience-start-date-error" : undefined}
@@ -354,16 +375,16 @@ export function ExperienceFormModal({
 
             <div className="space-y-2">
               <Label id="experience-end-date-label" htmlFor="experience-end-date" className="text-[#003A6C]">
-                Fecha de fin
+                Fecha de fin {!isCurrentActive ? <span aria-hidden="true">*</span> : null}
               </Label>
               <Input
                 id="experience-end-date"
                 type="date"
                 value={formData.endDate}
-                disabled={isCurrentActive || isSaving}
+                disabled={isEndDateDisabled}
                 onBlur={() => onBlur("endDate")}
                 onChange={(event) => onFieldChange("endDate", event.target.value)}
-                className="h-11 border-[#A5D7E8] bg-white text-[#003A6C]"
+                className={`h-11 border-[#A5D7E8] bg-white text-[#003A6C] ${disabledControlClassName}`}
                 aria-invalid={Boolean(errors.endDate)}
                 aria-labelledby="experience-end-date-label"
                 aria-describedby={errors.endDate ? "experience-end-date-error" : undefined}
@@ -377,9 +398,9 @@ export function ExperienceFormModal({
               id="experience-current"
               type="checkbox"
               checked={formData.current}
-              disabled={isSaving}
+              disabled={isCurrentDisabled}
               onChange={(event) => onFieldChange("current", event.target.checked)}
-              className="size-4 rounded border-[#A5D7E8] text-[#003A6C] focus:ring-[#A5D7E8]"
+              className={`size-4 rounded border-[#A5D7E8] text-[#003A6C] focus:ring-[#A5D7E8] ${disabledControlClassName}`}
             />
             <Label id="experience-current-label" htmlFor="experience-current" className="cursor-pointer text-[#003A6C]">
               Actualmente trabajo/estudio aqui
@@ -397,7 +418,7 @@ export function ExperienceFormModal({
                 ref={fileInputRef}
                 type="file"
                 accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-                disabled={isSaving || isLaboralUpdate}
+                disabled={isImageDisabled}
                 onChange={onImageChange}
                 className="hidden"
               />
@@ -407,9 +428,9 @@ export function ExperienceFormModal({
                   id="boton-subir-logo"
                   type="button"
                   variant="outline"
-                  disabled={isSaving || isLaboralUpdate}
+                  disabled={isImageDisabled}
                   onClick={() => fileInputRef.current?.click()}
-                  className="h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
+                  className={`h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9] ${disabledButtonClassName}`}
                 >
                   <ImagePlus className="mr-2 size-4" />
                   {formData.image ? "Cambiar imagen" : "Subir imagen"}
@@ -420,7 +441,7 @@ export function ExperienceFormModal({
                     id="boton-eliminar-logo"
                     type="button"
                     variant="outline"
-                    disabled={isSaving || isLaboralUpdate}
+                    disabled={isImageDisabled}
                     onClick={onRemoveImage}
                     className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
                   >
@@ -453,7 +474,7 @@ export function ExperienceFormModal({
                 ref={certificateInputRef}
                 type="file"
                 accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                disabled={isSaving || isAcademicUpdate}
+                disabled={isCertificateDisabled}
                 onChange={onCertificateChange}
                 className="hidden"
               />
@@ -463,9 +484,9 @@ export function ExperienceFormModal({
                   id="boton-subir-certificado"
                   type="button"
                   variant="outline"
-                  disabled={isSaving || isAcademicUpdate}
+                  disabled={isCertificateDisabled}
                   onClick={() => certificateInputRef.current?.click()}
-                  className="h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9]"
+                  className={`h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9] ${disabledButtonClassName}`}
                 >
                   <FileText className="mr-2 size-4" />
                   {formData.certificate ? "Cambiar documento" : "Subir documento"}
@@ -476,7 +497,7 @@ export function ExperienceFormModal({
                     id="boton-eliminar-certificado"
                     type="button"
                     variant="outline"
-                    disabled={isSaving || isAcademicUpdate}
+                    disabled={isCertificateDisabled}
                     onClick={onRemoveCertificate}
                     className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
                   >

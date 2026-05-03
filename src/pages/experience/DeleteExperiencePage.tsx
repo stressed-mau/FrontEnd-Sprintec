@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { Trash2 } from "lucide-react"
 
+import ConfirmActionModal from "@/components/ConfirmActionModal"
+import ConfirmationModal from "@/components/ConfirmationModal"
 import { Button } from "@/components/ui/button"
 import {
   ExperiencePageShell,
@@ -16,62 +18,41 @@ export default function DeleteExperiencePage() {
   const manager = useExperienceManager()
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [feedbackMessage, setFeedbackMessage] = useState("")
   const [feedbackType, setFeedbackType] = useState<"success" | "error" | "">("")
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [deletedExperienceName, setDeletedExperienceName] = useState("")
 
   const experiences = manager.laboralExperiences
   const filteredExperiences = useMemo(() => filterExperiences(experiences, searchTerm), [experiences, searchTerm])
   const pagination = paginateExperiences(filteredExperiences, currentPage)
+  const selectedExperience = useMemo(
+    () => experiences.find((experience) => experience.id === selectedId) ?? null,
+    [experiences, selectedId],
+  )
+  const selectedIds = useMemo(() => (selectedId == null ? new Set<string>() : new Set([selectedId])), [selectedId])
 
   function handleSearchChange(value: string) {
     setSearchTerm(value)
     setCurrentPage(1)
+    setSelectedId(null)
   }
 
   useEffect(() => {
-    setSelectedIds((current) => new Set([...current].filter((id) => experiences.some((experience) => experience.id === id))))
-  }, [experiences])
+    if (selectedId != null && !experiences.some((experience) => experience.id === selectedId)) {
+      setSelectedId(null)
+    }
+  }, [experiences, selectedId])
 
   function handleSelect(id: string, checked: boolean) {
-    setSelectedIds((current) => {
-      const next = new Set(current)
-
-      if (checked) {
-        next.add(id)
-      } else {
-        next.delete(id)
-      }
-
-      return next
-    })
-  }
-
-  function handleSelectAll(checked: boolean) {
-    setSelectedIds((current) => {
-      const next = new Set(current)
-
-      pagination.items.forEach((experience) => {
-        if (checked) {
-          next.add(experience.id)
-        } else {
-          next.delete(experience.id)
-        }
-      })
-
-      return next
-    })
+    setSelectedId(checked ? id : null)
   }
 
   async function handleDeleteSelected() {
-    if (selectedIds.size === 0 || isDeleting) {
-      return
-    }
-
-    const confirmed = window.confirm(`Eliminar ${selectedIds.size} experiencia(s) seleccionada(s)?`)
-
-    if (!confirmed) {
+    if (selectedId == null || isDeleting) {
       return
     }
 
@@ -80,16 +61,22 @@ export default function DeleteExperiencePage() {
     setFeedbackType("")
 
     try {
-      for (const id of selectedIds) {
-        await manager.handleDelete(id)
+      const experienceName = selectedExperience?.company ?? ""
+      const deleted = await manager.handleDelete(selectedId)
+
+      if (!deleted) {
+        setFeedbackMessage(manager.pageError || "No se pudo eliminar la experiencia.")
+        setFeedbackType("error")
+        return
       }
 
-      setFeedbackMessage(`${selectedIds.size} experiencia(s) eliminada(s) correctamente.`)
-      setFeedbackType("success")
-      setSelectedIds(new Set())
+      setSelectedId(null)
+      setDeletedExperienceName(experienceName)
+      setShowConfirmDelete(false)
+      setShowSuccessModal(true)
       await manager.reloadExperiences()
     } catch (error) {
-      setFeedbackMessage(error instanceof Error ? error.message : "No se pudieron eliminar las experiencias.")
+      setFeedbackMessage(error instanceof Error ? error.message : "No se pudo eliminar la experiencia.")
       setFeedbackType("error")
     } finally {
       setIsDeleting(false)
@@ -100,9 +87,9 @@ export default function DeleteExperiencePage() {
     <ExperiencePageShell
       title="Eliminar experiencia"
       description={
-        selectedIds.size > 0
-          ? `${selectedIds.size} experiencia(s) seleccionada(s).`
-          : "Selecciona una o varias experiencias para eliminarlas."
+        selectedId == null
+          ? "Selecciona una experiencia para eliminarla."
+          : "1 experiencia seleccionada."
       }
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -112,12 +99,12 @@ export default function DeleteExperiencePage() {
         <Button
           type="button"
           variant="destructive"
-          onClick={handleDeleteSelected}
-          disabled={selectedIds.size === 0 || isDeleting}
+          onClick={() => setShowConfirmDelete(true)}
+          disabled={selectedId == null || isDeleting}
           className="h-11 bg-[#B42318] px-5 text-white hover:bg-[#8F1C14]"
         >
           <Trash2 className="mr-2 size-4" />
-          {isDeleting ? "Eliminando..." : `Eliminar (${selectedIds.size})`}
+          {isDeleting ? "Eliminando..." : "Eliminar"}
         </Button>
       </div>
 
@@ -134,7 +121,6 @@ export default function DeleteExperiencePage() {
           searchTerm={searchTerm}
           selectedIds={selectedIds}
           onSelect={handleSelect}
-          onSelectAll={handleSelectAll}
         />
       )}
 
@@ -145,6 +131,23 @@ export default function DeleteExperiencePage() {
         endIndex={pagination.endIndex}
         totalItems={filteredExperiences.length}
         onPageChange={setCurrentPage}
+      />
+
+      <ConfirmActionModal
+        isOpen={showConfirmDelete}
+        title="Confirmar eliminacion"
+        message="Esta seguro de que desea eliminar esta experiencia?"
+        confirmText={isDeleting ? "Eliminando..." : "Eliminar"}
+        cancelText="Cancelar"
+        onConfirm={() => void handleDeleteSelected()}
+        onCancel={() => setShowConfirmDelete(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        title="Exito"
+        message={`Experiencia${deletedExperienceName ? ` "${deletedExperienceName}"` : ""} eliminada correctamente.`}
+        onClose={() => setShowSuccessModal(false)}
       />
     </ExperiencePageShell>
   )
