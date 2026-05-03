@@ -97,12 +97,10 @@ const PortfolioTemplatesPage = () => {
 
   // Manejador de selección para guardar en DB si ya está publicado
   const handleSelectTemplate = async (templateId: string, dbId: number) => {
-    setSelectedTemplate(templateId)
-    if (isPublished) {
-      // Si el portafolio ya es público, actualizamos la plantilla en el servidor inmediatamente [cite: 107-108]
-      await handlePublish(dbId)
-    }
-  }
+    setSelectedTemplate(templateId);
+
+    await handlePublish(dbId, isPublished); 
+  };
 
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">

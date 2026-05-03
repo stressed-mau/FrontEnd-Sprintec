@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { getProfileCredentials, updateProfileCredentials } from '@/services/ProfileService';
 import { useEmailValidation } from "@/hooks/useEmailValidation";
-
+import { getAuthSession } from "@/services/auth/auth-storage";
 export const useProfile = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverMessage, setServerMessage] = useState({ type: '', text: '' });
-  
+  const session = getAuthSession();
   const [form, setForm] = useState({
-    username: '',
-    email: '',
+    username: session?.user?.username || '',
+    email: session?.user?.email || '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -25,11 +25,11 @@ export const useProfile = () => {
         const data = await getProfileCredentials();
         setForm(prev => ({
           ...prev,
-          username: data.username || '',
-          email: data.email || ''
+          username: data.username || prev.username,
+          email: data.email || prev.email
         }));
       } catch (err) {
-        console.error(err);
+        console.error("Error al sincronizar con el servidor:",err);
       } finally {
         setLoading(false);
       }
@@ -38,18 +38,16 @@ export const useProfile = () => {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    const fieldName = id.replace('input-', '').replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    const { name, value } = e.target;
+    const newValue = name === 'email' ? sanitizeEmailInput(value) : value;
     
-    const newValue = fieldName === 'email' ? sanitizeEmailInput(value) : value;
-    
-    setForm(prev => ({ ...prev, [fieldName]: newValue }));
+    setForm(prev => ({ ...prev, [name]: newValue }));
     
     // Limpiar errores al escribir
-    if (errors[fieldName]) {
+    if (errors[name]) {
       setErrors(prev => {
         const newErrs = { ...prev };
-        delete newErrs[fieldName];
+        delete newErrs[name];
         return newErrs;
       });
     }

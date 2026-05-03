@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { api } from './api';
 
+export type PortfolioVisibilityData = Record<SectionKey, VisibilityItem[]>;
 export type SectionKey = 'projects' | 'skills' | 'experience' | 'education' | 'certificates' | 'networks';
 type VisibilityTable = 'skills' | 'projects' | 'educations' | 'social_networks' | 'work_experiences' | 'certificates';
+
 
 export interface VisibilityItem {
   id: number;
