@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { Footer } from '@/components/Footer';
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
@@ -6,9 +7,12 @@ import { User, Mail, Lock, SquarePen, X, ShieldCheck, Loader2 } from 'lucide-rea
 import { Eye, EyeOff} from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { usePasswordVisibility } from '@/hooks/usePasswordVisibility';
+import ConfirmActionModal from '@/components/ConfirmActionModal';
+import ConfirmationModal from '@/components/ConfirmationModal';
 const ProfilePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   // Integración del hook de lógica
   const {
     form,
@@ -24,6 +28,24 @@ const ProfilePage = () => {
   } = useProfile();
   const { isVisible: showNewPass, toggleVisibility: toggleNewPass } = usePasswordVisibility();
   const { isVisible: showConfirmPass, toggleVisibility: toggleConfirmPass } = usePasswordVisibility();
+  const [actionType, setActionType] = useState<"info" | "password" | null>(null);
+
+  const handleConfirm = async () => {
+    setShowConfirmModal(false);
+
+    if (actionType === "info") {
+      await handleUpdateInfo();
+    } else if (actionType === "password") {
+      await handleChangePassword();
+    }
+
+    setActionType(null);
+  };
+  useEffect(() => {
+    if (serverMessage.type === "success" && serverMessage.text) {
+      setShowSuccessModal(true);
+    }
+  }, [serverMessage]);
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F7F0E1] flex items-center justify-center">
@@ -31,6 +53,8 @@ const ProfilePage = () => {
       </div>
     );
   }
+
+  
 
   return (
     <div id="profile-page" className="min-h-screen bg-[#F7F0E1] relative flex flex-col">
@@ -162,6 +186,7 @@ const ProfilePage = () => {
                     <input
                       id="input-email"
                       type="email"
+                      name="email"
                       value={form.email || "usuario@gmail.com"}
                       onChange={handleChange}
                       className={`w-full p-2.5 rounded-lg border bg-white text-[#003A6C] text-sm outline-none focus:ring-2 ring-blue-200 ${
@@ -186,7 +211,10 @@ const ProfilePage = () => {
 
                   <button 
                     id="btn-update-info" 
-                    onClick={handleUpdateInfo}
+                    onClick={() => {
+                      setActionType("info");
+                      setShowConfirmModal(true);
+                    }}
                     disabled={isSubmitting}
                     className="w-full bg-[#003A6C] text-white py-2.5 rounded-lg font-semibold text-sm mt-2 hover:bg-[#1a4f7a] transition-all disabled:opacity-50 flex justify-center items-center gap-2"
                   >
@@ -281,7 +309,10 @@ const ProfilePage = () => {
                   </div>
                   
                   <button 
-                    onClick={handleChangePassword}
+                    onClick={() => {
+                      setActionType("password");
+                      setShowConfirmModal(true);
+                    }}
                     disabled={isSubmitting}
                     className="w-full bg-[#003A6C] text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-[#1a4f7a] transition-all disabled:opacity-50 flex justify-center items-center gap-2"
                   >
@@ -308,6 +339,31 @@ const ProfilePage = () => {
           </div>
         </div>
       )}
+      <ConfirmActionModal
+        isOpen={showConfirmModal}
+        title={
+          actionType === "info"
+            ? "Actualizar información"
+            : "Cambiar contraseña"
+        }
+        message={
+          actionType === "info"
+            ? "¿Estás seguro de que deseas actualizar tu información de cuenta?"
+            : "¿Estás seguro de que deseas cambiar tu contraseña?"
+        }
+        confirmText="Confirmar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirm}
+        onCancel={() => setShowConfirmModal(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        title="Operación exitosa"
+        message={serverMessage.text || "Los cambios se guardaron correctamente"}
+        buttonText="Aceptar"
+        onClose={() => setShowSuccessModal(false)}
+      />
     </div>
   );
 };

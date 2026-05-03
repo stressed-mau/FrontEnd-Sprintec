@@ -62,7 +62,7 @@ const PortfolioTemplatesPage = () => {
     },
   ]
 
-  // Carga de perfil y estado inicial [cite: 5-8]
+  // Carga de perfil y estado inicial
   useEffect(() => {
     const loadInitialData = async () => {
       await checkInitialStatus()
@@ -100,6 +100,7 @@ const PortfolioTemplatesPage = () => {
     setSelectedTemplate(templateId);
 
     await handlePublish(dbId, isPublished); 
+    await checkInitialStatus();
   };
 
   return (

@@ -26,15 +26,15 @@ export const useUserPersonalData = () => {
     email: "",
     phone: ""
   });
-  const handlePhoneChange = (value: string) => { 
-  setPhoneNumber(value);
+  const handlePhoneChange = (value: string) => {
+  const onlyNumbers = value.replace(/[^0-9]/g, "");
 
-  // validación real
+  setPhoneNumber(onlyNumbers);
   setErrors((prev: any) => ({
     ...prev,
-    phone: validateField("phone", value)
+    phone: validateField("phone", onlyNumbers)
   }));
-  };
+};
 
   const [form, setForm] = useState({
     fullName: "",
@@ -56,6 +56,7 @@ export const useUserPersonalData = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(form.email);
+  const [originalForm, setOriginalForm] = useState<any>(null);
   const validateField = (id: string, value: string) => {
   switch (id) {
     case "fullName":
@@ -74,10 +75,15 @@ export const useUserPersonalData = () => {
       return value.length >= 100 ? "La ubicación no puede exceder los 100 caracteres." : "";
 
     case "email": {
-      const cleanValue = value.trim();
+       const rawValue = value;
+      if (rawValue.length > 0 && rawValue.trim().length === 0) {
+        return "El Correo electrónico no puede contener espacios en blanco";
+      }
+      if (!rawValue.trim()) {
+        return "El correo electrónico es obligatorio.";
+      }
 
-      if (!cleanValue) return "El correo electrónico es obligatorio.";
-
+      const cleanValue = rawValue.trim();
       if (cleanValue.length >= 60) {
         return "El correo no puede exceder los 60 caracteres.";
       }
@@ -86,7 +92,7 @@ export const useUserPersonalData = () => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanValue)) {
         // Aquí usamos mailcheck para sugerencia aunque sea inválido
         validateEmail(cleanValue);
-        return "Formato de correo inválido.";
+        return "El Correo electrónico debe tener un formato válido (ej. usuario@uno.com)";
       }
       // Validación completa (usa validator + mailcheck)
       const result = validateEmail(cleanValue);
@@ -99,7 +105,9 @@ export const useUserPersonalData = () => {
       if (!cleanValue) {
         return ""; 
       }
-
+      if (/\s/.test(value)) {
+        return "El número de contacto no permite ingresar espacios en blanco";
+      }
       if (!/^[0-9]+$/.test(cleanValue)) {
         return "El número de contacto solo puede contener números.";
       }
@@ -118,6 +126,7 @@ export const useUserPersonalData = () => {
   useEffect(() => {
     if (!loading) return;
     const fetchData = async () => {
+    
     try {
       const session = getAuthSession();
 
@@ -135,7 +144,7 @@ export const useUserPersonalData = () => {
       };
 
       setForm(mappedForm);
-
+      setOriginalForm(mappedForm);
       const initialErrors: any = {};
 
       Object.keys(mappedForm).forEach((key) => {
@@ -229,7 +238,9 @@ const handleChange = (e: any) => {
 
     const phoneError = validateField("phone", phoneNumber);
     if (phoneError) newErrors.phone = phoneError;
-
+    if (!preview && !form.image && !fileInputRef.current?.files?.[0]) {
+      newErrors.image = "La foto de perfil es obligatoria.";
+    }
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
@@ -286,10 +297,14 @@ const handleChange = (e: any) => {
   };
 
   const handleCancel = () => {
-    setPhoneNumber("");
+    if (originalForm) {
+      setForm(originalForm);
+    }
+
     setPreview(null);
     setErrors({});
     setSuccess("");
+    setPhoneNumber("");
   };
 
   const handleClick = () => {
@@ -322,11 +337,15 @@ const handleChange = (e: any) => {
   };
 
   const removeImage = () => {
-  setPreview(null);
+    setPreview(null);
 
-  if (fileInputRef.current) {
-    fileInputRef.current.value = "";
-  }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    setErrors(prev => ({
+      ...prev,
+      image: "La foto de perfil es obligatoria."
+    }));
   };
 
   return {

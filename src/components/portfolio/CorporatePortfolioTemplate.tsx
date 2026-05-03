@@ -143,6 +143,11 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
     [visibleExperience],
   )
 
+  const certificateItems = useMemo(
+    () => visibleExperience.filter((item) => item.sourceTable === "certificates"),
+    [visibleExperience],
+  )
+
   const experience = useMemo(() => {
   return workExperience.map((item) => ({
     id: String(item.id),
@@ -162,6 +167,14 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
   }))
 }, [educationItems])
 
+const certificates = useMemo(() => {
+  return certificateItems.map((item) => ({
+    id: String(item.id),
+    title: item.label,
+    institution: cleanVisibilitySublabel(item.sublabel, "Certificado -"),
+    period: "",
+  }))
+}, [certificateItems])
   const projects = useMemo(() => {
   return visibleProjects.map((project) => ({
     id: String(project.id),
@@ -315,6 +328,34 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
         </section>
       ),
     })
+
+    nextSheets.push({
+  id: "corporate-certificates",
+  label: "Certificados",
+  content: (
+    <section>
+      <h3 className="text-3xl font-bold">Certificados</h3>
+
+      {certificates.length ? (
+        <div className="mt-6 grid gap-4">
+          {certificates.map((item) => (
+            <article
+              key={item.id}
+              className="rounded-[1.6rem] border border-black/10 bg-white p-5"
+            >
+              <p className="text-lg font-bold">{item.title}</p>
+              <p className="text-sm text-gray-500">{item.institution}</p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-6 text-sm text-gray-500">
+          No hay certificados registrados.
+        </p>
+      )}
+    </section>
+  ),
+})
 
     nextSheets.push({
       id: "corporate-education",
@@ -722,7 +763,7 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
           </div>
         </section>
 
-        {(resolvedEducation.length || skills.length || experience.length || resolvedProjects.length) ? (
+        {(resolvedEducation.length || certificates.length || skills.length || experience.length || resolvedProjects.length) ? (
           <section className="grid border-t border-white/10 lg:grid-cols-[0.88fr_1.12fr]">
             <div className="bg-[#141414] px-8 py-10">
               <div
@@ -763,7 +804,27 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                   )}
                 </div>
               </div>
+              <div className="mt-8">
+                <h3 className="text-3xl font-black text-white">Certificados</h3>
 
+                {certificates.length ? (
+                  <div className="mt-6 grid gap-4">
+                    {certificates.map((item) => (
+                      <article
+                        key={item.id}
+                        className="rounded-[1.4rem] border border-white/10 bg-white/5 p-5"
+                      >
+                        <p className="text-lg font-bold text-white">{item.title}</p>
+                        <p className="text-sm text-white/70">{item.institution}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-4 text-sm text-gray-400">
+                    No hay certificados registrados.
+                  </p>
+                )}
+              </div>
               <div
                 id="corporate-experience"
                 className={`mt-8 rounded-[2rem] border p-6 transition-colors duration-300 ${

@@ -29,8 +29,21 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
     checked: true,
     sourceTable: e.type === "academica" ? "educations" : "work_experiences",
   })),
-  education: [],
-  certificates: [],
+  education: (portfolio as any).educations?.map((edu: any, index: number) => ({
+    id: Number(edu.id ?? index),
+    label: edu.title ?? "",
+    sublabel: edu.institution ?? "",
+    checked: true,
+    sourceTable: "educations",
+  })) ?? [],
+  // ACTUALIZACIÓN AQUÍ:
+  certificates: (portfolio as any).certificates?.map((cert: any, index: number) => ({
+    id: Number(cert.id ?? index),
+    label: cert.name ?? "",
+    sublabel: cert.issuer ?? "",
+    checked: true,
+    sourceTable: "certificates",
+  })) ?? [],
   networks: portfolio.socialNetworks.map((n, index) => ({
     id: Number(n.id ?? index),
     label: n.name ?? "",

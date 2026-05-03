@@ -5,14 +5,15 @@ import { Footer } from '@/components/Footer';
 import { useUserPersonalData } from '../../hooks/useUserPersonalData';
 import { allCountries } from 'country-telephone-data';
 import ConfirmActionModal from '@/components/ConfirmActionModal';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import { useState } from 'react';
-
+import { useEffect } from "react";
 const EditProfilePage = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const {
     form, errors, preview, countryCode, phoneNumber, fileInputRef,
     setCountryCode, handlePhoneChange, handleChange, handleCancel, isSubmitting,
-    handleSubmit, handleFileChange, handleClick, charLimitWarning, emailSuggestion,
+    handleSubmit, success, setSuccess,handleFileChange, handleClick, charLimitWarning, emailSuggestion,
     applyEmailSuggestion,
   } = useUserPersonalData();
 
@@ -23,10 +24,22 @@ const EditProfilePage = () => {
    const closeAndCancel = () => {
     handleCancel();
   };
+
+  const handleSuccessClose = () => {
+      setShowSuccessModal(false);
+      setSuccess("");
+    };
+  
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+   useEffect(() => {
+    if (success && !showSuccessModal) {
+      setShowSuccessModal(true);
+    }
+  }, [success]);
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
       <Header />
-      <div className="flex flex-col lg:flex-row flex-1">
+      <div className="flex flex-1 justify-center px-4 py-10">
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
           <div className="max-w-5xl mx-auto">
@@ -57,17 +70,16 @@ const EditProfilePage = () => {
               </div>
 
               {/* SECCIÓN DE DATOS UNO ENCIMA DE OTRO */}
-              <div className="flex flex-col gap-6 w-full">
-                
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
+                <div className="flex flex-col gap-6">
                 {/* Nombre Completo */}
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-[#003A6C]">Nombre completo *</label>
                   <input 
                     id="fullName" 
                     value={form.fullName} 
-                    onChange={handleChange} 
                     type="text" 
-                    placeholder="Google User" 
+                    disabled
                     className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm outline-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]" 
                   />
                   {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
@@ -80,15 +92,15 @@ const EditProfilePage = () => {
                     id="bio" 
                     value={form.bio} 
                     onChange={handleChange} 
-                    rows={4} 
+                    rows={10} 
                     placeholder="Cuéntanos sobre ti y tu experiencia..." 
                     className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]" 
                   />
                   {errors.bio && <p className="text-red-500 text-xs mt-1">{errors.bio}</p>}
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                </div>
+              
+              <div className="flex flex-col gap-6">
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-[#003A6C]">Correo público</label>
                   <input 
@@ -160,16 +172,17 @@ const EditProfilePage = () => {
                     )
                   )}
                 </div>
+
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-[#003A6C]">Residencia actual</label>
                   <input id="location" value={form.location} onChange={handleChange} placeholder="Ej: La Paz, Bolivia" className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]"/>
                 </div>
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-[#003A6C]">Ocupación</label>
-                  <input id="occupation" value={form.occupation} onChange={handleChange} placeholder="Ej: Desarrollador Full Stack" className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]"/>
+                  <input id="occupation" value={form.occupation} onChange={handleChange} placeholder="Ej: Desarrollador Full Stack" className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm outline-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]"/>
                 </div>
               </div>
-
+              </div>
               <div className="flex gap-3 pt-4">
                 <button 
                   type="submit" 
@@ -205,6 +218,13 @@ const EditProfilePage = () => {
           await handleSubmit({ preventDefault: () => {} });
         }}
         onCancel={() => setShowConfirmModal(false)}
+      />
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        title="Registro completado"
+        message="Tus datos personales se guardaron correctamente."
+        buttonText="Continuar"
+        onClose={handleSuccessClose}
       />
       <Footer />
     </div>

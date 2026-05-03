@@ -40,6 +40,7 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
     checked: true,
     sourceTable: "social_networks",
   })),
+
 })
 const MyPortfolio = () => {
   const { slug } = useParams()
@@ -71,14 +72,14 @@ const MyPortfolio = () => {
   const isCorporate = template === 3;
   const visibilityData = mapToVisibilityData(portfolio)
   const profile = {
-  fullname: portfolio.profile?.name ?? portfolio.user?.fullname ?? "",
-  occupation: portfolio.profile?.occupation ?? portfolio.user?.occupation ?? "",
-  image_url: portfolio.profile?.image ?? portfolio.user?.image_url ?? "",
-  residence: portfolio.profile?.nacionality ?? portfolio.user?.nationality ?? "",
-  public_email: portfolio.profile?.email ?? portfolio.user?.public_email ?? "",
-  phone: portfolio.profile?.phone ?? portfolio.user?.phone_number ?? "",
-  biography: portfolio.profile?.bio ?? portfolio.user?.biography ?? "",
-};
+    fullname: portfolio.profile?.name || portfolio.user?.fullname || "",
+    occupation: portfolio.profile?.occupation || portfolio.user?.occupation || "",
+    image_url: portfolio.profile?.image || portfolio.user?.image_url || "",
+    residence: portfolio.profile?.nacionality || portfolio.user?.nationality || "",
+    public_email: portfolio.profile?.email || portfolio.user?.public_email || "",
+    phone: portfolio.profile?.phone || portfolio.user?.phone_number || "",
+    biography: portfolio.profile?.bio || portfolio.user?.biography || "",
+  };
 
   return (
     <div className="min-h-screen bg-[#F7F0E1]">

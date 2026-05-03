@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getProfileCredentials, updateProfileCredentials } from '@/services/ProfileService';
+import {updateProfileCredentials } from '@/services/ProfileService';
 import { useEmailValidation } from "@/hooks/useEmailValidation";
 import { getAuthSession } from "@/services/auth/auth-storage";
 export const useProfile = () => {
@@ -22,11 +22,10 @@ export const useProfile = () => {
   useEffect(() => {
     const fetchDate = async () => {
       try {
-        const data = await getProfileCredentials();
         setForm(prev => ({
           ...prev,
-          username: data.username || prev.username,
-          email: data.email || prev.email
+          username:  prev.username,
+          email:  prev.email
         }));
       } catch (err) {
         console.error("Error al sincronizar con el servidor:",err);

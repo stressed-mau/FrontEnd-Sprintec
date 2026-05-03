@@ -2,14 +2,6 @@ import { api } from './api';
 
 const CREDENTIALS_ENDPOINT = '/user/credentials';
 
-export const getProfileCredentials = async () => {
-  const res = await api.get(CREDENTIALS_ENDPOINT);
-  if (!res.data.success) {
-    throw new Error('Error al obtener credenciales');
-  }
-  return res.data.data; // Retorna { username, email }
-};
-
 export const updateProfileCredentials = async (data: { 
   current_password: string; 
   username?: string;

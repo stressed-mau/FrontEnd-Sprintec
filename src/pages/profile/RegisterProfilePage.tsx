@@ -29,13 +29,13 @@ export default function RegisterProfilePage() {
     isSubmitting,
     emailSuggestion,        
     applyEmailSuggestion,
-    handleSubmit,
+    handleSubmit,    
     handleClick,
     handleFileChange,
     removeImage,
     charLimitWarning,
   } = useUserPersonalData();
-
+  
   const handleConfirmSave = async () => {
     setShowConfirmModal(false);
     const fakeEvent = {
@@ -50,12 +50,11 @@ export default function RegisterProfilePage() {
         console.error("Error al registrar los datos:", error);
     }
   };
-
   return (
     <div className="flex min-h-screen flex-col bg-[#C2DBED]">
       <Header />
       <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6 sm:py-14">
-        <div className="w-full max-w-2xl"> {/* Un poco más ancho para este formulario */}
+        <div className="w-full max-w-6xl"> {/* Un poco más ancho para este formulario */}
           <Card className="border-[#9CC2DB] bg-white/95 shadow-2xl backdrop-blur-sm">
             <CardHeader className="space-y-4 text-center">
               <div className="space-y-2">
@@ -71,7 +70,7 @@ export default function RegisterProfilePage() {
               <form 
                 noValidate 
                 onSubmit={(e) => { e.preventDefault(); setShowConfirmModal(true); }} 
-                className="space-y-6"
+                className="flex flex-col gap-8"
               >
                 {/* Sección de Foto de Perfil - Reutilizada del modal */}
                 <div className="flex flex-col items-center gap-2 border-b border-[#C2DBED] pb-6">
@@ -115,6 +114,7 @@ export default function RegisterProfilePage() {
 
                 {/* Campos de Texto - Reutilizados y adaptados al estilo de CrearCuenta */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                  <div className="flex flex-col gap-6">
                   {/* Nombre completo */}
                   <div className="space-y-2 md:col-span-2">
                     <label htmlFor="fullName" className="block text-sm font-medium text-[#003A6C]">Nombre completo *</label>
@@ -140,7 +140,7 @@ export default function RegisterProfilePage() {
                       id="bio" 
                       value={form.bio} 
                       onChange={handleChange} 
-                      rows={4} 
+                      rows={6} 
                       maxLength={300} 
                       placeholder="Cuéntanos sobre ti y tu experiencia..." 
                       className="w-full px-4 py-2.5 rounded-lg border border-[#C2DBED] bg-white text-sm outline-none focus:ring-2 focus:ring-[#4982AD]/50 text-[#003A6C] placeholder:text-[#7B98AF] resize-none" 
@@ -151,6 +151,8 @@ export default function RegisterProfilePage() {
                       <p className="text-amber-700 text-xs mt-1">{charLimitWarning.bio}</p>
                     )}
                    </div>
+                   </div>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Ocupación */}
                   <div className="space-y-2">
                     <label htmlFor="occupation" className="block text-sm font-medium text-[#003A6C]">Ocupación</label>
@@ -255,6 +257,7 @@ export default function RegisterProfilePage() {
                       <p className="text-amber-700 text-xs mt-1">{charLimitWarning.phone}</p>
                     )}
                   </div>
+                </div>
                 </div>
 
                 {/* Botón de Enviar - Estilo CrearCuenta */}

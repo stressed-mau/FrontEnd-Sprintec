@@ -42,7 +42,7 @@ const PortfolioVisibilityPage = () => {
       <Header />
       <div className="flex flex-col md:flex-row flex-1">
         <Sidebar />
-        <main className="flex-1 p-4 md:p-10">
+        <div role="main" className="flex-1 p-4 md:p-10">
           <div className="mx-auto max-w-6xl space-y-6">
             
             <div className="mb-8">
@@ -189,7 +189,7 @@ const PortfolioVisibilityPage = () => {
               )}
             </div>
           </div>
-        </main>
+        </div>
       </div>
       <Footer />
     </div>
