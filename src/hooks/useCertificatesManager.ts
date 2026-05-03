@@ -16,6 +16,7 @@ export type CertificateFormValues = Omit<Certificate, 'id'> & {
 };
 
 export type CertificateFormErrors = Partial<Record<keyof CertificateFormValues, string>>;
+type CertificateFormTouched = Partial<Record<keyof CertificateFormValues, boolean>>;
 
 const EMPTY_FORM: CertificateFormValues = {
   name: '',
@@ -30,7 +31,19 @@ const EMPTY_FORM: CertificateFormValues = {
 };
 
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
-const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg'];
+const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+const NAME_REGEX = /^[A-Za-zÀ-ÿ0-9\s]+$/;
+const ISSUER_REGEX = /^[A-Za-zÀ-ÿ\s]+$/;
+
+function getTodayISODate(): string {
+  const now = new Date();
+  const timezoneOffsetMs = now.getTimezoneOffset() * 60 * 1000;
+  return new Date(now.getTime() - timezoneOffsetMs).toISOString().split('T')[0];
+}
+
+function normalizeComparableText(value: string): string {
+  return value.trim().replace(/\s+/g, ' ').toLowerCase();
+}
 
 function isValidUrl(value: string): boolean {
   try {
@@ -61,44 +74,146 @@ function convertDateDDMMYYYYtoISO(date: string): string {
   return date;
 }
 
-function validateForm(form: CertificateFormValues): CertificateFormErrors {
+function convertDateISOToDDMMYYYY(date: string): string {
+  if (!date) return '';
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
+    return date;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
+  }
+
+  const parsedDate = new Date(date);
+  if (!isNaN(parsedDate.getTime())) {
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const year = parsedDate.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  return date;
+}
+
+function formatDateInput(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+function parseCertificateDate(value: string): Date | null {
+  if (!value?.trim()) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split('-').map(Number);
+    const parsed = new Date(year, month - 1, day);
+
+    if (
+      parsed.getFullYear() === year &&
+      parsed.getMonth() === month - 1 &&
+      parsed.getDate() === day
+    ) {
+      return parsed;
+    }
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+    const [day, month, year] = value.split('/').map(Number);
+    const parsed = new Date(year, month - 1, day);
+
+    if (
+      parsed.getFullYear() === year &&
+      parsed.getMonth() === month - 1 &&
+      parsed.getDate() === day
+    ) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+function validateForm(
+  form: CertificateFormValues,
+  certificates: Certificate[],
+  editingCertificateId?: string
+): CertificateFormErrors {
   const errors: CertificateFormErrors = {};
+  const todayISO = getTodayISODate();
+  const todayDate = parseCertificateDate(todayISO);
+  const normalizedName = normalizeComparableText(form.name);
+  const normalizedIssuer = normalizeComparableText(form.issuer);
 
   if (!form.name?.trim()) {
-    errors.name = 'El nombre del certificado es requerido';
-  } else if (form.name.length > 255) {
-    errors.name = 'El nombre no debe exceder 255 caracteres';
+    errors.name = 'El campo Nombre del Certificado es obligatorio.';
+  } else if (form.name.length > 100) {
+    errors.name = 'El campo Nombre del certificado permite ingresar un máximo de 100 caracteres.';
+  } else if (!NAME_REGEX.test(form.name.trim())) {
+    errors.name = 'El Nombre del Certificado solo puede contener letras y números.';
   }
 
   if (!form.issuer?.trim()) {
-    errors.issuer = 'El emisor es requerido';
-  } else if (form.issuer.length > 255) {
-    errors.issuer = 'El emisor no debe exceder 255 caracteres';
+    errors.issuer = 'El campo Emisor es obligatorio.';
+  } else if (form.issuer.length > 100) {
+    errors.issuer = 'El campo Emisor permite ingresar un máximo de 100 caracteres.';
+  } else if (!ISSUER_REGEX.test(form.issuer.trim())) {
+    errors.issuer = 'El Emisor solo puede contener letras.';
+  }
+
+  if (
+    normalizedName &&
+    normalizedIssuer &&
+    certificates.some(
+      (certificate) =>
+        certificate.id !== editingCertificateId &&
+        normalizeComparableText(certificate.name) === normalizedName &&
+        normalizeComparableText(certificate.issuer) === normalizedIssuer
+    )
+  ) {
+    errors.name = 'El certificado ya ha sido registrado';
   }
 
   if (!form.date_issued?.trim()) {
-    errors.date_issued = 'La fecha de emisión es requerida';
+    errors.date_issued = 'La fecha de emisión es obligatoria.';
   } else {
-    const issuedDate = new Date(form.date_issued);
-    if (isNaN(issuedDate.getTime())) {
-      errors.date_issued = 'La fecha de emisión no es válida';
+    const issuedDate = parseCertificateDate(form.date_issued);
+    if (!issuedDate) {
+      errors.date_issued = 'La fecha debe tener un formato válido: dd/mm/aaaa.';
+    } else if (todayDate && issuedDate > todayDate) {
+      errors.date_issued = 'La fecha de emisión no puede ser posterior a la fecha actual.';
     }
   }
 
   if (form.date_expired?.trim() && !form.no_expiration) {
-    const expiredDate = new Date(form.date_expired);
-    if (isNaN(expiredDate.getTime())) {
-      errors.date_expired = 'La fecha de vencimiento no es válida';
+    const expiredDate = parseCertificateDate(form.date_expired);
+    if (!expiredDate) {
+      errors.date_expired = 'La fecha debe tener un formato válido: dd/mm/aaaa.';
+    } else if (todayDate && expiredDate < todayDate) {
+      errors.date_expired = 'La fecha de vencimiento no puede ser anterior a la fecha actual.';
     } else if (form.date_issued) {
-      const issuedDate = new Date(form.date_issued);
-      if (expiredDate < issuedDate) {
+      const issuedDate = parseCertificateDate(form.date_issued);
+      if (issuedDate && expiredDate < issuedDate) {
         errors.date_expired = 'La fecha de vencimiento debe ser posterior a la de emisión';
       }
     }
   }
 
-  if (form.credential_url?.trim() && !isValidUrl(form.credential_url)) {
-    errors.credential_url = 'La URL de credencial no es válida';
+  if (form.description && form.description.length > 300) {
+    errors.description = 'El campo Descripción permite un máximo de 300 caracteres.';
+  }
+
+  if (form.credential_id && form.credential_id.length > 50) {
+    errors.credential_id = 'El campo ID de credencial permite un máximo de 50 caracteres.';
+  }
+
+  if (form.credential_url && form.credential_url.length > 200) {
+    errors.credential_url = 'El campo URL de verificación permite un máximo de 200 caracteres.';
+  } else if (form.credential_url?.trim() && !isValidUrl(form.credential_url)) {
+    errors.credential_url = 'La URL de verificación debe ser un enlace válido.';
   }
 
   return errors;
@@ -115,6 +230,7 @@ export const useCertificatesManager = () => {
   // Form state
   const [formData, setFormData] = useState<CertificateFormValues>(EMPTY_FORM);
   const [errors, setErrors] = useState<CertificateFormErrors>({});
+  const [touchedFields, setTouchedFields] = useState<CertificateFormTouched>({});
   const [fileInput, setFileInput] = useState<File | null>(null);
 
   // UI state
@@ -181,6 +297,7 @@ export const useCertificatesManager = () => {
     setEditingCertificate(null);
     setFormData(EMPTY_FORM);
     setErrors({});
+    setTouchedFields({});
     setFileInput(null);
     setErrorMessage('');
     setIsModalOpen(true);
@@ -192,14 +309,15 @@ export const useCertificatesManager = () => {
       name: certificate.name,
       issuer: certificate.issuer,
       description: certificate.description ?? '',
-      date_issued: convertDateDDMMYYYYtoISO(certificate.date_issued),
-      date_expired: convertDateDDMMYYYYtoISO(certificate.date_expired ?? ''),
+      date_issued: convertDateISOToDDMMYYYY(certificate.date_issued),
+      date_expired: convertDateISOToDDMMYYYY(certificate.date_expired ?? ''),
       credential_id: certificate.credential_id ?? '',
       credential_url: certificate.credential_url ?? '',
       file_bonus_url: certificate.file_bonus_url ?? '',
       no_expiration: !certificate.date_expired,
     });
     setErrors({});
+    setTouchedFields({});
     setFileInput(null);
     setErrorMessage('');
     setIsModalOpen(true);
@@ -211,6 +329,7 @@ export const useCertificatesManager = () => {
     setShowConfirmEdit(false);
     setFormData(EMPTY_FORM);
     setErrors({});
+    setTouchedFields({});
     setFileInput(null);
     setErrorMessage('');
   }, []);
@@ -224,25 +343,49 @@ export const useCertificatesManager = () => {
   const updateField = useCallback(
     (field: keyof CertificateFormValues, value: string | boolean) => {
       setFormData((prev) => {
-        if (field === 'no_expiration') {
-          return {
-            ...prev,
-            no_expiration: Boolean(value),
-            date_expired: value ? '' : prev.date_expired,
-          };
+        const nextForm =
+          field === 'no_expiration'
+            ? {
+                ...prev,
+                no_expiration: Boolean(value),
+                date_expired: value ? '' : prev.date_expired,
+              }
+            : {
+                ...prev,
+                [field]:
+                  field === 'date_issued' || field === 'date_expired'
+                    ? formatDateInput(String(value))
+                    : value,
+              };
+
+        const nextTouched: CertificateFormTouched = {
+          ...touchedFields,
+          [field]: true,
+        };
+
+        if (field === 'name' || field === 'issuer') {
+          nextTouched.name = true;
+          nextTouched.issuer = true;
         }
 
-        return { ...prev, [field]: value };
+        if (field === 'date_issued' || field === 'date_expired' || field === 'no_expiration') {
+          nextTouched.date_issued = true;
+          nextTouched.date_expired = true;
+        }
+
+        setTouchedFields(nextTouched);
+
+        const nextErrors = validateForm(nextForm, certificates, editingCertificate?.id);
+        const visibleErrors = Object.fromEntries(
+          Object.entries(nextErrors).filter(([key]) => nextTouched[key as keyof CertificateFormValues])
+        ) as CertificateFormErrors;
+
+        setErrors(visibleErrors);
+
+        return nextForm;
       });
-      if (errors[field]) {
-        setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[field];
-          return newErrors;
-        });
-      }
     },
-    [errors]
+    [certificates, editingCertificate?.id, touchedFields]
   );
 
   const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -250,12 +393,14 @@ export const useCertificatesManager = () => {
     if (!file) return;
 
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      setErrorMessage('Solo se permiten archivos PDF, JPG y JPEG.');
+      setFileInput(null);
+      setErrorMessage('Formato de imagen no válido.');
       return;
     }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      setErrorMessage('El archivo no debe exceder 2MB.');
+      setFileInput(null);
+      setErrorMessage('El tamaño de la imagen no debe superar los 2 MB.');
       return;
     }
 
@@ -272,8 +417,19 @@ export const useCertificatesManager = () => {
       e?.preventDefault();
       setErrorMessage('');
 
-      const newErrors = validateForm(formData);
+      const newErrors = validateForm(formData, certificates, editingCertificate?.id);
       if (Object.keys(newErrors).length > 0) {
+        setTouchedFields({
+          name: true,
+          issuer: true,
+          description: true,
+          date_issued: true,
+          date_expired: true,
+          credential_id: true,
+          credential_url: true,
+          file_bonus_url: true,
+          no_expiration: true,
+        });
         setErrors(newErrors);
         return;
       }
@@ -290,8 +446,8 @@ export const useCertificatesManager = () => {
           name: formData.name,
           issuer: formData.issuer,
           description: formData.description,
-          date_issued: formData.date_issued,
-          date_expired: formData.no_expiration ? undefined : formData.date_expired,
+          date_issued: convertDateDDMMYYYYtoISO(formData.date_issued),
+          date_expired: formData.no_expiration ? undefined : convertDateDDMMYYYYtoISO(formData.date_expired ?? ''),
           credential_id: formData.credential_id,
           credential_url: formData.credential_url,
           file_bonus_url: fileInput,
@@ -314,7 +470,7 @@ export const useCertificatesManager = () => {
         setIsSaving(false);
       }
     },
-    [formData, fileInput, isEditing, editingCertificate, showConfirmEdit]
+    [certificates, formData, fileInput, isEditing, editingCertificate, showConfirmEdit]
   );
 
   const requestDelete = useCallback((certificate: Certificate) => {
