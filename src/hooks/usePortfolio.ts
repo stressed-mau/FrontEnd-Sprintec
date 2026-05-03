@@ -52,8 +52,9 @@ export const usePortfolio = (externalSlug?: string) => {
             experiences: d.work_experiences,
             socialNetworks: d.social_networks,
             isPublished: d.config.is_public ?? true,
-            portfolioUrl: d.config.slug,
             template: Number(d.config.template),
+            config: d.config, 
+            profile: d.profile
           });
           return; // Éxito: salimos de la función
         }
@@ -91,6 +92,8 @@ export const usePortfolio = (externalSlug?: string) => {
           socialNetworks: social as SocialNetwork[],
           template: 0, // Template 0 indica que no ha elegido uno aún
           isPublished: false,
+          config: userData.config || {}, 
+          profile: userData || {},
         });
       } else {
         // Si no hay slug público y no hay sesión, no hay nada que mostrar
