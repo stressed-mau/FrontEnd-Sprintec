@@ -99,8 +99,8 @@ const navItems: NavItem[] = [
     children: [
       { id: "certificados-ver", label: "Ver certificados", path: "/certificados/ver" },
       { id: "certificados-agregar", label: "Añadir certificado", path: "/certificados/añadir" },
-      { id: "certificados-editar", label: "Editar certificado", path: "/certificados/editar" },
-      { id: "certificados-eliminar", label: "Eliminar certificado", path: "/certificados/eliminar" },
+      // { id: "certificados-editar", label: "Editar certificado", path: "/certificados/editar" },
+      // { id: "certificados-eliminar", label: "Eliminar certificado", path: "/certificados/eliminar" },
     ],
   },
   { id: "plantillas", label: "Plantillas", icon: LayoutTemplate, path: "/plantillas" },
