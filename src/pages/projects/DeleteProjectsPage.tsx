@@ -2,6 +2,7 @@ import { Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import ConfirmationModal from "@/components/ConfirmationModal";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 import { Button } from "@/components/ui/button";
 import { useProjectsManager, type ProjectItem } from "@/hooks/useProjectsManager";
 import {
@@ -54,11 +55,7 @@ export default function DeleteProjectsPage() {
   return (
     <ProjectPageShell
       title="Eliminar proyectos"
-      description={
-        selectedId == null
-          ? "Selecciona un proyecto para eliminarlo."
-          : "1 proyecto seleccionado."
-      }
+      description={selectedId == null ? "Selecciona un proyecto para eliminarlo." : "1 proyecto seleccionado."}
     >
       <FeedbackMessage message={manager.pageError} type="error" />
 
@@ -98,37 +95,13 @@ export default function DeleteProjectsPage() {
         onPageChange={setCurrentPage}
       />
 
-      {showConfirmDelete ? (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
-            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-red-100">
-              <Trash2 className="size-7 text-red-600" />
-            </div>
-            <h3 className="mb-2 text-lg font-bold text-[#003A6C]">
-              ¿Está seguro de que desea eliminar este proyecto?
-            </h3>
-            <p className="mb-6 text-sm text-gray-500">Esta acción no se puede deshacer.</p>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => void handleConfirmDelete()}
-                disabled={manager.isDeleting}
-                className="flex-1 rounded-xl bg-red-600 py-2.5 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {manager.isDeleting ? "Eliminando..." : "Eliminar"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowConfirmDelete(false)}
-                disabled={manager.isDeleting}
-                className="flex-1 rounded-xl bg-gray-100 py-2.5 font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-60"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <DeleteConfirmationModal
+        isOpen={showConfirmDelete}
+        title="¿Está seguro de que desea eliminar este proyecto?"
+        isLoading={manager.isDeleting}
+        onConfirm={() => void handleConfirmDelete()}
+        onCancel={() => setShowConfirmDelete(false)}
+      />
 
       <ConfirmationModal
         isOpen={showSuccessModal}

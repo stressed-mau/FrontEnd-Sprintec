@@ -423,7 +423,7 @@ function buildExperienceUpdateBody(payload: ExperiencePayload) {
   return {
     description: payload.description.trim(),
     ubication: payload.location.trim(),
-    end_date: payload.current ? null : payload.endDate.trim() || null,
+    end_date: payload.endDate.trim() || null,
   }
 }
 

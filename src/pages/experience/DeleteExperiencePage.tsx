@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { Trash2 } from "lucide-react"
 
-import ConfirmActionModal from "@/components/ConfirmActionModal"
 import ConfirmationModal from "@/components/ConfirmationModal"
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal"
 import { Button } from "@/components/ui/button"
 import {
   ExperiencePageShell,
@@ -133,12 +133,10 @@ export default function DeleteExperiencePage() {
         onPageChange={setCurrentPage}
       />
 
-      <ConfirmActionModal
+      <DeleteConfirmationModal
         isOpen={showConfirmDelete}
-        title="Confirmar eliminacion"
-        message="Esta seguro de que desea eliminar esta experiencia?"
-        confirmText={isDeleting ? "Eliminando..." : "Eliminar"}
-        cancelText="Cancelar"
+        title="¿Está seguro de que desea eliminar esta experiencia?"
+        isLoading={isDeleting}
         onConfirm={() => void handleDeleteSelected()}
         onCancel={() => setShowConfirmDelete(false)}
       />

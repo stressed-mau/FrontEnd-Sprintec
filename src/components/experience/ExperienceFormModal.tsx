@@ -129,16 +129,16 @@ export function ExperienceFormModal({
   onRemoveCertificate,
   onSubmit,
 }: ExperienceFormModalProps) {
-  const companyLabel = formData.type === "laboral" ? "Empresa" : "Institucion"
-  const positionLabel = formData.type === "laboral" ? "Cargo" : "Titulo"
+  const companyLabel = formData.type === "laboral" ? "Empresa" : "Institución académica"
+  const positionLabel = formData.type === "laboral" ? "Cargo" : "Nivel de formación"
   const isLaboralExperience = formData.type === "laboral"
   const isLaboralUpdate = isEditing && isLaboralExperience
   const isAcademicUpdate = isEditing && !isLaboralExperience
   const isLimitedUpdate = isLaboralUpdate || isAcademicUpdate
   const isCurrentActive = formData.current
   const disabledControlClassName =
-    "disabled:cursor-not-allowed disabled:border-[#A5D7E8] disabled:bg-[#C2DBED] disabled:text-[#003A6C] disabled:opacity-100"
-  const disabledButtonClassName = "disabled:cursor-not-allowed disabled:border-[#A5D7E8] disabled:bg-[#C2DBED] disabled:text-[#003A6C] disabled:opacity-100"
+    "disabled:cursor-not-allowed disabled:border-[#D7E6F2] disabled:bg-[#EEF5F9] disabled:text-[#7F97AB] disabled:opacity-100"
+  const disabledButtonClassName = "disabled:cursor-not-allowed disabled:border-[#D7E6F2] disabled:bg-[#EEF5F9] disabled:text-[#7F97AB] disabled:opacity-100"
   const editingTitle = isLaboralExperience ? "Editar experiencia laboral" : "Editar experiencia academica"
   const createTitle = isLaboralExperience ? "Nueva experiencia laboral" : "Nueva experiencia academica"
   const positionOptions = isLaboralExperience ? POSITION_OPTIONS : DEGREE_OPTIONS
@@ -159,11 +159,12 @@ export function ExperienceFormModal({
     return typeof originalValue === "string" && !originalValue.trim()
   }
   const isLocationDisabled = isSaving || wasEmptyOriginally("location")
-  const isDescriptionDisabled = isSaving || wasEmptyOriginally("description")
-  const isEndDateDisabled = isSaving || isCurrentActive || wasEmptyOriginally("endDate") || (isEditing && originalEditingValues?.current === false)
-  const isCurrentDisabled = isSaving || isEditing
+  const isDescriptionDisabled = isSaving || (isLaboralExperience && wasEmptyOriginally("description"))
+  const isEndDateDisabled = isSaving
+  const isCurrentDisabled = isSaving
   const isImageDisabled = isSaving || isLaboralUpdate || wasEmptyOriginally("image")
   const isCertificateDisabled = isSaving || isAcademicUpdate || wasEmptyOriginally("certificate")
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
 
   return (
     <div
@@ -294,7 +295,7 @@ export function ExperienceFormModal({
               aria-labelledby="experience-position-label"
               aria-describedby={errors.position ? "experience-position-error" : undefined}
             >
-              <option value="">{isLaboralExperience ? "Selecciona un cargo" : "Selecciona un titulo"}</option>
+              <option value="">{isLaboralExperience ? "Selecciona un cargo" : "Selecciona un nivel de formación"}</option>
               {resolvedPositionOptions.map((option) => (
                 <option key={option} value={option}>
                   {option}
@@ -307,7 +308,7 @@ export function ExperienceFormModal({
           {!isLaboralExperience ? (
             <div className="space-y-2">
               <Label id="experience-field-label" htmlFor="experience-field" className="text-[#003A6C]">
-                Campo de estudio <span aria-hidden="true">*</span>
+                Área de estudio <span aria-hidden="true">*</span>
               </Label>
               <select
                 id="experience-field"
@@ -320,7 +321,7 @@ export function ExperienceFormModal({
                 aria-labelledby="experience-field-label"
                 aria-describedby={errors.fieldOfStudy ? "experience-field-error" : undefined}
               >
-                <option value="">Selecciona un campo de estudio</option>
+                <option value="">Selecciona un área de estudio</option>
                 {resolvedFieldOptions.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -333,7 +334,7 @@ export function ExperienceFormModal({
 
           <div className="space-y-2">
             <Label id="experience-description-label" htmlFor="experience-description" className="text-[#003A6C]">
-              Descripcion
+              Descripción
             </Label>
             <Textarea
               id="experience-description"
@@ -363,6 +364,7 @@ export function ExperienceFormModal({
                 type="date"
                 value={formData.startDate}
                 disabled={isSaving || isLimitedUpdate}
+                max={today}
                 onBlur={() => onBlur("startDate")}
                 onChange={(event) => onFieldChange("startDate", event.target.value)}
                 className={`h-11 border-[#A5D7E8] bg-white text-[#003A6C] ${disabledControlClassName}`}
@@ -382,6 +384,7 @@ export function ExperienceFormModal({
                 type="date"
                 value={formData.endDate}
                 disabled={isEndDateDisabled}
+                max={today}
                 onBlur={() => onBlur("endDate")}
                 onChange={(event) => onFieldChange("endDate", event.target.value)}
                 className={`h-11 border-[#A5D7E8] bg-white text-[#003A6C] ${disabledControlClassName}`}
@@ -403,7 +406,7 @@ export function ExperienceFormModal({
               className={`size-4 rounded border-[#A5D7E8] text-[#003A6C] focus:ring-[#A5D7E8] ${disabledControlClassName}`}
             />
             <Label id="experience-current-label" htmlFor="experience-current" className="cursor-pointer text-[#003A6C]">
-              Actualmente trabajo/estudio aqui
+              {isLaboralExperience ? "Aun trabajo aqui" : "Actualmente estudio aqui"}
             </Label>
           </div>
 

@@ -176,6 +176,7 @@ export function useProjectsManager() {
       ...current,
       [field]: value,
       ...(field === "is_current" && value === true ? { fechaFin: "" } : {}),
+      ...(field === "fechaFin" && typeof value === "string" && value.trim() ? { is_current: false } : {}),
     }));
     setErrors((current) => {
       const next = { ...current };
@@ -273,7 +274,7 @@ export function useProjectsManager() {
         title: formData.nombre.trim(),
         description: formData.descripcion.trim(),
         initial_date: formData.fechaInicio,
-        final_date: formData.is_current ? null : formData.fechaFin,
+        final_date: formData.fechaFin || null,
         url_to_project: formData.github.trim() || null,
         url_to_deploy: formData.demo.trim() || null,
         project_rol: formData.rol,
@@ -288,7 +289,7 @@ export function useProjectsManager() {
           is_current: createPayload.is_current,
           ...(createPayload.url_to_project ? { url_to_project: createPayload.url_to_project } : {}),
           ...(createPayload.url_to_deploy ? { url_to_deploy: createPayload.url_to_deploy } : {}),
-          ...(createPayload.is_current ? {} : { final_date: createPayload.final_date }),
+          final_date: createPayload.final_date,
         };
 
         await updateProject(editingProject.id, updatePayload);

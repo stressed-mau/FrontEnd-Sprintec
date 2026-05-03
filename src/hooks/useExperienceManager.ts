@@ -49,12 +49,17 @@ const ALLOWED_CERTIFICATE_TYPES = ["image/jpeg", "image/png", "image/jpg", "appl
 const ALLOWED_CERTIFICATE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf"]
 const COMPANY_MAX_LENGTH = 100
 const COMPANY_ALLOWED_CHARACTERS = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/
+const ACADEMIC_INSTITUTION_ALLOWED_CHARACTERS = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9\s]+$/
 function normalizeExperienceTypeValue(value: string): ExperienceFormValues["type"] {
   return value === "academica" ? "academica" : "laboral"
 }
 
-function sanitizeCompanyInput(value: string) {
-  return value.replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]/g, "").slice(0, COMPANY_MAX_LENGTH)
+function sanitizeCompanyInput(value: string, type: ExperienceFormValues["type"]) {
+  const allowedCharacters = type === "academica"
+    ? /[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9\s]/g
+    : /[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]/g
+
+  return value.replace(allowedCharacters, "").slice(0, COMPANY_MAX_LENGTH)
 }
 
 function normalizeFormDate(value: string) {
@@ -295,14 +300,20 @@ function validateExperienceField(
         : "El campo institucion es obligatorio."
     }
 
-    if (!COMPANY_ALLOWED_CHARACTERS.test(company)) {
+    const hasValidCompanyCharacters = values.type === "academica"
+      ? ACADEMIC_INSTITUTION_ALLOWED_CHARACTERS.test(company)
+      : COMPANY_ALLOWED_CHARACTERS.test(company)
+
+    if (!hasValidCompanyCharacters) {
       return values.type === "laboral"
         ? "El campo empresa solo permite caracteres literales."
-        : "El campo institucion solo permite caracteres literales."
+        : "El campo Institución académica contiene caracteres no válidos."
     }
 
     if (company.length > COMPANY_MAX_LENGTH) {
-      return "El nombre de la empresa no puede exceder los 100 caracteres."
+      return values.type === "laboral"
+        ? "El nombre de la empresa no puede exceder los 100 caracteres."
+        : ""
     }
   }
 
@@ -333,21 +344,25 @@ function validateExperienceField(
 
   if (field === "position") {
     if (!position) {
-      return "El campo cargo es obligatorio."
+      return values.type === "academica"
+        ? "Se debe seleccionar un nivel de formación."
+        : "El campo cargo es obligatorio."
     }
 
     if (position.length > 80) {
-      return "El cargo no puede exceder los 80 caracteres."
+      return values.type === "academica"
+        ? "El nivel de formación no puede exceder los 80 caracteres."
+        : "El cargo no puede exceder los 80 caracteres."
     }
   }
 
   if (field === "fieldOfStudy" && values.type === "academica") {
     if (!fieldOfStudy) {
-      return "El campo de estudio es obligatorio."
+      return "El campo Área de estudio es obligatorio."
     }
 
     if (fieldOfStudy.length > 100) {
-      return "El campo de estudio no puede exceder los 100 caracteres."
+      return "El área de estudio no puede exceder los 100 caracteres."
     }
   }
 
@@ -588,13 +603,13 @@ export function useExperienceManager() {
 
   function updateField(field: keyof ExperienceFormValues, value: string | boolean) {
     if (editingExperience && originalEditingValues) {
-      const lockedFields: Array<keyof ExperienceFormValues> = ["type", "company", "email", "position", "startDate", "current"]
+      const lockedFields: Array<keyof ExperienceFormValues> = ["type", "company", "email", "position", "startDate"]
 
       if (lockedFields.includes(field)) {
         return
       }
 
-      if (typeof value === "string" && typeof originalEditingValues[field] === "string") {
+      if (field !== "endDate" && field !== "description" && typeof value === "string" && typeof originalEditingValues[field] === "string") {
         const originalValue = originalEditingValues[field]
 
         if (!originalValue.trim()) {
@@ -611,7 +626,7 @@ export function useExperienceManager() {
       field === "type" && typeof value === "string"
         ? normalizeExperienceTypeValue(value)
         : field === "company" && typeof value === "string"
-          ? sanitizeCompanyInput(value)
+          ? sanitizeCompanyInput(value, formData.type)
         : field === "email" && typeof value === "string"
           ? value.slice(0, 60)
           : value
@@ -627,6 +642,10 @@ export function useExperienceManager() {
 
     if (field === "current" && value === true) {
       nextValues.endDate = ""
+    }
+
+    if (field === "endDate" && typeof normalizedValue === "string" && normalizedValue.trim()) {
+      nextValues.current = false
     }
 
     setFormData(nextValues)
@@ -853,14 +872,16 @@ export function useExperienceManager() {
     }
 
     if (editingExperience && originalEditingValues) {
-      const protectedFields: Array<keyof ExperienceFormValues> = ["location", "fieldOfStudy", "description", "endDate", "image", "certificate"]
+      const protectedFields: Array<keyof ExperienceFormValues> = ["location", "fieldOfStudy", "description", "image", "certificate"]
 
       protectedFields.forEach((field) => {
         const originalValue = originalEditingValues[field]
         const currentValue = formData[field]
 
         if (typeof originalValue === "string" && originalValue.trim() && typeof currentValue === "string" && !currentValue.trim()) {
-          nextErrors[field] = "La informacion guardada previamente no puede ser borrada."
+          nextErrors[field] = field === "description"
+            ? "Este campo no puede quedar vacío."
+            : "La informacion guardada previamente no puede ser borrada."
         }
       })
     }

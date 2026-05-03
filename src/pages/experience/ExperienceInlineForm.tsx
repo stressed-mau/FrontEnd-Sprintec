@@ -128,13 +128,14 @@ export function ExperienceInlineForm({
   onCancel,
 }: ExperienceInlineFormProps) {
   const isEducation = mode === "education"
-  const companyLabel = isEducation ? "Institucion" : "Empresa"
-  const positionLabel = isEducation ? "Titulo" : "Cargo"
+  const companyLabel = isEducation ? "Institución académica" : "Empresa"
+  const positionLabel = isEducation ? "Nivel de formación" : "Cargo"
   const currentLabel = isEducation ? "Cursando actualmente" : "Trabajo actual"
   const submitLabel = isEducation ? "Agregar formacion" : "Agregar experiencia"
   const descriptionPlaceholder = isEducation
     ? "Describe tu experiencia academica, logros, especializaciones..."
     : "Describe tus responsabilidades y logros..."
+  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
 
   return (
     <Card className="overflow-hidden rounded-xl border border-gray-200 bg-white py-0 shadow-sm">
@@ -149,7 +150,7 @@ export function ExperienceInlineForm({
                 disabled={isSaving}
                 onBlur={() => onBlur("company")}
                 onChange={(event) => onFieldChange("company", event.target.value)}
-                placeholder={isEducation ? "Ej: Universidad Mayor de San Andres" : "Ej: Google, Microsoft, Startup XYZ"}
+                placeholder={isEducation ? "Ej: Universidad Mayor de San Andres 2" : "Ej: Google, Microsoft, Startup XYZ"}
                 aria-invalid={Boolean(errors.company)}
                 className="h-10 border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
               />
@@ -167,7 +168,7 @@ export function ExperienceInlineForm({
                   errors.position ? "border-red-500 ring-3 ring-red-100" : "border-gray-300"
                 }`}
               >
-                <option value="">{isEducation ? "Selecciona un titulo" : "Selecciona un cargo"}</option>
+                <option value="">{isEducation ? "Selecciona un nivel de formación" : "Selecciona un cargo"}</option>
                 {(isEducation ? DEGREE_OPTIONS : POSITION_OPTIONS).map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -178,7 +179,7 @@ export function ExperienceInlineForm({
           </div>
 
           {isEducation ? (
-            <FieldError label="Campo de estudio" id="field" error={errors.fieldOfStudy} required>
+            <FieldError label="Área de estudio" id="field" error={errors.fieldOfStudy} required>
               <select
                 id="field"
                 value={formData.fieldOfStudy}
@@ -190,7 +191,7 @@ export function ExperienceInlineForm({
                   errors.fieldOfStudy ? "border-red-500 ring-3 ring-red-100" : "border-gray-300"
                 }`}
               >
-                <option value="">Selecciona un campo de estudio</option>
+                <option value="">Selecciona un área de estudio</option>
                 {FIELD_OPTIONS.map((option) => (
                   <option key={option} value={option}>
                     {option}
@@ -244,7 +245,7 @@ export function ExperienceInlineForm({
 
             <div className={`space-y-2 ${isEducation ? "md:col-span-3" : "md:col-span-2"}`}>
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                Descripcion
+                Descripción
               </Label>
               <Textarea
                 id="description"
@@ -301,6 +302,7 @@ export function ExperienceInlineForm({
                 type="date"
                 value={formData.startDate}
                 disabled={isSaving}
+                max={today}
                 onBlur={() => onBlur("startDate")}
                 onChange={(event) => onFieldChange("startDate", event.target.value)}
                 aria-invalid={Boolean(errors.startDate)}
@@ -314,6 +316,7 @@ export function ExperienceInlineForm({
                 type="date"
                 value={formData.endDate}
                 disabled={formData.current || isSaving}
+                max={today}
                 onBlur={() => onBlur("endDate")}
                 onChange={(event) => onFieldChange("endDate", event.target.value)}
                 aria-invalid={Boolean(errors.endDate)}
