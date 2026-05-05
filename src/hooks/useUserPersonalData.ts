@@ -16,6 +16,32 @@ type FormErrors = {
   image?: string;
   server?: string;
 };
+
+type PersonalDataForm = {
+  fullName: string;
+  occupation: string;
+  bio: string;
+  location: string;
+  email: string;
+  image: string;
+};
+
+const FIELD_LABELS: Record<keyof PersonalDataForm, string> = {
+  fullName: "Nombre completo",
+  occupation: "Ocupación",
+  bio: "Biografía",
+  location: "Residencia actual",
+  email: "Correo electrónico público",
+  image: "Foto de perfil",
+};
+
+const PRESERVE_VALUE_FIELDS: Array<keyof PersonalDataForm> = [
+  "occupation",
+  "bio",
+  "location",
+  "email",
+];
+
 export const useUserPersonalData = () => {
   console.log("HOOK useUserPersonalData CARGADO");
   const [countryCode, setCountryCode] = useState("591");
@@ -36,7 +62,7 @@ export const useUserPersonalData = () => {
   }));
 };
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<PersonalDataForm>({
     fullName: "",
     occupation: "",
     bio: "",
@@ -56,25 +82,26 @@ export const useUserPersonalData = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(form.email);
-  const [originalForm, setOriginalForm] = useState<any>(null);
+  const [originalForm, setOriginalForm] = useState<PersonalDataForm | null>(null);
   const [originalCountryCode, setOriginalCountryCode] = useState("591");
   const [originalPhoneNumber, setOriginalPhoneNumber] = useState("");
   const validateField = (id: string, value: string) => {
   switch (id) {
     case "fullName":
       if (!value.trim()) return "El nombre completo es obligatorio.";
-      if (!/^[a-zA-Z\s]+$/.test(value)) return "El nombre solo puede contener letras.";
+      if (EMOJI_REGEX.test(value)) return "El nombre completo no permite emoticones.";
+      if (!/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/.test(value)) return "El nombre completo solo puede contener letras.";
       if (value.length > 100) return "El nombre no puede exceder los 100 caracteres.";
       return "";
 
     case "occupation":
-      return value.length >= 80 ? "La ocupación no puede exceder los 80 caracteres." : "";
+      return value.length > 80 ? "La ocupación no puede exceder los 80 caracteres." : "";
 
     case "bio":
-      return value.length >= 300 ? "La biografía no puede exceder los 300 caracteres." : "";
+      return value.length > 300 ? "La biografía no puede exceder los 300 caracteres." : "";
 
     case "location":
-      return value.length >= 100 ? "La ubicación no puede exceder los 100 caracteres." : "";
+      return value.length > 100 ? "La ubicación no puede exceder los 100 caracteres." : "";
 
     case "email": {
       const rawValue = value;
@@ -86,7 +113,11 @@ export const useUserPersonalData = () => {
       }
 
       const cleanValue = rawValue.trim();
-      if (cleanValue.length >= 60) {
+      if (/\s/.test(rawValue)) {
+        return "El correo electrónico no puede contener espacios en blanco.";
+      }
+
+      if (cleanValue.length > 60) {
         return "El correo no puede exceder los 60 caracteres.";
       }
 
@@ -221,7 +252,7 @@ const handleChange = (e: any) => {
     setCharLimitWarning(prev => ({ ...prev, [id]: "" }));
   }
 
-  const newValue = id === "email" ? sanitizeEmailInput(value) : value;
+  const newValue = value;
   setForm(prev => ({
     ...prev,
     [id]: newValue
@@ -247,6 +278,19 @@ const handleChange = (e: any) => {
 
     const phoneError = validateField("phone", phoneNumber);
     if (phoneError) newErrors.phone = phoneError;
+
+    if (originalForm) {
+      PRESERVE_VALUE_FIELDS.forEach((field) => {
+        if (originalForm[field].trim() && !form[field].trim()) {
+          newErrors[field] = `El campo ${FIELD_LABELS[field]} no puede quedar vacío.`;
+        }
+      });
+
+      if (originalPhoneNumber.trim() && !phoneNumber.trim()) {
+        newErrors.phone = "El campo Numero de contacto no puede quedar vacío.";
+      }
+    }
+
     if (!preview && !form.image && !fileInputRef.current?.files?.[0]) {
       newErrors.image = "La Foto de perfil es obligatoria";
     }
