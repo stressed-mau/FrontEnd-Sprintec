@@ -2,9 +2,12 @@ import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { Search, ChevronLeft, ChevronRight, BadgeCheck } from 'lucide-react';
+import { useState } from 'react';
+import { CertificateDetailsModal } from '@/components/certificates/CertificateDetailsModal';
 import { useCertificatesManager } from '../../hooks/useCertificatesManager';
 
 export default function ViewCertificatesPage() {
+  const [selectedCertificate, setSelectedCertificate] = useState<any>(null);
   const { 
     paginatedCertificates, 
     pageError, 
@@ -58,9 +61,10 @@ export default function ViewCertificatesPage() {
                   {paginatedCertificates.map((cert, idx, arr) => (
                     <div
                       key={cert.id}
+                      onClick={() => setSelectedCertificate(cert)}
                       className={`grid grid-cols-[minmax(0,2.5fr)_minmax(180px,1.4fr)_140px_190px] items-center gap-6 px-6 py-4 transition-colors hover:bg-[#EEF6FC] ${
                         idx !== arr.length - 1 ? 'border-b border-[#6dacbf]/10' : ''
-                      }`}
+                      } cursor-pointer`}
                     >
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
@@ -77,12 +81,12 @@ export default function ViewCertificatesPage() {
                       </span>
                       <div className="flex min-w-[190px] justify-end gap-2">
                         {cert.file_bonus_url && (
-                          <a href={cert.file_bonus_url} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-[#6DACBF]/30 px-3 py-1.5 text-xs font-semibold text-[#0E7D96] transition-colors hover:bg-[#EEF5F9] hover:text-[#003A6C]">
+                          <a onClick={(e) => e.stopPropagation()} href={cert.file_bonus_url} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-[#6DACBF]/30 px-3 py-1.5 text-xs font-semibold text-[#0E7D96] transition-colors hover:bg-[#EEF5F9] hover:text-[#003A6C]">
                             Archivo
                           </a>
                         )}
                         {cert.credential_url && (
-                          <a href={cert.credential_url} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-[#6DACBF]/30 px-3 py-1.5 text-xs font-semibold text-[#0E7D96] transition-colors hover:bg-[#EEF5F9] hover:text-[#003A6C]">
+                          <a onClick={(e) => e.stopPropagation()} href={cert.credential_url} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-[#6DACBF]/30 px-3 py-1.5 text-xs font-semibold text-[#0E7D96] transition-colors hover:bg-[#EEF5F9] hover:text-[#003A6C]">
                             Credencial
                           </a>
                         )}
@@ -132,6 +136,10 @@ export default function ViewCertificatesPage() {
           </div>
         </main>
       </div>
+      <CertificateDetailsModal
+        certificate={selectedCertificate}
+        onClose={() => setSelectedCertificate(null)}
+      />
       <Footer />
     </div>
   );
