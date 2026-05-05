@@ -394,22 +394,31 @@ export const useCertificatesManager = () => {
 
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
       setFileInput(null);
-      setErrorMessage('Formato de imagen no válido.');
+      setErrors((prev) => ({ ...prev, file_bonus_url: 'Formato de imagen no válido.' }));
       return;
     }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       setFileInput(null);
-      setErrorMessage('El tamaño de la imagen no debe superar los 2 MB.');
+      setErrors((prev) => ({ ...prev, file_bonus_url: 'El tamaño de la imagen no debe superar los 2 MB.' }));
       return;
     }
 
     setFileInput(file);
-    setErrorMessage('');
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.file_bonus_url;
+      return next;
+    });
   }, []);
 
   const removeFile = useCallback(() => {
     setFileInput(null);
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.file_bonus_url;
+      return next;
+    });
   }, []);
 
   const handleSubmit = useCallback(
