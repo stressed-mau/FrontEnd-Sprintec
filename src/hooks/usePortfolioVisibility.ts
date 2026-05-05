@@ -15,7 +15,7 @@ const initialData: PortfolioVisibilityData = {
 };
 
 const MIN_VISIBLE_MESSAGE =
-  'Debe mantener al menos un elemento visible en el portafolio.';
+  'Debe mantener al menos una sección visible en el portafolio.';
 
 export const usePortfolioVisibility = () => {
   const [data, setData] = useState(initialData);
@@ -27,6 +27,7 @@ export const usePortfolioVisibility = () => {
     setIsLoading(true);
     try {
       const res = await getPortfolioVisibilityData();
+      setPageError('');
       setData(res);
     } catch (e: any) {
       setPageError(e.message);
@@ -62,6 +63,7 @@ export const usePortfolioVisibility = () => {
     id: number,
     sourceTable?: VisibilityItem['sourceTable']
   ) => {
+    setPageError('');
     const prev = data[section];
 
     const totalChecked = Object.values(data)
@@ -93,6 +95,7 @@ export const usePortfolioVisibility = () => {
     section: SectionKey,
     selectAll: boolean
   ) => {
+    setPageError('');
     const prev = data[section];
     const next = prev.map((i) => ({ ...i, checked: selectAll }));
 

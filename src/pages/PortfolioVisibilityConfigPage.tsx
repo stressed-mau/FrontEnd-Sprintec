@@ -11,6 +11,7 @@ const PortfolioVisibilityPage = () => {
     data: visibilityData, 
     isLoading, 
     isSaving, 
+    pageError,
     handleItemCheck, 
     handleBulkSelect 
   } = usePortfolioVisibility();
@@ -46,7 +47,7 @@ const PortfolioVisibilityPage = () => {
           <div className="mx-auto max-w-6xl space-y-6">
             
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl mb-2">
+              <h1 className="mb-1 text-2xl font-semibold text-gray-900">
                 Configuración de Visibilidad
               </h1>
               <p className="text-sm text-[#4B778D] md:text-base">
@@ -55,6 +56,11 @@ const PortfolioVisibilityPage = () => {
             </div>
 
             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100">
+              {pageError && (
+                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  {pageError}
+                </div>
+              )}
               
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-blue-50 rounded-lg">
@@ -100,7 +106,7 @@ const PortfolioVisibilityPage = () => {
                                 className="sr-only peer"
                                 checked={sectionEnabled}
                                 disabled={isSaving || !hasItems}
-                                onChange={() => handleBulkSelect(key, !allChecked)}/>
+                                onChange={() => handleBulkSelect(key, !sectionEnabled)}/>
                               <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#003A6C]"></div>
                             </label>
 
@@ -132,7 +138,7 @@ const PortfolioVisibilityPage = () => {
                                   <button 
                                     onClick={() => handleBulkSelect(key, true)}
                                     disabled={isSaving || allChecked}
-                                    className="px-4 py-2 bg-[#D1B983] text-[#003A6C] text-sm font-medium rounded-lg 
+                                    className="px-4 py-2 bg-[#C9E1F0] text-[#003A6C] text-sm font-medium rounded-lg 
                                                hover:bg-[#c4ab75] active:bg-[#b89f68] transition-colors shadow-sm"
                                   >
                                     Seleccionar todos
@@ -142,7 +148,7 @@ const PortfolioVisibilityPage = () => {
                                     onClick={() => handleBulkSelect(key, false)}
                                     disabled={isSaving || !allChecked}
                                     className="px-4 py-2 bg-[#C9E1F0] text-[#003A6C] text-sm font-medium rounded-lg 
-                                               hover:bg-[#b8d6e8] active:bg-[#a5cde3] transition-colors shadow-sm"
+                                               hover:bg-[#c4ab75] active:bg-[#a5cde3] transition-colors shadow-sm"
                                   >
                                     Deseleccionar todos
                                   </button>

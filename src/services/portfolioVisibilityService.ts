@@ -49,7 +49,7 @@ const normalizeProjects = (data: any) =>
   (data?.projects || []).map((item: any) => ({
     id: item.id,
     label: item.name || 'Proyecto',
-    sublabel: item.description || '',
+    sublabel: item.project_rol || item.rol || item.role || 'Rol no especificado',
     checked: asBoolean(item.is_public),
     sourceTable: 'projects',
   }));
