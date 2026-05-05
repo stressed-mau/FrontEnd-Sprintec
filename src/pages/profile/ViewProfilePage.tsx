@@ -49,7 +49,7 @@ const ViewProfilePage = () => {
               {/* Grid de detalles */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-12">
               <InfoItem icon={<Mail className="text-blue-500" />} label="Email de cuenta" value={accountEmail} />
-                <InfoItem icon={<Mail className="text-purple-500" />} label="Email Público" value="No especificado" />
+                <InfoItem icon={<Mail className="text-purple-500" />} label="Email Público" value={form.email} />
                 <InfoItem icon={<Phone className="text-green-500" />} label="Teléfono" value={phoneNumber ? `+${countryCode} ${phoneNumber}` : "No especificado"} />
                 <InfoItem icon={<MapPin className="text-orange-500" />} label="Ubicación" value={form.location} />
                 <InfoItem icon={<Briefcase className="text-indigo-500" />} label="Profesión" value={form.occupation} />

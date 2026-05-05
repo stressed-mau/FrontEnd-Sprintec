@@ -3,11 +3,12 @@
 import { useNavigate } from "react-router-dom"
 
 import { useEmailValidation } from "@/hooks/useEmailValidation"
-import { LOGIN_ROUTE } from "@/routes/route-paths"
+import { REGISTER_PROFILE_ROUTE } from "@/routes/route-paths"
 import {
   AuthServiceError,
   clearAuthSession,
   registerUser,
+  saveAuthSession,
   type ApiValidationErrors,
 } from "@/services/auth"
 
@@ -187,12 +188,14 @@ export function useRegisterForm() {
       clearAuthSession()
 
       const normalizedEmail = emailValidation.normalizedEmail.toLowerCase()
-      await registerUser({
+      const response = await registerUser({
         username: normalizedValues.name.trim(),
         email: normalizedEmail,
         password: normalizedValues.password,
         password_confirmation: normalizedValues.confirmPassword,
       })
+
+      saveAuthSession(response)
 
       window.localStorage.setItem(
         "portfolio_last_welcome_email",
@@ -204,6 +207,9 @@ export function useRegisterForm() {
       )
 
       setShowSuccessModal(true)
+      window.setTimeout(() => {
+        navigate(REGISTER_PROFILE_ROUTE, { replace: true })
+      }, 1200)
     } catch (error) {
       if (error instanceof AuthServiceError) {
         const fieldErrors = mapApiErrors(error.validationErrors)
@@ -224,7 +230,7 @@ export function useRegisterForm() {
 
   function closeSuccessModal() {
     setShowSuccessModal(false)
-    navigate(LOGIN_ROUTE, { replace: true })
+    navigate(REGISTER_PROFILE_ROUTE, { replace: true })
   }
 
   function applyEmailSuggestion(suggestedEmail: string) {

@@ -196,7 +196,7 @@ export default function RegisterProfilePage() {
                    {/* --- CORREO PÚBLICO --- */}
                     <div className="space-y-1.5 md:col-span-2">
                     <label htmlFor="email" className="text-sm font-semibold text-[#003A6C] ml-1">
-                        Correo público
+                        Correo público *
                     </label>
                     <input 
                         id="email" 
@@ -229,7 +229,7 @@ export default function RegisterProfilePage() {
                     </div>
                   {/* Número de contacto */}
                   <div className="space-y-2 md:col-span-2">
-                    <label htmlFor="phone" className="block text-sm font-medium text-[#003A6C]">Número de contacto</label>
+                    <label htmlFor="phone" className="block text-sm font-medium text-[#003A6C]">Numero de contacto *</label>
                     <div className="flex gap-2">
                       <select 
                         value={countryCode} 

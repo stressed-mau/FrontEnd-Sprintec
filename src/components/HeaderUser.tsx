@@ -8,8 +8,8 @@ import { USER_HOME_ROUTE } from "@/routes/route-paths"
 import { getAuthSession } from "@/services/auth"
 
 const ROLE_LABELS: Record<number, string> = {
-  1: "Administrador",
-  2: "Usuario",
+  1: "Usuario",
+  2: "Administrador",
 }
 
 const HeaderUser = () => {

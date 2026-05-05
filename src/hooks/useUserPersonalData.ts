@@ -4,6 +4,8 @@ import { allCountries } from 'country-telephone-data';
 import { useEmailValidation } from "@/hooks/useEmailValidation";
 import { getUserInformation, updateUserInformation } from "@/services/PersonalDataService";
 
+const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
+
 type FormErrors = {
   fullName?: string;
   occupation?: string;
@@ -27,12 +29,10 @@ export const useUserPersonalData = () => {
     phone: ""
   });
   const handlePhoneChange = (value: string) => {
-  const onlyNumbers = value.replace(/[^0-9]/g, "");
-
-  setPhoneNumber(onlyNumbers);
+  setPhoneNumber(value);
   setErrors((prev: any) => ({
     ...prev,
-    phone: validateField("phone", onlyNumbers)
+    phone: validateField("phone", value)
   }));
 };
 
@@ -57,6 +57,8 @@ export const useUserPersonalData = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(form.email);
   const [originalForm, setOriginalForm] = useState<any>(null);
+  const [originalCountryCode, setOriginalCountryCode] = useState("591");
+  const [originalPhoneNumber, setOriginalPhoneNumber] = useState("");
   const validateField = (id: string, value: string) => {
   switch (id) {
     case "fullName":
@@ -75,12 +77,12 @@ export const useUserPersonalData = () => {
       return value.length >= 100 ? "La ubicación no puede exceder los 100 caracteres." : "";
 
     case "email": {
-       const rawValue = value;
+      const rawValue = value;
       if (rawValue.length > 0 && rawValue.trim().length === 0) {
-        return "El Correo electrónico no puede contener espacios en blanco";
+        return "El correo electrónico no puede contener espacios en blanco.";
       }
       if (!rawValue.trim()) {
-        return "El correo electrónico es obligatorio.";
+        return "El campo Correo electrónico es obligatorio.";
       }
 
       const cleanValue = rawValue.trim();
@@ -88,11 +90,15 @@ export const useUserPersonalData = () => {
         return "El correo no puede exceder los 60 caracteres.";
       }
 
+      if (EMOJI_REGEX.test(cleanValue)) {
+        return "El Correo electrónico debe tener un formato válido (ej. usuario@gmail.com).";
+      }
+
       // Validación básica (rápida)
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanValue)) {
         // Aquí usamos mailcheck para sugerencia aunque sea inválido
         validateEmail(cleanValue);
-        return "El Correo electrónico debe tener un formato válido (ej. usuario@uno.com)";
+        return "El Correo electrónico debe tener un formato válido (ej. usuario@uno.com).";
       }
       // Validación completa (usa validator + mailcheck)
       const result = validateEmail(cleanValue);
@@ -100,16 +106,19 @@ export const useUserPersonalData = () => {
       return result.error;
     }
     case "phone": {
-      const cleanValue = value.trim();
+      const rawValue = value;
+      const cleanValue = rawValue.trim();
 
       if (!cleanValue) {
-        return ""; 
+        return rawValue.length > 0
+          ? "El Numero de contacto no puede contener espacios en blanco."
+          : "El campo Numero de contacto es obligatorio.";
       }
-      if (/\s/.test(value)) {
-        return "El número de contacto no permite ingresar espacios en blanco";
+      if (/\s/.test(rawValue)) {
+        return "El Numero de contacto no puede contener espacios en blanco.";
       }
       if (!/^[0-9]+$/.test(cleanValue)) {
-        return "El número de contacto solo puede contener números.";
+        return "El Número de contacto solo puede contener números.";
       }
 
       if (cleanValue.length !== 8) {
@@ -152,9 +161,6 @@ export const useUserPersonalData = () => {
         if (error) initialErrors[key] = error;
       });
 
-      const phoneError = validateField("phone", phoneNumber);
-      if (phoneError) initialErrors.phone = phoneError;
-
       setErrors(initialErrors);
 
       if (user.phone_number) {
@@ -171,9 +177,12 @@ export const useUserPersonalData = () => {
           );
 
           setPhoneNumber(numberWithoutCode);
+          setOriginalCountryCode(foundCountry.dialCode);
+          setOriginalPhoneNumber(numberWithoutCode);
         } else {
           // fallback
           setPhoneNumber(user.phone_number);
+          setOriginalPhoneNumber(user.phone_number);
         }
       }
     } catch (error) {
@@ -239,7 +248,7 @@ const handleChange = (e: any) => {
     const phoneError = validateField("phone", phoneNumber);
     if (phoneError) newErrors.phone = phoneError;
     if (!preview && !form.image && !fileInputRef.current?.files?.[0]) {
-      newErrors.image = "La foto de perfil es obligatoria.";
+      newErrors.image = "La Foto de perfil es obligatoria";
     }
     setErrors(newErrors);
 
@@ -271,17 +280,22 @@ const handleChange = (e: any) => {
         formData.append("image_url", fileInputRef.current.files[0]);
       }
       const updatedUser = await updateUserInformation(formData);
-      setForm({
+      const updatedForm = {
         fullName: updatedUser.fullname || "", 
         occupation: updatedUser.occupation || "",
         bio: updatedUser.biography || "", 
         location: updatedUser.nationality || "", 
         email: updatedUser.public_email || "", 
         image: updatedUser.image_url || "", 
-      });
+      };
+
+      setForm(updatedForm);
+      setOriginalForm(updatedForm);
+      setOriginalCountryCode(countryCode);
+      setOriginalPhoneNumber(phoneNumber);
 
       setPreview(null);
-      setSuccess("Información guardada correctamente ");
+      setSuccess("Información actualizada correctamente.");
       return true;
     } catch (error: any) {
       if (error.response?.data?.errors?.public_email) {
@@ -304,7 +318,8 @@ const handleChange = (e: any) => {
     setPreview(null);
     setErrors({});
     setSuccess("");
-    setPhoneNumber("");
+    setCountryCode(originalCountryCode);
+    setPhoneNumber(originalPhoneNumber);
   };
 
   const handleClick = () => {
@@ -344,7 +359,7 @@ const handleChange = (e: any) => {
     }
     setErrors(prev => ({
       ...prev,
-      image: "La foto de perfil es obligatoria."
+      image: "La Foto de perfil es obligatoria"
     }));
   };
 

@@ -227,9 +227,9 @@ export default function RegisterPage() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-[#003A6C]">Registro exitoso</h2>
-            <p className="mt-3 text-sm leading-6 text-[#4F6F88]">Tu cuenta ha sido creada correctamente. Inicia sesion con tus credenciales.</p>
+            <p className="mt-3 text-sm leading-6 text-[#4F6F88]">Tu cuenta ha sido creada correctamente. Completa tus datos personales para entrar a tu panel.</p>
             <Button onClick={closeSuccessModal} className="mt-6 h-11 w-full bg-[#003A6C] text-white hover:bg-[#4982AD]">
-              Ir a iniciar sesion
+              Completar datos personales
             </Button>
           </div>
         </div>
