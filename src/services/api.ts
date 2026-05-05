@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getAuthToken } from "@/services/auth/auth-storage";
+import { clearAuthSession, getAuthToken } from "@/services/auth/auth-storage";
 
 // En desarrollo, usar `/api` (proxy de Vite) evita CORS.
 // En producción, `VITE_API_URL` debe apuntar al backend real (ej: https://dominio.com/api).
@@ -20,9 +20,14 @@ export const api = axios.create({
 
 // Interceptor para el token
 api.interceptors.request.use((config) => {
-  const token = getAuthToken();
+  const requestUrl = String(config.url ?? "").replace(/^\/+/, "");
+  const isPublicAuthEndpoint = requestUrl === "login" || requestUrl === "register";
+  const token = isPublicAuthEndpoint ? null : getAuthToken();
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    delete config.headers.Authorization;
   }
 
   if (config.data instanceof FormData) {
@@ -33,3 +38,20 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+
+    if (status === 401 || status === 419) {
+      clearAuthSession();
+
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.replace("/login");
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);

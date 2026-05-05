@@ -1,20 +1,17 @@
-import { useEffect } from "react"
 import { Eye, EyeOff, LockKeyhole, LogIn, Mail } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 
 import { Footer } from "@/components/Footer"
 import { Header } from "@/components/Header"
 import { useLoginForm } from "@/hooks/useLoginForm"
 import { usePasswordVisibility } from "@/hooks/usePasswordVisibility"
-import { REGISTER_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
-import { isAuthenticated } from "@/services/auth"
+import { REGISTER_ROUTE } from "@/routes/route-paths"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export default function LoginPage() {
-  const navigate = useNavigate()
   const { values, errors, successMessage, isSubmitting, updateField, handleBlur, handleSubmit } = useLoginForm()
   const { isVisible: showPassword, toggleVisibility: togglePasswordVisibility } = usePasswordVisibility()
   const idEntradaCorreo = "inicio-sesion-correo"
@@ -23,12 +20,6 @@ export default function LoginPage() {
   const idErrorContrasena = "inicio-sesion-error-contrasena"
   const idErrorFormulario = "inicio-sesion-error-formulario"
   const idMensajeExito = "inicio-sesion-mensaje-exito"
-
-  useEffect(() => {
-    if (isAuthenticated()) {
-      navigate(USER_HOME_ROUTE, { replace: true })
-    }
-  }, [navigate])
 
   return (
     <div className="flex min-h-screen flex-col bg-[#C2DBED]">

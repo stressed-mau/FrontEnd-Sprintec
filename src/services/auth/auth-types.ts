@@ -53,6 +53,7 @@ export type AuthResponse = {
 export type AuthSession = {
   accessToken: string
   tokenType: string
+  expiresAt: number
   user: AuthUser
 }
 

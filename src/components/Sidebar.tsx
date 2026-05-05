@@ -13,6 +13,7 @@ import {
   Upload,
   User,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -27,7 +28,7 @@ type NavItem = {
   id: string;
   label: string;
   path: string;
-  icon: any;
+  icon: LucideIcon;
   children?: NavChild[];
 };
 
@@ -100,8 +101,8 @@ const navItems: NavItem[] = [
     children: [
       { id: "certificados-ver", label: "Ver certificados", path: "/certificados/ver" },
       { id: "certificados-agregar", label: "Añadir certificado", path: "/certificados/añadir" },
-      // { id: "certificados-editar", label: "Editar certificado", path: "/certificados/editar" },
-      // { id: "certificados-eliminar", label: "Eliminar certificado", path: "/certificados/eliminar" },
+      { id: "certificados-editar", label: "Editar certificado", path: "/certificados/editar" },
+      { id: "certificados-eliminar", label: "Eliminar certificado", path: "/certificados/eliminar" },
     ],
   },
   { id: "plantillas", label: "Plantillas", icon: LayoutTemplate, path: "/plantillas" },
@@ -173,7 +174,7 @@ const Sidebar = () => {
         )}
       </div>
 
-      <nav className={`custom-scrollbar flex-1 space-y-1 overflow-y-auto ${isCollapsed ? "" : "pr-2"}`}>
+      <nav className={`custom-scrollbar flex-1 space-y-1 overflow-y-auto overflow-x-hidden ${isCollapsed ? "" : "pr-2"}`}>
         {navItems.map((item) => {
           const isParentActive = location.pathname.startsWith(item.path);
           const hasChildren = Boolean(item.children?.length);
@@ -203,9 +204,9 @@ const Sidebar = () => {
                     isParentActive ? "bg-[#003A6C] text-white" : "text-[#4982ad] hover:bg-[#77b6e6]/10"
                   }`}
                 >
-                  <div className="flex min-w-0 items-center gap-2">
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
                     <item.icon className="h-5 w-5 flex-shrink-0" />
-                    <span className="whitespace-normal break-words text-left text-[15px] font-medium leading-5">{item.label}</span>
+                    <span className="min-w-0 truncate text-left text-[15px] font-medium leading-5">{item.label}</span>
                   </div>
                   <ChevronRight className={`h-4 w-4 flex-shrink-0 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                 </button>
@@ -217,7 +218,7 @@ const Sidebar = () => {
                   }`}
                 >
                   <item.icon className="h-5 w-5 flex-shrink-0" />
-                  <span className="text-[15px] font-medium">{item.label}</span>
+                  <span className="min-w-0 truncate text-[15px] font-medium">{item.label}</span>
                 </Link>
               )}
 
@@ -227,7 +228,8 @@ const Sidebar = () => {
                     <Link
                       key={child.id}
                       to={child.path}
-                      className={`block rounded-xl px-4 py-2 text-sm transition-all ${
+                      title={child.label}
+                      className={`block min-w-0 truncate whitespace-nowrap rounded-xl px-3 py-2 text-sm transition-all ${
                         location.pathname === child.path
                           ? "bg-[#6dacbf] text-white shadow-sm"
                           : "text-[#4982ad] hover:bg-[#77b6e6]/10"
@@ -275,8 +277,8 @@ const Sidebar = () => {
       </section>
 
       <aside
-        className={`sticky top-0 hidden min-h-screen border-r-2 border-[#6dacbf] bg-white p-6 transition-[width] duration-300 lg:block ${
-          isDesktopCollapsed ? "w-20" : "w-64"
+        className={`sticky top-0 hidden min-h-screen shrink-0 border-r-2 border-[#6dacbf] bg-white p-6 transition-[width] duration-300 lg:block ${
+          isDesktopCollapsed ? "w-20" : "w-72"
         }`}
       >
         {renderSidebarContent(isDesktopCollapsed)}

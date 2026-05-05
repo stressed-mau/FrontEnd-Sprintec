@@ -1,20 +1,17 @@
-import { useEffect } from "react"
 import { Eye, EyeOff, LockKeyhole, Mail, UserPlus, UserRound } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 
 import { Footer } from "@/components/Footer"
 import { Header } from "@/components/Header"
 import { useRegisterForm } from "@/hooks/useRegisterForm"
 import { usePasswordVisibility } from "@/hooks/usePasswordVisibility"
-import { LOGIN_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
-import { isAuthenticated } from "@/services/auth"
+import { LOGIN_ROUTE } from "@/routes/route-paths"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export default function RegisterPage() {
-  const navigate = useNavigate()
   const {
     values,
     errors,
@@ -39,12 +36,6 @@ export default function RegisterPage() {
   const idErrorContrasena = "registro-error-contrasena"
   const idErrorConfirmarContrasena = "registro-error-confirmar-contrasena"
   const idErrorFormulario = "registro-error-formulario"
-
-  useEffect(() => {
-    if (isAuthenticated()) {
-      navigate(USER_HOME_ROUTE, { replace: true })
-    }
-  }, [navigate])
 
   return (
     <div className="flex min-h-screen flex-col bg-[#C2DBED]">
@@ -236,9 +227,9 @@ export default function RegisterPage() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-[#003A6C]">Registro exitoso</h2>
-            <p className="mt-3 text-sm leading-6 text-[#4F6F88]">Tu cuenta ha sido creada correctamente.</p>
+            <p className="mt-3 text-sm leading-6 text-[#4F6F88]">Tu cuenta ha sido creada correctamente. Inicia sesion con tus credenciales.</p>
             <Button onClick={closeSuccessModal} className="mt-6 h-11 w-full bg-[#003A6C] text-white hover:bg-[#4982AD]">
-              Continuar
+              Ir a iniciar sesion
             </Button>
           </div>
         </div>

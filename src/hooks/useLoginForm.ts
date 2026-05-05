@@ -3,7 +3,7 @@
 import { useNavigate } from "react-router-dom"
 
 import { USER_HOME_ROUTE } from "@/routes/route-paths"
-import { AuthServiceError, loginUser, saveAuthSession } from "@/services/auth"
+import { AuthServiceError, clearAuthSession, loginUser, saveAuthSession } from "@/services/auth"
 
 export type LoginValues = {
   user: string
@@ -85,6 +85,8 @@ export function useLoginForm() {
     setIsSubmitting(true)
 
     try {
+      clearAuthSession()
+
       const response = await loginUser({
         user: values.user.trim(),
         password: values.password,

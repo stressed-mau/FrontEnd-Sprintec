@@ -148,7 +148,7 @@ export function ExperienceTable({
                           type="checkbox"
                           checked={allSelected}
                           onChange={(event) => onSelectAll?.(event.target.checked)}
-                          className="size-4 rounded border-[#A5D7E8]"
+                          className="size-4 rounded-none border-[#A5D7E8]"
                           aria-label="Seleccionar todas las experiencias visibles"
                         />
                       ) : (
@@ -173,11 +173,10 @@ export function ExperienceTable({
                     {selectable ? (
                       <td className="px-4 py-4" onClick={(event) => event.stopPropagation()}>
                         <input
-                          type={canSelectAll ? "checkbox" : "radio"}
-                          name={canSelectAll ? undefined : "selected-experience"}
+                          type="checkbox"
                           checked={currentSelectedIds.has(experience.id)}
-                          onChange={(event) => onSelect?.(experience.id, canSelectAll ? event.target.checked : true)}
-                          className="size-4 rounded border-[#A5D7E8]"
+                          onChange={(event) => onSelect?.(experience.id, event.target.checked)}
+                          className="size-4 rounded-none border-[#A5D7E8]"
                           aria-label={`Seleccionar ${experience.company}`}
                         />
                       </td>

@@ -1,6 +1,7 @@
 import axios from "axios"
 
 import { api } from "@/services/api"
+import { toAbsoluteAssetUrl } from "@/services/assetUrl"
 
 export type ExperienceType = "laboral" | "academica"
 
@@ -97,8 +98,18 @@ type ExperienceDto = {
   certificate?: string | null
   certificate_url?: string | null
   certification_url?: string | null
+  certification?: string | null
+  certification_path?: string | null
+  certificate_file?: string | null
+  certificate_file_url?: string | null
   certificate_path?: string | null
   document?: string | null
+  document_url?: string | null
+  document_path?: string | null
+  file?: string | null
+  file_url?: string | null
+  file_path?: string | null
+  attachment?: string | null
   current?: boolean | number | string | null
   is_current?: boolean | number | string | null
   isCurrent?: boolean | number | string | null
@@ -316,27 +327,6 @@ function normalizeDateValue(value: unknown): string {
   return rawValue
 }
 
-function toAbsoluteAssetUrl(value: unknown): string {
-  const rawValue = asString(value)
-
-  if (!rawValue) {
-    return ""
-  }
-
-  if (/^(https?:|data:|blob:)/i.test(rawValue)) {
-    return rawValue
-  }
-
-  const apiBaseUrl = api.defaults.baseURL ?? ""
-
-  try {
-    const rootUrl = apiBaseUrl.replace(/\/api\/?$/, "/")
-    return new URL(rawValue.replace(/^\/+/, ""), rootUrl).toString()
-  } catch {
-    return rawValue
-  }
-}
-
 function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: ExperienceType): ExperienceItem {
   const endDate = normalizeDateValue(dto.end_date ?? dto.final_date ?? dto.endDate ?? dto.fecha_fin)
   const explicitCurrent = asBoolean(dto.current ?? dto.is_current ?? dto.isCurrent)
@@ -377,7 +367,23 @@ function normalizeExperience(dto: ExperienceDto, index: number, typeHint?: Exper
     endDate,
     current: explicitCurrent ?? !endDate,
     image: toAbsoluteAssetUrl(dto.logo_url ?? dto.logo_path ?? dto.logo ?? dto.image_url ?? dto.image ?? dto.photograph),
-    certificate: toAbsoluteAssetUrl(dto.certification_url ?? dto.certificate_url ?? dto.certificate_path ?? dto.certificate ?? dto.document),
+    certificate: toAbsoluteAssetUrl(
+      dto.certification_url ??
+      dto.certification_path ??
+      dto.certification ??
+      dto.certificate_file_url ??
+      dto.certificate_file ??
+      dto.certificate_url ??
+      dto.certificate_path ??
+      dto.certificate ??
+      dto.document_url ??
+      dto.document_path ??
+      dto.document ??
+      dto.file_url ??
+      dto.file_path ??
+      dto.file ??
+      dto.attachment,
+    ),
   }
 }
 

@@ -1,6 +1,7 @@
 import type { AuthResponse, AuthSession } from "@/services/auth/auth-types"
 
 export const AUTH_SESSION_STORAGE_KEY = "portfolio_auth_session"
+const AUTH_SESSION_DURATION_MS = 8 * 60 * 60 * 1000
 
 export function saveAuthSession(response: AuthResponse) {
   if (typeof window === "undefined") {
@@ -11,6 +12,7 @@ export function saveAuthSession(response: AuthResponse) {
   const session: AuthSession = {
     accessToken: response.access_token,
     tokenType: response.token_type,
+    expiresAt: Date.now() + AUTH_SESSION_DURATION_MS,
     user: {
       ...response.data,
       info_id: response.data.info_id ?? infoIdFromNested,
@@ -32,8 +34,16 @@ export function getAuthSession() {
   }
 
   try {
-    return JSON.parse(rawSession) as AuthSession
+    const session = JSON.parse(rawSession) as AuthSession
+
+    if (!session.expiresAt || session.expiresAt <= Date.now()) {
+      clearAuthSession()
+      return null
+    }
+
+    return session
   } catch {
+    clearAuthSession()
     return null
   }
 }

@@ -274,7 +274,7 @@ export function ProjectTable({
                     type="checkbox"
                     checked={selectedIds?.has(project.id) ?? false}
                     onChange={(event) => onToggleSelect?.(project.id, event.target.checked)}
-                    className={isEditVariant ? "size-4 rounded border-gray-300" : "size-4 rounded border-[#A5D7E8]"}
+                    className={isEditVariant ? "size-4 rounded-none border-gray-300" : "size-4 rounded-none border-[#A5D7E8]"}
                     aria-label={`Seleccionar ${project.nombre}`}
                   />
                 </td>

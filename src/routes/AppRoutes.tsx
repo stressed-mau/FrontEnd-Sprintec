@@ -49,13 +49,13 @@ function AppRoutes() {
       <Route path={LOGIN_ROUTE} element={<LoginPage />} />
       <Route path={REGISTER_ROUTE} element={<RegisterPage />} />
       <Route path="/explore" element={<ExplorePortfolios />} />
-      <Route path={USER_HOME_ROUTE} element={<UserHome />} />
-      <Route path="/publicar" element={<PublishPortfolio />} />
-      <Route path="/plantillas" element={<PortfolioTemplatesPage />} />
-      <Route path="/perfil" element={<ProfilePage />} /> 
       <Route element={<ProtectedRoute />}>
         
         <Route path={LEGACY_DASHBOARD_ROUTE} element={<Navigate to={USER_HOME_ROUTE} replace />} />
+        <Route path={USER_HOME_ROUTE} element={<UserHome />} />
+        <Route path="/publicar" element={<PublishPortfolio />} />
+        <Route path="/plantillas" element={<PortfolioTemplatesPage />} />
+        <Route path="/perfil" element={<ProfilePage />} />
         <Route path={REGISTER_PROFILE_ROUTE} element={<RegisterProfilePage />} />
          
         <Route path="/habilidades" element={<ViewSkillsPage />} /> 
