@@ -17,6 +17,7 @@ type VisibilityTable =
   | 'work_experiences'
   | 'certificates';
 
+
 export interface VisibilityItem {
   id: number;
   label: string;

@@ -35,6 +35,14 @@ type Sheet = {
   content: ReactNode
 }
 
+type CorporateProfileImageProps = {
+  alt: string
+  className: string
+  initials: string
+  initialsClassName: string
+  src: string
+}
+
 const FALLBACK_SOCIAL_LINKS: CorporatePortfolioLink[] = [
   { id: "fallback-github", label: "GitHub", url: "https://github.com/" },
   { id: "fallback-linkedin", label: "LinkedIn", url: "https://linkedin.com/" },
@@ -94,6 +102,40 @@ function cleanVisibilitySublabel(value: string, prefix: string) {
   return value.startsWith(prefix) ? value.slice(prefix.length).trim() : value
 }
 
+function CorporateProfileImage({
+  alt,
+  className,
+  initials,
+  initialsClassName,
+  src,
+}: CorporateProfileImageProps) {
+  const [hasImageError, setHasImageError] = useState(false)
+  const showImage = Boolean(src) && !hasImageError
+
+  return (
+    <div
+      className={`relative flex shrink-0 items-center justify-center overflow-hidden bg-[linear-gradient(160deg,#D8B182_0%,#7C8EA1_100%)] ${className}`}
+    >
+      {showImage ? (
+        <img
+          src={src}
+          alt={alt}
+          className="block h-full w-full object-cover object-center"
+          loading="lazy"
+          onError={() => setHasImageError(true)}
+        />
+      ) : (
+        <>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.42),transparent_42%)]" />
+          <span className={`relative font-black text-white ${initialsClassName}`}>
+            {initials}
+          </span>
+        </>
+      )}
+    </div>
+  )
+}
+
 export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolioTemplateProps) {
   const userProfile = profile ?? {
     fullname: "",
@@ -110,11 +152,14 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
   const displaySummary = userProfile.biography.trim() || "Descripción profesional pendiente de completar."
   const displayEmail = userProfile.public_email.trim()
   const displayLocation = userProfile.residence.trim() || "Ubicación pendiente"
+  const displayProfileImage = userProfile.image_url.trim()
   const initials = getInitials(displayName)
 
   const visibleProjects = useMemo(() => data.projects.filter((item) => item.checked), [data.projects])
   const visibleSkills = useMemo(() => data.skills.filter((item) => item.checked), [data.skills])
   const visibleExperience = useMemo(() => data.experience.filter((item) => item.checked), [data.experience])
+  const visibleEducation = useMemo(() => data.education.filter((item) => item.checked), [data.education])
+  const visibleCertificates = useMemo(() => data.certificates.filter((item) => item.checked), [data.certificates])
   const visibleNetworks = useMemo(() => data.networks.filter((item) => item.checked), [data.networks])
 
   const socialLinks = useMemo<CorporatePortfolioLink[]>(
@@ -138,10 +183,10 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
     [visibleExperience],
   )
 
-  const educationItems = useMemo(
-    () => visibleExperience.filter((item) => item.sourceTable === "educations"),
-    [visibleExperience],
-  )
+  const educationItems = useMemo(() => {
+    const educationFromExperience = visibleExperience.filter((item) => item.sourceTable === "educations")
+    return [...educationFromExperience, ...visibleEducation]
+  }, [visibleExperience, visibleEducation])
 
   const experience = useMemo(() => {
   return workExperience.map((item) => ({
@@ -162,6 +207,14 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
   }))
 }, [educationItems])
 
+const certificates = useMemo(() => {
+  return visibleCertificates.map((item) => ({
+    id: String(item.id),
+    title: item.label,
+    institution: item.sublabel,
+    period: "",
+  }))
+}, [visibleCertificates])
   const projects = useMemo(() => {
   return visibleProjects.map((project) => ({
     id: String(project.id),
@@ -190,12 +243,13 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
               </div>
 
               <div className="flex min-h-55 items-center justify-center py-8 lg:min-h-85">
-                <div className="relative flex h-40 w-36 items-center justify-center overflow-hidden rounded-[1.75rem] border border-white/10 bg-[linear-gradient(160deg,#D8B182_0%,#7C8EA1_100%)] shadow-[0_20px_50px_rgba(0,0,0,0.3)] lg:h-52 lg:w-44">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.42),transparent_42%)]" />
-                  <span className="relative text-5xl font-black tracking-[-0.06em] text-white">
-                    {initials}
-                  </span>
-                </div>
+                <CorporateProfileImage
+                  alt={displayName}
+                  className="h-40 w-36 rounded-[1.75rem] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.3)] lg:h-52 lg:w-44"
+                  initials={initials}
+                  initialsClassName="text-5xl tracking-[-0.06em]"
+                  src={displayProfileImage}
+                />
               </div>
             </div>
 
@@ -315,6 +369,34 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
         </section>
       ),
     })
+
+    nextSheets.push({
+  id: "corporate-certificates",
+  label: "Certificados",
+  content: (
+    <section>
+      <h3 className="text-3xl font-bold">Certificados</h3>
+
+      {certificates.length ? (
+        <div className="mt-6 grid gap-4">
+          {certificates.map((item) => (
+            <article
+              key={item.id}
+              className="rounded-[1.6rem] border border-black/10 bg-white p-5"
+            >
+              <p className="text-lg font-bold">{item.title}</p>
+              <p className="text-sm text-gray-500">{item.institution}</p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-6 text-sm text-gray-500">
+          No hay certificados registrados.
+        </p>
+      )}
+    </section>
+  ),
+})
 
     nextSheets.push({
       id: "corporate-education",
@@ -441,17 +523,20 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
  }, [
   displayEmail,
   displayLocation,
+  displayName,
+  displayProfileImage,
   displayRole,
   displaySummary,
   experience,
   education,
+  certificates,
   projects,
   hasContactInfo,
   initials,
   resolvedEducation,
   resolvedProjects,
   resolvedSocialLinks,
-  skills
+  skills,
 ])
 
   const [activeSectionId, setActiveSectionId] = useState<string | null>(sheets[0]?.id ?? null)
@@ -657,12 +742,13 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
               </div>
 
               <div className="mt-6 flex min-h-90 items-center justify-center">
-                <div className="relative flex h-64 w-56 items-center justify-center overflow-hidden rounded-[2rem] border border-white/35 bg-[linear-gradient(160deg,#CFA16A_0%,#697A8F_100%)] shadow-[0_24px_55px_rgba(0,0,0,0.18)]">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.42),transparent_42%)]" />
-                  <span className="relative text-7xl font-black tracking-[-0.08em] text-white">
-                    {initials}
-                  </span>
-                </div>
+                <CorporateProfileImage
+                  alt={displayName}
+                  className="h-64 w-56 rounded-[2rem] border border-white/35 shadow-[0_24px_55px_rgba(0,0,0,0.18)]"
+                  initials={initials}
+                  initialsClassName="text-7xl tracking-[-0.08em]"
+                  src={displayProfileImage}
+                />
               </div>
             </div>
           </div>
@@ -722,7 +808,7 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
           </div>
         </section>
 
-        {(resolvedEducation.length || skills.length || experience.length || resolvedProjects.length) ? (
+        {(resolvedEducation.length || certificates.length || skills.length || experience.length || resolvedProjects.length) ? (
           <section className="grid border-t border-white/10 lg:grid-cols-[0.88fr_1.12fr]">
             <div className="bg-[#141414] px-8 py-10">
               <div
@@ -763,7 +849,27 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
                   )}
                 </div>
               </div>
+              <div className="mt-8">
+                <h3 className="text-3xl font-black text-white">Certificados</h3>
 
+                {certificates.length ? (
+                  <div className="mt-6 grid gap-4">
+                    {certificates.map((item) => (
+                      <article
+                        key={item.id}
+                        className="rounded-[1.4rem] border border-white/10 bg-white/5 p-5"
+                      >
+                        <p className="text-lg font-bold text-white">{item.title}</p>
+                        <p className="text-sm text-white/70">{item.institution}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-4 text-sm text-gray-400">
+                    No hay certificados registrados.
+                  </p>
+                )}
+              </div>
               <div
                 id="corporate-experience"
                 className={`mt-8 rounded-[2rem] border p-6 transition-colors duration-300 ${

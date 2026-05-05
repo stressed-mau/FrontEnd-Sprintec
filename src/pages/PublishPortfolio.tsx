@@ -18,7 +18,9 @@ const PublishPortfolio = () => {
   } = usePublishPortfolio()
 
   useEffect(() => {
+    console.log("SE EJECUTA useEffect");
     const syncStatus = async () => {
+      console.log("LLAMANDO checkInitialStatus");
       await checkInitialStatus();
     };
     void syncStatus();

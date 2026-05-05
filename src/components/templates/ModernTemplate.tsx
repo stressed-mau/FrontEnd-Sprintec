@@ -19,6 +19,9 @@ export interface ModernTemplateProfile {
 }
 
 const ModernTemplate: React.FC<ModernTemplateProps> = ({ data, profile, isPreview = false }) => {
+
+  console.log("EXPERIENCE:", data.experience);
+  console.log("NETWORKS:", data.networks);
   const userProfile = profile ?? {
     fullname: '',
     occupation: '',
@@ -51,7 +54,8 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ data, profile, isPrevie
   const hasNetworksSection = visibleNetworks.length > 0;
 
   const highlightedSkills = visibleSkills.slice(0, 4);
-
+  const visibleCertificates = data.certificates.filter(c => c.checked);
+  const hasCertificatesSection = visibleCertificates.length > 0;
   return (
     <div className={`w-full min-h-screen font-sans bg-[#fcecd4] ${isPreview ? 'scale-[0.8] origin-top-left border-8 border-[#173b61] rounded-[40px] shadow-2xl overflow-hidden' : ''} text-[#173b61]`}>
       
@@ -180,9 +184,8 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ data, profile, isPrevie
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {visibleProjects.map((project) => (
-              <div key={`${project.sourceTable ?? 'projects'}-${project.id}`} className="group relative aspect-square rounded-[2rem] overflow-hidden bg-[#2f606b]">
-                <img src="https://via.placeholder.com/500" alt={project.label} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100" />
-                <div className="absolute inset-0 bg-linear-to-t from-[#173b61] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-8 flex flex-col justify-end">
+              <div key={`${project.sourceTable ?? 'projects'}-${project.id}`} className="group relative h-48 rounded-[2rem] overflow-hidden bg-[#2f606b]">
+                <div className="absolute inset-0 bg-linear-to-t from-[#173b61] via-transparent to-transparent opacity-100 p-8 flex flex-col justify-end">
                   <h4 className="text-[#fcecd4] text-2xl font-black">{project.label}</h4>
                   <p className="text-[#ee8e3b] font-bold text-sm mt-1">{project.sublabel}</p>
                 </div>
@@ -238,7 +241,27 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ data, profile, isPrevie
               </div>
             </div>
             )}
-
+            {hasCertificatesSection && (
+              <div className="bg-white p-10 rounded-[2.5rem] shadow-xl border border-[#7d959e]/10">
+                <div className="flex items-center gap-3 mb-8">
+                  <Award className="text-[#ee8e3b]" size={32} />
+                  <h3 className="text-2xl font-black uppercase">Certificaciones</h3>
+                </div>
+                <div className="grid grid-cols-1 gap-6">
+                  {visibleCertificates.map((cert) => (
+                    <div key={`cert-${cert.id}`} className="flex items-start gap-4 p-4 rounded-2xl bg-[#fcecd4]/30">
+                      <div className="mt-1">
+                        <Award size={20} className="text-[#2f606b]" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-[#173b61]">{cert.label}</h4>
+                        <p className="text-sm text-[#7d959e]">{cert.sublabel}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {hasNetworksSection && (
             <div className="text-center bg-[#2f606b] p-10 rounded-[2.5rem]">
               <h3 className="text-[#fcecd4] text-xl font-black mb-8 uppercase tracking-widest">Conectemos</h3>

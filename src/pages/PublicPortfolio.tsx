@@ -29,8 +29,21 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
     checked: true,
     sourceTable: e.type === "academica" ? "educations" : "work_experiences",
   })),
-  education: [],
-  certificates: [],
+  education: (portfolio as any).educations?.map((edu: any, index: number) => ({
+    id: Number(edu.id ?? index),
+    label: edu.title ?? "",
+    sublabel: edu.institution ?? "",
+    checked: true,
+    sourceTable: "educations",
+  })) ?? [],
+  // ACTUALIZACIÓN AQUÍ:
+  certificates: (portfolio as any).certificates?.map((cert: any, index: number) => ({
+    id: Number(cert.id ?? index),
+    label: cert.name ?? "",
+    sublabel: cert.issuer ?? "",
+    checked: true,
+    sourceTable: "certificates",
+  })) ?? [],
   networks: portfolio.socialNetworks.map((n, index) => ({
     id: Number(n.id ?? index),
     label: n.name ?? "",
@@ -42,7 +55,7 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
 
 const PublicPortfolio = () => {
   const { slug } = useParams()
-  const { portfolio, loading } = usePortfolio(slug)
+  const { portfolio, loading } = usePortfolio(slug) as { portfolio: any, loading: boolean };
 
   if (loading) {
     return (
@@ -60,20 +73,20 @@ const PublicPortfolio = () => {
     )
   }
 
-  const template = Number(portfolio.template)
+  const template = portfolio.config?.template ?? portfolio.template;
   const isModern = template === 1
   const isMinimalist = template === 2
   const isCorporate = template === 3
   const visibilityData = mapToVisibilityData(portfolio)
   const profile = {
-    fullname: portfolio.user.fullname ?? "",
-    occupation: portfolio.user.occupation ?? "",
-    image_url: portfolio.user.image_url ?? "",
-    residence: portfolio.user.nationality ?? "",
-    public_email: portfolio.user.public_email ?? "",
-    phone: portfolio.user.phone_number ?? "",
-    biography: portfolio.user.biography ?? "",
-  }
+    fullname: portfolio.profile?.name || portfolio.user?.fullname || "",
+    occupation: portfolio.profile?.occupation || portfolio.user?.occupation || "",
+    image_url: portfolio.profile?.image || portfolio.user?.image_url || "",
+    residence: portfolio.profile?.nacionality || portfolio.user?.nationality || "",
+    public_email: portfolio.profile?.email || portfolio.user?.public_email || "",
+    phone: portfolio.profile?.phone || "",
+    biography: portfolio.profile?.bio || portfolio.user?.biography || "",
+  };
 
   return (
     <main className="flex-1 p-4 md:p-10">
@@ -115,7 +128,7 @@ const PublicPortfolio = () => {
                 <MapPin size={16} /> {portfolio.user.nationality}
               </span>
 
-              {portfolio.socialNetworks?.map((sn, index) => (
+              {portfolio.socialNetworks?.map((sn: any, index: number) => (
                 <span key={index} className="flex items-center gap-1">
                   <Globe size={16} /> {sn.name}
                 </span>
@@ -135,7 +148,7 @@ const PublicPortfolio = () => {
 
                 <div className="mt-3 flex flex-col gap-2">
                   {portfolio.skills.length > 0 ? (
-                    portfolio.skills.map((skill, index) => (
+                    portfolio.skills.map((skill: any, index:number) => (
                       <div key={index} className="text-sm text-gray-700 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-[#003A6C] rounded-full" />
                         <span className="font-medium">{skill.name}</span>
@@ -159,7 +172,7 @@ const PublicPortfolio = () => {
 
                 <div className="mt-6 space-y-6">
                   {portfolio.experiences.length > 0 ? (
-                    portfolio.experiences.map((exp, index) => (
+                    portfolio.experiences.map((exp: any, index: number) => (
                       <div key={index} className="border-l-2 pl-4">
                         <p className="font-bold">{exp.position}</p>
                         <p className="text-[#003A6C] text-sm">{exp.company}</p>
@@ -182,7 +195,7 @@ const PublicPortfolio = () => {
                 </h3>
 
                 <div className="mt-6 grid gap-4">
-                  {portfolio.projects.map((project, index) => (
+                  {portfolio.projects.map((project: any, index: number) => (
                     <div key={index} className="bg-gray-50 border-l-4 border-[#003A6C] p-4">
                       <h4 className="font-bold text-sm uppercase">
                         {project.nombre || "Proyecto sin título"}
@@ -194,7 +207,7 @@ const PublicPortfolio = () => {
 
                       {"tecnologias" in project && project.tecnologias?.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {project.tecnologias.map((t) => (
+                          {project.tecnologias.map((t: any) => (
                             <span key={t.id} className="text-xs bg-gray-200 px-2 py-1 rounded">
                               {t.name}
                             </span>

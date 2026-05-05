@@ -124,15 +124,27 @@ export interface SocialNetwork {
 // PORTFOLIO AGREGADO
 // =========================
 export interface Portfolio {
-  user: User;
-
-  projects: Project[];
-  skills: Skill[];
-  experiences: Experience[];
-  socialNetworks: SocialNetwork[];
+  config: {
+    slug: string;
+    template: string;
+    is_public?: boolean;
+  };
+  profile: {
+    name: string;
+    occupation: string;
+    bio: string;
+    image: string;
+    phone: string;
+    email: string;
+    nacionality: string;
+  };
+  user?: User;
+  projects: any[]; // Idealmente define interfaces para estos también
+  skills: any[];
+  experiences: any[];
+  socialNetworks: any[];
   isPublished?: boolean;
-  portfolioUrl?: string;
-  template: number;
+  template?: number;
 }
 
 // =========================

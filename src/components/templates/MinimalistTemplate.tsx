@@ -28,14 +28,15 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   const visibleSkills = useMemo(() => data.skills.filter(s => s.checked), [data.skills]);
   const visibleExperience = useMemo(() => data.experience.filter(e => e.checked), [data.experience]);
   const visibleNetworks = useMemo(() => data.networks.filter(n => n.checked), [data.networks]);
-
+  const visibleEducation = useMemo(() => data.education?.filter(e => e.checked) || [], [data.education]);
+  const visibleCertificates = useMemo(() => data.certificates?.filter(c => c.checked) || [], [data.certificates]);
   // Si es Vista Previa o no hay datos visibles, podríamos mostrar mocks (opcional)
   const projects = isPreview && visibleProjects.length === 0 ? [] : visibleProjects;
   const skills = isPreview && visibleSkills.length === 0 ? [] : visibleSkills;
   const experiences = isPreview && visibleExperience.length === 0 ? [] : visibleExperience;
 
   // Navegación
-  const totalPages = 4;
+  const totalPages = 6;
   const nextPage = () => setPage((prev) => (prev + 1) % totalPages);
   const prevPage = () => setPage((prev) => (prev - 1 + totalPages) % totalPages);
 
@@ -157,6 +158,48 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
             </div>
           )}
         </div>
+        {/* PÁGINA 4: EDUCACIÓN */}
+        {page === 4 && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Educación</h2>
+
+            <div className="space-y-6 pt-2">
+              {visibleEducation.length > 0 ? visibleEducation.map((edu: any) => (
+                <div key={edu.id} className="flex gap-6 items-start">
+                  <div className="text-[10px] font-black text-stone-300 pt-1 uppercase tracking-tighter w-16">
+                    {edu.extraInfo || "Académico"}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-zinc-900 uppercase">{edu.label}</h4>
+                    <p className="text-xs text-stone-400 italic">{edu.sublabel}</p>
+                  </div>
+                </div>
+              )) : (
+                <p className="text-sm text-stone-400 italic">No hay formación académica visible.</p>
+              )}
+            </div>
+          </div>
+        )}
+        {/* PÁGINA 5: CERTIFICADOS */}
+        {page === 5 && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Certificados</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              {visibleCertificates.length > 0 ? visibleCertificates.map((cert: any) => (
+                <div 
+                  key={cert.id} 
+                  className="bg-stone-50 border border-stone-100 rounded-2xl p-4 hover:shadow-md transition-all"
+                >
+                  <h4 className="font-bold text-sm text-zinc-900 uppercase">{cert.label}</h4>
+                  <p className="text-xs text-stone-400 italic">{cert.sublabel}</p>
+                </div>
+              )) : (
+                <p className="text-sm text-stone-400 italic">No hay certificados visibles.</p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* NAVEGACIÓN Y REDES (Filtradas) */}
         <div className="flex items-center justify-between mt-10 pt-6 border-t border-stone-100 sticky bottom-0 bg-white">
