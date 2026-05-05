@@ -458,27 +458,24 @@ export function ExperienceFormModal({
                   {formData.image ? "Cambiar imagen" : "Subir imagen"}
                 </Button>
 
-                {canRemoveImage ? (
-                  <Button
-                    id="boton-eliminar-logo"
-                    type="button"
-                    variant="outline"
-                    disabled={isImageDisabled}
-                    onClick={onRemoveImage}
-                    className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
-                  >
-                    <X className="mr-2 size-4" />
-                    Eliminar
-                  </Button>
-                ) : null}
               </div>
 
               {formData.image ? (
-                <div className="mt-2 space-y-2">
+                <div className="mt-2 flex flex-wrap items-center gap-3">
                   <img src={formData.image} alt="Vista previa" className="size-20 rounded-lg object-cover shadow-sm" />
-                  <p className="text-xs text-[#4B778D]">
-                    Puedes mantener la imagen actual, subir otra o eliminarla.
-                  </p>
+                  {canRemoveImage ? (
+                    <Button
+                      id="boton-eliminar-logo"
+                      type="button"
+                      variant="outline"
+                      disabled={isImageDisabled}
+                      onClick={onRemoveImage}
+                      className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
+                    >
+                      <X className="mr-2 size-4" />
+                      Eliminar
+                    </Button>
+                  ) : null}
                 </div>
               ) : null}
 
@@ -514,23 +511,25 @@ export function ExperienceFormModal({
                   {formData.certificate ? "Cambiar documento" : "Subir documento"}
                 </Button>
 
-                {canRemoveCertificate ? (
-                  <Button
-                    id="boton-eliminar-certificado"
-                    type="button"
-                    variant="outline"
-                    disabled={isCertificateDisabled}
-                    onClick={onRemoveCertificate}
-                    className="h-10 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
-                  >
-                    <X className="mr-2 size-4" />
-                    Eliminar
-                  </Button>
-                ) : null}
               </div>
 
               {formData.certificate ? (
-                <p className="text-xs text-[#4B778D]">Documento seleccionado o ya adjunto.</p>
+                <div className="flex w-fit max-w-full flex-wrap items-center gap-3 rounded-lg border border-[#D7E6F2] bg-[#EEF5F9] px-3 py-2">
+                  <span className="max-w-xs truncate text-xs text-[#4B778D]">Documento seleccionado o ya adjunto.</span>
+                  {canRemoveCertificate ? (
+                    <Button
+                      id="boton-eliminar-certificado"
+                      type="button"
+                      variant="outline"
+                      disabled={isCertificateDisabled}
+                      onClick={onRemoveCertificate}
+                      className="h-9 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
+                    >
+                      <X className="mr-2 size-4" />
+                      Eliminar
+                    </Button>
+                  ) : null}
+                </div>
               ) : null}
 
               {errors.certificate ? <p className="text-sm text-red-600">{errors.certificate}</p> : null}
