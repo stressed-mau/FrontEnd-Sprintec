@@ -23,8 +23,8 @@ const AddSkillsPage = () => {
         <main className="flex-1 p-4 sm:p-6 md:p-10">
           <div className="mx-auto max-w-6xl space-y-6">
 
-              <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl mb-2">
-                Añadir Habilidad
+              <h1 className="mb-1 text-2xl font-semibold text-gray-900">
+                Registro de habilidad
               </h1>
               <p className="text-sm text-[#4B778D] md:text-base">
                 Agrega una nueva habilidad a tu portafolio

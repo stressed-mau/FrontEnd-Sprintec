@@ -231,7 +231,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
 
   const handleSave = async (e?: FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
-    if (errorMessage || isSaving) return;
+    if (errorMessage.trim() || isSaving) return;
 
     setErrorMessage('');
 
@@ -286,12 +286,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     (skillType === 'blanda' || sameLevel);
 
   if (noChanges) {
-  setErrorMessage(' ');
-  setSuccessMessage('No hay cambios para guardar.');
-  
-  setIsModalOpen(false);
-  setEditingSkill(null);
-  setShowSuccessModal(true);
+  setErrorMessage('No hay cambios para guardar.');
   return;
 }
 }

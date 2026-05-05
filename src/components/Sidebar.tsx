@@ -64,7 +64,7 @@ const navItems: NavItem[] = [
     path: "/habilidades",
     children: [
       { id: "habilidades-ver", label: "Ver habilidades", path: "/habilidades/ver" },
-      { id: "habilidades-agregar", label: "Añadir habilidad", path: "/habilidades/añadir" },
+      { id: "habilidades-agregar", label: "Registrar habilidad", path: "/habilidades/añadir" },
       { id: "habilidades-editar", label: "Editar habilidad", path: "/habilidades/editar" },
       { id: "habilidades-eliminar", label: "Eliminar habilidad", path: "/habilidades/eliminar" },
     ],
@@ -190,7 +190,7 @@ const Sidebar = () => {
                   isParentActive ? "bg-[#003A6C] text-white" : "text-[#4982ad] hover:bg-[#77b6e6]/10"
                 }`}
               >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
+                <item.icon className="h-5 w-5 shrink-0" />
               </Link>
             );
           }
@@ -205,10 +205,10 @@ const Sidebar = () => {
                   }`}
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    <item.icon className="h-5 w-5 shrink-0" />
                     <span className="min-w-0 truncate text-left text-[15px] font-medium leading-5">{item.label}</span>
                   </div>
-                  <ChevronRight className={`h-4 w-4 flex-shrink-0 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                  <ChevronRight className={`h-4 w-4 shrink-0 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                 </button>
               ) : (
                 <Link
@@ -217,7 +217,7 @@ const Sidebar = () => {
                     location.pathname === item.path ? "bg-[#003A6C] text-white" : "text-[#4982ad] hover:bg-[#77b6e6]/10"
                   }`}
                 >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  <item.icon className="h-5 w-5 shrink-0" />
                   <span className="min-w-0 truncate text-[15px] font-medium">{item.label}</span>
                 </Link>
               )}
@@ -262,13 +262,13 @@ const Sidebar = () => {
 
         {isMobileOpen && (
           <div
-            className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-[2px]"
+            className="fixed inset-0 z-60 bg-black/30 backdrop-blur-[2px]"
             onClick={() => setIsMobileOpen(false)}
           />
         )}
 
         <aside
-          className={`fixed left-0 top-0 z-[70] h-full w-[280px] bg-white p-6 shadow-2xl transition-transform duration-300 ease-in-out ${
+          className={`fixed left-0 top-0 z-70 h-full w-280px bg-white p-6 shadow-2xl transition-transform duration-300 ease-in-out ${
             isMobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >

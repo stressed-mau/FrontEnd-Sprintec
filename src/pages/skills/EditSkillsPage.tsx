@@ -38,7 +38,7 @@ const EditSkillsPage = () => {
         <main className="flex-1 p-4 sm:p-6 md:p-10">
           <div className="mx-auto max-w-6xl space-y-6">
            
-              <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl mb-2">  Editar Habilidades </h1>
+              <h1 className="mb-1 text-2xl font-semibold text-gray-900">  Editar Habilidades </h1>
               <p className="text-sm text-[#4B778D] md:text-base"> Haz clic en una fila para editar </p>
 
             {pageError && (
@@ -63,8 +63,8 @@ const EditSkillsPage = () => {
             <section className="mb-10">
               <div className="flex items-center gap-2 mb-4 text-[#003A6C]">
                 <Code2 className="size-5" />
-                <h2 className="text-xl font-bold sm:text-2xl">Habilidades Técnicas</h2>
-              </div>
+                <h2 className="text-xl sm:text-2xl">Habilidades Técnicas</h2>
+              </div> 
 
               {isLoading ? (
                 <div className="rounded-2xl border border-[#6dacbf]/30 bg-white py-10 text-center shadow-sm">
@@ -121,7 +121,7 @@ const EditSkillsPage = () => {
             <section>
               <div className="flex items-center gap-2 mb-4 text-[#003A6C]">
                 <Lightbulb className="size-5" />
-                <h2 className="text-xl font-bold sm:text-2xl">Habilidades Blandas</h2>
+                <h2 className="text-xl sm:text-2xl">Habilidades Blandas</h2>
               </div>
 
               {isLoading ? (

@@ -4,7 +4,7 @@ import { Footer } from '@/components/Footer';
 import { Code2, Lightbulb, Search, Trash2 } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/useSkillsManager';
 import ConfirmationModal from '../../components/ConfirmationModal';
-import ConfirmActionModal from '../../components/ConfirmActionModal';
+import DeleteConfirmationModal from '../../components/DeleteConfirmationModal';
 
 const LEVEL_LABELS: Record<string, string> = {
   experto: 'Experto',
@@ -39,7 +39,7 @@ const DeleteSkillsPage = () => {
 
             {/* Encabezado */}
               <div>
-                <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl mb-2">
+                <h1 className="mb-1 text-2xl font-semibold text-gray-900">
                   Eliminar Habilidades
                 </h1>
                 <p className="text-sm text-[#4B778D] md:text-base">
@@ -105,7 +105,7 @@ const DeleteSkillsPage = () => {
               /* Tabla con checkboxes */
               <div className="rounded-2xl border border-[#6dacbf]/30 bg-white shadow-sm overflow-hidden">
                 <div className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_120px_140px] px-5 py-3 border-b border-[#6dacbf]/20 gap-4 items-center">
-                  <input />
+                  <input className="opacity-0 pointer-events-none" type="checkbox" />
                   <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider">
                     Habilidad
                   </span>
@@ -185,14 +185,13 @@ const DeleteSkillsPage = () => {
         </main>
       </div>
 
-    <ConfirmActionModal
-         isOpen={showConfirmDelete}
-        title="Eliminar habilidad"
-        message="¿Está seguro de que desea eliminar esta habilidad? Esta acción no se puede deshacer."
-        confirmText={isDeleting ? 'Eliminando...' : 'Eliminar'}
-        cancelText="Cancelar"
-        onConfirm={() => void confirmDeleteSelected()}
-        onCancel={cancelDelete}/>
+    <DeleteConfirmationModal
+          isOpen={showConfirmDelete}
+          title="¿Está seguro de que desea eliminar esta habilidad?"
+          message="Esta acción no se puede deshacer."
+          isLoading={isDeleting}
+          onConfirm={() => void confirmDeleteSelected()}
+          onCancel={cancelDelete}/>
 
       <ConfirmationModal
         isOpen={showSuccessModal}

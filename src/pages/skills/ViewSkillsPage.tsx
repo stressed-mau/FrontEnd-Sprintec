@@ -33,7 +33,7 @@ const ViewSkillsPage = () => {
           <div className="mx-auto max-w-6xl space-y-6">
 
             {/* Encabezado */}
-              <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl mb-2">
+              <h1 className="mb-1 text-2xl font-semibold text-gray-900">
                 Habilidades
               </h1>
               <p className="text-sm text-[#4B778D] md:text-base">

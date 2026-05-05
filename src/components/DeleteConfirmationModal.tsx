@@ -26,7 +26,7 @@ export default function DeleteConfirmationModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-[28px] bg-white px-6 py-7 text-center shadow-2xl animate-in zoom-in-95 duration-200 sm:px-8">
         <div className="mx-auto mb-7 flex size-16 items-center justify-center rounded-full bg-red-100">
           <Trash2 className="size-8 text-red-600" strokeWidth={2.5} />
