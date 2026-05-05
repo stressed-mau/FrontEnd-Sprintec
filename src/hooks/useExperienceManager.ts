@@ -42,22 +42,22 @@ const EMPTY_FORM: ExperienceFormValues = {
 const DATE_PATTERN = /^(\d{2})\/(\d{2})\/(\d{4})$/
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024
-const MAX_CERTIFICATE_SIZE_BYTES = 5 * 1024 * 1024
+const MAX_CERTIFICATE_SIZE_BYTES = 2 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 const ALLOWED_CERTIFICATE_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
 const ALLOWED_CERTIFICATE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".pdf"]
 const COMPANY_MAX_LENGTH = 100
-const COMPANY_ALLOWED_CHARACTERS = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/
-const ACADEMIC_INSTITUTION_ALLOWED_CHARACTERS = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9\s]+$/
+const COMPANY_ALLOWED_CHARACTERS = /^[\p{L}\s.,]+$/u
+const ACADEMIC_INSTITUTION_ALLOWED_CHARACTERS = /^[\p{L}0-9\s]+$/u
 function normalizeExperienceTypeValue(value: string): ExperienceFormValues["type"] {
   return value === "academica" ? "academica" : "laboral"
 }
 
 function sanitizeCompanyInput(value: string, type: ExperienceFormValues["type"]) {
   const allowedCharacters = type === "academica"
-    ? /[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9\s]/g
-    : /[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]/g
+    ? /[^\p{L}0-9\s]/gu
+    : /[^\p{L}\s.,]/gu
 
   return value.replace(allowedCharacters, "").slice(0, COMPANY_MAX_LENGTH)
 }
@@ -266,11 +266,11 @@ function validateCertificateFile(file: File | null): string {
   }
 
   if (!hasAllowedCertificateFormat(file)) {
-    return "El certificado solo permite archivos PDF, JPG, JPEG o PNG."
+    return "El documento de formación solo permite subir archivos PDF, JPG, JPEG o PNG."
   }
 
   if (file.size > MAX_CERTIFICATE_SIZE_BYTES) {
-    return "El certificado permite archivos de hasta 5 MB."
+    return "El tamaño máximo permitido para el archivo de certificación es de 2 MB."
   }
 
   return ""
@@ -297,7 +297,7 @@ function validateExperienceField(
     if (!company) {
       return values.type === "laboral"
         ? "El campo empresa es obligatorio."
-        : "El campo institucion es obligatorio."
+        : "El campo Institución académica es obligatorio."
     }
 
     const hasValidCompanyCharacters = values.type === "academica"
@@ -306,7 +306,7 @@ function validateExperienceField(
 
     if (!hasValidCompanyCharacters) {
       return values.type === "laboral"
-        ? "El campo empresa solo permite caracteres literales."
+        ? "El campo empresa solo permite ingresar caracteres literales, puntos y comas."
         : "El campo Institución académica contiene caracteres no válidos."
     }
 
@@ -326,7 +326,7 @@ function validateExperienceField(
     const normalizedEmail = rawEmail.trim()
 
     if (rawEmail.length > 0 && /\s/.test(rawEmail)) {
-      return "El campo Correo electronico de la empresa no puede contener espacios en blanco."
+      return "El campo Correo electronico de la empresa no puede contener espacios en blanco"
     }
 
     if (!normalizedEmail) {
@@ -346,7 +346,7 @@ function validateExperienceField(
     if (!position) {
       return values.type === "academica"
         ? "Se debe seleccionar un nivel de formación."
-        : "El campo cargo es obligatorio."
+        : "Se debe seleccionar un cargo."
     }
 
     if (position.length > 80) {
@@ -358,7 +358,7 @@ function validateExperienceField(
 
   if (field === "fieldOfStudy" && values.type === "academica") {
     if (!fieldOfStudy) {
-      return "El campo Área de estudio es obligatorio."
+      return "Se debe seleccionar un área de estudio."
     }
 
     if (fieldOfStudy.length > 100) {
@@ -405,11 +405,58 @@ function validateExperienceField(
     const parsedEndDate = parseDate(endDate)
 
     if (parsedStartDate && parsedEndDate && parsedEndDate < parsedStartDate) {
-      return "La fecha de fin no puede ser anterior a la fecha de inicio."
+      return "La fecha de finalización no puede ser anterior a la fecha de inicio."
     }
   }
 
   return ""
+}
+
+function validateRequiredEditedField(
+  field: keyof ExperienceFormValues,
+  value: string | boolean,
+  originalValues: ExperienceFormValues | null,
+) {
+  if (!originalValues || typeof value !== "string") {
+    return ""
+  }
+
+  const originalValue = originalValues[field]
+  if (typeof originalValue !== "string" || !originalValue.trim() || value.trim()) {
+    return ""
+  }
+
+  if (field === "location" || field === "description" || field === "fieldOfStudy") {
+    return "Este campo no puede quedar vacío."
+  }
+
+  return ""
+}
+
+function hasPayloadChanges(
+  payload: ExperiencePayload,
+  originalValues: ExperienceFormValues | null,
+) {
+  if (!originalValues) {
+    return true
+  }
+
+  return (
+    payload.type !== originalValues.type ||
+    payload.company !== originalValues.company.trim() ||
+    payload.email !== originalValues.email.trim() ||
+    payload.position !== originalValues.position.trim() ||
+    payload.location !== originalValues.location.trim() ||
+    payload.fieldOfStudy !== originalValues.fieldOfStudy.trim() ||
+    payload.description !== originalValues.description.trim() ||
+    payload.startDate !== originalValues.startDate.trim() ||
+    payload.endDate !== originalValues.endDate.trim() ||
+    payload.current !== originalValues.current ||
+    Boolean(payload.logoFile) ||
+    Boolean(payload.certificateFile) ||
+    Boolean(payload.removeLogo) ||
+    Boolean(payload.removeCertificate)
+  )
 }
 
 export function useExperienceManager() {
@@ -425,6 +472,7 @@ export function useExperienceManager() {
   const [errors, setErrors] = useState<ExperienceFormErrors>({})
   const [feedbackMessage, setFeedbackMessage] = useState("")
   const [feedbackType, setFeedbackType] = useState<"success" | "error" | "">("")
+  const [successTitle, setSuccessTitle] = useState("Exito")
   const [successMessage, setSuccessMessage] = useState("")
   const [duplicateMessage, setDuplicateMessage] = useState("")
   const [pageError, setPageError] = useState("")
@@ -487,7 +535,8 @@ export function useExperienceManager() {
     setFeedbackType("")
   }
 
-  function showSuccessModal(message: string) {
+  function showSuccessModal(message: string, title = "Exito") {
+    setSuccessTitle(title)
     setSuccessMessage(message)
     setIsSuccessModalOpen(true)
   }
@@ -504,6 +553,7 @@ export function useExperienceManager() {
 
   function closeSuccessModal() {
     setIsSuccessModalOpen(false)
+    setSuccessTitle("Exito")
     setSuccessMessage("")
   }
 
@@ -609,14 +659,14 @@ export function useExperienceManager() {
         return
       }
 
-      if (field !== "endDate" && field !== "description" && typeof value === "string" && typeof originalEditingValues[field] === "string") {
+      if (editingExperience.type === "laboral" && !originalEditingValues.current) {
+        return
+      }
+
+      if (field !== "endDate" && field !== "description" && field !== "location" && typeof value === "string" && typeof originalEditingValues[field] === "string") {
         const originalValue = originalEditingValues[field]
 
         if (!originalValue.trim()) {
-          return
-        }
-
-        if (originalValue.trim() && !value.trim()) {
           return
         }
       }
@@ -661,7 +711,7 @@ export function useExperienceManager() {
 
     setErrors((currentErrors) => ({
       ...currentErrors,
-      [field]: validateExperienceField(field, nextValues),
+      [field]: validateRequiredEditedField(field, normalizedValue, originalEditingValues) || validateExperienceField(field, nextValues),
       ...(field === "type" && nextValues.type === "academica"
         ? { email: "" }
         : {}),
@@ -674,13 +724,13 @@ export function useExperienceManager() {
   function handleBlur(field: keyof ExperienceFormValues) {
     setErrors((currentErrors) => ({
       ...currentErrors,
-      [field]: validateExperienceField(field, formData),
+      [field]: validateRequiredEditedField(field, formData[field], originalEditingValues) || validateExperienceField(field, formData),
     }))
 
     if (field === "startDate" || field === "endDate") {
       setErrors((currentErrors) => ({
         ...currentErrors,
-        [field]: validateExperienceField(field, formData),
+          [field]: validateRequiredEditedField(field, formData[field], originalEditingValues) || validateExperienceField(field, formData),
         endDate: validateExperienceField("endDate", formData),
       }))
     }
@@ -818,7 +868,11 @@ export function useExperienceManager() {
         closeConfirmEditModal()
         closeModal()
         await loadExperiences()
-        showSuccessModal("Experiencia actualizada correctamente.")
+        showSuccessModal(
+          payload.type === "academica"
+            ? "Formación académica actualizada correctamente."
+            : "Experiencia actualizada correctamente.",
+        )
       } else {
         if (payload.type === "academica") {
           await createEducation(payload)
@@ -826,7 +880,11 @@ export function useExperienceManager() {
           await createExperience(payload)
         }
         closeModal()
-        showSuccessModal("Experiencia registrada correctamente.")
+        showSuccessModal(
+          payload.type === "academica"
+            ? "La formación académica ha sido registrada correctamente."
+            : "Experiencia registrada correctamente.",
+        )
       }
 
       if (!editingExperience) {
@@ -872,16 +930,14 @@ export function useExperienceManager() {
     }
 
     if (editingExperience && originalEditingValues) {
-      const protectedFields: Array<keyof ExperienceFormValues> = ["location", "fieldOfStudy", "description", "image", "certificate"]
+      const protectedFields: Array<keyof ExperienceFormValues> = ["location", "fieldOfStudy", "description"]
 
       protectedFields.forEach((field) => {
         const originalValue = originalEditingValues[field]
         const currentValue = formData[field]
 
         if (typeof originalValue === "string" && originalValue.trim() && typeof currentValue === "string" && !currentValue.trim()) {
-          nextErrors[field] = field === "description"
-            ? "Este campo no puede quedar vacío."
-            : "La informacion guardada previamente no puede ser borrada."
+          nextErrors[field] = "Este campo no puede quedar vacío."
         }
       })
     }
@@ -926,6 +982,11 @@ export function useExperienceManager() {
     }
 
     if (editingExperience) {
+      if (!hasPayloadChanges(payload, originalEditingValues)) {
+        showSuccessModal("No hay cambios para guardar.", "Sin cambios")
+        return
+      }
+
       openConfirmEditModal(payload)
       return
     }
@@ -972,6 +1033,7 @@ export function useExperienceManager() {
     isDuplicateModalOpen,
     isSuccessModalOpen,
     duplicateMessage,
+    successTitle,
     successMessage,
     pageError,
     isLoading,

@@ -55,6 +55,8 @@ const FIXED_ROLES = [
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"];
 const MAX_PROJECT_NAME_LENGTH = 60;
+const MAX_PROJECT_DESCRIPTION_LENGTH = 250;
+const MAX_PROJECT_URL_LENGTH = 50;
 
 function validateUrl(value: string) {
   return /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(value);
@@ -73,11 +75,13 @@ function validateForm(
   else if (form.nombre.trim().length > MAX_PROJECT_NAME_LENGTH) {
     errors.nombre = `El campo Nombre del proyecto permite ingresar un máximo de ${MAX_PROJECT_NAME_LENGTH} caracteres.`;
   }
-  if (!form.descripcion.trim()) errors.descripcion = "Este campo no puede quedar vacío.";
+  if (form.descripcion.length > MAX_PROJECT_DESCRIPTION_LENGTH) {
+    errors.descripcion = `El campo Descripción permite un máximo de ${MAX_PROJECT_DESCRIPTION_LENGTH} caracteres.`;
+  }
   if (!form.rol.trim()) errors.rol = "Debes seleccionar al menos un rol.";
   else if (form.rol.trim().length > 255) errors.rol = "El rol no debe exceder 255 caracteres.";
-  if (selectedTechs.length === 0) errors.tecnologias = "Debes seleccionar al menos una tecnologia.";
-  if (selectedTechs.length > 10) errors.tecnologias = "Se permite un maximo de 10 tecnologias.";
+  if (selectedTechs.length === 0) errors.tecnologias = "Debes seleccionar al menos una tecnología.";
+  if (selectedTechs.length > 10) errors.tecnologias = "Se permite un máximo de 10 tecnologías.";
   if (!form.fechaInicio) errors.fechaInicio = "El campo Fecha de inicio es obligatorio.";
   if (!form.is_current && !form.fechaFin) {
     errors.fechaFin = "El campo Fecha de finalización es obligatorio, si el proyecto no está en curso.";
@@ -90,25 +94,36 @@ function validateForm(
 
   if (form.fechaFin) {
     const endDate = new Date(form.fechaFin);
-    if (endDate > today) errors.fechaFin = "La fecha final no puede ser futura.";
-    if (form.fechaInicio && new Date(form.fechaInicio) >= endDate) {
-      errors.fechaFin = "La fecha final debe ser posterior a la fecha de inicio.";
+    if (endDate > today) errors.fechaFin = "La fecha de finalización no puede ser posterior a la fecha actual.";
+    if (form.fechaInicio && new Date(form.fechaInicio) > endDate) {
+      errors.fechaFin = "La fecha de finalización no puede ser anterior a la fecha de inicio.";
     }
   }
 
   if (form.github.trim()) {
-    if (!validateUrl(form.github) || !form.github.includes("github.com")) {
-      errors.github = "Debe ser una URL valida de GitHub.";
+    if (form.github.length > MAX_PROJECT_URL_LENGTH) {
+      errors.github = `El campo Enlace de GitHub permite un máximo de ${MAX_PROJECT_URL_LENGTH} caracteres.`;
+    } else if (!validateUrl(form.github)) {
+      errors.github = "El enlace de GitHub debe ser una URL válida.";
+    } else {
+      const hostname = new URL(form.github).hostname.toLowerCase();
+      if (hostname !== "github.com" && !hostname.endsWith(".github.com")) {
+        errors.github = "El enlace debe pertenecer al dominio github.com.";
+      }
     }
   }
 
-  if (form.demo.trim() && !validateUrl(form.demo)) {
-    errors.demo = "El enlace demo debe ser una URL valida.";
+  if (form.demo.trim()) {
+    if (form.demo.length > MAX_PROJECT_URL_LENGTH) {
+      errors.demo = `El campo Enlace de la demo permite un máximo de ${MAX_PROJECT_URL_LENGTH} caracteres.`;
+    } else if (!validateUrl(form.demo)) {
+      errors.demo = "El enlace de la demo debe ser una URL válida.";
+    }
   }
 
   if (imageFile) {
     if (!ALLOWED_IMAGE_TYPES.includes(imageFile.type)) {
-      errors.image = "Solo se permiten imagenes JPG o PNG.";
+      errors.image = "El campo imagen del proyecto solo permite archivos JPG o PNG.";
     } else if (imageFile.size > MAX_IMAGE_SIZE_BYTES) {
       errors.image = "La imagen no debe superar los 2 MB.";
     }
@@ -202,7 +217,6 @@ export function useProjectsManager() {
 
   function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null;
-    setImageFile(file);
     setErrors((current) => {
       const next = { ...current };
       delete next.image;
@@ -210,7 +224,25 @@ export function useProjectsManager() {
     });
 
     if (preview) URL.revokeObjectURL(preview);
-    setPreview(file ? URL.createObjectURL(file) : null);
+    setPreview(null);
+
+    if (!file) {
+      setImageFile(null);
+      return;
+    }
+
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setImageFile(null);
+      event.target.value = "";
+      setErrors((current) => ({
+        ...current,
+        image: "El campo imagen del proyecto solo permite archivos JPG o PNG.",
+      }));
+      return;
+    }
+
+    setImageFile(file);
+    setPreview(URL.createObjectURL(file));
   }
 
   function removeImage() {
@@ -297,7 +329,7 @@ export function useProjectsManager() {
       } else {
         await createProject(createPayload);
         resetForm();
-        setSuccessMessage("Proyecto agregado correctamente.");
+        setSuccessMessage("El proyecto ha sido registrado correctamente.");
       }
 
       await loadProjects();
@@ -320,7 +352,7 @@ export function useProjectsManager() {
 
     try {
       await Promise.all(ids.map((id) => deleteProject(id)));
-      setSuccessMessage(`${ids.length} proyecto(s) eliminado(s) correctamente.`);
+      setSuccessMessage("Proyecto eliminado correctamente.");
       await loadProjects();
       return true;
     } catch (error) {

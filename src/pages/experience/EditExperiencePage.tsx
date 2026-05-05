@@ -27,8 +27,8 @@ export default function EditExperiencePage() {
 
   return (
     <ExperiencePageShell
-      title="Editar experiencia"
-      description="Selecciona una experiencia de la tabla para actualizar sus datos."
+      title="Editar Experiencia Laboral"
+      description="Selecciona una Experiencia Laboral de la tabla para actualizar sus datos."
     >
       <FeedbackMessage message={manager.feedbackMessage || manager.pageError} type={manager.feedbackType || "error"} />
 
@@ -36,12 +36,12 @@ export default function EditExperiencePage() {
 
       {manager.isLoading ? (
         <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
-          Cargando experiencias...
+          Cargando Experiencia Laboral...
         </div>
       ) : (
         <ExperienceTable
           experiences={pagination.items}
-          emptyMessage={searchTerm ? "No se encontraron experiencias con ese criterio." : "No hay experiencias para editar."}
+          emptyMessage={searchTerm ? "No se encontró Experiencia Laboral con ese criterio." : "No hay Experiencia Laboral para editar."}
           searchTerm={searchTerm}
           onRowClick={manager.openEditModal}
         />

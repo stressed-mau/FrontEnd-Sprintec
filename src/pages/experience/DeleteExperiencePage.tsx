@@ -65,7 +65,7 @@ export default function DeleteExperiencePage() {
       const deleted = await manager.handleDelete(selectedId)
 
       if (!deleted) {
-        setFeedbackMessage(manager.pageError || "No se pudo eliminar la experiencia.")
+        setFeedbackMessage(manager.pageError || "No se pudo eliminar la Experiencia Laboral.")
         setFeedbackType("error")
         return
       }
@@ -76,7 +76,7 @@ export default function DeleteExperiencePage() {
       setShowSuccessModal(true)
       await manager.reloadExperiences()
     } catch (error) {
-      setFeedbackMessage(error instanceof Error ? error.message : "No se pudo eliminar la experiencia.")
+      setFeedbackMessage(error instanceof Error ? error.message : "No se pudo eliminar la Experiencia Laboral.")
       setFeedbackType("error")
     } finally {
       setIsDeleting(false)
@@ -85,11 +85,11 @@ export default function DeleteExperiencePage() {
 
   return (
     <ExperiencePageShell
-      title="Eliminar experiencia"
+      title="Eliminar Experiencia Laboral"
       description={
         selectedId == null
-          ? "Selecciona una experiencia para eliminarla."
-          : "1 experiencia seleccionada."
+          ? "Selecciona una Experiencia Laboral para eliminarla."
+          : "1 Experiencia Laboral seleccionada."
       }
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -112,12 +112,12 @@ export default function DeleteExperiencePage() {
 
       {manager.isLoading ? (
         <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
-          Cargando experiencias...
+          Cargando Experiencia Laboral...
         </div>
       ) : (
         <ExperienceTable
           experiences={pagination.items}
-          emptyMessage={searchTerm ? "No se encontraron experiencias con ese criterio." : "No hay experiencias para eliminar."}
+          emptyMessage={searchTerm ? "No se encontró Experiencia Laboral con ese criterio." : "No hay Experiencia Laboral para eliminar."}
           searchTerm={searchTerm}
           selectedIds={selectedIds}
           onSelect={handleSelect}
@@ -135,7 +135,7 @@ export default function DeleteExperiencePage() {
 
       <DeleteConfirmationModal
         isOpen={showConfirmDelete}
-        title="¿Está seguro de que desea eliminar esta experiencia?"
+        title="¿Está seguro de que desea eliminar esta Experiencia Laboral?"
         isLoading={isDeleting}
         onConfirm={() => void handleDeleteSelected()}
         onCancel={() => setShowConfirmDelete(false)}
@@ -144,7 +144,7 @@ export default function DeleteExperiencePage() {
       <ConfirmationModal
         isOpen={showSuccessModal}
         title="Exito"
-        message={`Experiencia${deletedExperienceName ? ` "${deletedExperienceName}"` : ""} eliminada correctamente.`}
+        message={`Experiencia Laboral${deletedExperienceName ? ` "${deletedExperienceName}"` : ""} eliminada correctamente.`}
         onClose={() => setShowSuccessModal(false)}
       />
     </ExperiencePageShell>

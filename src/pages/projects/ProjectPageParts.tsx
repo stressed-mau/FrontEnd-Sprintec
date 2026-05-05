@@ -1,4 +1,4 @@
-import { Edit3, ExternalLink, FolderGit2, GitBranch, Search, X } from "lucide-react";
+import { Edit3, ExternalLink, FolderGit2, GitBranch, Plus, Search, X } from "lucide-react";
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ import type { ProjectFormErrors, ProjectFormValues, ProjectItem, ProjectTechnolo
 
 const ITEMS_PER_PAGE = 10;
 const MAX_PROJECT_NAME_LENGTH = 60;
+const MAX_PROJECT_DESCRIPTION_LENGTH = 250;
+const MAX_PROJECT_URL_LENGTH = 50;
 const inputClassName = (hasError?: boolean) =>
   hasError
     ? "border-red-500 bg-white focus-visible:border-red-500 focus-visible:ring-red-200"
@@ -122,7 +124,7 @@ export function ProjectSearch({ value, onChange }: { value: string; onChange: (v
       <Input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Buscar por nombre, rol o tecnologia..."
+        placeholder="Buscar por nombre, rol o tecnología..."
         className="h-11 border-gray-300 bg-white pl-10 text-gray-900 focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
       />
     </div>
@@ -249,7 +251,7 @@ export function ProjectTable({
             {selectable ? <th className="w-12 px-4 py-3">Sel.</th> : null}
             <th className="px-4 py-3">Nombre</th>
             <th className="px-4 py-3">Rol</th>
-            <th className="px-4 py-3">Tecnologias</th>
+            <th className="px-4 py-3">Tecnologías</th>
             <th className="px-4 py-3">Periodo</th>
             <th className="px-4 py-3">Estado</th>
             {onEdit ? <th className="px-4 py-3 text-right">Acciones</th> : null}
@@ -412,12 +414,12 @@ export function ProjectDetailsModal({ project, onClose }: { project: ProjectItem
             <DetailItem label="Fin" value={project.is_current ? "Actualidad" : formatProjectDate(project.fechaFin)} />
             <DetailItem label="Rol" value={project.rol || "No especificado"} />
             <DetailItem
-              label="Tecnologias"
+              label="Tecnologías"
               value={project.tecnologias.length ? project.tecnologias.map((technology) => technology.name).join(", ") : "No especificadas"}
             />
           </div>
 
-          <DetailItem label="Descripcion" value={project.descripcion || "No especificada"} />
+          <DetailItem label="Descripción" value={project.descripcion || "No especificada"} />
 
           {(project.github || project.demo) ? (
             <Detail label="Enlaces">
@@ -479,6 +481,8 @@ export function ProjectForm({
   onImageRemove,
   tone = "page",
   readOnlyFields = false,
+  canEditGithub = true,
+  canEditDemo = true,
 }: {
   formData: ProjectFormValues;
   errors: ProjectFormErrors;
@@ -497,6 +501,8 @@ export function ProjectForm({
   onImageRemove: () => void;
   tone?: "page" | "modal";
   readOnlyFields?: boolean;
+  canEditGithub?: boolean;
+  canEditDemo?: boolean;
 }) {
   const isModalTone = tone === "modal";
   const [technologySearch, setTechnologySearch] = useState("");
@@ -568,7 +574,7 @@ export function ProjectForm({
       }
     >
       <FeedbackMessage message={errors.form ?? ""} type="error" />
-      <div className={isModalTone ? "space-y-6" : "grid gap-4 md:grid-cols-2"}>
+      <div className={isModalTone ? "space-y-6" : "grid gap-4 md:grid-cols-3"}>
         <Field label="Nombre del proyecto" error={errors.nombre} required tone={tone}>
           <Input
             value={formData.nombre}
@@ -603,85 +609,85 @@ export function ProjectForm({
             </select>
           )}
         </Field>
+        <Field label="Tecnologías" error={errors.tecnologias} required tone={tone}>
+          {readOnlyFields ? (
+            <Input
+              value={selectedTechs.length > 0 ? selectedTechs.map((technology) => technology.name).join(", ") : "Sin tecnologías"}
+              disabled
+              className={disabledInputClassName}
+              aria-invalid={Boolean(errors.tecnologias)}
+            />
+          ) : (
+            <>
+              <div className="relative">
+                <Input
+                  value={technologySearch}
+                  onChange={(event) => {
+                    setTechnologySearch(event.target.value);
+                    setActiveTechnologyIndex(0);
+                    setShowTechnologyDropdown(true);
+                  }}
+                  onFocus={() => setShowTechnologyDropdown(true)}
+                  onKeyDown={handleTechnologyKeyDown}
+                  onBlur={() => {
+                    window.setTimeout(() => setShowTechnologyDropdown(false), 120);
+                  }}
+                  disabled={selectedTechs.length >= 10}
+                  placeholder={selectedTechs.length >= 10 ? "Límite alcanzado (max 10)" : "Buscar tecnología..."}
+                  className={fieldInputClassName(Boolean(errors.tecnologias))}
+                  aria-invalid={Boolean(errors.tecnologias)}
+                />
+                {showTechnologyDropdown && technologySearch.trim() ? (
+                  <div className="absolute z-20 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl">
+                    {filteredTechnologies.length ? (
+                      filteredTechnologies.map((technology) => (
+                        <button
+                          key={technology.id}
+                          type="button"
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            handleTechnologySelect(technology.id);
+                          }}
+                          onMouseEnter={() => setActiveTechnologyIndex(filteredTechnologies.findIndex((item) => item.id === technology.id))}
+                          className={`block w-full px-3 py-2 text-left text-sm text-[#003A6C] transition-colors ${
+                            filteredTechnologies[activeTechnologyIndex]?.id === technology.id ? "bg-blue-50" : "hover:bg-blue-50"
+                          }`}
+                        >
+                          {technology.name}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="px-3 py-2 text-xs text-gray-400">No se encontró la tecnología</p>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+              {selectedTechs.length > 0 ? (
+                <div className={`mt-3 flex flex-wrap gap-2 rounded-xl border p-3 ${isModalTone ? "border-gray-200 bg-gray-50" : "border-[#D7E6F2] bg-[#EEF5F9]"}`}>
+                  {selectedTechs.map((technology) => (
+                    <Badge key={technology.id} className={`gap-1 ${isModalTone ? "bg-gray-100 text-gray-700 hover:bg-gray-100" : "bg-[#D9EAF4] text-[#003A6C]"}`}>
+                      {technology.name}
+                      <button type="button" onClick={() => onTechnologyRemove(technology.id)} className={`rounded-full p-0.5 ${isModalTone ? "hover:bg-gray-200" : "hover:bg-[#A5D7E8]"}`}>
+                        <X className="size-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              ) : null}
+            </>
+          )}
+        </Field>
       </div>
 
-      <Field label="Descripcion" error={errors.descripcion} required tone={tone}>
+      <Field label="Descripción" error={errors.descripcion} tone={tone}>
         <Textarea
           value={formData.descripcion}
           onChange={(event) => onFieldChange("descripcion", event.target.value)}
           rows={4}
+          maxLength={MAX_PROJECT_DESCRIPTION_LENGTH}
           className={fieldInputClassName(Boolean(errors.descripcion))}
           aria-invalid={Boolean(errors.descripcion)}
         />
-      </Field>
-
-      <Field label="Tecnologias" error={errors.tecnologias} required tone={tone}>
-        {readOnlyFields ? (
-          <Input
-            value={selectedTechs.length > 0 ? selectedTechs.map((technology) => technology.name).join(", ") : "Sin tecnologias"}
-            disabled
-            className={disabledInputClassName}
-            aria-invalid={Boolean(errors.tecnologias)}
-          />
-        ) : (
-          <>
-            <div className="relative">
-              <Input
-                value={technologySearch}
-                onChange={(event) => {
-                  setTechnologySearch(event.target.value);
-                  setActiveTechnologyIndex(0);
-                  setShowTechnologyDropdown(true);
-                }}
-                onFocus={() => setShowTechnologyDropdown(true)}
-                onKeyDown={handleTechnologyKeyDown}
-                onBlur={() => {
-                  window.setTimeout(() => setShowTechnologyDropdown(false), 120);
-                }}
-                disabled={selectedTechs.length >= 10}
-                placeholder={selectedTechs.length >= 10 ? "Limite alcanzado (max 10)" : "Buscar tecnologia..."}
-                className={fieldInputClassName(Boolean(errors.tecnologias))}
-                aria-invalid={Boolean(errors.tecnologias)}
-              />
-              {showTechnologyDropdown && technologySearch.trim() ? (
-                <div className="absolute z-20 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl">
-                  {filteredTechnologies.length ? (
-                    filteredTechnologies.map((technology) => (
-                      <button
-                        key={technology.id}
-                        type="button"
-                        onMouseDown={(event) => {
-                          event.preventDefault();
-                          handleTechnologySelect(technology.id);
-                        }}
-                        onMouseEnter={() => setActiveTechnologyIndex(filteredTechnologies.findIndex((item) => item.id === technology.id))}
-                        className={`block w-full px-3 py-2 text-left text-sm text-[#003A6C] transition-colors ${
-                          filteredTechnologies[activeTechnologyIndex]?.id === technology.id ? "bg-blue-50" : "hover:bg-blue-50"
-                        }`}
-                      >
-                        {technology.name}
-                      </button>
-                    ))
-                  ) : (
-                    <p className="px-3 py-2 text-xs text-gray-400">No se encontro la tecnologia</p>
-                  )}
-                </div>
-              ) : null}
-            </div>
-            {selectedTechs.length > 0 ? (
-              <div className={`mt-3 flex flex-wrap gap-2 rounded-xl border p-3 ${isModalTone ? "border-gray-200 bg-gray-50" : "border-[#D7E6F2] bg-[#EEF5F9]"}`}>
-                {selectedTechs.map((technology) => (
-                  <Badge key={technology.id} className={`gap-1 ${isModalTone ? "bg-gray-100 text-gray-700 hover:bg-gray-100" : "bg-[#D9EAF4] text-[#003A6C]"}`}>
-                    {technology.name}
-                    <button type="button" onClick={() => onTechnologyRemove(technology.id)} className={`rounded-full p-0.5 ${isModalTone ? "hover:bg-gray-200" : "hover:bg-[#A5D7E8]"}`}>
-                      <X className="size-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            ) : null}
-          </>
-        )}
       </Field>
 
       <div className={isModalTone ? "grid gap-6 md:grid-cols-2" : "grid gap-4 md:grid-cols-3"}>
@@ -696,7 +702,7 @@ export function ProjectForm({
             aria-invalid={Boolean(errors.fechaInicio)}
           />
         </Field>
-        <Field label="Fecha de finalizacion" error={errors.fechaFin} required={!formData.is_current} tone={tone}>
+        <Field label="Fecha de finalización" error={errors.fechaFin} required={!formData.is_current} tone={tone}>
           <Input
             type="date"
             value={formData.fechaFin}
@@ -715,48 +721,53 @@ export function ProjectForm({
       </label>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="URL de GitHub" error={errors.github} tone={tone}>
+        <Field label="Enlace de GitHub" error={errors.github} tone={tone}>
           <Input
             type="url"
             value={formData.github}
             onChange={(event) => onFieldChange("github", event.target.value)}
+            disabled={!canEditGithub}
+            maxLength={MAX_PROJECT_URL_LENGTH}
             placeholder="https://github.com/usuario/proyecto"
-            className={fieldInputClassName(Boolean(errors.github))}
+            className={!canEditGithub ? disabledInputClassName : fieldInputClassName(Boolean(errors.github))}
             aria-invalid={Boolean(errors.github)}
           />
         </Field>
-        <Field label="URL de demo" error={errors.demo} tone={tone}>
+        <Field label="Enlace de la demo" error={errors.demo} tone={tone}>
           <Input
             type="url"
             value={formData.demo}
             onChange={(event) => onFieldChange("demo", event.target.value)}
+            disabled={!canEditDemo}
+            maxLength={MAX_PROJECT_URL_LENGTH}
             placeholder="https://proyecto-demo.com"
-            className={fieldInputClassName(Boolean(errors.demo))}
+            className={!canEditDemo ? disabledInputClassName : fieldInputClassName(Boolean(errors.demo))}
             aria-invalid={Boolean(errors.demo)}
           />
         </Field>
       </div>
 
       <Field label="Imagen del proyecto" error={errors.image} tone={tone}>
-        <div className={`rounded-xl border p-3 ${errors.image ? "border-red-500 bg-red-50" : isModalTone ? "border-gray-200 bg-gray-50" : "border-[#D7E6F2] bg-[#EEF5F9]"}`}>
-          {preview ? <img src={preview} alt="Vista previa del proyecto" className="mb-3 h-28 w-full max-w-xs rounded-xl object-cover shadow-sm" /> : null}
+        <div className="space-y-3">
+          {preview ? <img src={preview} alt="Vista previa del proyecto" className="h-28 w-full max-w-xs rounded-lg object-cover shadow-sm" /> : null}
           <div className="flex flex-wrap items-center gap-3">
-          <label className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${readOnlyFields ? "cursor-not-allowed bg-gray-400" : "cursor-pointer bg-[#003A6C] hover:bg-[#4982AD]"}`}>
-            Seleccionar archivo
-            <input type="file" accept="image/png,image/jpeg" onChange={onImageChange} disabled={readOnlyFields} className="hidden" />
-          </label>
-          {preview && !readOnlyFields ? (
-            <Button type="button" variant="outline" onClick={onImageRemove} className={isModalTone ? "border-gray-300 bg-white text-gray-700 hover:bg-gray-50" : "border-[#A5D7E8] bg-white text-[#003A6C]"}>
-              Quitar imagen
-            </Button>
-          ) : null}
-          <span className={`text-xs ${isModalTone ? "text-gray-500" : "text-[#4B778D]"}`}>JPG o PNG, maximo 2 MB</span>
+            <label className={`rounded-lg bg-[#C2DBED] px-4 py-2 text-sm font-medium text-[#003A6C] ${readOnlyFields ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:bg-[#A5D7E8]"}`}>
+              Seleccionar archivo
+              <input type="file" accept="image/png,image/jpeg" onChange={onImageChange} disabled={readOnlyFields} className="hidden" />
+            </label>
+            {preview && !readOnlyFields ? (
+              <Button type="button" variant="outline" onClick={onImageRemove} className={isModalTone ? "border-gray-300 bg-white text-gray-700 hover:bg-gray-50" : "border-[#A5D7E8] bg-white text-[#003A6C]"}>
+                Quitar imagen
+              </Button>
+            ) : null}
+            <span className={`text-xs ${isModalTone ? "text-gray-500" : "text-[#4B778D]"}`}>JPG o PNG, máximo 2 MB</span>
           </div>
         </div>
       </Field>
 
-      <div className={`flex flex-wrap gap-3 border-t pt-5 ${isModalTone ? "border-gray-200" : "border-[#D7E6F2]"}`}>
+      <div className="flex flex-wrap gap-3 pt-2">
         <Button type="submit" disabled={isSaving} className="bg-[#003A6C] text-white shadow-sm hover:bg-[#4982AD]">
+          {!isSaving ? <Plus className="size-4" /> : null}
           {isSaving ? "Guardando..." : submitLabel}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving} className={isModalTone ? "border-gray-300 bg-white text-gray-700 hover:bg-gray-50" : "border-[#A5D7E8] bg-white text-[#003A6C]"}>

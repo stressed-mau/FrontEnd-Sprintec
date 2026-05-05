@@ -180,10 +180,10 @@ const NetworksPage = () => {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h1 id="titulo-pagina-redes-profesionales" className="mb-2 text-3xl font-bold text-[#111827]">
-                  Redes Profesionales
+                  Enlazar Redes Profesionales
                 </h1>
                 <p id="descripcion-pagina-redes-profesionales" className="text-sm text-gray-600 sm:text-base">
-                  Conecta tus perfiles profesionales de forma segura mediante OAuth
+                  Enlaza tus perfiles profesionales de forma segura mediante OAuth
                 </p>
               </div>
             </div>

@@ -28,8 +28,8 @@ export default function ViewEducationPage() {
 
   return (
     <ExperiencePageShell
-      title="Ver formacion academica"
-      description="Consulta tu formacion academica registrada."
+      title="Ver Formación Académica"
+      description="Consulta tu Formación Académica registrada."
     >
       <FeedbackMessage message={manager.pageError} type="error" />
 
@@ -37,12 +37,12 @@ export default function ViewEducationPage() {
 
       {manager.isLoading ? (
         <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
-          Cargando formacion academica...
+          Cargando Formación Académica...
         </div>
       ) : (
         <ExperienceTable
           experiences={pagination.items}
-          emptyMessage={searchTerm ? "No se encontro formacion con ese criterio." : "No hay formacion academica registrada."}
+          emptyMessage={searchTerm ? "No se encontró Formación Académica con ese criterio." : "No hay Formación Académica registrada."}
           searchTerm={searchTerm}
           onRowClick={setSelectedEducation}
         />

@@ -102,12 +102,12 @@ export function ExperienceTypeBadge({ type }: { type: ExperienceItem["type"] }) 
   return type === "academica" ? (
     <Badge className="bg-[#EEF5F9] text-[#003A6C]">
       <GraduationCap className="mr-1 size-3" />
-      Academica
+      Formación Académica
     </Badge>
   ) : (
     <Badge className="bg-[#EEF5F9] text-[#003A6C]">
       <Briefcase className="mr-1 size-3" />
-      Laboral
+      Experiencia Laboral
     </Badge>
   )
 }
@@ -173,9 +173,10 @@ export function ExperienceTable({
                     {selectable ? (
                       <td className="px-4 py-4" onClick={(event) => event.stopPropagation()}>
                         <input
-                          type="checkbox"
+                          type={canSelectAll ? "checkbox" : "radio"}
+                          name={canSelectAll ? undefined : "selected-experience"}
                           checked={currentSelectedIds.has(experience.id)}
-                          onChange={(event) => onSelect?.(experience.id, event.target.checked)}
+                          onChange={(event) => onSelect?.(experience.id, canSelectAll ? event.target.checked : true)}
                           className="size-4 rounded border-[#A5D7E8]"
                           aria-label={`Seleccionar ${experience.company}`}
                         />
@@ -285,7 +286,9 @@ export function ExperienceDetailsModal({ experience, onClose }: ExperienceDetail
       <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-[#6DACBF] bg-white p-6 shadow-2xl sm:rounded-3xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-[#003A6C]">Detalle de experiencia</h2>
+            <h2 className="text-2xl font-bold text-[#003A6C]">
+              Detalle de {experience.type === "academica" ? "Formación Académica" : "Experiencia Laboral"}
+            </h2>
             <p className="mt-1 text-sm text-[#4B778D]">Informacion completa del registro seleccionado.</p>
           </div>
           <button
@@ -404,7 +407,7 @@ export function ExperienceManagerModals({
       {manager.isSuccessModalOpen ? (
         <ConfirmationModal
           isOpen={manager.isSuccessModalOpen}
-          title="Exito"
+          title={manager.successTitle}
           message={manager.successMessage}
           buttonText="Aceptar"
           onClose={() => {

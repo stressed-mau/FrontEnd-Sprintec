@@ -135,12 +135,13 @@ export function ExperienceFormModal({
   const isLaboralUpdate = isEditing && isLaboralExperience
   const isAcademicUpdate = isEditing && !isLaboralExperience
   const isLimitedUpdate = isLaboralUpdate || isAcademicUpdate
+  const isLaboralUpdateWithEndDate = isLaboralUpdate && !originalEditingValues?.current
   const isCurrentActive = formData.current
   const disabledControlClassName =
     "disabled:cursor-not-allowed disabled:border-[#D7E6F2] disabled:bg-[#EEF5F9] disabled:text-[#7F97AB] disabled:opacity-100"
   const disabledButtonClassName = "disabled:cursor-not-allowed disabled:border-[#D7E6F2] disabled:bg-[#EEF5F9] disabled:text-[#7F97AB] disabled:opacity-100"
-  const editingTitle = isLaboralExperience ? "Editar experiencia laboral" : "Editar experiencia academica"
-  const createTitle = isLaboralExperience ? "Nueva experiencia laboral" : "Nueva experiencia academica"
+  const editingTitle = isLaboralExperience ? "Editar Experiencia Laboral" : "Editar Formación Académica"
+  const createTitle = isLaboralExperience ? "Nueva Experiencia Laboral" : "Nueva Formación Académica"
   const positionOptions = isLaboralExperience ? POSITION_OPTIONS : DEGREE_OPTIONS
   const resolvedPositionOptions =
     formData.position && !positionOptions.includes(formData.position)
@@ -158,10 +159,10 @@ export function ExperienceFormModal({
     const originalValue = originalEditingValues[field]
     return typeof originalValue === "string" && !originalValue.trim()
   }
-  const isLocationDisabled = isSaving || wasEmptyOriginally("location")
-  const isDescriptionDisabled = isSaving || (isLaboralExperience && wasEmptyOriginally("description"))
-  const isEndDateDisabled = isSaving
-  const isCurrentDisabled = isSaving
+  const isLocationDisabled = isSaving || isLaboralUpdateWithEndDate || wasEmptyOriginally("location")
+  const isDescriptionDisabled = isSaving || isLaboralUpdateWithEndDate || (isLaboralExperience && wasEmptyOriginally("description"))
+  const isEndDateDisabled = isSaving || isLaboralUpdateWithEndDate
+  const isCurrentDisabled = isSaving || isEditing
   const isImageDisabled = isSaving || isLaboralUpdate || wasEmptyOriginally("image")
   const isCertificateDisabled = isSaving || isAcademicUpdate || wasEmptyOriginally("certificate")
   const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
@@ -181,7 +182,7 @@ export function ExperienceFormModal({
               {isEditing ? editingTitle : createTitle}
             </h2>
             <p id="descripcion-modal-experiencia" className="mt-1 text-sm text-[#4B778D]">
-              {isEditing ? "Actualiza" : "Agrega"} tu experiencia laboral o academica.
+              {isEditing ? "Actualiza" : "Agrega"} tu {isLaboralExperience ? "Experiencia Laboral" : "Formación Académica"}.
             </p>
           </div>
 
@@ -210,8 +211,8 @@ export function ExperienceFormModal({
                 className={`h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8] ${disabledControlClassName}`}
                 aria-labelledby="experience-type-label"
               >
-                <option value="laboral">Experiencia laboral</option>
-                <option value="academica">Experiencia academica</option>
+                <option value="laboral">Experiencia Laboral</option>
+                <option value="academica">Formación Académica</option>
               </select>
             </div>
           ) : null}
@@ -377,7 +378,7 @@ export function ExperienceFormModal({
 
             <div className="space-y-2">
               <Label id="experience-end-date-label" htmlFor="experience-end-date" className="text-[#003A6C]">
-                Fecha de fin {!isCurrentActive ? <span aria-hidden="true">*</span> : null}
+                Fecha de finalización {!isCurrentActive ? <span aria-hidden="true">*</span> : null}
               </Label>
               <Input
                 id="experience-end-date"
@@ -406,11 +407,11 @@ export function ExperienceFormModal({
               className={`size-4 rounded border-[#A5D7E8] text-[#003A6C] focus:ring-[#A5D7E8] ${disabledControlClassName}`}
             />
             <Label id="experience-current-label" htmlFor="experience-current" className="cursor-pointer text-[#003A6C]">
-              {isLaboralExperience ? "Aun trabajo aqui" : "Actualmente estudio aqui"}
+              {isLaboralExperience ? "Trabajo actual" : "Actualmente estudio aqui"}
             </Label>
           </div>
 
-          {isLaboralExperience ? (
+          {isLaboralExperience && !isEditing ? (
             <div className="space-y-2">
               <Label id="experience-image-label" htmlFor="experience-image" className="text-[#003A6C]">
                 Logo de la empresa
@@ -433,7 +434,7 @@ export function ExperienceFormModal({
                   variant="outline"
                   disabled={isImageDisabled}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9] ${disabledButtonClassName}`}
+                  className={`h-10 border-[#A5D7E8] bg-[#C2DBED] text-[#003A6C] hover:bg-[#A5D7E8] ${disabledButtonClassName}`}
                 >
                   <ImagePlus className="mr-2 size-4" />
                   {formData.image ? "Cambiar imagen" : "Subir imagen"}
@@ -469,7 +470,7 @@ export function ExperienceFormModal({
           ) : (
             <div className="space-y-2">
               <Label id="experience-certificate-label" htmlFor="experience-certificate" className="text-[#003A6C]">
-                Documento de formacion
+                Documento de formación
               </Label>
 
               <input
@@ -489,7 +490,7 @@ export function ExperienceFormModal({
                   variant="outline"
                   disabled={isCertificateDisabled}
                   onClick={() => certificateInputRef.current?.click()}
-                  className={`h-10 border-[#A5D7E8] bg-white text-[#003A6C] hover:bg-[#EEF5F9] ${disabledButtonClassName}`}
+                  className={`h-10 border-[#A5D7E8] bg-[#C2DBED] text-[#003A6C] hover:bg-[#A5D7E8] ${disabledButtonClassName}`}
                 >
                   <FileText className="mr-2 size-4" />
                   {formData.certificate ? "Cambiar documento" : "Subir documento"}
@@ -515,7 +516,7 @@ export function ExperienceFormModal({
               ) : null}
 
               {errors.certificate ? <p className="text-sm text-red-600">{errors.certificate}</p> : null}
-              <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG, PNG y PDF. Tamano maximo: 5 MB.</p>
+              <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG, PNG y PDF. Tamaño máximo: 2 MB.</p>
             </div>
           )}
 

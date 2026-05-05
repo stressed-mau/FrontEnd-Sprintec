@@ -3,7 +3,7 @@ import type { ExperienceItem } from "@/hooks/useExperienceManager"
 export const ITEMS_PER_PAGE = 10
 
 export function getExperienceTypeLabel(type: ExperienceItem["type"]) {
-  return type === "academica" ? "Academica" : "Laboral"
+  return type === "academica" ? "Formación Académica" : "Experiencia Laboral"
 }
 
 export function filterExperiences(experiences: ExperienceItem[], searchTerm: string) {

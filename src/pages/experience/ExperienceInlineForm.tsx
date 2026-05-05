@@ -2,7 +2,6 @@ import type { ChangeEvent, FormEvent, ReactNode, RefObject } from "react"
 import { Award, Plus, Upload, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -131,16 +130,16 @@ export function ExperienceInlineForm({
   const companyLabel = isEducation ? "Institución académica" : "Empresa"
   const positionLabel = isEducation ? "Nivel de formación" : "Cargo"
   const currentLabel = isEducation ? "Cursando actualmente" : "Trabajo actual"
-  const submitLabel = isEducation ? "Agregar formacion" : "Agregar experiencia"
+  const submitLabel = isEducation ? "Agregar Formación Académica" : "Agregar Experiencia Laboral"
   const descriptionPlaceholder = isEducation
-    ? "Describe tu experiencia academica, logros, especializaciones..."
+    ? "Describe tu Formación Académica, logros, especializaciones..."
     : "Describe tus responsabilidades y logros..."
   const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
+  const fileButtonClassName =
+    "inline-flex cursor-pointer items-center rounded-lg bg-[#C2DBED] px-4 py-2 text-sm font-medium text-[#003A6C] transition hover:bg-[#A5D7E8] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
 
   return (
-    <Card className="overflow-hidden rounded-xl border border-gray-200 bg-white py-0 shadow-sm">
-      <CardContent className="p-4 sm:p-5">
-        <form onSubmit={onSubmit} className="space-y-3" noValidate>
+    <form onSubmit={onSubmit} className="space-y-5 rounded-2xl border border-[#A5D7E8] bg-white p-5 shadow-sm sm:p-6" noValidate>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FieldError label={companyLabel} id="company" error={errors.company} required>
               <Input
@@ -202,48 +201,7 @@ export function ExperienceInlineForm({
           ) : null}
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {!isEducation ? (
-              <div className="space-y-2">
-                <Label htmlFor="logo" className="text-sm font-medium text-gray-700">
-                  Logo de la empresa
-                </Label>
-                <div className={`rounded-xl border p-3 ${errors.image ? "border-red-500 bg-red-50" : "border-gray-200 bg-gray-50"}`}>
-                  {formData.image ? (
-                    <img
-                      src={formData.image}
-                      alt="Vista previa de la empresa"
-                      className="mb-3 h-20 w-full max-w-36 rounded-xl object-contain shadow-sm"
-                    />
-                  ) : null}
-                  <div className="flex flex-wrap items-center gap-3">
-                    <label className={`inline-flex cursor-pointer items-center rounded-lg px-4 py-2 text-sm font-medium text-white ${isSaving ? "cursor-not-allowed bg-gray-400" : "bg-[#003A6C] hover:bg-[#4982AD]"}`}>
-                      <Upload className="mr-2 size-4" />
-                      Seleccionar archivo
-                      <input
-                        id="logo"
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-                        disabled={isSaving}
-                        onChange={onImageChange}
-                        aria-invalid={Boolean(errors.image)}
-                        className="hidden"
-                      />
-                    </label>
-                    {formData.image && canRemoveImage ? (
-                      <Button type="button" variant="outline" onClick={onRemoveImage} disabled={isSaving} className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
-                        <X className="mr-2 size-4" />
-                        Quitar imagen
-                      </Button>
-                    ) : null}
-                    <span className="text-xs text-gray-500">JPG o PNG, maximo 2 MB</span>
-                  </div>
-                  {errors.image ? <p className="text-sm text-red-600">{errors.image}</p> : null}
-                </div>
-              </div>
-            ) : null}
-
-            <div className={`space-y-2 ${isEducation ? "md:col-span-3" : "md:col-span-2"}`}>
+            <div className="space-y-2 md:col-span-3">
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">
                 Descripción
               </Label>
@@ -339,14 +297,53 @@ export function ExperienceInlineForm({
             </Label>
           </div>
 
+          {!isEducation ? (
+            <div className="space-y-2">
+              <Label htmlFor="logo" className="text-sm font-medium text-gray-700">
+                Logo de la empresa
+              </Label>
+              {formData.image ? (
+                <img
+                  src={formData.image}
+                  alt="Vista previa de la empresa"
+                  className="h-20 w-full max-w-36 rounded-lg object-contain shadow-sm"
+                />
+              ) : null}
+              <div className="flex flex-wrap items-center gap-3">
+                <label className={`${fileButtonClassName} ${isSaving ? "pointer-events-none cursor-not-allowed bg-gray-300 text-gray-500" : ""}`}>
+                  <Upload className="mr-2 size-4" />
+                  Seleccionar archivo
+                  <input
+                    id="logo"
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                    disabled={isSaving}
+                    onChange={onImageChange}
+                    aria-invalid={Boolean(errors.image)}
+                    className="hidden"
+                  />
+                </label>
+                {formData.image && canRemoveImage ? (
+                  <Button type="button" variant="outline" onClick={onRemoveImage} disabled={isSaving} className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                    <X className="mr-2 size-4" />
+                    Quitar imagen
+                  </Button>
+                ) : null}
+                <span className="text-xs text-gray-500">JPG o PNG, máximo 2 MB</span>
+              </div>
+              {errors.image ? <p className="text-sm text-red-600">{errors.image}</p> : null}
+            </div>
+          ) : null}
+
           {isEducation ? (
             <div className="space-y-2">
               <Label htmlFor="document" className="text-sm font-medium text-gray-700">
-                Documento de formacion
+                Documento de formación
               </Label>
               <div className="space-y-3">
                 {formData.certificate ? (
-                  <div className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                  <div className="flex items-center justify-between gap-3">
                     <span className="truncate text-sm text-gray-700">
                       {formData.certificate.includes("application/pdf") ? "Certificado PDF seleccionado" : "Certificado seleccionado"}
                     </span>
@@ -363,17 +360,21 @@ export function ExperienceInlineForm({
                     ) : null}
                   </div>
                 ) : null}
-                <Input
-                  id="document"
-                  ref={certificateInputRef}
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-                  disabled={isSaving}
-                  onChange={onCertificateChange}
-                  aria-invalid={Boolean(errors.certificate)}
-                  className="border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
-                />
-                <p className="text-xs text-gray-500">Formatos: JPG, PNG, PDF. Tamano maximo: 5MB</p>
+                <label className={`${fileButtonClassName} ${isSaving ? "pointer-events-none cursor-not-allowed bg-gray-300 text-gray-500" : ""}`}>
+                  <Upload className="mr-2 size-4" />
+                  Seleccionar archivo
+                  <input
+                    id="document"
+                    ref={certificateInputRef}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                    disabled={isSaving}
+                    onChange={onCertificateChange}
+                    aria-invalid={Boolean(errors.certificate)}
+                    className="hidden"
+                  />
+                </label>
+                <p className="text-xs text-gray-500">Formatos: JPG, JPEG, PNG y PDF. Tamaño máximo: 2 MB.</p>
                 {errors.certificate ? <p className="text-sm text-red-600">{errors.certificate}</p> : null}
               </div>
             </div>
@@ -394,9 +395,7 @@ export function ExperienceInlineForm({
               Cancelar
             </Button>
           </div>
-        </form>
-      </CardContent>
-    </Card>
+    </form>
   )
 }
 

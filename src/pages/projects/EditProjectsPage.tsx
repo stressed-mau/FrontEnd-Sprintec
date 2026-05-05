@@ -111,6 +111,8 @@ export default function EditProjectsPage() {
             onImageRemove={manager.removeImage}
             tone="modal"
             readOnlyFields
+            canEditGithub={Boolean(manager.editingProject.github)}
+            canEditDemo={Boolean(manager.editingProject.demo)}
           />
         </ProjectFormModal>
       ) : null}
