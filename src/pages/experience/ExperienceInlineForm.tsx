@@ -168,7 +168,7 @@ export function ExperienceInlineForm({
               <SearchableSelect
                 isSearchable
                 options={isEducation ? degreeOptions : positionOptions}
-                placeholder={isEducation ? "Escribe o selecciona un nivel de formación" : "Escribe o selecciona un cargo"}
+                placeholder={isEducation ? "Busca y selecciona un nivel de formación" : "Busca y selecciona un cargo"}
                 id="position"
                 value={formData.position}
                 disabled={isSaving}
@@ -186,7 +186,6 @@ export function ExperienceInlineForm({
                   </option>
                 ))}
               </SearchableSelect>
-              <p className="text-xs text-gray-500">Escribe para buscar y selecciona una opción de la lista.</p>
             </FieldError>
           </div>
 
@@ -195,7 +194,7 @@ export function ExperienceInlineForm({
               <SearchableSelect
                 isSearchable
                 options={fieldOptions}
-                placeholder="Escribe o selecciona un Área de estudio"
+                placeholder="Busca y selecciona un área de estudio"
                 id="field"
                 value={formData.fieldOfStudy}
                 disabled={isSaving}
@@ -213,7 +212,6 @@ export function ExperienceInlineForm({
                   </option>
                 ))}
               </SearchableSelect>
-              <p className="text-xs text-gray-500">Escribe para buscar y selecciona una opción de la lista.</p>
             </FieldError>
           ) : null}
 
@@ -320,11 +318,19 @@ export function ExperienceInlineForm({
                 Logo de la empresa
               </Label>
               {formData.image ? (
-                <img
-                  src={formData.image}
-                  alt="Vista previa de la empresa"
-                  className="h-20 w-full max-w-36 rounded-lg object-contain shadow-sm"
-                />
+                <div className="flex flex-wrap items-center gap-3">
+                  <img
+                    src={formData.image}
+                    alt="Vista previa de la empresa"
+                    className="h-20 w-full max-w-36 rounded-lg object-contain shadow-sm"
+                  />
+                  {canRemoveImage ? (
+                    <Button type="button" variant="outline" onClick={onRemoveImage} disabled={isSaving} className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                      <X className="mr-2 size-4" />
+                      Quitar imagen
+                    </Button>
+                  ) : null}
+                </div>
               ) : null}
               <div className="flex flex-wrap items-center gap-3">
                 <label className={`${fileButtonClassName} ${isSaving ? "pointer-events-none cursor-not-allowed bg-gray-300 text-gray-500" : ""}`}>
@@ -341,12 +347,6 @@ export function ExperienceInlineForm({
                     className="hidden"
                   />
                 </label>
-                {formData.image && canRemoveImage ? (
-                  <Button type="button" variant="outline" onClick={onRemoveImage} disabled={isSaving} className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
-                    <X className="mr-2 size-4" />
-                    Quitar imagen
-                  </Button>
-                ) : null}
                 <span className="text-xs text-gray-500">JPG o PNG, máximo 2 MB</span>
               </div>
               {errors.image ? <p className="text-sm text-red-600">{errors.image}</p> : null}
@@ -360,8 +360,8 @@ export function ExperienceInlineForm({
               </Label>
               <div className="space-y-3">
                 {formData.certificate ? (
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="truncate text-sm text-gray-700">
+                  <div className="flex w-fit max-w-full items-center gap-3 rounded-lg border border-[#D7E6F2] bg-[#EEF5F9] px-3 py-2">
+                    <span className="max-w-xs truncate text-sm text-gray-700">
                       {formData.certificate.includes("application/pdf") ? "Certificado PDF seleccionado" : "Certificado seleccionado"}
                     </span>
                     {canRemoveCertificate ? (

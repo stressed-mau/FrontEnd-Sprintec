@@ -23,16 +23,6 @@ const modalInputClassName = (hasError?: boolean) =>
     ? "border-red-500 bg-white focus-visible:border-red-500 focus-visible:ring-red-200"
     : "border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30";
 
-function selectClassName(hasError?: boolean, tone: "page" | "modal" = "page") {
-  if (hasError) {
-    return "h-9 w-full rounded-md border border-red-500 bg-white px-2.5 text-sm text-gray-900 outline-none focus:border-red-500 focus:ring-3 focus:ring-red-200";
-  }
-
-  return tone === "modal"
-    ? "h-9 w-full rounded-md border border-gray-300 bg-white px-2.5 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/30"
-    : "h-9 w-full rounded-md border border-[#A5D7E8] bg-white px-2.5 text-sm text-[#003A6C] outline-none focus:border-[#003A6C] focus:ring-3 focus:ring-[#A5D7E8]";
-}
-
 export function filterProjects(projects: ProjectItem[], searchTerm: string) {
   const normalizedSearch = searchTerm.trim().toLowerCase();
   if (!normalizedSearch) return projects;
@@ -505,6 +495,8 @@ export function ProjectForm({
   canEditDemo?: boolean;
 }) {
   const isModalTone = tone === "modal";
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [activeRoleIndex, setActiveRoleIndex] = useState(0);
   const [technologySearch, setTechnologySearch] = useState("");
   const [showTechnologyDropdown, setShowTechnologyDropdown] = useState(false);
   const [activeTechnologyIndex, setActiveTechnologyIndex] = useState(0);
@@ -513,6 +505,10 @@ export function ProjectForm({
     ? "cursor-not-allowed border-[#D7E6F2] bg-[#EEF5F9] text-[#7F97AB] opacity-100"
     : "border-[#D7E6F2] bg-[#EEF5F9] text-[#6B7E8E]";
   const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+  const filteredRoles = roleOptions.filter((role) => {
+    const search = formData.rol.trim().toLowerCase();
+    return search && role.toLowerCase().includes(search);
+  });
   const filteredTechnologies = technologies.filter((technology) => {
     const search = technologySearch.trim().toLowerCase();
     return (
@@ -527,6 +523,47 @@ export function ProjectForm({
     setTechnologySearch("");
     setShowTechnologyDropdown(false);
     setActiveTechnologyIndex(0);
+  }
+
+  function handleRoleSelect(role: string) {
+    onFieldChange("rol", role);
+    setShowRoleDropdown(false);
+    setActiveRoleIndex(0);
+  }
+
+  function handleRoleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (!showRoleDropdown && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      setShowRoleDropdown(true);
+    }
+
+    if (!filteredRoles.length) {
+      if (event.key === "Escape") {
+        setShowRoleDropdown(false);
+      }
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveRoleIndex((current) => (current + 1) % filteredRoles.length);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveRoleIndex((current) => (current - 1 + filteredRoles.length) % filteredRoles.length);
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleRoleSelect(filteredRoles[activeRoleIndex] ?? filteredRoles[0]);
+      return;
+    }
+
+    if (event.key === "Escape") {
+      setShowRoleDropdown(false);
+    }
   }
 
   function handleTechnologyKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
@@ -594,19 +631,48 @@ export function ProjectForm({
               aria-invalid={Boolean(errors.rol)}
             />
           ) : (
-            <select
-              value={formData.rol}
-              onChange={(event) => onFieldChange("rol", event.target.value)}
-              className={selectClassName(Boolean(errors.rol), tone)}
-              aria-invalid={Boolean(errors.rol)}
-            >
-              <option value="">Selecciona un rol</option>
-              {roleOptions.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <Input
+                value={formData.rol}
+                onChange={(event) => {
+                  onFieldChange("rol", event.target.value);
+                  setActiveRoleIndex(0);
+                  setShowRoleDropdown(true);
+                }}
+                onFocus={() => setShowRoleDropdown(true)}
+                onKeyDown={handleRoleKeyDown}
+                onBlur={() => {
+                  window.setTimeout(() => setShowRoleDropdown(false), 120);
+                }}
+                placeholder="Buscar rol..."
+                className={fieldInputClassName(Boolean(errors.rol))}
+                aria-invalid={Boolean(errors.rol)}
+              />
+              {showRoleDropdown && formData.rol.trim() ? (
+                <div className="absolute z-20 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl">
+                  {filteredRoles.length ? (
+                    filteredRoles.map((role, index) => (
+                      <button
+                        key={role}
+                        type="button"
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          handleRoleSelect(role);
+                        }}
+                        onMouseEnter={() => setActiveRoleIndex(index)}
+                        className={`block w-full px-3 py-2 text-left text-sm text-[#003A6C] transition-colors ${
+                          index === activeRoleIndex ? "bg-blue-50" : "hover:bg-blue-50"
+                        }`}
+                      >
+                        {role}
+                      </button>
+                    ))
+                  ) : (
+                    <p className="px-3 py-2 text-xs text-gray-400">No se encontrÃ³ el rol</p>
+                  )}
+                </div>
+              ) : null}
+            </div>
           )}
         </Field>
         <Field label="Tecnologías" error={errors.tecnologias} required tone={tone}>
@@ -749,17 +815,22 @@ export function ProjectForm({
 
       <Field label="Imagen del proyecto" error={errors.image} tone={tone}>
         <div className="space-y-3">
-          {preview ? <img src={preview} alt="Vista previa del proyecto" className="h-28 w-full max-w-xs rounded-lg object-cover shadow-sm" /> : null}
+          {preview ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <img src={preview} alt="Vista previa del proyecto" className="h-28 w-full max-w-xs rounded-lg object-cover shadow-sm" />
+              {!readOnlyFields ? (
+                <Button type="button" variant="outline" onClick={onImageRemove} className={isModalTone ? "border-gray-300 bg-white text-gray-700 hover:bg-gray-50" : "border-[#A5D7E8] bg-white text-[#003A6C]"}>
+                  <X className="size-4" />
+                  Quitar imagen
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
           <div className="flex flex-wrap items-center gap-3">
             <label className={`rounded-lg bg-[#C2DBED] px-4 py-2 text-sm font-medium text-[#003A6C] ${readOnlyFields ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:bg-[#A5D7E8]"}`}>
               Seleccionar archivo
               <input type="file" accept="image/png,image/jpeg" onChange={onImageChange} disabled={readOnlyFields} className="hidden" />
             </label>
-            {preview && !readOnlyFields ? (
-              <Button type="button" variant="outline" onClick={onImageRemove} className={isModalTone ? "border-gray-300 bg-white text-gray-700 hover:bg-gray-50" : "border-[#A5D7E8] bg-white text-[#003A6C]"}>
-                Quitar imagen
-              </Button>
-            ) : null}
             <span className={`text-xs ${isModalTone ? "text-gray-500" : "text-[#4B778D]"}`}>JPG o PNG, máximo 2 MB</span>
           </div>
         </div>
