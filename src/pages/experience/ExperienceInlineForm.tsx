@@ -168,7 +168,7 @@ export function ExperienceInlineForm({
               <SearchableSelect
                 isSearchable
                 options={isEducation ? degreeOptions : positionOptions}
-                placeholder={isEducation ? "Escribe o selecciona un nivel de formación" : "Escribe o selecciona un cargo"}
+                placeholder={isEducation ? "Busca y selecciona un nivel de formación" : "Busca y selecciona un cargo"}
                 id="position"
                 value={formData.position}
                 disabled={isSaving}
@@ -186,7 +186,6 @@ export function ExperienceInlineForm({
                   </option>
                 ))}
               </SearchableSelect>
-              <p className="text-xs text-gray-500">Escribe para buscar y selecciona una opción de la lista.</p>
             </FieldError>
           </div>
 
@@ -195,7 +194,7 @@ export function ExperienceInlineForm({
               <SearchableSelect
                 isSearchable
                 options={fieldOptions}
-                placeholder="Escribe o selecciona un Área de estudio"
+                placeholder="Busca y selecciona un área de estudio"
                 id="field"
                 value={formData.fieldOfStudy}
                 disabled={isSaving}
@@ -213,7 +212,6 @@ export function ExperienceInlineForm({
                   </option>
                 ))}
               </SearchableSelect>
-              <p className="text-xs text-gray-500">Escribe para buscar y selecciona una opción de la lista.</p>
             </FieldError>
           ) : null}
 

@@ -298,7 +298,7 @@ export function ExperienceFormModal({
             <SearchableSelect
               isSearchable
               options={resolvedPositionOptions}
-              placeholder={isLaboralExperience ? "Escribe o selecciona un cargo" : "Escribe o selecciona un nivel de formación"}
+              placeholder={isLaboralExperience ? "Busca y selecciona un cargo" : "Busca y selecciona un nivel de formación"}
               id="experience-position"
               value={formData.position}
               disabled={isSaving || isLimitedUpdate}
@@ -316,7 +316,6 @@ export function ExperienceFormModal({
                 </option>
               ))}
             </SearchableSelect>
-            <p className="text-xs text-[#4B778D]">Escribe para buscar y selecciona una opción de la lista.</p>
             {errors.position ? <p id="experience-position-error" className="text-sm text-red-600">{errors.position}</p> : null}
           </div>
 
@@ -328,7 +327,7 @@ export function ExperienceFormModal({
               <SearchableSelect
                 isSearchable
                 options={resolvedFieldOptions}
-                placeholder="Escribe o selecciona un Área de estudio"
+                placeholder="Busca y selecciona un área de estudio"
                 id="experience-field"
                 value={formData.fieldOfStudy}
                 disabled={isSaving || isAcademicUpdate || wasEmptyOriginally("fieldOfStudy")}
@@ -346,7 +345,6 @@ export function ExperienceFormModal({
                   </option>
                 ))}
               </SearchableSelect>
-              <p className="text-xs text-[#4B778D]">Escribe para buscar y selecciona una opción de la lista.</p>
               {errors.fieldOfStudy ? <p id="experience-field-error" className="text-sm text-red-600">{errors.fieldOfStudy}</p> : null}
             </div>
           ) : null}
