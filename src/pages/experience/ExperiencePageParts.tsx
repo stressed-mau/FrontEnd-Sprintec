@@ -156,7 +156,7 @@ export function ExperienceTable({
                       )}
                     </th>
                   ) : null}
-                  <th className="px-4 py-3 font-semibold">Empresa o institucion</th>
+                  <th className="px-4 py-3 font-semibold">Empresa o institución</th>
                   <th className="px-4 py-3 font-semibold">Cargo o titulo</th>
                   <th className="px-4 py-3 font-semibold">Detalle</th>
                   <th className="px-4 py-3 font-semibold">Periodo</th>
@@ -289,7 +289,7 @@ export function ExperienceDetailsModal({ experience, onClose }: ExperienceDetail
             <h2 className="text-2xl font-bold text-[#003A6C]">
               Detalle de {experience.type === "academica" ? "Formación Académica" : "Experiencia Laboral"}
             </h2>
-            <p className="mt-1 text-sm text-[#4B778D]">Informacion completa del registro seleccionado.</p>
+            <p className="mt-1 text-sm text-[#4B778D]">Información completa del registro seleccionado.</p>
           </div>
           <button
             type="button"
@@ -325,12 +325,12 @@ export function ExperienceDetailsModal({ experience, onClose }: ExperienceDetail
             <DetailItem label="Fin" value={experience.current ? "Actual" : formatExperienceDate(experience.endDate)} />
             <DetailItem label="Correo" value={experience.email || "No especificado"} />
             <DetailItem
-              label={experience.type === "academica" ? "Campo de estudio" : "Ubicacion"}
+              label={experience.type === "academica" ? "Campo de estudio" : "Ubicación"}
               value={experience.type === "academica" ? experience.fieldOfStudy || "No especificado" : experience.location || "No especificada"}
             />
           </div>
 
-          <DetailItem label="Descripcion" value={experience.description || "No especificada"} />
+          <DetailItem label="Descripción" value={experience.description || "No especificada"} />
 
           {experience.certificate ? (
             <a
@@ -386,7 +386,7 @@ export function ExperienceManagerModals({
         <ConfirmActionModal
           isOpen={manager.isConfirmEditModalOpen}
           title="Confirmar cambios"
-          message="Estas seguro de que deseas guardar los cambios realizados?"
+          message="¿Estás seguro de que deseas guardar los cambios realizados?"
           confirmText={manager.isSaving ? "Guardando..." : "Aceptar"}
           cancelText="Cancelar"
           onConfirm={() => void manager.confirmEditSave()}

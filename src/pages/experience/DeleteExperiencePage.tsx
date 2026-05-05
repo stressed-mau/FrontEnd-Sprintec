@@ -143,7 +143,7 @@ export default function DeleteExperiencePage() {
 
       <ConfirmationModal
         isOpen={showSuccessModal}
-        title="Exito"
+        title="Éxito"
         message={`Experiencia Laboral${deletedExperienceName ? ` "${deletedExperienceName}"` : ""} eliminada correctamente.`}
         onClose={() => setShowSuccessModal(false)}
       />

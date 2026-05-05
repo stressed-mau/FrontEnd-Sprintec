@@ -143,7 +143,7 @@ export default function DeleteEducationPage() {
 
       <ConfirmationModal
         isOpen={showSuccessModal}
-        title="Exito"
+        title="Éxito"
         message={`Formación Académica${deletedEducationName ? ` "${deletedEducationName}"` : ""} eliminada correctamente.`}
         onClose={() => setShowSuccessModal(false)}
       />

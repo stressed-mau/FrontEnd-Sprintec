@@ -326,7 +326,7 @@ function validateExperienceField(
     const normalizedEmail = rawEmail.trim()
 
     if (rawEmail.length > 0 && /\s/.test(rawEmail)) {
-      return "El campo Correo electronico de la empresa no puede contener espacios en blanco"
+      return "El campo Correo electrónico de la empresa no puede contener espacios en blanco"
     }
 
     if (!normalizedEmail) {
@@ -472,7 +472,7 @@ export function useExperienceManager() {
   const [errors, setErrors] = useState<ExperienceFormErrors>({})
   const [feedbackMessage, setFeedbackMessage] = useState("")
   const [feedbackType, setFeedbackType] = useState<"success" | "error" | "">("")
-  const [successTitle, setSuccessTitle] = useState("Exito")
+  const [successTitle, setSuccessTitle] = useState("Éxito")
   const [successMessage, setSuccessMessage] = useState("")
   const [duplicateMessage, setDuplicateMessage] = useState("")
   const [pageError, setPageError] = useState("")
@@ -535,7 +535,7 @@ export function useExperienceManager() {
     setFeedbackType("")
   }
 
-  function showSuccessModal(message: string, title = "Exito") {
+  function showSuccessModal(message: string, title = "Éxito") {
     setSuccessTitle(title)
     setSuccessMessage(message)
     setIsSuccessModalOpen(true)
@@ -553,7 +553,7 @@ export function useExperienceManager() {
 
   function closeSuccessModal() {
     setIsSuccessModalOpen(false)
-    setSuccessTitle("Exito")
+    setSuccessTitle("Éxito")
     setSuccessMessage("")
   }
 
@@ -956,7 +956,7 @@ export function useExperienceManager() {
 
     if (duplicateExperience) {
       const duplicatedTypeLabel =
-        duplicateExperience.type === "academica" ? "experiencia academica" : "experiencia laboral"
+        duplicateExperience.type === "academica" ? "Formación Académica" : "Experiencia Laboral"
 
       showDuplicateModal(
         `Ya tienes una ${duplicatedTypeLabel} registrada en ${duplicateExperience.company} como ${duplicateExperience.position} dentro de un periodo que se cruza con las fechas ingresadas. Revisa las fechas o edita el registro existente.`,

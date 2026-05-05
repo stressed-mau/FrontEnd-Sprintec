@@ -363,7 +363,7 @@ export function ProjectDetailsModal({ project, onClose }: { project: ProjectItem
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold text-[#003A6C]">Detalle de proyecto</h2>
-            <p className="mt-1 text-sm text-[#4B778D]">Informacion completa del proyecto seleccionado.</p>
+            <p className="mt-1 text-sm text-[#4B778D]">Información completa del proyecto seleccionado.</p>
           </div>
           <button
             type="button"

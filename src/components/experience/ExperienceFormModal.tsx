@@ -14,7 +14,7 @@ const POSITION_OPTIONS = [
   "Ingeniero de Software",
   "Arquitecto de Software",
   "Tech Lead",
-  "Lider Tecnico",
+  "Líder Técnico",
   "Gerente de Proyecto",
   "Product Manager",
   "Scrum Master",
@@ -32,19 +32,19 @@ const POSITION_OPTIONS = [
   "Administrador de Sistemas",
   "Administrador de Redes",
   "Especialista en Ciberseguridad",
-  "Soporte Tecnico",
+  "Soporte Técnico",
   "CTO",
-  "Director de Tecnologia",
-  "VP de Ingenieria",
+  "Director de Tecnología",
+  "VP de Ingeniería",
   "Otro",
 ]
 
 const DEGREE_OPTIONS = [
   "Bachillerato",
-  "Tecnico Superior",
-  "Tecnico Profesional",
+  "Técnico Superior",
+  "Técnico Profesional",
   "Licenciatura",
-  "Ingenieria",
+  "Ingeniería",
   "Grado",
   "Maestria",
   "Master",
@@ -55,16 +55,16 @@ const DEGREE_OPTIONS = [
 ]
 
 const FIELD_OPTIONS = [
-  "Ingenieria de Software",
-  "Ciencias de la Computacion",
-  "Ingenieria Informatica",
+  "Ingeniería de Software",
+  "Ciencias de la Computación",
+  "Ingeniería Informática",
   "Desarrollo de Software",
-  "Sistemas de Informacion",
+  "Sistemas de Información",
   "Inteligencia Artificial",
   "Ciencia de Datos",
   "Ciberseguridad",
   "Redes y Telecomunicaciones",
-  "Ingenieria de Sistemas",
+  "Ingeniería de Sistemas",
   "Administracion de Empresas",
   "Marketing",
   "Finanzas",
@@ -74,10 +74,10 @@ const FIELD_OPTIONS = [
   "Diseno Grafico",
   "Diseno Industrial",
   "Arquitectura",
-  "Ingenieria Civil",
-  "Ingenieria Mecanica",
-  "Ingenieria Electrica",
-  "Ingenieria Electronica",
+  "Ingeniería Civil",
+  "Ingeniería Mecánica",
+  "Ingeniería Eléctrica",
+  "Ingeniería Electrónica",
   "Medicina",
   "Enfermeria",
   "Psicologia",
@@ -239,7 +239,7 @@ export function ExperienceFormModal({
           {isLaboralExperience ? (
             <div className="space-y-2">
               <Label id="experience-email-label" htmlFor="experience-email" className="text-[#003A6C]">
-                Correo electronico de la empresa <span aria-hidden="true">*</span>
+                Correo electrónico de la empresa <span aria-hidden="true">*</span>
               </Label>
               <Input
                 id="experience-email"
@@ -262,7 +262,7 @@ export function ExperienceFormModal({
           {isLaboralExperience ? (
             <div className="space-y-2">
               <Label id="experience-location-label" htmlFor="experience-location" className="text-[#003A6C]">
-                Ubicacion
+                Ubicación
               </Label>
               <Input
                 id="experience-location"
@@ -407,7 +407,7 @@ export function ExperienceFormModal({
               className={`size-4 rounded border-[#A5D7E8] text-[#003A6C] focus:ring-[#A5D7E8] ${disabledControlClassName}`}
             />
             <Label id="experience-current-label" htmlFor="experience-current" className="cursor-pointer text-[#003A6C]">
-              {isLaboralExperience ? "Trabajo actual" : "Actualmente estudio aqui"}
+              {isLaboralExperience ? "Trabajo actual" : "Actualmente estudio aquí"}
             </Label>
           </div>
 
@@ -465,7 +465,7 @@ export function ExperienceFormModal({
               ) : null}
 
               {errors.image ? <p className="text-sm text-red-600">{errors.image}</p> : null}
-              <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG y PNG. Tamano maximo: 2 MB.</p>
+              <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG y PNG. Tamaño máximo: 2 MB.</p>
             </div>
           ) : (
             <div className="space-y-2">

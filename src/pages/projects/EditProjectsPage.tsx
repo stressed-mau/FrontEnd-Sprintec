@@ -84,7 +84,7 @@ export default function EditProjectsPage() {
       {isEditing && manager.editingProject ? (
         <ProjectFormModal
           title="Editar Proyecto"
-          description="Actualiza la informacion del proyecto"
+          description="Actualiza la información del proyecto"
           onClose={() => {
             manager.resetForm();
             setIsEditing(false);

@@ -15,7 +15,7 @@ const POSITION_OPTIONS = [
   "Ingeniero de Software",
   "Arquitecto de Software",
   "Tech Lead",
-  "Lider Tecnico",
+  "Líder Técnico",
   "Gerente de Proyecto",
   "Product Manager",
   "Scrum Master",
@@ -33,19 +33,19 @@ const POSITION_OPTIONS = [
   "Administrador de Sistemas",
   "Administrador de Redes",
   "Especialista en Ciberseguridad",
-  "Soporte Tecnico",
+  "Soporte Técnico",
   "CTO",
-  "Director de Tecnologia",
-  "VP de Ingenieria",
+  "Director de Tecnología",
+  "VP de Ingeniería",
   "Otro",
 ]
 
 const DEGREE_OPTIONS = [
   "Bachillerato",
-  "Tecnico Superior",
-  "Tecnico Profesional",
+  "Técnico Superior",
+  "Técnico Profesional",
   "Licenciatura",
-  "Ingenieria",
+  "Ingeniería",
   "Grado",
   "Maestria",
   "Master",
@@ -56,16 +56,16 @@ const DEGREE_OPTIONS = [
 ]
 
 const FIELD_OPTIONS = [
-  "Ingenieria de Software",
-  "Ciencias de la Computacion",
-  "Ingenieria Informatica",
+  "Ingeniería de Software",
+  "Ciencias de la Computación",
+  "Ingeniería Informática",
   "Desarrollo de Software",
-  "Sistemas de Informacion",
+  "Sistemas de Información",
   "Inteligencia Artificial",
   "Ciencia de Datos",
   "Ciberseguridad",
   "Redes y Telecomunicaciones",
-  "Ingenieria de Sistemas",
+  "Ingeniería de Sistemas",
   "Administracion de Empresas",
   "Marketing",
   "Finanzas",
@@ -75,10 +75,10 @@ const FIELD_OPTIONS = [
   "Diseno Grafico",
   "Diseno Industrial",
   "Arquitectura",
-  "Ingenieria Civil",
-  "Ingenieria Mecanica",
-  "Ingenieria Electrica",
-  "Ingenieria Electronica",
+  "Ingeniería Civil",
+  "Ingeniería Mecánica",
+  "Ingeniería Eléctrica",
+  "Ingeniería Electrónica",
   "Medicina",
   "Enfermeria",
   "Psicologia",
@@ -223,7 +223,7 @@ export function ExperienceInlineForm({
 
           {!isEducation ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <FieldError label="Ubicacion" id="location" error={errors.location}>
+              <FieldError label="Ubicación" id="location" error={errors.location}>
                 <Input
                   id="location"
                   value={formData.location}
@@ -236,7 +236,7 @@ export function ExperienceInlineForm({
                 />
               </FieldError>
 
-              <FieldError label="Correo electronico de la empresa" id="email" error={errors.email} required>
+              <FieldError label="Correo electrónico de la empresa" id="email" error={errors.email} required>
               <Input
                 id="email"
                 type="email"
@@ -268,7 +268,7 @@ export function ExperienceInlineForm({
               />
             </FieldError>
 
-            <FieldError label="Fecha de finalizacion" id="endDate" error={errors.endDate} required={!formData.current}>
+            <FieldError label="Fecha de finalización" id="endDate" error={errors.endDate} required={!formData.current}>
               <Input
                 id="endDate"
                 type="date"
