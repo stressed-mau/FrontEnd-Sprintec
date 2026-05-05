@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import type { Portfolio, Experience, Project, Skill, SocialNetwork } from "@/types/portfolio";
 import { getAuthSession } from "@/services/auth/auth-storage";
 import { api } from "@/services/api";
+import { toAbsoluteAssetUrl } from "@/services/assetUrl";
 
 import { getUserInformation } from "@/services/PersonalDataService"; 
 import { getSkills } from "@/services/skillsService";
@@ -41,7 +42,7 @@ export const usePortfolio = (externalSlug?: string) => {
               nationality: d.profile.nationality || "",
               public_email: d.profile.email || "",
               phone_number: d.profile.phone || "",
-              image_url: d.profile.image || "",
+              image_url: toAbsoluteAssetUrl(d.profile.image),
             },
             projects: d.projects.map((p: any) => ({
               ...p,
@@ -77,13 +78,13 @@ export const usePortfolio = (externalSlug?: string) => {
         setPortfolio({
           user: {
             id: String(userData.id),
-            fullname: userData.name || session.user.username,
+            fullname: userData.fullname || session.user.username,
             occupation: userData.occupation || "",
-            biography: userData.bio || "",
+            biography: userData.biography || "",
             nationality: userData.nationality || "",
-            public_email: userData.email || session.user.email,
-            phone_number: userData.phone || "",
-            image_url: userData.image || "",
+            public_email: userData.public_email || session.user.email,
+            phone_number: userData.phone_number || "",
+            image_url: userData.image_url || "",
           },
           
           skills: skills as Skill[],
@@ -92,8 +93,20 @@ export const usePortfolio = (externalSlug?: string) => {
           socialNetworks: social as SocialNetwork[],
           template: 0, // Template 0 indica que no ha elegido uno aún
           isPublished: false,
-          config: userData.config || {}, 
-          profile: userData || {},
+          config: {
+            slug: session.user.username,
+            template: "0",
+            is_public: false,
+          }, 
+          profile: {
+            name: userData.fullname || session.user.username,
+            occupation: userData.occupation || "",
+            bio: userData.biography || "",
+            image: userData.image_url || "",
+            phone: userData.phone_number || "",
+            email: userData.public_email || session.user.email,
+            nacionality: userData.nationality || "",
+          },
         });
       } else {
         // Si no hay slug público y no hay sesión, no hay nada que mostrar
