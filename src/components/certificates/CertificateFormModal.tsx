@@ -214,6 +214,7 @@ export function CertificateFormModal({
             fileInput={fileInput}
             isSaving={isSaving}
             fileInputRef={fileInputRef}
+            error={errors.file_bonus_url}
             onFileChange={onFileChange}
             onRemoveFile={onRemoveFile}
           />

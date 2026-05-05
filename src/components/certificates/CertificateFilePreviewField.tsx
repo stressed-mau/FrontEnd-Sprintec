@@ -5,6 +5,7 @@ type CertificateFilePreviewFieldProps = {
   fileInput: File | null
   isSaving?: boolean
   fileInputRef: React.RefObject<HTMLInputElement | null>
+  error?: string
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   onRemoveFile: () => void
 }
@@ -17,6 +18,7 @@ export function CertificateFilePreviewField({
   fileInput,
   isSaving,
   fileInputRef,
+  error,
   onFileChange,
   onRemoveFile,
 }: CertificateFilePreviewFieldProps) {
@@ -95,6 +97,7 @@ export function CertificateFilePreviewField({
           </div>
         )}
       </div>
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
     </div>
   )
 }
