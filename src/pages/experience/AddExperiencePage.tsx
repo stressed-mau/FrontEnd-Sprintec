@@ -30,6 +30,7 @@ export default function AddExperiencePage() {
         isSaving={manager.isSaving}
         canRemoveImage={manager.canRemoveImage}
         canRemoveCertificate={manager.canRemoveCertificate}
+        workRoleOptions={manager.workOptions.roles}
         fileInputRef={manager.fileInputRef}
         certificateInputRef={manager.certificateInputRef}
         onFieldChange={manager.updateField}

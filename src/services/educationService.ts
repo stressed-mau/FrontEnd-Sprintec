@@ -6,6 +6,11 @@ import type { ExperienceItem, ExperiencePayload } from "@/services/experienceSer
 
 type UnknownRecord = Record<string, unknown>
 
+export type EducationOptions = {
+  titles: string[]
+  fields: string[]
+}
+
 type EducationDto = {
   id?: string | number
   education_id?: string | number
@@ -46,6 +51,7 @@ type EducationDto = {
 }
 
 const EDUCATION_ENDPOINT = "/education"
+const EDUCATION_OPTIONS_ENDPOINT = "/education/options"
 const EDUCATION_MUTATION_TIMEOUT_MS = 30_000
 
 function formatError(error: unknown): Error {
@@ -217,6 +223,16 @@ function normalizeEducation(dto: EducationDto, index: number): ExperienceItem {
   }
 }
 
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .map((item) => asString(item))
+    .filter(Boolean)
+}
+
 function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "create" | "update" }) {
   const formData = new FormData()
 
@@ -267,6 +283,23 @@ export async function getEducation(): Promise<ExperienceItem[]> {
     }
 
     return unwrapEducationList(parseResponseData(response.data)).map((item, index) => normalizeEducation(item, index))
+  } catch (error) {
+    throw formatError(error)
+  }
+}
+
+export async function getEducationOptions(): Promise<EducationOptions> {
+  try {
+    const response = await api.get(EDUCATION_OPTIONS_ENDPOINT)
+    const data = response.data && typeof response.data === "object"
+      ? (response.data as UnknownRecord).data
+      : null
+    const options = data && typeof data === "object" ? data as UnknownRecord : {}
+
+    return {
+      titles: asStringArray(options.titles),
+      fields: asStringArray(options.fields),
+    }
   } catch (error) {
     throw formatError(error)
   }

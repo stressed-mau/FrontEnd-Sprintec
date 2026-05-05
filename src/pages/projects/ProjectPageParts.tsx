@@ -706,10 +706,10 @@ export function ProjectForm({
           <Input
             type="date"
             value={formData.fechaFin}
-            disabled={readOnlyFields && !isModalTone}
+            disabled={formData.is_current || (readOnlyFields && !isModalTone)}
             max={today}
             onChange={(event) => onFieldChange("fechaFin", event.target.value)}
-            className={readOnlyFields && !isModalTone ? disabledInputClassName : fieldInputClassName(Boolean(errors.fechaFin))}
+            className={formData.is_current || (readOnlyFields && !isModalTone) ? disabledInputClassName : fieldInputClassName(Boolean(errors.fechaFin))}
             aria-invalid={Boolean(errors.fechaFin)}
           />
         </Field>

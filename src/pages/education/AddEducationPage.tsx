@@ -29,6 +29,8 @@ export default function AddEducationPage() {
         isSaving={manager.isSaving}
         canRemoveImage={manager.canRemoveImage}
         canRemoveCertificate={manager.canRemoveCertificate}
+        educationTitleOptions={manager.educationOptions.titles}
+        educationFieldOptions={manager.educationOptions.fields}
         fileInputRef={manager.fileInputRef}
         certificateInputRef={manager.certificateInputRef}
         onFieldChange={manager.updateField}

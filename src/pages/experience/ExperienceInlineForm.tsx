@@ -1,4 +1,4 @@
-import type { ChangeEvent, FormEvent, ReactNode, RefObject } from "react"
+import { useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode, type RefObject } from "react"
 import { Award, Plus, Upload, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -96,6 +96,9 @@ type ExperienceInlineFormProps = {
   isSaving: boolean
   canRemoveImage: boolean
   canRemoveCertificate: boolean
+  workRoleOptions?: string[]
+  educationTitleOptions?: string[]
+  educationFieldOptions?: string[]
   fileInputRef: RefObject<HTMLInputElement | null>
   certificateInputRef: RefObject<HTMLInputElement | null>
   onFieldChange: (field: keyof ExperienceFormValues, value: string | boolean) => void
@@ -115,6 +118,9 @@ export function ExperienceInlineForm({
   isSaving,
   canRemoveImage,
   canRemoveCertificate,
+  workRoleOptions = [],
+  educationTitleOptions = [],
+  educationFieldOptions = [],
   fileInputRef,
   certificateInputRef,
   onFieldChange,
@@ -134,6 +140,9 @@ export function ExperienceInlineForm({
   const descriptionPlaceholder = isEducation
     ? "Describe tu Formación Académica, logros, especializaciones..."
     : "Describe tus responsabilidades y logros..."
+  const degreeOptions = educationTitleOptions.length ? educationTitleOptions : DEGREE_OPTIONS
+  const fieldOptions = educationFieldOptions.length ? educationFieldOptions : FIELD_OPTIONS
+  const positionOptions = workRoleOptions.length ? workRoleOptions : POSITION_OPTIONS
   const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
   const fileButtonClassName =
     "inline-flex cursor-pointer items-center rounded-lg bg-[#C2DBED] px-4 py-2 text-sm font-medium text-[#003A6C] transition hover:bg-[#A5D7E8] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
@@ -156,7 +165,10 @@ export function ExperienceInlineForm({
             </FieldError>
 
             <FieldError label={positionLabel} id="position" error={errors.position} required>
-              <select
+              <SearchableSelect
+                isSearchable
+                options={isEducation ? degreeOptions : positionOptions}
+                placeholder={isEducation ? "Escribe o selecciona un nivel de formación" : "Escribe o selecciona un cargo"}
                 id="position"
                 value={formData.position}
                 disabled={isSaving}
@@ -168,18 +180,22 @@ export function ExperienceInlineForm({
                 }`}
               >
                 <option value="">{isEducation ? "Selecciona un nivel de formación" : "Selecciona un cargo"}</option>
-                {(isEducation ? DEGREE_OPTIONS : POSITION_OPTIONS).map((option) => (
+                {(isEducation ? degreeOptions : positionOptions).map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
                 ))}
-              </select>
+              </SearchableSelect>
+              <p className="text-xs text-gray-500">Escribe para buscar y selecciona una opción de la lista.</p>
             </FieldError>
           </div>
 
           {isEducation ? (
             <FieldError label="Área de estudio" id="field" error={errors.fieldOfStudy} required>
-              <select
+              <SearchableSelect
+                isSearchable
+                options={fieldOptions}
+                placeholder="Escribe o selecciona un Área de estudio"
                 id="field"
                 value={formData.fieldOfStudy}
                 disabled={isSaving}
@@ -191,12 +207,13 @@ export function ExperienceInlineForm({
                 }`}
               >
                 <option value="">Selecciona un área de estudio</option>
-                {FIELD_OPTIONS.map((option) => (
+                {fieldOptions.map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
                 ))}
-              </select>
+              </SearchableSelect>
+              <p className="text-xs text-gray-500">Escribe para buscar y selecciona una opción de la lista.</p>
             </FieldError>
           ) : null}
 
@@ -419,6 +436,148 @@ function FieldError({
       </Label>
       {children}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
+    </div>
+  )
+}
+
+function SearchableSelect({
+  id,
+  value,
+  disabled,
+  onBlur,
+  onChange,
+  className,
+  options,
+  placeholder,
+  isSearchable,
+  children,
+  ...rest
+}: {
+  id: string
+  value: string
+  disabled?: boolean
+  onBlur?: () => void
+  onChange: (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+  className?: string
+  options: string[]
+  placeholder: string
+  isSearchable: boolean
+  children?: ReactNode
+} & Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange" | "onBlur" | "value" | "disabled" | "className">) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const filteredOptions = useMemo(() => {
+    const query = value.trim().toLowerCase()
+
+    if (!query) {
+      return options
+    }
+
+    return options.filter((option) => option.toLowerCase().includes(query))
+  }, [options, value])
+
+  if (!isSearchable) {
+    return (
+      <select
+        id={id}
+        value={value}
+        disabled={disabled}
+        onBlur={onBlur}
+        onChange={onChange}
+        className={className}
+        {...rest}
+      >
+        {children}
+      </select>
+    )
+  }
+
+  function selectOption(option: string) {
+    onChange({ target: { value: option } } as ChangeEvent<HTMLInputElement>)
+    setIsOpen(false)
+    setActiveIndex(0)
+  }
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (!isOpen && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      setIsOpen(true)
+    }
+
+    if (!filteredOptions.length) {
+      if (event.key === "Escape") {
+        setIsOpen(false)
+      }
+      return
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault()
+      setActiveIndex((current) => (current + 1) % filteredOptions.length)
+      return
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault()
+      setActiveIndex((current) => (current - 1 + filteredOptions.length) % filteredOptions.length)
+      return
+    }
+
+    if (event.key === "Enter" && isOpen) {
+      event.preventDefault()
+      selectOption(filteredOptions[activeIndex] ?? filteredOptions[0])
+      return
+    }
+
+    if (event.key === "Escape") {
+      setIsOpen(false)
+    }
+  }
+
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        value={value}
+        disabled={disabled}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => {
+          window.setTimeout(() => setIsOpen(false), 120)
+          onBlur?.()
+        }}
+        onKeyDown={handleKeyDown}
+        onChange={(event) => {
+          onChange(event)
+          setIsOpen(true)
+          setActiveIndex(0)
+        }}
+        placeholder={placeholder}
+        className={className}
+        aria-invalid={rest["aria-invalid"]}
+      />
+      {isOpen ? (
+        <div className="absolute z-30 mt-1 max-h-44 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl">
+          {filteredOptions.length ? (
+            filteredOptions.map((option, index) => (
+              <button
+                key={option}
+                type="button"
+                onMouseDown={(event) => {
+                  event.preventDefault()
+                  selectOption(option)
+                }}
+                onMouseEnter={() => setActiveIndex(index)}
+                className={`block w-full px-3 py-2 text-left text-sm text-[#003A6C] transition-colors ${
+                  index === activeIndex ? "bg-blue-50" : "hover:bg-blue-50"
+                }`}
+              >
+                {option}
+              </button>
+            ))
+          ) : (
+            <p className="px-3 py-2 text-xs text-gray-400">No se encontrá una opción</p>
+          )}
+        </div>
+      ) : null}
     </div>
   )
 }

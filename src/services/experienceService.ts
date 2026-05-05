@@ -40,6 +40,10 @@ export type ExperiencePayload = {
   removeCertificate?: boolean
 }
 
+export type WorkOptions = {
+  roles: string[]
+}
+
 type ExperienceDto = {
   id?: string | number
   experience_id?: string | number
@@ -121,6 +125,7 @@ type ExperienceGroup = {
 }
 
 const EXPERIENCES_ENDPOINT = "/experiences"
+const WORK_OPTIONS_ENDPOINT = "/work/options"
 const EXPERIENCE_MUTATION_TIMEOUT_MS = 30_000
 
 function formatError(error: unknown): Error {
@@ -274,6 +279,14 @@ function asString(value: unknown): string {
   }
 
   return ""
+}
+
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value.map((item) => asString(item)).filter(Boolean)
 }
 
 function asId(value: unknown, fallback: string): string {
@@ -447,6 +460,22 @@ export async function getExperiences(): Promise<ExperienceItem[]> {
     return unwrapExperienceGroups(parseResponseData(response.data)).flatMap((group) =>
       group.items.map((item, index) => normalizeExperience(item, index, group.type ?? "laboral")),
     )
+  } catch (error) {
+    throw formatError(error)
+  }
+}
+
+export async function getWorkOptions(): Promise<WorkOptions> {
+  try {
+    const response = await api.get(WORK_OPTIONS_ENDPOINT)
+    const data = response.data && typeof response.data === "object"
+      ? (response.data as UnknownRecord).data
+      : null
+    const options = data && typeof data === "object" ? data as UnknownRecord : {}
+
+    return {
+      roles: asStringArray(options.roles ?? options.positions ?? options.titles ?? options.cargos),
+    }
   } catch (error) {
     throw formatError(error)
   }

@@ -1,4 +1,5 @@
 import { FileText, ImagePlus, X } from "lucide-react"
+import { useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -96,6 +97,9 @@ type ExperienceFormModalProps = {
   canRemoveImage: boolean
   canRemoveCertificate: boolean
   originalEditingValues?: ExperienceFormValues | null
+  workRoleOptions?: string[]
+  educationTitleOptions?: string[]
+  educationFieldOptions?: string[]
   hideTypeField?: boolean
   fileInputRef: React.RefObject<HTMLInputElement | null>
   certificateInputRef: React.RefObject<HTMLInputElement | null>
@@ -117,6 +121,9 @@ export function ExperienceFormModal({
   canRemoveImage,
   canRemoveCertificate,
   originalEditingValues,
+  workRoleOptions = [],
+  educationTitleOptions = [],
+  educationFieldOptions = [],
   hideTypeField = false,
   fileInputRef,
   certificateInputRef,
@@ -142,15 +149,18 @@ export function ExperienceFormModal({
   const disabledButtonClassName = "disabled:cursor-not-allowed disabled:border-[#D7E6F2] disabled:bg-[#EEF5F9] disabled:text-[#7F97AB] disabled:opacity-100"
   const editingTitle = isLaboralExperience ? "Editar Experiencia Laboral" : "Editar Formación Académica"
   const createTitle = isLaboralExperience ? "Nueva Experiencia Laboral" : "Nueva Formación Académica"
-  const positionOptions = isLaboralExperience ? POSITION_OPTIONS : DEGREE_OPTIONS
+  const degreeOptions = educationTitleOptions.length ? educationTitleOptions : DEGREE_OPTIONS
+  const fieldOptions = educationFieldOptions.length ? educationFieldOptions : FIELD_OPTIONS
+  const roleOptions = workRoleOptions.length ? workRoleOptions : POSITION_OPTIONS
+  const positionOptions = isLaboralExperience ? roleOptions : degreeOptions
   const resolvedPositionOptions =
     formData.position && !positionOptions.includes(formData.position)
       ? [formData.position, ...positionOptions]
       : positionOptions
   const resolvedFieldOptions =
-    formData.fieldOfStudy && !FIELD_OPTIONS.includes(formData.fieldOfStudy)
-      ? [formData.fieldOfStudy, ...FIELD_OPTIONS]
-      : FIELD_OPTIONS
+    formData.fieldOfStudy && !fieldOptions.includes(formData.fieldOfStudy)
+      ? [formData.fieldOfStudy, ...fieldOptions]
+      : fieldOptions
   const wasEmptyOriginally = (field: keyof ExperienceFormValues) => {
     if (!isEditing || !originalEditingValues) {
       return false
@@ -285,7 +295,10 @@ export function ExperienceFormModal({
             <Label id="experience-position-label" htmlFor="experience-position" className="text-[#003A6C]">
               {positionLabel} <span aria-hidden="true">*</span>
             </Label>
-            <select
+            <SearchableSelect
+              isSearchable
+              options={resolvedPositionOptions}
+              placeholder={isLaboralExperience ? "Escribe o selecciona un cargo" : "Escribe o selecciona un nivel de formación"}
               id="experience-position"
               value={formData.position}
               disabled={isSaving || isLimitedUpdate}
@@ -302,7 +315,8 @@ export function ExperienceFormModal({
                   {option}
                 </option>
               ))}
-            </select>
+            </SearchableSelect>
+            <p className="text-xs text-[#4B778D]">Escribe para buscar y selecciona una opción de la lista.</p>
             {errors.position ? <p id="experience-position-error" className="text-sm text-red-600">{errors.position}</p> : null}
           </div>
 
@@ -311,7 +325,10 @@ export function ExperienceFormModal({
               <Label id="experience-field-label" htmlFor="experience-field" className="text-[#003A6C]">
                 Área de estudio <span aria-hidden="true">*</span>
               </Label>
-              <select
+              <SearchableSelect
+                isSearchable
+                options={resolvedFieldOptions}
+                placeholder="Escribe o selecciona un Área de estudio"
                 id="experience-field"
                 value={formData.fieldOfStudy}
                 disabled={isSaving || isAcademicUpdate || wasEmptyOriginally("fieldOfStudy")}
@@ -328,7 +345,8 @@ export function ExperienceFormModal({
                     {option}
                   </option>
                 ))}
-              </select>
+              </SearchableSelect>
+              <p className="text-xs text-[#4B778D]">Escribe para buscar y selecciona una opción de la lista.</p>
               {errors.fieldOfStudy ? <p id="experience-field-error" className="text-sm text-red-600">{errors.fieldOfStudy}</p> : null}
             </div>
           ) : null}
@@ -537,6 +555,150 @@ export function ExperienceFormModal({
           </div>
         </form>
       </div>
+    </div>
+  )
+}
+
+function SearchableSelect({
+  id,
+  value,
+  disabled,
+  onBlur,
+  onChange,
+  className,
+  options,
+  placeholder,
+  isSearchable,
+  children,
+  ...rest
+}: {
+  id: string
+  value: string
+  disabled?: boolean
+  onBlur?: () => void
+  onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
+  className?: string
+  options: string[]
+  placeholder: string
+  isSearchable: boolean
+  children?: React.ReactNode
+} & Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange" | "onBlur" | "value" | "disabled" | "className">) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const filteredOptions = useMemo(() => {
+    const query = value.trim().toLowerCase()
+
+    if (!query) {
+      return options
+    }
+
+    return options.filter((option) => option.toLowerCase().includes(query))
+  }, [options, value])
+
+  if (!isSearchable) {
+    return (
+      <select
+        id={id}
+        value={value}
+        disabled={disabled}
+        onBlur={onBlur}
+        onChange={onChange}
+        className={className}
+        {...rest}
+      >
+        {children}
+      </select>
+    )
+  }
+
+  function selectOption(option: string) {
+    onChange({ target: { value: option } } as React.ChangeEvent<HTMLInputElement>)
+    setIsOpen(false)
+    setActiveIndex(0)
+  }
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (!isOpen && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      setIsOpen(true)
+    }
+
+    if (!filteredOptions.length) {
+      if (event.key === "Escape") {
+        setIsOpen(false)
+      }
+      return
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault()
+      setActiveIndex((current) => (current + 1) % filteredOptions.length)
+      return
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault()
+      setActiveIndex((current) => (current - 1 + filteredOptions.length) % filteredOptions.length)
+      return
+    }
+
+    if (event.key === "Enter" && isOpen) {
+      event.preventDefault()
+      selectOption(filteredOptions[activeIndex] ?? filteredOptions[0])
+      return
+    }
+
+    if (event.key === "Escape") {
+      setIsOpen(false)
+    }
+  }
+
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        value={value}
+        disabled={disabled}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => {
+          window.setTimeout(() => setIsOpen(false), 120)
+          onBlur?.()
+        }}
+        onKeyDown={handleKeyDown}
+        onChange={(event) => {
+          onChange(event)
+          setIsOpen(true)
+          setActiveIndex(0)
+        }}
+        placeholder={placeholder}
+        className={className}
+        aria-invalid={rest["aria-invalid"]}
+        aria-labelledby={rest["aria-labelledby"]}
+        aria-describedby={rest["aria-describedby"]}
+      />
+      {isOpen ? (
+        <div className="absolute z-30 mt-1 max-h-44 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl">
+          {filteredOptions.length ? (
+            filteredOptions.map((option, index) => (
+              <button
+                key={option}
+                type="button"
+                onMouseDown={(event) => {
+                  event.preventDefault()
+                  selectOption(option)
+                }}
+                onMouseEnter={() => setActiveIndex(index)}
+                className={`block w-full px-3 py-2 text-left text-sm text-[#003A6C] transition-colors ${
+                  index === activeIndex ? "bg-blue-50" : "hover:bg-blue-50"
+                }`}
+              >
+                {option}
+              </button>
+            ))
+          ) : (
+            <p className="px-3 py-2 text-xs text-gray-400">No se encontrá una opción</p>
+          )}
+        </div>
+      ) : null}
     </div>
   )
 }

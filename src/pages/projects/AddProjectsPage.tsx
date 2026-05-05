@@ -16,7 +16,7 @@ export default function AddProjectsPage() {
   }
 
   return (
-    <ProjectPageShell title="Registrar un proyecto" description="Registra un nuevo proyecto para mostrarlo en tu portafolio.">
+    <ProjectPageShell title="Agregar un proyecto" description="Agrega un nuevo proyecto para mostrarlo en tu portafolio.">
       <FeedbackMessage message={manager.successMessage} type="success" />
       <ProjectForm
         formData={manager.formData}
@@ -26,7 +26,7 @@ export default function AddProjectsPage() {
         selectedTechs={manager.selectedTechs}
         preview={manager.preview}
         isSaving={manager.isSaving}
-        submitLabel="Registrar proyecto"
+        submitLabel="Agregar proyecto"
         onSubmit={handleSubmit}
         onCancel={() => navigate("/proyectos/ver")}
         onFieldChange={manager.updateField}

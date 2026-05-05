@@ -496,7 +496,7 @@ function CertificatePreviewModal({ url, onClose }: { url: string | null; onClose
                 rel="noreferrer"
                 className="rounded-lg border border-[#A5D7E8] bg-white px-4 py-2 text-sm font-medium text-[#003A6C] hover:bg-[#EEF5F9]"
               >
-                Abrir en otra pestaÃ±a
+                Abrir en otra pestaña
               </a>
             </div>
           ) : previewUrl && isPdf ? (
@@ -635,6 +635,9 @@ export function ExperienceManagerModals({
           canRemoveImage={manager.canRemoveImage}
           canRemoveCertificate={manager.canRemoveCertificate}
           originalEditingValues={manager.originalEditingValues}
+          workRoleOptions={manager.workOptions.roles}
+          educationTitleOptions={manager.educationOptions.titles}
+          educationFieldOptions={manager.educationOptions.fields}
           hideTypeField={hideTypeField}
           fileInputRef={manager.fileInputRef}
           certificateInputRef={manager.certificateInputRef}

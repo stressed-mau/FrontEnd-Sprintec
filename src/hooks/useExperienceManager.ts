@@ -5,16 +5,20 @@ import isEmail from "validator/lib/isEmail"
 import {
   createEducation,
   getEducation,
+  getEducationOptions,
   removeEducation,
   updateEducation,
+  type EducationOptions,
 } from "@/services/educationService"
 import {
   createExperience,
   getExperiences,
+  getWorkOptions,
   removeExperience,
   updateExperience,
   type ExperienceItem,
   type ExperiencePayload,
+  type WorkOptions,
 } from "@/services/experienceService"
 
 export type { ExperienceItem, ExperienceType } from "@/services/experienceService"
@@ -476,6 +480,8 @@ export function useExperienceManager() {
   const [successMessage, setSuccessMessage] = useState("")
   const [duplicateMessage, setDuplicateMessage] = useState("")
   const [pageError, setPageError] = useState("")
+  const [educationOptions, setEducationOptions] = useState<EducationOptions>({ titles: [], fields: [] })
+  const [workOptions, setWorkOptions] = useState<WorkOptions>({ roles: [] })
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
@@ -521,9 +527,35 @@ export function useExperienceManager() {
     }
   }, [])
 
+  const loadEducationOptions = useCallback(async () => {
+    try {
+      const options = await getEducationOptions()
+      setEducationOptions(options)
+    } catch {
+      setEducationOptions({ titles: [], fields: [] })
+    }
+  }, [])
+
+  const loadWorkOptions = useCallback(async () => {
+    try {
+      const options = await getWorkOptions()
+      setWorkOptions(options)
+    } catch {
+      setWorkOptions({ roles: [] })
+    }
+  }, [])
+
   useEffect(() => {
     void loadExperiences()
   }, [loadExperiences])
+
+  useEffect(() => {
+    void loadEducationOptions()
+  }, [loadEducationOptions])
+
+  useEffect(() => {
+    void loadWorkOptions()
+  }, [loadWorkOptions])
 
   function showFeedback(message: string, type: "success" | "error") {
     setFeedbackMessage(message)
@@ -533,6 +565,48 @@ export function useExperienceManager() {
   function clearFeedback() {
     setFeedbackMessage("")
     setFeedbackType("")
+  }
+
+  function normalizeOption(value: string) {
+    return value.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  }
+
+  function hasOption(options: string[], value: string) {
+    const normalizedValue = normalizeOption(value)
+    return options.some((option) => normalizeOption(option) === normalizedValue)
+  }
+
+  function validateEducationOptionField(field: keyof ExperienceFormValues, values: ExperienceFormValues) {
+    if (values.type !== "academica") {
+      return ""
+    }
+
+    if (field === "position" && educationOptions.titles.length > 0 && values.position.trim() && !hasOption(educationOptions.titles, values.position)) {
+      return "Selecciona un nivel de formación de la lista."
+    }
+
+    if (field === "fieldOfStudy" && educationOptions.fields.length > 0 && values.fieldOfStudy.trim() && !hasOption(educationOptions.fields, values.fieldOfStudy)) {
+      return "Selecciona un área de estudio de la lista."
+    }
+
+    return ""
+  }
+
+  function validateWorkOptionField(field: keyof ExperienceFormValues, values: ExperienceFormValues) {
+    if (values.type !== "laboral" || field !== "position" || workOptions.roles.length === 0 || !values.position.trim()) {
+      return ""
+    }
+
+    return hasOption(workOptions.roles, values.position) ? "" : "Selecciona un cargo de la lista."
+  }
+
+  function validateManagedField(field: keyof ExperienceFormValues, values: ExperienceFormValues, value = values[field]) {
+    return (
+      validateRequiredEditedField(field, value, originalEditingValues) ||
+      validateExperienceField(field, values) ||
+      validateEducationOptionField(field, values) ||
+      validateWorkOptionField(field, values)
+    )
   }
 
   function showSuccessModal(message: string, title = "Éxito") {
@@ -711,7 +785,7 @@ export function useExperienceManager() {
 
     setErrors((currentErrors) => ({
       ...currentErrors,
-      [field]: validateRequiredEditedField(field, normalizedValue, originalEditingValues) || validateExperienceField(field, nextValues),
+      [field]: validateManagedField(field, nextValues, normalizedValue),
       ...(field === "type" && nextValues.type === "academica"
         ? { email: "" }
         : {}),
@@ -724,13 +798,13 @@ export function useExperienceManager() {
   function handleBlur(field: keyof ExperienceFormValues) {
     setErrors((currentErrors) => ({
       ...currentErrors,
-      [field]: validateRequiredEditedField(field, formData[field], originalEditingValues) || validateExperienceField(field, formData),
+      [field]: validateManagedField(field, formData),
     }))
 
     if (field === "startDate" || field === "endDate") {
       setErrors((currentErrors) => ({
         ...currentErrors,
-          [field]: validateRequiredEditedField(field, formData[field], originalEditingValues) || validateExperienceField(field, formData),
+          [field]: validateManagedField(field, formData),
         endDate: validateExperienceField("endDate", formData),
       }))
     }
@@ -929,6 +1003,10 @@ export function useExperienceManager() {
       certificate: validateCertificateFile(selectedCertificateFile),
     }
 
+    nextErrors.position = nextErrors.position || validateEducationOptionField("position", formData)
+    nextErrors.position = nextErrors.position || validateWorkOptionField("position", formData)
+    nextErrors.fieldOfStudy = nextErrors.fieldOfStudy || validateEducationOptionField("fieldOfStudy", formData)
+
     if (editingExperience && originalEditingValues) {
       const protectedFields: Array<keyof ExperienceFormValues> = ["location", "fieldOfStudy", "description"]
 
@@ -1036,6 +1114,8 @@ export function useExperienceManager() {
     successTitle,
     successMessage,
     pageError,
+    educationOptions,
+    workOptions,
     isLoading,
     isSaving,
     canRemoveImage,
