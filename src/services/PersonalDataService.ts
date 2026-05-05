@@ -12,7 +12,7 @@ export const getUserInformation = async (_id?: string) => {
 };
 
 export const updateUserInformation = async (formData: FormData) => {
-  const res = await api.put('/update/user_information', formData, {
+  const res = await api.post('/update/user_information', formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
