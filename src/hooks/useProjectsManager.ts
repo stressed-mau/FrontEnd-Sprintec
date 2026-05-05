@@ -5,9 +5,11 @@ import {
   deleteProject,
   getLanguages,
   getProjects,
+  getWorkOptions,
   type ProjectItem,
   type ProjectPayload,
   type ProjectTechnology,
+  type WorkOptions,
   type ProjectUpdatePayload,
   updateProject,
   uploadImage,
@@ -66,6 +68,8 @@ function validateForm(
   form: ProjectFormValues,
   selectedTechs: ProjectTechnology[],
   imageFile: File | null,
+  roleOptions: string[],
+  enforceRoleOption: boolean,
 ) {
   const errors: ProjectFormErrors = {};
   const today = new Date();
@@ -80,6 +84,9 @@ function validateForm(
   }
   if (!form.rol.trim()) errors.rol = "Debes seleccionar al menos un rol.";
   else if (form.rol.trim().length > 255) errors.rol = "El rol no debe exceder 255 caracteres.";
+  else if (enforceRoleOption && roleOptions.length > 0 && !roleOptions.some((role) => role.toLowerCase() === form.rol.trim().toLowerCase())) {
+    errors.rol = "Selecciona un rol de la lista.";
+  }
   if (selectedTechs.length === 0) errors.tecnologias = "Debes seleccionar al menos una tecnología.";
   if (selectedTechs.length > 10) errors.tecnologias = "Se permite un máximo de 10 tecnologías.";
   if (!form.fechaInicio) errors.fechaInicio = "El campo Fecha de inicio es obligatorio.";
@@ -146,8 +153,9 @@ export function useProjectsManager() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [workOptions, setWorkOptions] = useState<WorkOptions>({ roles: [] });
 
-  const roleOptions = useMemo(() => FIXED_ROLES, []);
+  const roleOptions = useMemo(() => (workOptions.roles.length ? workOptions.roles : FIXED_ROLES), [workOptions.roles]);
 
   const loadProjects = useCallback(async () => {
     setIsLoading(true);
@@ -166,6 +174,19 @@ export function useProjectsManager() {
   useEffect(() => {
     void loadProjects();
   }, [loadProjects]);
+
+  useEffect(() => {
+    async function loadWorkOptions() {
+      try {
+        const options = await getWorkOptions();
+        setWorkOptions(options);
+      } catch {
+        setWorkOptions({ roles: [] });
+      }
+    }
+
+    void loadWorkOptions();
+  }, []);
 
   useEffect(() => {
     async function loadTechnologies() {
@@ -288,7 +309,7 @@ export function useProjectsManager() {
   function validateProjectForm() {
     setSuccessMessage("");
 
-    const newErrors = validateForm(formData, selectedTechs, imageFile);
+    const newErrors = validateForm(formData, selectedTechs, imageFile, roleOptions, !editingProject);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }

@@ -45,6 +45,10 @@ export type ProjectPayload = {
   image_id?: number;
 };
 
+export type WorkOptions = {
+  roles: string[];
+};
+
 export type ProjectUpdatePayload = Partial<Omit<ProjectPayload, "final_date">> & {
   final_date?: string | null;
 };
@@ -119,6 +123,14 @@ function extractLanguageList(body: unknown): unknown[] | null {
   return null;
 }
 
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean);
+}
+
 export const getLanguages = async (search = "") => {
   try {
     const res = await api.get("/languages", {
@@ -135,6 +147,20 @@ export const getLanguages = async (search = "") => {
     throw new Error("Formato de respuesta inesperado al listar tecnologias");
   } catch (error) {
     throw formatProjectError(error, "Error al obtener tecnologias");
+  }
+};
+
+export const getWorkOptions = async (): Promise<WorkOptions> => {
+  try {
+    const res = await api.get("/work/options");
+    const data = res.data && typeof res.data === "object" ? (res.data as Record<string, unknown>).data : null;
+    const options = data && typeof data === "object" ? data as Record<string, unknown> : {};
+
+    return {
+      roles: asStringArray(options.roles ?? options.positions ?? options.titles ?? options.cargos),
+    };
+  } catch (error) {
+    throw formatProjectError(error, "Error al obtener roles");
   }
 };
 
