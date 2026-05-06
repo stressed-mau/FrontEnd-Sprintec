@@ -70,6 +70,7 @@ function validateForm(
   imageFile: File | null,
   roleOptions: string[],
   enforceRoleOption: boolean,
+  originalProject?: ProjectItem | null,
 ) {
   const errors: ProjectFormErrors = {};
   const today = new Date();
@@ -136,6 +137,24 @@ function validateForm(
     }
   }
 
+  if (originalProject) {
+    if (originalProject.descripcion.trim() && !form.descripcion.trim()) {
+      errors.descripcion = "El campo Descripción no puede quedar vacío.";
+    }
+
+    if (originalProject.fechaFin?.trim() && !form.fechaFin.trim()) {
+      errors.fechaFin = "El campo Fecha de finalización no puede quedar vacío.";
+    }
+
+    if (originalProject.github?.trim() && !form.github.trim()) {
+      errors.github = "El campo Enlace de GitHub no puede quedar vacío.";
+    }
+
+    if (originalProject.demo?.trim() && !form.demo.trim()) {
+      errors.demo = "El campo Enlace de la demo no puede quedar vacío.";
+    }
+  }
+
   return errors;
 }
 
@@ -156,6 +175,11 @@ export function useProjectsManager() {
   const [workOptions, setWorkOptions] = useState<WorkOptions>({ roles: [] });
 
   const roleOptions = useMemo(() => (workOptions.roles.length ? workOptions.roles : FIXED_ROLES), [workOptions.roles]);
+  const currentValidationErrors = useMemo(
+    () => validateForm(formData, selectedTechs, imageFile, roleOptions, !editingProject, editingProject),
+    [editingProject, formData, imageFile, roleOptions, selectedTechs],
+  );
+  const canSaveProject = !isSaving && Object.keys(currentValidationErrors).length === 0;
 
   const loadProjects = useCallback(async () => {
     setIsLoading(true);
@@ -309,7 +333,7 @@ export function useProjectsManager() {
   function validateProjectForm() {
     setSuccessMessage("");
 
-    const newErrors = validateForm(formData, selectedTechs, imageFile, roleOptions, !editingProject);
+    const newErrors = validateForm(formData, selectedTechs, imageFile, roleOptions, !editingProject, editingProject);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -399,6 +423,7 @@ export function useProjectsManager() {
     isLoading,
     isSaving,
     isDeleting,
+    canSaveProject,
     updateField,
     addTechnology,
     removeTechnology,

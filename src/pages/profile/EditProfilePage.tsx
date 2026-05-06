@@ -26,6 +26,7 @@ const EditProfilePage = () => {
     handleChange,
     handleCancel,
     isSubmitting,
+    canSavePersonalData,
     handleSubmit,
     success,
     setSuccess,
@@ -215,9 +216,9 @@ const EditProfilePage = () => {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !canSavePersonalData}
                   className={`bg-[#003A6C] text-white px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
-                    isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#1a4f85]'
+                    isSubmitting || !canSavePersonalData ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#1a4f85]'
                   }`}
                 >
                   {isSubmitting ? 'Guardando...' : 'Guardar cambios'}

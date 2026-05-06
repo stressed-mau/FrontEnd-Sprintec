@@ -90,6 +90,7 @@ interface SkillsManagerContextValue {
   pageError: string;
   isLoading: boolean;
   isSaving: boolean;
+  canSaveSkill: boolean;
   isDeleting: boolean;
   technicalSkills: Skill[];
   softSkills: Skill[];
@@ -451,10 +452,26 @@ const confirmDeleteSelected = async () => {
     () => filteredSkills.filter((skill) => skill.type === 'blanda'),
     [filteredSkills]
   );
+  const canSaveSkill = useMemo(() => {
+    if (isSaving || errorMessage.trim() || !skillName.trim()) {
+      return false;
+    }
+
+    if (!editingSkill) {
+      return true;
+    }
+
+    const formattedName = formatSkillName(skillName);
+    const sameName = normalizeSkillName(editingSkill.name) === normalizeSkillName(formattedName);
+    const sameType = editingSkill.type === skillType;
+    const sameLevel = (editingSkill.level ?? '').toLowerCase() === (skillLevel ?? '').toLowerCase();
+
+    return !(sameName && sameType && (skillType === 'blanda' || sameLevel));
+  }, [editingSkill, errorMessage, isSaving, skillLevel, skillName, skillType]);
 
   const value: SkillsManagerContextValue = {
     isModalOpen,  skills, editingSkill, skillType,  skillName,  skillLevel, errorMessage,  successMessage,
-    showSuccessModal, pageError, isLoading,isSaving, isDeleting,  technicalSkills, softSkills, filteredSkills,
+    showSuccessModal, pageError, isLoading,isSaving, canSaveSkill, isDeleting,  technicalSkills, softSkills, filteredSkills,
     filteredTechnicalSkills, filteredSoftSkills, showConfirmEdit, showConfirmDelete, skillToDelete, selectedSkillIds, searchQuery,
     setSkillType, setSkillName, setSkillLevel, setSearchQuery, handleSkillNameChange, setShowConfirmEdit, setShowSuccessModal,
     closeSuccessModal, setShowConfirmDelete,openModal, closeModal,  handleSave,  requestDelete, cancelDelete, confirmDelete,  toggleSelectSkill,

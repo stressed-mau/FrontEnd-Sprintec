@@ -38,6 +38,10 @@ export default function EditProjectsPage() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!manager.canSaveProject) {
+      manager.validateProjectForm();
+      return;
+    }
     if (manager.validateProjectForm()) {
       setShowConfirmEdit(true);
     }
@@ -98,6 +102,7 @@ export default function EditProjectsPage() {
             selectedTechs={manager.selectedTechs}
             preview={manager.preview}
             isSaving={manager.isSaving}
+            canSave={manager.canSaveProject}
             submitLabel="Guardar cambios"
             onSubmit={handleSubmit}
             onCancel={() => {
@@ -111,8 +116,8 @@ export default function EditProjectsPage() {
             onImageRemove={manager.removeImage}
             tone="modal"
             readOnlyFields
-            canEditGithub={Boolean(manager.editingProject.github)}
-            canEditDemo={Boolean(manager.editingProject.demo)}
+            canEditGithub
+            canEditDemo
           />
         </ProjectFormModal>
       ) : null}

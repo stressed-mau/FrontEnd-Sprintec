@@ -461,6 +461,7 @@ export function ProjectForm({
   selectedTechs,
   preview,
   isSaving,
+  canSave = true,
   submitLabel,
   onSubmit,
   onCancel,
@@ -481,6 +482,7 @@ export function ProjectForm({
   selectedTechs: ProjectTechnology[];
   preview: string | null;
   isSaving: boolean;
+  canSave?: boolean;
   submitLabel: string;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
@@ -837,7 +839,7 @@ export function ProjectForm({
       </Field>
 
       <div className="flex flex-wrap gap-3 pt-2">
-        <Button type="submit" disabled={isSaving} className="bg-[#003A6C] text-white shadow-sm hover:bg-[#4982AD]">
+        <Button type="submit" disabled={isSaving || !canSave} className="bg-[#003A6C] text-white shadow-sm hover:bg-[#4982AD]">
           {!isSaving ? <Plus className="size-4" /> : null}
           {isSaving ? "Guardando..." : submitLabel}
         </Button>

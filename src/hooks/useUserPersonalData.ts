@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { getAuthSession } from "@/services/auth/auth-storage";
 import { allCountries } from 'country-telephone-data';
 import { useEmailValidation } from "@/hooks/useEmailValidation";
@@ -163,6 +163,33 @@ export const useUserPersonalData = () => {
       return "";
   }
   };
+  const canSavePersonalData = useMemo(() => {
+    if (isSubmitting) {
+      return false;
+    }
+
+    if (!preview && !form.image && !fileInputRef.current?.files?.[0]) {
+      return false;
+    }
+
+    if (Object.values(errors).some(Boolean)) {
+      return false;
+    }
+
+    if (originalForm) {
+      const hasClearedExistingField = PRESERVE_VALUE_FIELDS.some((field) => originalForm[field].trim() && !form[field].trim());
+
+      if (hasClearedExistingField) {
+        return false;
+      }
+
+      if (originalPhoneNumber.trim() && !phoneNumber.trim()) {
+        return false;
+      }
+    }
+
+    return true;
+  }, [errors, form, isSubmitting, originalForm, originalPhoneNumber, phoneNumber, preview]);
   useEffect(() => {
     if (!loading) return;
     const fetchData = async () => {
@@ -424,6 +451,7 @@ const handleChange = (e: any) => {
     handleChange,
     handlePhoneChange,
     isSubmitting,
+    canSavePersonalData,
     handleSubmit,
     handleCancel,
     handleClick,

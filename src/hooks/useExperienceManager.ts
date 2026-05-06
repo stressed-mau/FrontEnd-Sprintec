@@ -508,6 +508,48 @@ export function useExperienceManager() {
     () => Boolean(selectedCertificateFile) || Boolean(formData.certificate),
     [formData.certificate, selectedCertificateFile],
   )
+  const currentValidationErrors = useMemo(() => {
+    const nextErrors: ExperienceFormErrors = {
+      type: validateManagedField("type", formData),
+      company: validateManagedField("company", formData),
+      email: validateManagedField("email", formData),
+      position: validateManagedField("position", formData),
+      fieldOfStudy: validateManagedField("fieldOfStudy", formData),
+      description: validateManagedField("description", formData),
+      startDate: validateManagedField("startDate", formData),
+      endDate: validateManagedField("endDate", formData),
+      image: validateImageFile(selectedImageFile),
+      certificate: validateCertificateFile(selectedCertificateFile),
+    }
+
+    if (editingExperience && originalEditingValues) {
+      const protectedFields: Array<keyof ExperienceFormValues> = [
+        "company",
+        "email",
+        "position",
+        "location",
+        "fieldOfStudy",
+        "description",
+        "startDate",
+        "endDate",
+        "image",
+        "certificate",
+      ]
+
+      protectedFields.forEach((field) => {
+        const originalValue = originalEditingValues[field]
+        const currentValue = formData[field]
+
+        if (typeof originalValue === "string" && originalValue.trim() && typeof currentValue === "string" && !currentValue.trim()) {
+          nextErrors[field] = "Este campo no puede quedar vacío."
+        }
+      })
+    }
+
+    return nextErrors
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingExperience, formData, originalEditingValues, selectedCertificateFile, selectedImageFile, educationOptions, workOptions])
+  const canSaveExperience = !isSaving && !Object.values(currentValidationErrors).some(Boolean)
 
   const loadExperiences = useCallback(async () => {
     setIsLoading(true)
@@ -737,13 +779,6 @@ export function useExperienceManager() {
         return
       }
 
-      if (field !== "endDate" && field !== "description" && field !== "location" && typeof value === "string" && typeof originalEditingValues[field] === "string") {
-        const originalValue = originalEditingValues[field]
-
-        if (!originalValue.trim()) {
-          return
-        }
-      }
     }
 
     const normalizedValue =
@@ -1008,7 +1043,18 @@ export function useExperienceManager() {
     nextErrors.fieldOfStudy = nextErrors.fieldOfStudy || validateEducationOptionField("fieldOfStudy", formData)
 
     if (editingExperience && originalEditingValues) {
-      const protectedFields: Array<keyof ExperienceFormValues> = ["location", "fieldOfStudy", "description"]
+      const protectedFields: Array<keyof ExperienceFormValues> = [
+        "company",
+        "email",
+        "position",
+        "location",
+        "fieldOfStudy",
+        "description",
+        "startDate",
+        "endDate",
+        "image",
+        "certificate",
+      ]
 
       protectedFields.forEach((field) => {
         const originalValue = originalEditingValues[field]
@@ -1118,6 +1164,7 @@ export function useExperienceManager() {
     workOptions,
     isLoading,
     isSaving,
+    canSaveExperience,
     canRemoveImage,
     canRemoveCertificate,
     pendingEditPayload,

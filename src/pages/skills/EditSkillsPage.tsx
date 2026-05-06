@@ -24,7 +24,7 @@ const EditSkillsPage = () => {
   const {
     filteredTechnicalSkills, filteredSoftSkills, isLoading, pageError, searchQuery, setSearchQuery, openModal,
     isModalOpen, closeModal, editingSkill, skillName, handleSkillNameChange, skillLevel, setSkillLevel, handleSave,
-    isSaving, errorMessage, showConfirmEdit, setShowConfirmEdit, showSuccessModal, closeSuccessModal, successMessage,
+    isSaving, canSaveSkill, errorMessage, showConfirmEdit, setShowConfirmEdit, showSuccessModal, closeSuccessModal, successMessage,
   } = useSkillsManager();
 
   const hasNameError = Boolean(errorMessage);
@@ -253,7 +253,7 @@ const EditSkillsPage = () => {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  disabled={isSaving}
+                  disabled={isSaving || !canSaveSkill}
                   className="flex-1 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSaving ? 'Guardando...' : 'Guardar'}

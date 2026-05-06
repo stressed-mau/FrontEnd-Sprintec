@@ -632,6 +632,7 @@ export function ExperienceManagerModals({
           errors={manager.errors}
           isEditing={manager.isEditing}
           isSaving={manager.isSaving}
+          canSave={manager.canSaveExperience}
           canRemoveImage={manager.canRemoveImage}
           canRemoveCertificate={manager.canRemoveCertificate}
           originalEditingValues={manager.originalEditingValues}
