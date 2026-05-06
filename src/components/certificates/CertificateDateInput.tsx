@@ -57,7 +57,7 @@ export function CertificateDateInput({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <label htmlFor={id} className="block text-sm font-semibold text-[#003A6C]">
         {label} {required ? "*" : null}
       </label>
@@ -70,7 +70,7 @@ export function CertificateDateInput({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           inputMode="numeric"
-          className={`w-full rounded-xl border bg-white px-4 py-3 pr-12 outline-none focus:ring-2 ${
+          className={`w-full rounded-xl border bg-white px-4 py-2.5 pr-11 text-sm outline-none focus:ring-2 ${
             error
               ? "border-red-400 focus:ring-red-100"
               : "border-[#0E7D96]/20 focus:ring-[#0E7D96]/40"
@@ -82,10 +82,10 @@ export function CertificateDateInput({
           type="button"
           onClick={openPicker}
           disabled={disabled}
-          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-[#0E7D96] transition hover:bg-[#EEF5F9] disabled:opacity-50"
+          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-xl text-[#0E7D96] transition hover:bg-[#EEF5F9] disabled:opacity-50"
           aria-label={`Abrir calendario para ${label.toLowerCase()}`}
         >
-          <CalendarDays className="size-5" />
+          <CalendarDays className="size-4" />
         </button>
         <input
           ref={datePickerRef}
