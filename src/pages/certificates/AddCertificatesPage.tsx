@@ -33,7 +33,7 @@ export default function AddCertificatesPage() {
         <main className="flex-1 p-4 sm:p-6 md:p-8">
           <div className="mx-auto flex h-full w-full max-w-5xl flex-col">
             <div className="mb-6">
-              <h1 className="mb-2 text-3xl font-bold text-[#003A6C] md:text-4xl">Agregar Certificado</h1>
+              <h1 className="mb-2 text-3xl font-bold text-[#003A6C] md:text-4xl">Registrar Certificado</h1>
               <p className="text-sm text-[#4B778D] md:text-base">Completa la información para registrar un nuevo certificado o credencial.</p>
             </div>
 

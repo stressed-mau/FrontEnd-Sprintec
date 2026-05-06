@@ -30,7 +30,7 @@ export function NetworkFormModal({
         <div className="flex items-start justify-between gap-4 px-5 py-5 sm:px-6">
           <div>
             <h2 className="text-2xl font-bold text-[#003A6C]">{isEditing ? "Editar enlace" : "Nuevo enlace"}</h2>
-            <p className="mt-1 text-sm text-[#4982AD]">Agrega enlaces a tus redes profesionales</p>
+            <p className="mt-1 text-sm text-[#4982AD]">Registra enlaces a tus redes profesionales</p>
           </div>
 
           <button

@@ -97,7 +97,7 @@ const DeleteSkillsPage = () => {
                   <p className="text-sm text-[#4B778D]">
                     {searchQuery
                       ? 'No hay habilidades que coincidan con la búsqueda'
-                      : 'Agrega habilidades para poder eliminarlas'}
+                      : 'Registra habilidades para poder eliminarlas'}
                   </p>
                 </div>
               </div>

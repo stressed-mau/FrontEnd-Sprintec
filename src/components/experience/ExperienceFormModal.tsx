@@ -192,7 +192,7 @@ export function ExperienceFormModal({
               {isEditing ? editingTitle : createTitle}
             </h2>
             <p id="descripcion-modal-experiencia" className="mt-1 text-sm text-[#4B778D]">
-              {isEditing ? "Actualiza" : "Agrega"} tu {isLaboralExperience ? "Experiencia Laboral" : "Formación Académica"}.
+              {isEditing ? "Actualiza" : "Registra"} tu {isLaboralExperience ? "Experiencia Laboral" : "Formación Académica"}.
             </p>
           </div>
 

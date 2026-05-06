@@ -52,7 +52,7 @@ const navItems: NavItem[] = [
     path: "/proyectos",
     children: [
       { id: "proyectos-ver", label: "Ver proyectos", path: "/proyectos/ver" },
-      { id: "proyectos-agregar", label: "Añadir proyecto", path: "/proyectos/añadir" },
+      { id: "proyectos-agregar", label: "Registrar proyecto", path: "/proyectos/añadir" },
       { id: "proyectos-editar", label: "Editar proyecto", path: "/proyectos/editar" },
       { id: "proyectos-eliminar", label: "Eliminar proyecto", path: "/proyectos/eliminar" },
     ],
@@ -76,7 +76,7 @@ const navItems: NavItem[] = [
     path: "/experiencia",
     children: [
       { id: "experiencia-ver", label: "Ver Experiencia Laboral", path: "/experiencia/ver" },
-      { id: "experiencia-agregar", label: "Añadir Experiencia Laboral", path: "/experiencia/agregar" },
+      { id: "experiencia-agregar", label: "Registrar Experiencia Laboral", path: "/experiencia/agregar" },
       { id: "experiencia-editar", label: "Editar Experiencia Laboral", path: "/experiencia/editar" },
       { id: "experiencia-eliminar", label: "Eliminar Experiencia Laboral", path: "/experiencia/eliminar" },
     ],
@@ -88,7 +88,7 @@ const navItems: NavItem[] = [
     path: "/formacion-academica",
     children: [
       { id: "formacion-ver", label: "Ver Formación Académica", path: "/formacion-academica/ver" },
-      { id: "formacion-agregar", label: "Añadir Formación Académica", path: "/formacion-academica/agregar" },
+      { id: "formacion-agregar", label: "Registrar Formación Académica", path: "/formacion-academica/agregar" },
       { id: "formacion-editar", label: "Editar Formación Académica", path: "/formacion-academica/editar" },
       { id: "formacion-eliminar", label: "Eliminar Formación Académica", path: "/formacion-academica/eliminar" },
     ],
@@ -100,7 +100,7 @@ const navItems: NavItem[] = [
     path: "/certificados",
     children: [
       { id: "certificados-ver", label: "Ver certificados", path: "/certificados/ver" },
-      { id: "certificados-agregar", label: "Añadir certificado", path: "/certificados/añadir" },
+      { id: "certificados-agregar", label: "Registrar certificado", path: "/certificados/añadir" },
       //{ id: "certificados-editar", label: "Editar certificado", path: "/certificados/editar" },
       //{ id: "certificados-eliminar", label: "Eliminar certificado", path: "/certificados/eliminar" },
     ],

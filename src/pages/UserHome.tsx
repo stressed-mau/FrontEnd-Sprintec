@@ -63,7 +63,7 @@ const UserHome = () => {
               </div>
               <div>
                 <h4 className="font-bold text-[#003A6C] text-lg">  Utiliza el menú lateral para comenzar a gestionar tu portafolio  </h4>
-                <p className="mt-1 text-sm text-gray-600">  Accede a todas las secciones desde el menú de navegación para agregar proyectos, habilidades, experiencia y mucho más. Cuando estés listo, publica tu portafolio y compártelo con el mundo. </p>
+                <p className="mt-1 text-sm text-gray-600">  Accede a todas las secciones desde el menú de navegación para registrar proyectos, habilidades, experiencia y mucho más. Cuando estés listo, publica tu portafolio y compártelo con el mundo. </p>
               </div>
             </div>
 
