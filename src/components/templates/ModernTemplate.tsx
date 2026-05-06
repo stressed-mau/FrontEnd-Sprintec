@@ -18,6 +18,14 @@ export interface ModernTemplateProfile {
 
 const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = false }) => {
   const { data } = usePortfolioVisibility();
+  const safeData = data ?? {
+    projects: [],
+    skills: [],
+    experience: [],
+    education: [],
+    certificates: [],
+    networks: [],
+  };
   console.log("EXPERIENCE:", data.experience);
   console.log("NETWORKS:", data.networks);
   const userProfile = profile ?? {
@@ -38,10 +46,10 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
   const displayPhone = userProfile.phone.trim() || 'Sin teléfono disponible';
   const userInitial = displayName.slice(0, 1).toUpperCase() || '?';
 
-  const visibleProjects = data.projects.filter(p => p.checked);
-  const visibleSkills = data.skills.filter(s => s.checked);
-  const visibleExperience = data.experience.filter(e => e.checked);
-  const visibleNetworks = data.networks.filter(n => n.checked);
+  const visibleProjects = safeData.projects.filter(p => p.checked);
+  const visibleSkills = safeData.skills.filter(s => s.checked);
+  const visibleExperience = safeData.experience.filter(e => e.checked);
+  const visibleNetworks = safeData.networks.filter(n => n.checked);
 
   const workExperience = visibleExperience.filter((exp) => exp.sourceTable === 'work_experiences');
   const academicExperience = visibleExperience.filter((exp) => exp.sourceTable === 'educations');
@@ -52,7 +60,7 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
   const hasNetworksSection = visibleNetworks.length > 0;
 
   const highlightedSkills = visibleSkills.slice(0, 4);
-  const visibleCertificates = data.certificates.filter(c => c.checked);
+  const visibleCertificates = safeData.certificates.filter(c => c.checked);
   const hasCertificatesSection = visibleCertificates.length > 0;
   return (
     <div className={`w-full min-h-screen font-sans bg-[#fcecd4] ${isPreview ? 'scale-[0.8] origin-top-left border-8 border-[#173b61] rounded-[40px] shadow-2xl overflow-hidden' : ''} text-[#173b61]`}>

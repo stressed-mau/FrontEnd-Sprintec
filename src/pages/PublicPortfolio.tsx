@@ -1,62 +1,11 @@
-import type { Portfolio } from "@/types/portfolio"
+//import type { Portfolio } from "@/types/portfolio"
 import { usePortfolio } from "@/hooks/usePortfolio"
-import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
+//import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
 import { Mail, Globe, MapPin, Briefcase, Code } from "lucide-react"
 import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
 import { useParams } from "react-router-dom"
-
-const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => ({
-  projects: portfolio.projects.map((p, index) => ({
-    id: Number(p.id ?? index),
-    label: p.nombre ?? "",
-    sublabel: p.descripcion ?? "",
-    checked: true,
-    sourceTable: "projects",
-  })),
-  skills: portfolio.skills.map((s, index) => ({
-    id: Number(s.id ?? index),
-    label: s.name ?? "",
-    sublabel: s.level ?? "",
-    checked: true,
-    sourceTable: "skills",
-  })),
-  experience: portfolio.experiences
-  .filter(e => e.type !== "academica")
-  .map((e: any, index) => ({
-    id: Number(e.id ?? index),
-    label: e.rol ?? e.position ?? "",
-    sublabel: e.company_name ?? e.company ?? "",
-    checked: true,
-    sourceTable: "work_experiences",
-  })),
-
-  education: portfolio.educations?.map((e: any, index) => ({
-    id: Number(e.id ?? index),
-    label: e.title || "Sin título",
-    sublabel: e.institution || "Sin institución",
-    checked: true,
-    sourceTable: "educations",
-  })) ?? [],
-  certificates: (portfolio as any).certificates?.map((cert: any, index: number) => ({
-    id: index,
-    label: cert.name ?? "",
-    sublabel: cert.issuer ?? "",
-    checked: true,
-    sourceTable: "certificates",
-    date: cert.date_issued,
-    url: cert.credential_url,
-  })) ?? [],
-  networks: portfolio.socialNetworks.map((n, index) => ({
-    id: Number(n.id ?? index),
-    label: n.name ?? "",
-    sublabel: n.url ?? "",
-    checked: true,
-    sourceTable: "social_networks",
-  })),
-
-})
 
 const PublicPortfolio = () => {
   const { slug } = useParams()
@@ -82,7 +31,7 @@ const PublicPortfolio = () => {
   const isModern = template === 1
   const isMinimalist = template === 2
   const isCorporate = template === 3
-  const visibilityData = mapToVisibilityData(portfolio)
+  //const visibilityData = mapToVisibilityData(portfolio)
   const profile = {
     fullname: portfolio.profile?.name || portfolio.user?.fullname || "",
     occupation: portfolio.profile?.occupation || portfolio.user?.occupation || "",

@@ -151,7 +151,7 @@ const PublishPortfolio = () => {
                   <h4 className="text-[#003A6C] font-bold text-xl mb-4">Comparte tu éxito</h4>
                   <div className="flex flex-col md:flex-row items-center gap-4 max-w-2xl mx-auto bg-[#F8FAFC] p-4 rounded-2xl border border-gray-100">
                     <div className="flex-1 text-blue-600 truncate font-mono text-sm px-2 w-full text-center md:text-left">
-                      {portfolioUrl}
+                      {publicUrl}
                     </div>
                     <button
                       onClick={copyToClipboard}

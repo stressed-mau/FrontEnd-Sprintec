@@ -4,7 +4,7 @@ import Header from "../components/HeaderUser"
 import Sidebar from "../components/Sidebar"
 import { Palette } from "lucide-react"
 import { usePublishPortfolio } from "../hooks/usePublishPortfolio"
-import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility"
+//import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility"
 import { getAuthSession } from "@/services/auth/auth-storage"
 import { getUserInformation } from "@/services/PersonalDataService"
 
@@ -18,8 +18,7 @@ import PortadaCorp from "@/assets/images/PortadaCorp.png"
 
 const PortfolioTemplatesPage = () => {
   // Lógica de visibilidad para la vista previa [cite: 1-2]
-  const { data } = usePortfolioVisibility()
-  
+  //const { data } = usePortfolioVisibility()
   // Lógica de publicación para persistir la plantilla seleccionada [cite: 4, 105-106]
   const {
     handlePublish,
