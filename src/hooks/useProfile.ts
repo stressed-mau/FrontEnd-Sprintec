@@ -21,7 +21,64 @@ export const useProfile = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(form.email);
+
+  const SPECIAL_CHARACTER_REGEX = /[^A-Za-z0-9]/;
+
+  const validateField = (field: string, nextForm = form): string => {
+    if (field === "username") {
+      const username = nextForm.username?.trim() ?? "";
+      if (!username) return "El nombre de usuario es obligatorio.";
+      if (/\s/.test(nextForm.username)) return "El nombre de usuario no permite espacios.";
+      if (username.length < 3) return "El nombre de usuario debe tener al menos 3 caracteres.";
+      if (username.length > 30) return "El nombre de usuario permite un máximo de 30 caracteres.";
+      return "";
+    }
+
+    if (field === "email") {
+      const email = nextForm.email?.trim() ?? "";
+      if (!email) return "El correo electrónico es obligatorio.";
+      if (/\s/.test(nextForm.email)) return "El correo electrónico no puede contener espacios en blanco.";
+      if (email.length > 60) return "El correo electrónico permite un máximo de 60 caracteres.";
+      const emailRes = validateEmail(email);
+      return emailRes.error || "";
+    }
+
+    if (field === "currentPasswordInfo") {
+      const usernameChanged = nextForm.username.trim() !== profile.username.trim();
+      const emailChanged = nextForm.email.trim() !== profile.email.trim();
+      if (!usernameChanged && !emailChanged) return "";
+      if (!nextForm.currentPasswordInfo) return "La contraseña es necesaria para cambiar la información.";
+      return "";
+    }
+
+    if (field === "currentPasswordPassword") {
+      if (!nextForm.currentPasswordPassword) return "El campo Contraseña actual es obligatorio.";
+      return "";
+    }
+
+    if (field === "newPassword") {
+      const newPassword = nextForm.newPassword;
+      if (!newPassword) return "El campo Nueva contraseña es obligatorio.";
+      if (newPassword.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
+      if (newPassword.length > 20) return "La contraseña permite un máximo de 20 caracteres.";
+      if (/\s/.test(newPassword)) return "La contraseña no puede contener espacios en blanco.";
+      if (!/[A-Z]/.test(newPassword)) return "La contraseña debe contener al menos una letra mayúscula.";
+      if (!/\d/.test(newPassword)) return "La contraseña debe contener al menos un número.";
+      if (!SPECIAL_CHARACTER_REGEX.test(newPassword)) return "La contraseña debe contener al menos un carácter especial.";
+      return "";
+    }
+
+    if (field === "confirmPassword") {
+      const confirmPassword = nextForm.confirmPassword;
+      if (!confirmPassword) return "El campo Confirmar contraseña es obligatorio.";
+      if (confirmPassword !== nextForm.newPassword) return "Las contraseñas no coinciden.";
+      return "";
+    }
+
+    return "";
+  };
 
   const resetForm = () => {
     setForm({
@@ -33,6 +90,7 @@ export const useProfile = () => {
       confirmPassword: '',
     });
     setErrors({});
+    setTouched({});
     setServerMessage({ type: '', text: '' });
   };
 
@@ -57,16 +115,48 @@ export const useProfile = () => {
     const { name, value } = e.target;
     const newValue = name === 'email' ? sanitizeEmailInput(value) : value;
     
-    setForm(prev => ({ ...prev, [name]: newValue }));
-    
-    // Limpiar errores al escribir
-    if (errors[name]) {
-      setErrors(prev => {
-        const newErrs = { ...prev };
-        delete newErrs[name];
-        return newErrs;
-      });
-    }
+    setForm((prev) => {
+      const next = { ...prev, [name]: newValue };
+
+      // Si el campo ya fue tocado, valida en vivo (para guiar al usuario).
+      if (touched[name]) {
+        const msg = validateField(name, next);
+        setErrors((current) => {
+          const nextErrors = { ...current };
+          if (msg) nextErrors[name] = msg;
+          else delete nextErrors[name];
+
+          // Validaciones dependientes
+          if (name === "username" || name === "email") {
+            if (touched.currentPasswordInfo) {
+              const pwdMsg = validateField("currentPasswordInfo", next);
+              if (pwdMsg) nextErrors.currentPasswordInfo = pwdMsg;
+              else delete nextErrors.currentPasswordInfo;
+            }
+          }
+          if (name === "newPassword" && touched.confirmPassword) {
+            const confirmMsg = validateField("confirmPassword", next);
+            if (confirmMsg) nextErrors.confirmPassword = confirmMsg;
+            else delete nextErrors.confirmPassword;
+          }
+
+          return nextErrors;
+        });
+      }
+
+      return next;
+    });
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const msg = validateField(field);
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (msg) next[field] = msg;
+      else delete next[field];
+      return next;
+    });
   };
 
   const validateInfoFields = (): Record<string, string> => {
@@ -156,8 +246,6 @@ export const useProfile = () => {
       setIsSubmitting(false);
     }
   };
-  // Cambiar contraseña
-  const SPECIAL_CHARACTER_REGEX = /[^A-Za-z0-9]/;
   const handleChangePassword = async () => {
     setServerMessage({ type: '', text: '' });
     const newErrs: Record<string, string> = {};
@@ -225,6 +313,7 @@ export const useProfile = () => {
     suggestion,
     serverMessage,
     handleChange,
+    handleBlur,
     handleUpdateInfo,
     handleChangePassword,
     resetForm,
