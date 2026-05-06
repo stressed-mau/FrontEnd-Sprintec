@@ -22,27 +22,31 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
     checked: true,
     sourceTable: "skills",
   })),
-  experience: portfolio.experiences.map((e, index) => ({
+  experience: portfolio.experiences
+  .filter(e => e.type !== "academica")
+  .map((e: any, index) => ({
     id: Number(e.id ?? index),
-    label: e.position ?? "",
-    sublabel: e.company ?? "",
+    label: e.rol ?? e.position ?? "",
+    sublabel: e.company_name ?? e.company ?? "",
     checked: true,
-    sourceTable: e.type === "academica" ? "educations" : "work_experiences",
+    sourceTable: "work_experiences",
   })),
-  education: (portfolio as any).educations?.map((edu: any, index: number) => ({
-    id: Number(edu.id ?? index),
-    label: edu.title ?? "",
-    sublabel: edu.institution ?? "",
+
+  education: portfolio.educations?.map((e: any, index) => ({
+    id: Number(e.id ?? index),
+    label: e.title || "Sin título",
+    sublabel: e.institution || "Sin institución",
     checked: true,
     sourceTable: "educations",
   })) ?? [],
-  // ACTUALIZACIÓN AQUÍ:
   certificates: (portfolio as any).certificates?.map((cert: any, index: number) => ({
-    id: Number(cert.id ?? index),
+    id: index,
     label: cert.name ?? "",
     sublabel: cert.issuer ?? "",
     checked: true,
     sourceTable: "certificates",
+    date: cert.date_issued,
+    url: cert.credential_url,
   })) ?? [],
   networks: portfolio.socialNetworks.map((n, index) => ({
     id: Number(n.id ?? index),
@@ -51,6 +55,7 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
     checked: true,
     sourceTable: "social_networks",
   })),
+
 })
 
 const PublicPortfolio = () => {
@@ -90,11 +95,17 @@ const PublicPortfolio = () => {
 
   return (
     <main className="flex-1 p-4 md:p-10">
-      {isModern && <ModernTemplate data={visibilityData} profile={profile} />}
+      {isModern && <ModernTemplate 
+      //data={visibilityData} 
+      profile={profile} />}
 
-      {isMinimalist && <MinimalistTemplate data={visibilityData} profile={profile} isPreview={false} />}
+      {isMinimalist && <MinimalistTemplate 
+      //data={visibilityData} 
+      profile={profile} isPreview={false} />}
 
-      {isCorporate && <CorporatePortfolioTemplate data={visibilityData} profile={profile} />}
+      {isCorporate && <CorporatePortfolioTemplate 
+      //data={visibilityData} 
+      profile={profile} />}
 
       {!isModern && !isMinimalist && !isCorporate && (
         <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">

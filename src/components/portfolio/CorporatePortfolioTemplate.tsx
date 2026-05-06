@@ -6,8 +6,7 @@ import {
   MapPin,
 } from "lucide-react"
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
-import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
-
+import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
 type CorporatePortfolioLink = {
   id: string
   label: string
@@ -22,11 +21,6 @@ type CorporatePortfolioProfile = {
   public_email: string
   phone: string
   biography: string
-}
-
-type CorporatePortfolioTemplateProps = {
-  data: PortfolioVisibilityData
-  profile?: CorporatePortfolioProfile | null
 }
 
 type Sheet = {
@@ -135,18 +129,29 @@ function CorporateProfileImage({
     </div>
   )
 }
+type Props = {
+  profile?: CorporatePortfolioProfile | null
+}
 
-export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolioTemplateProps) {
-  const userProfile = profile ?? {
-    fullname: "",
-    occupation: "",
-    image_url: "",
-    residence: "",
-    public_email: "",
-    phone: "",
-    biography: "",
+export function CorporatePortfolioTemplate({ profile }: Props) {
+  const { data} = usePortfolioVisibility()
+  const safeData = data ?? {
+    projects: [],
+    skills: [],
+    experience: [],
+    education: [],
+    certificates: [],
+    networks: [],
   }
-
+  const userProfile = profile ?? {
+  fullname: "",
+  occupation: "",
+  image_url: "",
+  residence: "",
+  public_email: "",
+  phone: "",
+  biography: "",
+}
   const displayName = userProfile.fullname.trim() || "Sin nombre disponible"
   const displayRole = userProfile.occupation.trim() || "Profesional"
   const displaySummary = userProfile.biography.trim() || "Descripción profesional pendiente de completar."
@@ -155,12 +160,15 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
   const displayProfileImage = userProfile.image_url.trim()
   const initials = getInitials(displayName)
 
-  const visibleProjects = useMemo(() => data.projects.filter((item) => item.checked), [data.projects])
-  const visibleSkills = useMemo(() => data.skills.filter((item) => item.checked), [data.skills])
-  const visibleExperience = useMemo(() => data.experience.filter((item) => item.checked), [data.experience])
-  const visibleEducation = useMemo(() => data.education.filter((item) => item.checked), [data.education])
-  const visibleCertificates = useMemo(() => data.certificates.filter((item) => item.checked), [data.certificates])
-  const visibleNetworks = useMemo(() => data.networks.filter((item) => item.checked), [data.networks])
+  const visibleProjects = useMemo(() => safeData.projects.filter((item) => item.checked), [safeData.projects])
+  const visibleSkills = useMemo(() => safeData.skills.filter((item) => item.checked), [safeData.skills])
+  const visibleExperience = useMemo(
+    () => safeData.experience.filter((item) => item.checked),
+    [safeData.experience]
+  )
+  const visibleEducation = useMemo(() => safeData.education.filter((item) => item.checked), [safeData.education])
+  const visibleCertificates = useMemo(() => safeData.certificates.filter((item) => item.checked), [safeData.certificates])
+  const visibleNetworks = useMemo(() => safeData.networks.filter((item) => item.checked), [safeData.networks])
 
   const socialLinks = useMemo<CorporatePortfolioLink[]>(
     () =>
@@ -178,25 +186,25 @@ export function CorporatePortfolioTemplate({ data, profile }: CorporatePortfolio
   return visibleSkills.map((skill) => skill.label).filter(Boolean)
   }, [visibleSkills])
 
-  const workExperience = useMemo(
-    () => visibleExperience.filter((item) => item.sourceTable === "work_experiences"),
-    [visibleExperience],
-  )
+  
+  const experience = useMemo(() => {
+  return visibleExperience.map((item) => ({
+    id: String(item.id),
+    title: item.label,
+    organization: cleanVisibilitySublabel(
+      item.sublabel,
+      "Experiencia Laboral -"
+    ),
+    period: "",
+    description: "",
+  }))
+}, [visibleExperience])
 
   const educationItems = useMemo(() => {
     const educationFromExperience = visibleExperience.filter((item) => item.sourceTable === "educations")
     return [...educationFromExperience, ...visibleEducation]
   }, [visibleExperience, visibleEducation])
 
-  const experience = useMemo(() => {
-  return workExperience.map((item) => ({
-    id: String(item.id),
-    title: item.label,
-    organization: cleanVisibilitySublabel(item.sublabel, "Experiencia Laboral -"),
-    period: "",
-    description: "",
-  }))
-}, [workExperience])
 
   const education = useMemo(() => {
   return educationItems.map((item) => ({

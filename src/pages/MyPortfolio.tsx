@@ -7,58 +7,77 @@ import { Mail, Globe, MapPin, Briefcase, Code } from "lucide-react"
 import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
+import { useUserPersonalData } from "@/hooks/useUserPersonalData"
 import { useParams } from "react-router-dom"
-
+import { useState, useEffect } from "react"
+const asBoolean = (value: any): boolean => {
+  if (typeof value === "boolean") return value
+  if (typeof value === "number") return value === 1
+  if (typeof value === "string") return value === "1" || value === "true"
+  return true
+}
 const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => ({
   projects: portfolio.projects.map((p, index) => ({
     id: Number(p.id ?? index),
     label: p.nombre ?? "",
     sublabel: p.descripcion ?? "",
-    checked: true,
+    checked: asBoolean(p.is_public),
     sourceTable: "projects",
   })),
   skills: portfolio.skills.map((s, index) => ({
     id: Number(s.id ?? index),
     label: s.name ?? "",
     sublabel: s.level ?? "",
-    checked: true,
+    checked: asBoolean(s.is_public),
     sourceTable: "skills",
   })),
-  experience: portfolio.experiences.map((e, index) => ({
+  experience: portfolio.experiences
+  .filter(e => e.type !== "academica")
+  .map((e: any, index) => ({
     id: Number(e.id ?? index),
-    label: e.position ?? "",
-    sublabel: e.company ?? "",
-    checked: true,
-    sourceTable: e.type === "academica" ? "educations" : "work_experiences",
+    label: e.rol ?? e.position ?? "",
+    sublabel: e.company_name ?? e.company ?? "",
+    checked: asBoolean(e.is_public),
+    sourceTable: "work_experiences",
   })),
-  education: (portfolio as any).educations?.map((edu: any, index: number) => ({
-    id: Number(edu.id ?? index),
-    label: edu.title ?? "",
-    sublabel: edu.institution ?? "",
+
+  education: portfolio.educations?.map((e: any, index) => ({
+    id: Number(e.id ?? index),
+    label: e.title || "Sin título",
+    sublabel: e.institution || "Sin institución",
     checked: true,
     sourceTable: "educations",
   })) ?? [],
   certificates: (portfolio as any).certificates?.map((cert: any, index: number) => ({
-    id: Number(cert.id ?? index),
+    id: index,
     label: cert.name ?? "",
     sublabel: cert.issuer ?? "",
     checked: true,
     sourceTable: "certificates",
+    date: cert.date_issued,
+    url: cert.credential_url,
   })) ?? [],
   networks: portfolio.socialNetworks.map((n, index) => ({
     id: Number(n.id ?? index),
     label: n.name ?? "",
     sublabel: n.url ?? "",
-    checked: true,
+    checked: asBoolean(n.is_public),
     sourceTable: "social_networks",
   })),
 
 })
 const MyPortfolio = () => {
+
   const { slug } = useParams()
   const { portfolio, loading } = usePortfolio(slug)
-
-  if (loading) {
+  const { form, phoneNumber, countryCode } = useUserPersonalData()
+  const [visibilityData, setVisibilityData] = useState<PortfolioVisibilityData | null>(null)
+  useEffect(() => {
+    if (portfolio) {
+      setVisibilityData(mapToVisibilityData(portfolio))
+    }
+  }, [portfolio])
+    if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center font-bold text-[#003A6C]">
         <div className="animate-pulse">Cargando portafolio...</div>
@@ -73,26 +92,41 @@ const MyPortfolio = () => {
       </div>
     )
   }
+  console.log("EDUCATIONS RAW:", portfolio.educations);
+  console.log("Experiences RAW:", portfolio.experiences);
 
+  if (!visibilityData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Cargando datos...</p>
+      </div>
+    )
+  }
   const templateValue = ('template' in portfolio) 
   ? (portfolio as any).template 
   : portfolio.config?.template;
   const template = Number(templateValue) || 0;
-
+  
   const isModern = template === 1;
   const isMinimalist = template === 2;
   const isCorporate = template === 3;
-  const visibilityData = mapToVisibilityData(portfolio)
+  
   const profile = {
-    fullname: portfolio.profile?.name || portfolio.user?.fullname || "",
-    occupation: portfolio.profile?.occupation || portfolio.user?.occupation || "",
-    image_url: portfolio.profile?.image || portfolio.user?.image_url || "",
-    residence: portfolio.profile?.nacionality || portfolio.user?.nationality || "",
-    public_email: portfolio.profile?.email || portfolio.user?.public_email || "",
-    phone: portfolio.profile?.phone || portfolio.user?.phone_number || "",
-    biography: portfolio.profile?.bio || portfolio.user?.biography || "",
-  };
-
+    fullname: form.fullName || "",
+    occupation: form.occupation || "",
+    image_url: form.image || "",
+    residence: form.location || "",
+    public_email: form.email || "",
+    phone: phoneNumber ? `+${countryCode} ${phoneNumber}` : "",
+    biography: form.bio || "",
+  }
+  const visibleSkills = visibilityData.skills.filter(s => s.checked)
+  const visibleExperience = visibilityData.experience.filter(e => e.checked)
+  const visibleProjects = visibilityData.projects.filter(p => p.checked)
+  //const visibleEducation = visibilityData.education.filter(e => e.checked)
+  //const visibleCertificates = visibilityData.certificates.filter(c => c.checked)
+  const visibleNetworks = visibilityData.networks.filter(n => n.checked)
+  console.log("PROFILE FINAL MYPORTFOLIO:", profile)
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
       <Header />
@@ -101,24 +135,28 @@ const MyPortfolio = () => {
         <Sidebar />
 
         <main className="flex-1 p-4 md:p-10">
-          {isModern && <ModernTemplate data={visibilityData} profile={profile} />}
+          {isModern && <ModernTemplate 
+          //data={visibilityData} 
+          profile={profile} />}
 
           {isMinimalist && <MinimalistTemplate 
-            data={visibilityData}           
+            //data={visibilityData}           
             profile={profile} 
             isPreview={true} 
           />}
 
-          {isCorporate && <CorporatePortfolioTemplate data={visibilityData} profile={profile} />}
+          {isCorporate && <CorporatePortfolioTemplate 
+          //data={visibilityData} 
+          profile={profile} />}
 
           {!isModern && !isMinimalist && !isCorporate && (
             <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">
               <header className="text-center border-b pb-6 mb-8">
                 <div className="flex justify-center mb-4">
-                  {portfolio.profile?.image ? (
+                  {profile.image_url ? (
                     <img
-                      src={portfolio.profile.image}
-                      alt={portfolio.profile.name}
+                      src={profile.image_url}
+                      alt={profile.fullname}
                       className="w-28 h-28 rounded-full object-cover border-4 border-[#003A6C]"
                     />
                   ) : (
@@ -128,24 +166,24 @@ const MyPortfolio = () => {
                   )}
                 </div>
 
-                <h1 className="text-4xl font-serif font-bold uppercase">{portfolio.profile?.name}</h1>
+                <h1 className="text-4xl font-serif font-bold uppercase">{profile.fullname}</h1>
 
                 <p className="text-[#003A6C] mt-2 font-medium">
-                  {portfolio.profile?.occupation || "Profesión no especificada"}
+                  {profile.occupation || "Profesión no especificada"}
                 </p>
 
                 <div className="flex flex-wrap justify-center gap-6 mt-4 text-sm text-gray-600">
                   <span className="flex items-center gap-1">
-                    <Mail size={16} /> {portfolio.profile?.email}
+                    <Mail size={16} /> {profile.public_email}
                   </span>
 
                   <span className="flex items-center gap-1">
-                    <MapPin size={16} /> {portfolio.profile?.nacionality}
+                    <MapPin size={16} /> {profile.residence}
                   </span>
 
-                  {portfolio.socialNetworks?.map((sn: any, index: number) => (
-                    <span key={index} className="flex items-center gap-1">
-                      <Globe size={16} /> {sn.name}
+                  {visibleNetworks.map((net) => (
+                    <span key={net.id} className="flex items-center gap-1">
+                      <Globe size={16} /> {net.label}
                     </span>
                   ))}
                 </div>
@@ -155,24 +193,24 @@ const MyPortfolio = () => {
                 <aside className="space-y-8">
                   <div>
                     <h3 className="font-bold uppercase border-b pb-2">Sobre mí</h3>
-                    <p className="text-sm text-gray-600 mt-3">{portfolio.profile?.bio}</p>
+                    <p className="text-sm text-gray-600 mt-3">{profile.biography}</p>
                   </div>
 
                   <div>
                     <h3 className="font-bold uppercase border-b pb-2">Habilidades</h3>
                     <div className="mt-3 flex flex-col gap-2">
-                      {portfolio.skills.length > 0 ? (
-                        portfolio.skills.map((skill: any, index: number) => (
-                          <div key={index} className="text-sm text-gray-700 flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 bg-[#003A6C] rounded-full" />
-                            <span className="font-medium">{skill.name}</span>
-                            {"level" in skill && skill.level && (
-                              <span className="text-xs text-gray-400">({skill.level})</span>
-                            )}
-                          </div>
-                        ))
+                      {visibleSkills.length > 0 ? (
+                       visibleSkills.map((skill) =>(
+                            <div key={skill.id} className="text-sm text-gray-700 flex items-center gap-2">
+                              <div className="w-1.5 h-1.5 bg-[#003A6C] rounded-full" />
+                              <span className="font-medium">{skill.label}</span>
+                              {skill.sublabel && (
+                                <span className="text-xs text-gray-400">({skill.sublabel})</span>
+                              )}
+                            </div>
+                          ))
                       ) : (
-                        <p className="text-xs text-gray-400 italic">No hay habilidades registradas</p>
+                        <p className="text-xs text-gray-400 italic">No hay habilidades visibles</p>
                       )}
                     </div>
                   </div>
@@ -185,55 +223,58 @@ const MyPortfolio = () => {
                     </h3>
 
                     <div className="mt-6 space-y-6">
-                      {portfolio.experiences.length > 0 ? (
-                        portfolio.experiences.map((exp, index) => (
-                          <div key={index} className="border-l-2 pl-4">
-                            <p className="font-bold">{exp.position}</p>
-                            <p className="text-[#003A6C] text-sm">{exp.company}</p>
-                            {"startDate" in exp && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                {exp.startDate} - {exp.current ? "Actualidad" : exp.endDate}
-                              </p>
-                            )}
+                      {visibleExperience.length > 0 ? (
+                        visibleExperience.map((exp) => (
+                          <div key={exp.id} className="border-l-2 pl-4">
+                            <p className="font-bold">{exp.label}</p>
+                            <p className="text-[#003A6C] text-sm">{exp.sublabel}</p>
                           </div>
                         ))
                       ) : (
-                        <p className="text-sm text-gray-400 italic">Sin experiencia registrada</p>
+                        <p className="text-sm text-gray-400 italic">Sin experiencia visible</p>
                       )}
                     </div>
                   </div>
-
                   <div>
                     <h3 className="flex items-center gap-2 text-xl font-bold uppercase">
                       <Code size={18} /> Proyectos
                     </h3>
 
                     <div className="mt-6 grid gap-4">
-                      {portfolio.projects.map((project, index) => (
-                        <div key={index} className="bg-gray-50 border-l-4 border-[#003A6C] p-4">
-                          <h4 className="font-bold text-sm uppercase">
-                            {project.nombre || "Proyecto sin título"}
-                          </h4>
+                      {visibleProjects.length > 0 ? (
+                        visibleProjects.map((project) => (
+                          <div key={project.id} className="bg-gray-50 border-l-4 border-[#003A6C] p-4">
+                            <h4 className="font-bold text-sm uppercase">
+                              {project.label || "Proyecto sin título"}
+                            </h4>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {project.sublabel || "Sin descripción"}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-400 italic">Sin proyectos visibles</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold uppercase">Redes</h3>
 
-                          <p className="text-sm text-gray-600 mt-1">
-                            {project.descripcion || "Sin descripción disponible"}
-                          </p>
-
-                          {"tecnologias" in project && project.tecnologias?.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {project.tecnologias.map((t: any) => (
-                                <span key={t.id} className="text-xs bg-gray-200 px-2 py-1 rounded">
-                                  {t.name}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-
-                          {"rol" in project && (
-                            <p className="text-xs text-gray-500 mt-2">Rol: {project.rol}</p>
-                          )}
-                        </div>
-                      ))}
+                    <div className="mt-3 flex flex-col gap-2">
+                      {visibleNetworks.length > 0 ? (
+                        visibleNetworks.map((net) => (
+                          <a
+                            key={net.id}
+                            href={net.sublabel}
+                            target="_blank"
+                            className="text-blue-600 text-sm"
+                          >
+                            {net.label}
+                          </a>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-400 italic">Sin redes visibles</p>
+                      )}
                     </div>
                   </div>
                 </section>
@@ -245,5 +286,4 @@ const MyPortfolio = () => {
     </div>
   )
 }
-
 export default MyPortfolio

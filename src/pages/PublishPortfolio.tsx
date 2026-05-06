@@ -81,7 +81,7 @@ const PublishPortfolio = () => {
                   
                   {!selectedTemplate && (
                     <p className="mt-4 text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-100">
-                      ⚠️ No has seleccionado una plantilla. Ve a la sección de <strong>Plantillas</strong> para elegir una.
+                      No has seleccionado una plantilla. Ve a la sección de <strong>Plantillas</strong> para elegir una.
                     </p>
                   )}
                 </div>

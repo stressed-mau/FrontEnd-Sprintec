@@ -1,9 +1,7 @@
 import React from 'react';
-import type { PortfolioVisibilityData } from '@/services/portfolioVisibilityService';
 import { MapPin, Mail, Phone, Heart, Globe, GraduationCap, Award } from 'lucide-react';
-
+import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
 interface ModernTemplateProps {
-  data: PortfolioVisibilityData;
   profile?: ModernTemplateProfile | null;
   isPreview?: boolean;
 }
@@ -18,8 +16,8 @@ export interface ModernTemplateProfile {
   biography: string;
 }
 
-const ModernTemplate: React.FC<ModernTemplateProps> = ({ data, profile, isPreview = false }) => {
-
+const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = false }) => {
+  const { data } = usePortfolioVisibility();
   console.log("EXPERIENCE:", data.experience);
   console.log("NETWORKS:", data.networks);
   const userProfile = profile ?? {

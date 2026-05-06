@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import type { Portfolio, Experience, Project, Skill, SocialNetwork } from "@/types/portfolio";
 import { getAuthSession } from "@/services/auth/auth-storage";
 import { api } from "@/services/api";
-import { toAbsoluteAssetUrl } from "@/services/assetUrl";
 
 import { getUserInformation } from "@/services/PersonalDataService"; 
 import { getSkills } from "@/services/skillsService";
@@ -10,7 +9,15 @@ import { getEducation } from "@/services/educationService";
 import { getExperiences } from "@/services/experienceService";
 import { getProjects } from "@/services/ProjectService";
 import { getUserSocialNetworks } from "@/services/socialNetworksService";
-
+const normalizeProfile = (d: any) => ({
+  fullname: d.profile.name || "",
+  occupation: d.profile.occupation || "",
+  biography: d.profile.bio || "",
+  image_url: d.profile.image || "",
+  public_email: d.profile.email || "",
+  phone_number: d.profile.phone || "",
+  nationality: d.profile.nacionality || d.profile.nationality || "",
+});
 export const usePortfolio = (externalSlug?: string) => {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +49,7 @@ export const usePortfolio = (externalSlug?: string) => {
               nationality: d.profile.nationality || "",
               public_email: d.profile.email || "",
               phone_number: d.profile.phone || "",
-              image_url: toAbsoluteAssetUrl(d.profile.image),
+              image_url: d.profile.image || "",
             },
             projects: d.projects.map((p: any) => ({
               ...p,
@@ -51,11 +58,13 @@ export const usePortfolio = (externalSlug?: string) => {
             })),
             skills: d.skills,
             experiences: d.work_experiences,
+            educations: d.educations ?? [],
             socialNetworks: d.social_networks,
+            certificates: d.certificates ?? [],
             isPublished: d.config.is_public ?? true,
             template: Number(d.config.template),
             config: d.config, 
-            profile: d.profile
+            profile: normalizeProfile(d)
           });
           return; // Éxito: salimos de la función
         }
@@ -78,35 +87,25 @@ export const usePortfolio = (externalSlug?: string) => {
         setPortfolio({
           user: {
             id: String(userData.id),
-            fullname: userData.fullname || session.user.username,
+            fullname: (userData as any).name || (userData as any).fullname || (userData as any).full_name || session.user.username,
             occupation: userData.occupation || "",
-            biography: userData.biography || "",
+            biography: (userData as any).bio || "",
             nationality: userData.nationality || "",
-            public_email: userData.public_email || session.user.email,
-            phone_number: userData.phone_number || "",
-            image_url: userData.image_url || "",
+            public_email: (userData as any).email || session.user.email,
+          phone_number: (userData as any).phone || "",
           },
           
           skills: skills as Skill[],
           experiences: [...experiences, ...education] as unknown as Experience[],
+          educations: education as unknown as Experience[],
           projects: projects as unknown as Project[],
           socialNetworks: social as SocialNetwork[],
+          certificates: [],
           template: 0, // Template 0 indica que no ha elegido uno aún
           isPublished: false,
-          config: {
-            slug: session.user.username,
-            template: "0",
-            is_public: false,
-          }, 
-          profile: {
-            name: userData.fullname || session.user.username,
-            occupation: userData.occupation || "",
-            bio: userData.biography || "",
-            image: userData.image_url || "",
-            phone: userData.phone_number || "",
-            email: userData.public_email || session.user.email,
-            nacionality: userData.nationality || "",
-          },
+          config: (userData as any).config || {}, 
+          profile: normalizeProfile({ profile: userData }) || {},
+          
         });
       } else {
         // Si no hay slug público y no hay sesión, no hay nada que mostrar

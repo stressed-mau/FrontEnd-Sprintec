@@ -233,15 +233,19 @@ const PortfolioTemplatesPage = () => {
 
             <div className="flex-1 overflow-y-auto bg-gray-50">
               {previewTemplate === "Moderna" ? (
-                <ModernTemplate data={data} profile={modernProfile} />
+                <ModernTemplate 
+                //data={data} 
+                profile={modernProfile} />
               ) : previewTemplate === "Minimalista" ? (
                 <MinimalistTemplate
-                  data={data}           
+                  //data={data}           
                   profile={modernProfile} 
                   isPreview={true}
                 />
               ) : previewTemplate === "Corporativa" ? (
-                <CorporatePortfolioTemplate data={data} profile={modernProfile} />
+                <CorporatePortfolioTemplate 
+                //data={data} 
+                profile={modernProfile} />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-gray-400">
                   Selecciona una plantilla

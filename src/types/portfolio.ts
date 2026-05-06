@@ -130,19 +130,21 @@ export interface Portfolio {
     is_public?: boolean;
   };
   profile: {
-    name: string;
+    fullname: string;
     occupation: string;
-    bio: string;
-    image: string;
-    phone: string;
-    email: string;
-    nacionality: string;
+    biography: string;
+    image_url: string;
+    phone_number: string;
+    public_email: string;
+    nationality: string;
   };
   user?: User;
   projects: any[]; // Idealmente define interfaces para estos también
   skills: any[];
   experiences: any[];
+  educations: any[];
   socialNetworks: any[];
+  certificates?: any[];
   isPublished?: boolean;
   template?: number;
 }
