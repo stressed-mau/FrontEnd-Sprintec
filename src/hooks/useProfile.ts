@@ -14,7 +14,8 @@ export const useProfile = () => {
   const [form, setForm] = useState({
     username: session?.user?.username || '',
     email: session?.user?.email || '',
-    currentPassword: '',
+    currentPasswordInfo: '',
+    currentPasswordPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
@@ -26,7 +27,8 @@ export const useProfile = () => {
     setForm({
       username: profile.username,
       email: profile.email,
-      currentPassword: '',
+      currentPasswordInfo: '',
+      currentPasswordPassword: '',
       newPassword: '',
       confirmPassword: '',
     });
@@ -43,7 +45,8 @@ export const useProfile = () => {
     setForm({
       username: session?.user?.username || '',
       email: session?.user?.email || '',
-      currentPassword: '',
+      currentPasswordInfo: '',
+      currentPasswordPassword: '',
       newPassword: '',
       confirmPassword: '',
     });
@@ -106,8 +109,8 @@ export const useProfile = () => {
     // current_password requerido si se cambia el username o email
     const usernameChanged = form.username.trim() !== profile.username.trim();
     const emailChanged = form.email.trim() !== profile.email.trim();
-    if ((usernameChanged || emailChanged) && !form.currentPassword) {
-      newErrs.currentPassword = 'La contraseña es necesaria para cambiar la información.';
+    if ((usernameChanged || emailChanged) && !form.currentPasswordInfo) {
+      newErrs.currentPasswordInfo = 'La contraseña es necesaria para cambiar la información.';
     }
 
     if (Object.keys(newErrs).length > 0) {
@@ -120,7 +123,7 @@ export const useProfile = () => {
     payload.username = form.username.trim();
     payload.email = form.email.trim();
     if (usernameChanged || emailChanged) {
-      payload.current_password = form.currentPassword;
+      payload.current_password = form.currentPasswordInfo;
     }
 
     setIsSubmitting(true); 
@@ -138,7 +141,7 @@ export const useProfile = () => {
           ...prev,
           username: updatedUsername,
           email: updatedEmail,
-          currentPassword: '',
+          currentPasswordInfo: '',
         }));
 
         if (updateAuthSession) {
@@ -159,11 +162,11 @@ export const useProfile = () => {
     setServerMessage({ type: '', text: '' });
     const newErrs: Record<string, string> = {};
 
-   const { currentPassword, newPassword, confirmPassword } = form;
+   const { currentPasswordPassword, newPassword, confirmPassword } = form;
 
   // Validación Contraseña Actual
-  if (!currentPassword) {
-    newErrs.currentPassword = "El campo Contraseña actual es obligatorio.";
+  if (!currentPasswordPassword) {
+    newErrs.currentPasswordPassword = "El campo Contraseña actual es obligatorio.";
   }
 
   // Validaciones Nueva Contraseña (idénticas a RegisterForm)
@@ -195,14 +198,14 @@ export const useProfile = () => {
     setIsSubmitting(true);
     try {
       await updateProfileCredentials({
-        current_password: form.currentPassword,
+        current_password: form.currentPasswordPassword,
         new_password: form.newPassword,
         new_password_confirmation: form.confirmPassword
       });
       setServerMessage({ type: 'success', text: 'Contraseña actualizada. Las sesiones en otros dispositivos se cerrarán.' });
       setForm(prev => ({
         ...prev,
-        currentPassword: '',
+        currentPasswordPassword: '',
         newPassword: '',
         confirmPassword: '',
       }));

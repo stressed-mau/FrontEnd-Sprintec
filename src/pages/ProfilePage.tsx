@@ -275,15 +275,15 @@ const ProfilePage = () => {
                       <div className="relative">
                         <input
                           id="input-current-password-info"
-                          name="currentPassword"
+                          name="currentPasswordInfo"
                           type={showCurrentPass ? 'text' : 'password'}
                           autoComplete="off"
                           placeholder="••••••••"
                           maxLength={20}
-                          value={form.currentPassword}
+                          value={form.currentPasswordInfo}
                           onChange={handleChange}
                           className={`w-full p-2.5 pr-10 rounded-lg border bg-white text-sm outline-none focus:ring-2 ring-blue-200 ${
-                            errors.currentPassword ? 'border-red-500' : 'border-[#A5D7E8]'
+                            errors.currentPasswordInfo ? 'border-red-500' : 'border-[#A5D7E8]'
                           }`}
                         />
                         <button
@@ -294,8 +294,8 @@ const ProfilePage = () => {
                           {showCurrentPass ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
-                      {errors.currentPassword && (
-                        <p className="text-red-500 text-[10px] mt-1 font-medium">{errors.currentPassword}</p>
+                      {errors.currentPasswordInfo && (
+                        <p className="text-red-500 text-[10px] mt-1 font-medium">{errors.currentPasswordInfo}</p>
                       )}
                     </div>
                   )}
@@ -327,15 +327,15 @@ const ProfilePage = () => {
                     <div className="relative">
                       <input
                         id="input-current-password"
-                        name="currentPassword"
+                        name="currentPasswordPassword"
                         type={showCurrentPass ? 'text' : 'password'}
                         autoComplete="off"
                         placeholder="••••••••"
                         maxLength={20}
-                        value={form.currentPassword}
+                        value={form.currentPasswordPassword}
                         onChange={handleChange}
                         className={`w-full p-2.5 pr-10 rounded-lg border bg-white text-sm outline-none focus:ring-2 ring-blue-200 ${
-                          errors.currentPassword ? 'border-red-500' : 'border-[#A5D7E8]'
+                          errors.currentPasswordPassword ? 'border-red-500' : 'border-[#A5D7E8]'
                         }`}
                       />
                       <button
@@ -346,8 +346,8 @@ const ProfilePage = () => {
                         {showCurrentPass ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
-                    {errors.currentPassword && (
-                      <p className="text-red-500 text-[10px] mt-1 font-medium">{errors.currentPassword}</p>
+                    {errors.currentPasswordPassword && (
+                      <p className="text-red-500 text-[10px] mt-1 font-medium">{errors.currentPasswordPassword}</p>
                     )}
                   </div>
 
