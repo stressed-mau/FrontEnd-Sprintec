@@ -509,13 +509,12 @@ export function ProjectForm({
   const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
   const filteredRoles = roleOptions.filter((role) => {
     const search = formData.rol.trim().toLowerCase();
-    return search && role.toLowerCase().includes(search);
+    return !search || role.toLowerCase().includes(search);
   });
   const filteredTechnologies = technologies.filter((technology) => {
     const search = technologySearch.trim().toLowerCase();
     return (
-      search &&
-      technology.name.toLowerCase().includes(search) &&
+      (!search || technology.name.toLowerCase().includes(search)) &&
       !selectedTechs.some((selected) => selected.id === technology.id)
     );
   });
@@ -646,11 +645,11 @@ export function ProjectForm({
                 onBlur={() => {
                   window.setTimeout(() => setShowRoleDropdown(false), 120);
                 }}
-                placeholder="Buscar rol..."
+                placeholder="Busca y selecciona"
                 className={fieldInputClassName(Boolean(errors.rol))}
                 aria-invalid={Boolean(errors.rol)}
               />
-              {showRoleDropdown && formData.rol.trim() ? (
+              {showRoleDropdown ? (
                 <div className="absolute z-20 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl">
                   {filteredRoles.length ? (
                     filteredRoles.map((role, index) => (
@@ -701,11 +700,11 @@ export function ProjectForm({
                     window.setTimeout(() => setShowTechnologyDropdown(false), 120);
                   }}
                   disabled={selectedTechs.length >= 10}
-                  placeholder={selectedTechs.length >= 10 ? "Límite alcanzado (max 10)" : "Buscar tecnología..."}
+                  placeholder={selectedTechs.length >= 10 ? "Límite alcanzado (max 10)" : "Busca y selecciona"}
                   className={fieldInputClassName(Boolean(errors.tecnologias))}
                   aria-invalid={Boolean(errors.tecnologias)}
                 />
-                {showTechnologyDropdown && technologySearch.trim() ? (
+                {showTechnologyDropdown ? (
                   <div className="absolute z-20 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl">
                     {filteredTechnologies.length ? (
                       filteredTechnologies.map((technology) => (
