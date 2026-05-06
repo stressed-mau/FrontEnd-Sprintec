@@ -39,21 +39,21 @@ export function CertificateFilePreviewField({
   }, [fileInput, isImage])
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <label className="block text-sm font-semibold text-[#003A6C]">Archivo Adicional</label>
-      <div className="rounded-xl border-2 border-dashed border-[#0E7D96]/20 bg-[#F8FAFC] p-4">
+      <div className="rounded-xl border-2 border-dashed border-[#0E7D96]/20 bg-[#F8FAFC] p-3">
         {fileInput ? (
-          <div className="flex min-h-[96px] items-center gap-4 overflow-hidden">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#0E7D96]/15 bg-white">
+          <div className="flex min-h-[84px] items-center gap-3 overflow-hidden">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#0E7D96]/15 bg-white">
               {isImage && previewUrl ? (
                 <img src={previewUrl} alt="Vista previa del archivo" className="h-full w-full object-cover" />
               ) : isPdf ? (
                 <div className="flex flex-col items-center gap-1 text-red-500">
-                  <FileText className="size-8" />
+                  <FileText className="size-7" />
                   <span className="text-[10px] font-bold">PDF</span>
                 </div>
               ) : (
-                <FileImage className="size-8 text-[#4B778D]" />
+                <FileImage className="size-7 text-[#4B778D]" />
               )}
             </div>
 
@@ -66,14 +66,14 @@ export function CertificateFilePreviewField({
               type="button"
               onClick={onRemoveFile}
               disabled={isSaving}
-              className="shrink-0 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+              className="shrink-0 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-100 disabled:opacity-50"
             >
               Remover
             </button>
           </div>
         ) : (
           <div className="text-center">
-            <FileUp className="mx-auto mb-2 size-6 text-[#003A6C]" />
+            <FileUp className="mx-auto mb-1.5 size-5 text-[#003A6C]" />
             <p className="text-sm text-[#4B778D]">
               Haz clic o arrastra un archivo PDF, JPG, JPEG o PNG
             </p>
@@ -82,7 +82,7 @@ export function CertificateFilePreviewField({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isSaving}
-              className="mt-3 inline-block rounded-lg bg-[#C2DBED] px-4 py-2 font-medium text-[#003A6C] hover:bg-[#b0cfeb] disabled:opacity-50"
+              className="mt-2 inline-block rounded-lg bg-[#C2DBED] px-4 py-1.5 text-sm font-medium text-[#003A6C] hover:bg-[#b0cfeb] disabled:opacity-50"
             >
               Seleccionar archivo
             </button>
