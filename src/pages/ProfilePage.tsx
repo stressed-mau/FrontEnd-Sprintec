@@ -27,6 +27,7 @@ const ProfilePage = () => {
     suggestion,
     serverMessage,
     handleChange,
+    handleBlur,
     handleUpdateInfo,
     handleChangePassword,
     resetForm,
@@ -223,6 +224,7 @@ const ProfilePage = () => {
                       maxLength={30}
                       value={form.username}
                       onChange={handleChange}
+                      onBlur={() => handleBlur("username")}
                       className={`w-full p-2.5 rounded-lg border bg-white text-[#003A6C] text-sm outline-none focus:ring-2 ring-blue-200 ${
                         errors.username ? 'border-red-500' : 'border-[#A5D7E8]'
                       }`}
@@ -244,6 +246,7 @@ const ProfilePage = () => {
                       maxLength={60}
                       value={form.email}
                       onChange={handleChange}
+                      onBlur={() => handleBlur("email")}
                       className={`w-full p-2.5 rounded-lg border bg-white text-[#003A6C] text-sm outline-none focus:ring-2 ring-blue-200 ${
                         errors.email ? 'border-red-500' : 'border-[#A5D7E8]'
                       }`}
@@ -282,6 +285,7 @@ const ProfilePage = () => {
                           maxLength={20}
                           value={form.currentPasswordInfo}
                           onChange={handleChange}
+                          onBlur={() => handleBlur("currentPasswordInfo")}
                           className={`w-full p-2.5 pr-10 rounded-lg border bg-white text-sm outline-none focus:ring-2 ring-blue-200 ${
                             errors.currentPasswordInfo ? 'border-red-500' : 'border-[#A5D7E8]'
                           }`}
@@ -334,6 +338,7 @@ const ProfilePage = () => {
                         maxLength={20}
                         value={form.currentPasswordPassword}
                         onChange={handleChange}
+                        onBlur={() => handleBlur("currentPasswordPassword")}
                         className={`w-full p-2.5 pr-10 rounded-lg border bg-white text-sm outline-none focus:ring-2 ring-blue-200 ${
                           errors.currentPasswordPassword ? 'border-red-500' : 'border-[#A5D7E8]'
                         }`}
@@ -369,6 +374,7 @@ const ProfilePage = () => {
                         maxLength={20}
                         value={form.newPassword}
                         onChange={handleChange}
+                        onBlur={() => handleBlur("newPassword")}
                         className={`w-full p-2.5 pr-10 rounded-lg border bg-white text-sm outline-none focus:ring-2 ring-blue-200 ${
                           errors.newPassword ? 'border-red-500' : 'border-[#A5D7E8]'
                         }`}
@@ -401,6 +407,7 @@ const ProfilePage = () => {
                         maxLength={20}
                         value={form.confirmPassword}
                         onChange={handleChange}
+                        onBlur={() => handleBlur("confirmPassword")}
                         className={`w-full p-2.5 pr-10 rounded-lg border bg-white text-sm outline-none focus:ring-2 ring-blue-200 ${
                           errors.confirmPassword ? 'border-red-500' : 'border-[#A5D7E8]'
                         }`}
