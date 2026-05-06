@@ -7,6 +7,7 @@ export {
   getAuthToken,
   isAuthenticated,
   saveAuthSession,
+  updateAuthSession,
 } from "@/services/auth/auth-storage"
 export type {
   ApiValidationErrors,

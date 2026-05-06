@@ -1,4 +1,4 @@
-import type { AuthResponse, AuthSession } from "@/services/auth/auth-types"
+import type { AuthResponse, AuthSession, AuthUser } from "@/services/auth/auth-types"
 
 export const AUTH_SESSION_STORAGE_KEY = "portfolio_auth_session"
 const AUTH_SESSION_DURATION_MS = 8 * 60 * 60 * 1000
@@ -20,6 +20,27 @@ export function saveAuthSession(response: AuthResponse) {
   }
 
   window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session))
+}
+
+export function updateAuthSession(userUpdates: Partial<AuthUser>) {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  const currentSession = getAuthSession()
+  if (!currentSession) {
+    return
+  }
+
+  const updatedSession: AuthSession = {
+    ...currentSession,
+    user: {
+      ...currentSession.user,
+      ...userUpdates,
+    },
+  }
+
+  window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(updatedSession))
 }
 
 export function getAuthSession() {
