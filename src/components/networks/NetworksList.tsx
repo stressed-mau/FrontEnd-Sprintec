@@ -88,7 +88,7 @@ export function NetworksList({ networks, onEdit, onDelete }: NetworksListProps) 
           </div>
           <h2 className="mb-2 text-2xl font-semibold text-[#003A6C]">Aun no conectaste ninguna red</h2>
           <p className="mx-auto max-w-xl text-sm leading-6 text-[#4B778D] sm:text-base">
-            Agrega enlaces profesionales para que tu portafolio se vea mas completo y tus visitantes puedan validar tu
+            Registra enlaces profesionales para que tu portafolio se vea mas completo y tus visitantes puedan validar tu
             presencia digital en segundos.
           </p>
         </CardContent>

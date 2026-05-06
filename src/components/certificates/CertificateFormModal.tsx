@@ -48,7 +48,7 @@ export function CertificateFormModal({
               {isEditing ? "Editar certificado" : "Nuevo certificado"}
             </h2>
             <p className="mt-1 text-sm text-[#4B778D]">
-              {isEditing ? "Actualiza" : "Agrega"} información sobre tu certificado.
+              {isEditing ? "Actualiza" : "Registra"} información sobre tu certificado.
             </p>
           </div>
 

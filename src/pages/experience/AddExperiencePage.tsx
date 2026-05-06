@@ -17,8 +17,8 @@ export default function AddExperiencePage() {
 
   return (
     <ExperiencePageShell
-      title="Añadir Experiencia Laboral"
-      description="Agrega una nueva Experiencia Laboral a tu portafolio."
+      title="Registrar Experiencia Laboral"
+      description="Registra una nueva Experiencia Laboral en tu portafolio."
       compact
     >
       <FeedbackMessage message={manager.feedbackMessage || manager.pageError} type={manager.feedbackType || "error"} />

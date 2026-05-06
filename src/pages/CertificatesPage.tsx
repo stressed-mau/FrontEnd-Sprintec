@@ -64,7 +64,7 @@ export default function CertificatesPage() {
                 className="h-11 bg-[#003A6C] px-5 text-white hover:bg-[#1a4f7a] disabled:opacity-50"
               >
                 <Plus className="mr-2 size-4" />
-                Agregar certificado
+                Registrar certificado
               </Button>
             </div>
 
@@ -82,7 +82,7 @@ export default function CertificatesPage() {
               ) : (
                 <CertificatesSection
                   title="Certificados"
-                  emptyMessage="No hay certificados registrados. ¡Agrega uno para mostrar tus credenciales!"
+                  emptyMessage="No hay certificados registrados. ¡Registra uno para mostrar tus credenciales!"
                   icon={<BadgeCheck className="size-5" />}
                   items={certificates}
                   onEdit={openEditModal}

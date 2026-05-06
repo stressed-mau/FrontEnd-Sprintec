@@ -136,7 +136,7 @@ export function ExperienceInlineForm({
   const companyLabel = isEducation ? "Institución académica" : "Empresa"
   const positionLabel = isEducation ? "Nivel de formación" : "Cargo"
   const currentLabel = isEducation ? "Cursando actualmente" : "Trabajo actual"
-  const submitLabel = isEducation ? "Agregar Formación Académica" : "Agregar Experiencia Laboral"
+  const submitLabel = isEducation ? "Registrar Formación Académica" : "Registrar Experiencia Laboral"
   const descriptionPlaceholder = isEducation
     ? "Describe tu Formación Académica, logros, especializaciones..."
     : "Describe tus responsabilidades y logros..."

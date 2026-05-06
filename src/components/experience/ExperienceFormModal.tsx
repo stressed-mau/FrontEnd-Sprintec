@@ -94,6 +94,7 @@ type ExperienceFormModalProps = {
   errors: ExperienceFormErrors
   isEditing: boolean
   isSaving: boolean
+  canSave?: boolean
   canRemoveImage: boolean
   canRemoveCertificate: boolean
   originalEditingValues?: ExperienceFormValues | null
@@ -118,6 +119,7 @@ export function ExperienceFormModal({
   errors,
   isEditing,
   isSaving,
+  canSave = true,
   canRemoveImage,
   canRemoveCertificate,
   originalEditingValues,
@@ -161,20 +163,12 @@ export function ExperienceFormModal({
     formData.fieldOfStudy && !fieldOptions.includes(formData.fieldOfStudy)
       ? [formData.fieldOfStudy, ...fieldOptions]
       : fieldOptions
-  const wasEmptyOriginally = (field: keyof ExperienceFormValues) => {
-    if (!isEditing || !originalEditingValues) {
-      return false
-    }
-
-    const originalValue = originalEditingValues[field]
-    return typeof originalValue === "string" && !originalValue.trim()
-  }
-  const isLocationDisabled = isSaving || isLaboralUpdateWithEndDate || wasEmptyOriginally("location")
-  const isDescriptionDisabled = isSaving || isLaboralUpdateWithEndDate || (isLaboralExperience && wasEmptyOriginally("description"))
+  const isLocationDisabled = isSaving || isLaboralUpdateWithEndDate
+  const isDescriptionDisabled = isSaving || isLaboralUpdateWithEndDate
   const isEndDateDisabled = isSaving || isLaboralUpdateWithEndDate
   const isCurrentDisabled = isSaving || isEditing
-  const isImageDisabled = isSaving || isLaboralUpdate || wasEmptyOriginally("image")
-  const isCertificateDisabled = isSaving || isAcademicUpdate || wasEmptyOriginally("certificate")
+  const isImageDisabled = isSaving || isLaboralUpdate
+  const isCertificateDisabled = isSaving || isAcademicUpdate
   const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
 
   return (
@@ -192,7 +186,7 @@ export function ExperienceFormModal({
               {isEditing ? editingTitle : createTitle}
             </h2>
             <p id="descripcion-modal-experiencia" className="mt-1 text-sm text-[#4B778D]">
-              {isEditing ? "Actualiza" : "Agrega"} tu {isLaboralExperience ? "Experiencia Laboral" : "Formación Académica"}.
+              {isEditing ? "Actualiza" : "Registra"} tu {isLaboralExperience ? "Experiencia Laboral" : "Formación Académica"}.
             </p>
           </div>
 
@@ -330,7 +324,7 @@ export function ExperienceFormModal({
                 placeholder="Busca y selecciona un área de estudio"
                 id="experience-field"
                 value={formData.fieldOfStudy}
-                disabled={isSaving || isAcademicUpdate || wasEmptyOriginally("fieldOfStudy")}
+                disabled={isSaving || isAcademicUpdate}
                 onBlur={() => onBlur("fieldOfStudy")}
                 onChange={(event) => onFieldChange("fieldOfStudy", event.target.value)}
                 className={`h-11 w-full rounded-md border border-[#A5D7E8] bg-white px-3 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#A5D7E8] ${disabledControlClassName}`}
@@ -536,7 +530,7 @@ export function ExperienceFormModal({
           )}
 
           <div className="flex gap-3 pt-4">
-            <Button id="boton-guardar-experiencia" type="submit" disabled={isSaving} className="h-11 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
+            <Button id="boton-guardar-experiencia" type="submit" disabled={isSaving || !canSave} className="h-11 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
               {isSaving ? "Guardando..." : "Guardar"}
             </Button>
             <Button

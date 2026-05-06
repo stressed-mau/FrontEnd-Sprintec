@@ -52,7 +52,7 @@ const navItems: NavItem[] = [
     path: "/proyectos",
     children: [
       { id: "proyectos-ver", label: "Ver proyectos", path: "/proyectos/ver" },
-      { id: "proyectos-agregar", label: "Añadir proyecto", path: "/proyectos/añadir" },
+      { id: "proyectos-agregar", label: "Registrar proyecto", path: "/proyectos/añadir" },
       { id: "proyectos-editar", label: "Editar proyecto", path: "/proyectos/editar" },
       { id: "proyectos-eliminar", label: "Eliminar proyecto", path: "/proyectos/eliminar" },
     ],
@@ -76,7 +76,7 @@ const navItems: NavItem[] = [
     path: "/experiencia",
     children: [
       { id: "experiencia-ver", label: "Ver Experiencia Laboral", path: "/experiencia/ver" },
-      { id: "experiencia-agregar", label: "Añadir Experiencia Laboral", path: "/experiencia/agregar" },
+      { id: "experiencia-agregar", label: "Registrar Experiencia Laboral", path: "/experiencia/agregar" },
       { id: "experiencia-editar", label: "Editar Experiencia Laboral", path: "/experiencia/editar" },
       { id: "experiencia-eliminar", label: "Eliminar Experiencia Laboral", path: "/experiencia/eliminar" },
     ],
@@ -88,7 +88,7 @@ const navItems: NavItem[] = [
     path: "/formacion-academica",
     children: [
       { id: "formacion-ver", label: "Ver Formación Académica", path: "/formacion-academica/ver" },
-      { id: "formacion-agregar", label: "Añadir Formación Académica", path: "/formacion-academica/agregar" },
+      { id: "formacion-agregar", label: "Registrar Formación Académica", path: "/formacion-academica/agregar" },
       { id: "formacion-editar", label: "Editar Formación Académica", path: "/formacion-academica/editar" },
       { id: "formacion-eliminar", label: "Eliminar Formación Académica", path: "/formacion-academica/eliminar" },
     ],
@@ -100,7 +100,7 @@ const navItems: NavItem[] = [
     path: "/certificados",
     children: [
       { id: "certificados-ver", label: "Ver certificados", path: "/certificados/ver" },
-      { id: "certificados-agregar", label: "Añadir certificado", path: "/certificados/añadir" },
+      { id: "certificados-agregar", label: "Registrar certificado", path: "/certificados/añadir" },
       //{ id: "certificados-editar", label: "Editar certificado", path: "/certificados/editar" },
       //{ id: "certificados-eliminar", label: "Eliminar certificado", path: "/certificados/eliminar" },
     ],
@@ -110,13 +110,22 @@ const navItems: NavItem[] = [
   { id: "publicar", label: "Publicar", icon: Upload, path: "/publicar" },
 ];
 
+const normalizePath = (path: string) => {
+  try {
+    return decodeURIComponent(path).replace(/\/+$/, "");
+  } catch {
+    return path.replace(/\/+$/, "");
+  }
+};
+
 const Sidebar = () => {
   const location = useLocation();
+  const currentPath = normalizePath(location.pathname);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
   const activeSectionId = useMemo(
-    () => navItems.find((item) => item.children?.length && location.pathname.startsWith(item.path))?.id ?? null,
-    [location.pathname]
+    () => navItems.find((item) => item.children?.length && currentPath.startsWith(normalizePath(item.path)))?.id ?? null,
+    [currentPath]
   );
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(activeSectionId);
 
@@ -176,7 +185,8 @@ const Sidebar = () => {
 
       <nav className={`custom-scrollbar flex-1 space-y-1 overflow-y-auto overflow-x-hidden ${isCollapsed ? "" : "pr-2"}`}>
         {navItems.map((item) => {
-          const isParentActive = location.pathname.startsWith(item.path);
+          const itemPath = normalizePath(item.path);
+          const isParentActive = currentPath.startsWith(itemPath);
           const hasChildren = Boolean(item.children?.length);
           const isExpanded = expandedSectionId === item.id;
 
@@ -224,20 +234,25 @@ const Sidebar = () => {
 
               {hasChildren && isExpanded && (
                 <div className="ml-4 mt-1 space-y-1 border-l-2 border-[#c2dbed] pl-2">
-                  {item.children?.map((child) => (
-                    <Link
-                      key={child.id}
-                      to={child.path}
-                      title={child.label}
-                      className={`block min-w-0 truncate whitespace-nowrap rounded-xl px-3 py-2 text-sm transition-all ${
-                        location.pathname === child.path
-                          ? "bg-[#6dacbf] text-white shadow-sm"
-                          : "text-[#4982ad] hover:bg-[#77b6e6]/10"
-                      }`}
-                    >
-                      {child.label}
-                    </Link>
-                  ))}
+                  {item.children?.map((child) => {
+                    const childPath = normalizePath(child.path);
+                    const isChildActive = currentPath === childPath || currentPath.startsWith(`${childPath}/`);
+
+                    return (
+                      <Link
+                        key={child.id}
+                        to={child.path}
+                        title={child.label}
+                        className={`block min-w-0 truncate whitespace-nowrap rounded-xl px-3 py-2 text-sm transition-all ${
+                          isChildActive
+                            ? "bg-[#6dacbf] text-white shadow-sm"
+                            : "text-[#4982ad] hover:bg-[#77b6e6]/10"
+                        }`}
+                      >
+                        {child.label}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>

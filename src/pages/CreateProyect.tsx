@@ -115,14 +115,14 @@ const CreateProyect = () => {
                 onClick={() => openModal()}
                 className="bg-[#003A6C] text-white text-sm px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-[#002d54] transition-all font-normal"
               >
-                <Plus size={20} /> Agregar proyecto
+                <Plus size={20} /> Registrar proyecto
               </button>
             </div>
 
             {/* Estado Vacío vs Listado */}
             {projects.length === 0 ? (
               <div className="border-2 border-dashed border-blue-300 rounded-2xl p-20 flex flex-col items-center justify-center bg-white">
-                <p className="text-gray-500 mb-6 text-lg">Tu portafolio aún no tiene proyectos. Agrega tu primer proyecto.</p> 
+                <p className="text-gray-500 mb-6 text-lg">Tu portafolio aún no tiene proyectos. Registra tu primer proyecto.</p> 
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
@@ -147,7 +147,7 @@ const CreateProyect = () => {
             <div className="flex justify-between items-center p-6 border-b border-[#4982AD]/20">
             <div>
               <h2 className="text-[#003A6C] text-lg font-semibold">Nuevo proyecto</h2>
-              <p className="text-[#4982AD] text-sm">Agrega la información de tu proyecto</p>
+              <p className="text-[#4982AD] text-sm">Registra la información de tu proyecto</p>
             </div>
 
             <button

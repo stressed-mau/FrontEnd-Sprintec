@@ -27,7 +27,7 @@ const AddSkillsPage = () => {
                 Registro de habilidad
               </h1>
               <p className="text-sm text-[#4B778D] md:text-base">
-                Agrega una nueva habilidad a tu portafolio
+                Registra una nueva habilidad en tu portafolio
               </p>
 
             <div className="bg-white rounded-2xl p-5 shadow-sm sm:p-6 border border-[#a5d7e8]">
@@ -107,7 +107,7 @@ const AddSkillsPage = () => {
                     disabled={isSaving}
                     className="flex items-center justify-center gap-2 flex-1 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60" >
                     <Plus className="size-4" />
-                    {isSaving ? 'Guardando...' : 'Agregar habilidad'}
+                    {isSaving ? 'Guardando...' : 'Registrar habilidad'}
                   </button>
                   <button
                     type="button"

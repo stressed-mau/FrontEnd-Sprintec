@@ -17,8 +17,8 @@ export default function AddEducationPage() {
 
   return (
     <ExperiencePageShell
-      title="Añadir Formación Académica"
-      description="Agrega una nueva Formación Académica a tu portafolio."
+      title="Registrar Formación Académica"
+      description="Registra una nueva Formación Académica en tu portafolio."
     >
       <FeedbackMessage message={manager.feedbackMessage || manager.pageError} type={manager.feedbackType || "error"} />
 

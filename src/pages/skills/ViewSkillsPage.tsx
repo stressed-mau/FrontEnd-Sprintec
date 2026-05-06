@@ -55,7 +55,7 @@ const ViewSkillsPage = () => {
             <section className="mb-10">
               <div className="flex items-center gap-2 mb-4 text-[#003A6C]">
                 <Code2 className="size-5" />
-                <h2 className="text-xl font-bold sm:text-2xl">Habilidades Técnicas</h2>
+                <h2 className="text-xl sm:text-2xl">Habilidades Técnicas</h2>
               </div>
 
               {isLoading ? (
@@ -113,7 +113,7 @@ const ViewSkillsPage = () => {
             <section>
               <div className="flex items-center gap-2 mb-4 text-[#003A6C]">
                 <Lightbulb className="size-5" />
-                <h2 className="text-xl font-bold sm:text-2xl">Habilidades Blandas</h2>
+                <h2 className="text-xl sm:text-2xl">Habilidades Blandas</h2>
               </div>
 
               {isLoading ? (

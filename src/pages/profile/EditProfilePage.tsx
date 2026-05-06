@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { allCountries } from 'country-telephone-data';
 import { Upload, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import ConfirmActionModal from '@/components/ConfirmActionModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
@@ -10,6 +11,7 @@ import Sidebar from '@/components/Sidebar';
 import { useUserPersonalData } from '@/hooks/useUserPersonalData';
 
 const EditProfilePage = () => {
+  const navigate = useNavigate();
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const {
@@ -24,6 +26,7 @@ const EditProfilePage = () => {
     handleChange,
     handleCancel,
     isSubmitting,
+    canSavePersonalData,
     handleSubmit,
     success,
     setSuccess,
@@ -46,6 +49,7 @@ const EditProfilePage = () => {
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
     setSuccess('');
+    navigate('/personal/ver', { replace: true });
   };
 
   useEffect(() => {
@@ -57,7 +61,7 @@ const EditProfilePage = () => {
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
       <Header />
-      <div className="flex flex-1 justify-center px-4 py-10">
+      <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
           <div className="max-w-5xl mx-auto">
@@ -212,9 +216,9 @@ const EditProfilePage = () => {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !canSavePersonalData}
                   className={`bg-[#003A6C] text-white px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
-                    isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#1a4f85]'
+                    isSubmitting || !canSavePersonalData ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#1a4f85]'
                   }`}
                 >
                   {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
