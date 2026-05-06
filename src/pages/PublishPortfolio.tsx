@@ -25,7 +25,7 @@ const PublishPortfolio = () => {
     };
     void syncStatus();
   }, []);
-
+  const publicUrl = portfolioUrl ? portfolioUrl.replace('/api', '') : "";
   const copyToClipboard = () => {
     navigator.clipboard.writeText(portfolioUrl)
     alert("¡Enlace copiado!")

@@ -89,6 +89,7 @@ const PortfolioTemplatesPage = () => {
 
   // Sincronizar selección visual con datos del servidor [cite: 8-9]
   useEffect(() => {
+  console.log("ID que llega del servidor:", selectedIdFromHook);
     if (selectedIdFromHook) {
       const templateMap: Record<number, string> = { 1: "Moderna", 2: "Minimalista", 3: "Corporativa" }
       setSelectedTemplate(templateMap[selectedIdFromHook])
@@ -100,7 +101,7 @@ const PortfolioTemplatesPage = () => {
     setSelectedTemplate(templateId);
 
     await handlePublish(dbId, isPublished); 
-    await checkInitialStatus();
+    //await checkInitialStatus();
   };
 
   return (
