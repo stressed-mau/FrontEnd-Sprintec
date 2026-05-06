@@ -30,19 +30,11 @@ export default function AddCertificatesPage() {
       <Header />
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
-<<<<<<< HEAD
-        <main className="flex-1 p-3 sm:p-4 md:p-5">
-          <div className="mx-auto flex h-full w-full max-w-6xl flex-col">
-            <div className="mb-4">
-              <h1 className="mb-1 text-2xl font-bold text-[#003A6C] md:text-3xl">Agregar Certificado</h1>
-              <p className="text-sm text-[#4B778D]">Completa la información para registrar un nuevo certificado o credencial.</p>
-=======
         <main className="flex-1 p-4 sm:p-6 md:p-8">
           <div className="mx-auto flex h-full w-full max-w-5xl flex-col">
             <div className="mb-6">
               <h1 className="mb-2 text-3xl font-bold text-[#003A6C] md:text-4xl">Registrar Certificado</h1>
               <p className="text-sm text-[#4B778D] md:text-base">Completa la información para registrar un nuevo certificado o credencial.</p>
->>>>>>> 75addb638adb8904db4dd22c0a942eb57ea522b5
             </div>
 
             <div className="rounded-2xl border border-[#A5D7E8] bg-white p-4 shadow-sm sm:p-5">
