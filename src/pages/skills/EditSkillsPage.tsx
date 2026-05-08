@@ -1,7 +1,7 @@
 import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
-import { Code2, Lightbulb, Search, X } from 'lucide-react';
+import { Code2, Search, X } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/useSkillsManager';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import ConfirmActionModal from '../../components/ConfirmActionModal';
@@ -22,7 +22,7 @@ const LEVEL_COLORS: Record<string, string> = {
 
 const EditSkillsPage = () => {
   const {
-    filteredTechnicalSkills, filteredSoftSkills, isLoading, pageError, searchQuery, setSearchQuery, openModal,
+    filteredTechnicalSkills, isLoading, pageError, searchQuery, setSearchQuery, openModal,
     isModalOpen, closeModal, editingSkill, skillName, handleSkillNameChange, skillLevel, setSkillLevel, handleSave,
     isSaving, canSaveSkill, errorMessage, showConfirmEdit, setShowConfirmEdit, showSuccessModal, closeSuccessModal, successMessage,
   } = useSkillsManager();
@@ -118,52 +118,6 @@ const EditSkillsPage = () => {
             </section>
 
             {/* Sección Blandas */}
-            <section>
-              <div className="flex items-center gap-2 mb-4 text-[#003A6C]">
-                <Lightbulb className="size-5" />
-                <h2 className="text-xl sm:text-2xl">Habilidades Blandas</h2>
-              </div>
-
-              {isLoading ? (
-                <div className="rounded-2xl border border-[#6dacbf]/30 bg-white py-10 text-center shadow-sm">
-                  <p className="text-sm text-[#4B778D]">Cargando habilidades...</p>
-                </div>
-              ) : filteredSoftSkills.length === 0 ? (
-                <div className="rounded-2xl border-2 border-dashed border-[#6dacbf] bg-[#F7F0E1] py-14 text-center shadow-sm">
-                  <p className="text-sm text-[#4B778D]">
-                    {searchQuery
-                      ? 'No hay habilidades blandas que coincidan con la búsqueda'
-                      : 'No hay habilidades blandas registradas'}
-                  </p>
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-[#6dacbf]/30 bg-white shadow-sm overflow-hidden">
-                  {/* Cabecera */}
-                  <div className="grid grid-cols-3 px-5 py-3 border-b border-[#6dacbf]/20">
-                    <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider">Habilidad</span>
-                    <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider">Tipo</span>
-                    <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider">Nivel</span>
-                  </div>
-                  {/* Filas */}
-                  {filteredSoftSkills.map((skill, idx) => (
-                    <div
-                      key={skill.id}
-                      onClick={() => openModal(skill)}
-                      className={`grid grid-cols-3 px-5 py-4 items-center cursor-pointer transition-colors hover:bg-[#EEF6FC] ${
-                        idx !== filteredSoftSkills.length - 1 ? 'border-b border-[#6dacbf]/10' : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Lightbulb className="size-4 text-[#4B778D]" />
-                        <span className="font-semibold text-[#003A6C]">{skill.name}</span>
-                      </div>
-                      <span className="text-[#4B778D] text-sm">Blanda</span>
-                      <span className="text-gray-400 text-sm">—</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
 
           </div>
         </main>

@@ -105,7 +105,7 @@ const AddSkillsPage = () => {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="flex items-center justify-center gap-2 flex-1 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60" >
+                    className="flex items-center justify-center gap-2 w-50 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60" >
                     <Plus className="size-4" />
                     {isSaving ? 'Guardando...' : 'Registrar habilidad'}
                   </button>
@@ -113,8 +113,8 @@ const AddSkillsPage = () => {
                     type="button"
                     onClick={handleCancel}
                     disabled={isSaving}
-                    className="flex-1 bg-[#C2DBED] text-[#003A6C] py-3 rounded-xl font-bold border border-[#6dacbf] hover:bg-[#b0cfeb] transition-all disabled:opacity-60" >
-                    Cancelar
+                    className="w-48 justify-center border-[#A5D7E8] bg-white text-[#003A6C] py-3 rounded-xl font-bold border hover:bg-[#F7F0E1] transition-all disabled:opacity-60" >
+                    Cancelar 
                   </button>
                 </div>
               </form>

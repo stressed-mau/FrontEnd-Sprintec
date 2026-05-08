@@ -22,7 +22,7 @@ const LEVEL_COLORS: Record<string, string> = {
 
 const DeleteSkillsPage = () => {
   const {
-    filteredSkills, isLoading, pageError, searchQuery, setSearchQuery, selectedSkillIds,toggleSelectSkill,
+    filteredSkills, toggleSelectAll, isLoading, pageError, searchQuery, setSearchQuery, selectedSkillIds,toggleSelectSkill,
     showConfirmDelete, setShowConfirmDelete, confirmDeleteSelected,  cancelDelete, isDeleting,
     showSuccessModal, closeSuccessModal, successMessage,
   } = useSkillsManager();
@@ -51,14 +51,17 @@ const DeleteSkillsPage = () => {
 
               {/* Botón Eliminar — aparece cuando hay selección */}
               {selectedCount > 0 && (
-                <button
-                  onClick={() => setShowConfirmDelete(true)}
-                  disabled={isDeleting}
-                  className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-red-700 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed self-start"
-                >
-                  <Trash2 className="size-4" />
-                  Eliminar ({selectedCount})
-                </button>
+                <div className="flex justify-end">
+  <button
+    onClick={() => setShowConfirmDelete(true)}
+    disabled={isDeleting}
+    className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-red-700 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+  >
+    <Trash2 className="size-4" />
+    Eliminar ({selectedCount})
+  </button>
+</div>
+
               )}
             </div>
 
@@ -105,7 +108,13 @@ const DeleteSkillsPage = () => {
               /* Tabla con checkboxes */
               <div className="rounded-2xl border border-[#6dacbf]/30 bg-white shadow-sm overflow-hidden">
                 <div className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_120px_140px] px-5 py-3 border-b border-[#6dacbf]/20 gap-4 items-center">
-                  <input className="opacity-0 pointer-events-none" type="checkbox" />
+                 <input
+                      type="checkbox"
+                      checked={ filteredSkills.length > 0 && filteredSkills.every((skill) => selectedSkillIds.has(skill.id)) }
+                      onChange={() =>
+                        toggleSelectAll(filteredSkills.map((skill) => skill.id))
+                      }
+                      className="w-4 h-4 accent-[#003A6C] cursor-pointer rounded" />
                   <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider">
                     Habilidad
                   </span>

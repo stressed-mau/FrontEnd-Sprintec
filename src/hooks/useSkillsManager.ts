@@ -164,9 +164,15 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     }
   }, [normalizeErrorMessage]);
 
-  useEffect(() => {
-    void loadSkills();
-  }, [loadSkills]);
+useEffect(() => {
+  const initialize = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    await loadSkills();
+  };
+
+  void initialize();
+}, [loadSkills]);
 
   useEffect(() => {
     if (!pageError) return;
@@ -362,12 +368,17 @@ const payload = {
     }
   };
 
- const toggleSelectSkill = (id: string) => {
+const toggleSelectSkill = (id: string) => {
   setSelectedSkillIds((prev) => {
-    if (prev.has(id)) {
-      return new Set();
+    const next = new Set(prev);
+
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
     }
-    return new Set([id]);
+
+    return next;
   });
 };
 
@@ -391,21 +402,37 @@ const payload = {
   };
 
 const confirmDeleteSelected = async () => {
-  if (isDeleting || selectedSkillIds.size !== 1) return;
-  try {    setIsDeleting(true);
-    const id = Array.from(selectedSkillIds)[0];
-    await removeSkill(id);
-    setSkills((prev) => prev.filter((skill) => skill.id !== id));
+  if (isDeleting || selectedSkillIds.size === 0) return;
+
+  try {
+    setIsDeleting(true);
+
+    await Promise.all(
+      Array.from(selectedSkillIds).map((id) => removeSkill(id))
+    );
+
+    setSkills((prev) =>
+      prev.filter((skill) => !selectedSkillIds.has(skill.id))
+    );
+
     setSelectedSkillIds(new Set());
+
     setShowConfirmDelete(false);
-    setSuccessMessage('Habilidad eliminada correctamente.');
+
+    setSuccessMessage(
+      selectedSkillIds.size > 1
+        ? 'Habilidades eliminadas correctamente.'
+        : 'Habilidad eliminada correctamente.'
+    );
+
     setShowSuccessModal(true);
+
     await loadSkills();
   } catch (error) {
     const message =
       error instanceof Error
         ? error.message
-        : 'No se pudo eliminar la habilidad.';
+        : 'No se pudieron eliminar las habilidades.';
 
     setPageError(normalizeErrorMessage(message));
   } finally {
@@ -443,15 +470,27 @@ const confirmDeleteSelected = async () => {
     );
   }, [skills, searchQuery]);
 
-  const filteredTechnicalSkills = useMemo(
-    () => filteredSkills.filter((skill) => skill.type === 'tecnica'),
-    [filteredSkills]
-  );
+  const filteredTechnicalSkills = useMemo(() => {
+  const query = searchQuery.trim().toLowerCase();
 
-  const filteredSoftSkills = useMemo(
-    () => filteredSkills.filter((skill) => skill.type === 'blanda'),
-    [filteredSkills]
+  if (!query) return technicalSkills;
+
+  return technicalSkills.filter(
+    (skill) =>
+      skill.name.toLowerCase().includes(query) ||
+      (skill.level ?? '').toLowerCase().includes(query)
   );
+}, [technicalSkills, searchQuery]);
+
+const filteredSoftSkills = useMemo(() => {
+  const query = searchQuery.trim().toLowerCase();
+
+  if (!query) return softSkills;
+
+  return softSkills.filter((skill) =>
+    skill.name.toLowerCase().includes(query)
+  );
+}, [softSkills, searchQuery]);
   const canSaveSkill = useMemo(() => {
     if (isSaving || errorMessage.trim() || !skillName.trim()) {
       return false;
