@@ -60,6 +60,10 @@ const MAX_PROJECT_NAME_LENGTH = 60;
 const MAX_PROJECT_DESCRIPTION_LENGTH = 250;
 const MAX_PROJECT_URL_LENGTH = 50;
 
+function normalizeProjectName(value: string) {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
 function validateUrl(value: string) {
   return /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(value);
 }
@@ -70,15 +74,21 @@ function validateForm(
   imageFile: File | null,
   roleOptions: string[],
   enforceRoleOption: boolean,
+  projects: ProjectItem[],
   originalProject?: ProjectItem | null,
 ) {
   const errors: ProjectFormErrors = {};
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const normalizedProjectName = normalizeProjectName(form.nombre);
 
   if (!form.nombre.trim()) errors.nombre = "El campo Nombre del proyecto es obligatorio.";
   else if (form.nombre.trim().length > MAX_PROJECT_NAME_LENGTH) {
     errors.nombre = `El campo Nombre del proyecto permite ingresar un máximo de ${MAX_PROJECT_NAME_LENGTH} caracteres.`;
+  } else if (
+    projects.some((project) => project.id !== originalProject?.id && normalizeProjectName(project.nombre) === normalizedProjectName)
+  ) {
+    errors.nombre = "Ya existe un proyecto registrado con ese nombre.";
   }
   if (form.descripcion.length > MAX_PROJECT_DESCRIPTION_LENGTH) {
     errors.descripcion = `El campo Descripción permite un máximo de ${MAX_PROJECT_DESCRIPTION_LENGTH} caracteres.`;
@@ -176,8 +186,8 @@ export function useProjectsManager() {
 
   const roleOptions = useMemo(() => (workOptions.roles.length ? workOptions.roles : FIXED_ROLES), [workOptions.roles]);
   const currentValidationErrors = useMemo(
-    () => validateForm(formData, selectedTechs, imageFile, roleOptions, !editingProject, editingProject),
-    [editingProject, formData, imageFile, roleOptions, selectedTechs],
+    () => validateForm(formData, selectedTechs, imageFile, roleOptions, !editingProject, projects, editingProject),
+    [editingProject, formData, imageFile, projects, roleOptions, selectedTechs],
   );
   const canSaveProject = !isSaving && Object.keys(currentValidationErrors).length === 0;
 
@@ -333,7 +343,7 @@ export function useProjectsManager() {
   function validateProjectForm() {
     setSuccessMessage("");
 
-    const newErrors = validateForm(formData, selectedTechs, imageFile, roleOptions, !editingProject, editingProject);
+    const newErrors = validateForm(formData, selectedTechs, imageFile, roleOptions, !editingProject, projects, editingProject);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
