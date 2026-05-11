@@ -167,40 +167,7 @@ function isIsoDate(value: string) {
 }
 
 function normalizeComparableText(value: string) {
-  return value.trim().toLocaleLowerCase("es-BO")
-}
-
-function resolveExperienceRange(values: Pick<ExperienceFormValues, "startDate" | "endDate" | "current">) {
-  const start = parseDate(values.startDate)
-
-  if (!start) {
-    return null
-  }
-
-  const end = values.current || !values.endDate.trim() ? null : parseDate(values.endDate)
-
-  if (values.endDate.trim() && !values.current && !end) {
-    return null
-  }
-
-  return { start, end }
-}
-
-function experiencesOverlap(
-  left: Pick<ExperienceFormValues, "startDate" | "endDate" | "current">,
-  right: Pick<ExperienceFormValues, "startDate" | "endDate" | "current">,
-) {
-  const leftRange = resolveExperienceRange(left)
-  const rightRange = resolveExperienceRange(right)
-
-  if (!leftRange || !rightRange) {
-    return false
-  }
-
-  const leftEndTime = leftRange.end?.getTime() ?? Number.POSITIVE_INFINITY
-  const rightEndTime = rightRange.end?.getTime() ?? Number.POSITIVE_INFINITY
-
-  return leftRange.start.getTime() <= rightEndTime && rightRange.start.getTime() <= leftEndTime
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("es-BO")
 }
 
 function findDuplicateExperience(
@@ -211,18 +178,27 @@ function findDuplicateExperience(
   const normalizedType = normalizeExperienceTypeValue(values.type)
   const normalizedCompany = normalizeComparableText(values.company)
   const normalizedPosition = normalizeComparableText(values.position)
+  const normalizedFieldOfStudy = normalizeComparableText(values.fieldOfStudy)
 
   return experiences.find((experience) => {
     if (editingExperienceId && experience.id === editingExperienceId) {
       return false
     }
 
-    return (
+    const isSameIdentity =
       normalizeExperienceTypeValue(experience.type) === normalizedType &&
       normalizeComparableText(experience.company) === normalizedCompany &&
-      normalizeComparableText(experience.position) === normalizedPosition &&
-      experiencesOverlap(values, experience)
-    )
+      normalizeComparableText(experience.position) === normalizedPosition
+
+    if (!isSameIdentity) {
+      return false
+    }
+
+    if (normalizedType === "academica") {
+      return normalizeComparableText(experience.fieldOfStudy) === normalizedFieldOfStudy
+    }
+
+    return true
   })
 }
 
@@ -775,10 +751,6 @@ export function useExperienceManager() {
         return
       }
 
-      if (editingExperience.type === "laboral" && !originalEditingValues.current) {
-        return
-      }
-
     }
 
     const normalizedValue =
@@ -1083,7 +1055,7 @@ export function useExperienceManager() {
         duplicateExperience.type === "academica" ? "Formación Académica" : "Experiencia Laboral"
 
       showDuplicateModal(
-        `Ya tienes una ${duplicatedTypeLabel} registrada en ${duplicateExperience.company} como ${duplicateExperience.position} dentro de un periodo que se cruza con las fechas ingresadas. Revisa las fechas o edita el registro existente.`,
+        `Ya tienes una ${duplicatedTypeLabel} registrada en ${duplicateExperience.company} como ${duplicateExperience.position}. Revisa los datos o edita el registro existente.`,
       )
       return
     }

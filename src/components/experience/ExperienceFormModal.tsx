@@ -122,7 +122,6 @@ export function ExperienceFormModal({
   canSave = true,
   canRemoveImage,
   canRemoveCertificate,
-  originalEditingValues,
   workRoleOptions = [],
   educationTitleOptions = [],
   educationFieldOptions = [],
@@ -144,7 +143,6 @@ export function ExperienceFormModal({
   const isLaboralUpdate = isEditing && isLaboralExperience
   const isAcademicUpdate = isEditing && !isLaboralExperience
   const isLimitedUpdate = isLaboralUpdate || isAcademicUpdate
-  const isLaboralUpdateWithEndDate = isLaboralUpdate && !originalEditingValues?.current
   const isCurrentActive = formData.current
   const disabledControlClassName =
     "disabled:cursor-not-allowed disabled:border-[#D7E6F2] disabled:bg-[#EEF5F9] disabled:text-[#7F97AB] disabled:opacity-100"
@@ -163,9 +161,9 @@ export function ExperienceFormModal({
     formData.fieldOfStudy && !fieldOptions.includes(formData.fieldOfStudy)
       ? [formData.fieldOfStudy, ...fieldOptions]
       : fieldOptions
-  const isLocationDisabled = isSaving || isLaboralUpdateWithEndDate
-  const isDescriptionDisabled = isSaving || isLaboralUpdateWithEndDate
-  const isEndDateDisabled = isSaving || isLaboralUpdateWithEndDate
+  const isLocationDisabled = isSaving
+  const isDescriptionDisabled = isSaving
+  const isEndDateDisabled = isSaving || isCurrentActive
   const isCurrentDisabled = isSaving || isEditing
   const isImageDisabled = isSaving || isLaboralUpdate
   const isCertificateDisabled = isSaving || isAcademicUpdate
