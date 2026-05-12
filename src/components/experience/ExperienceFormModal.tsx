@@ -122,6 +122,7 @@ export function ExperienceFormModal({
   canSave = true,
   canRemoveImage,
   canRemoveCertificate,
+  originalEditingValues,
   workRoleOptions = [],
   educationTitleOptions = [],
   educationFieldOptions = [],
@@ -163,6 +164,7 @@ export function ExperienceFormModal({
       : fieldOptions
   const isLocationDisabled = isSaving
   const isDescriptionDisabled = isSaving
+  const isStartDateDisabled = isSaving || isLaboralUpdate || (isAcademicUpdate && !originalEditingValues?.current)
   const isEndDateDisabled = isSaving || isCurrentActive
   const isCurrentDisabled = isSaving || isEditing
   const isImageDisabled = isSaving || isLaboralUpdate
@@ -366,13 +368,13 @@ export function ExperienceFormModal({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label id="experience-start-date-label" htmlFor="experience-start-date" className="text-[#003A6C]">
-                Fecha de inicio <span aria-hidden="true">*</span>
+                {isLaboralExperience ? "Fecha de inicio" : "Fecha de emisión"} {!isLaboralExperience && isCurrentActive ? null : <span aria-hidden="true">*</span>}
               </Label>
               <Input
                 id="experience-start-date"
                 type="date"
                 value={formData.startDate}
-                disabled={isSaving || isLimitedUpdate}
+                disabled={isStartDateDisabled}
                 max={today}
                 onBlur={() => onBlur("startDate")}
                 onChange={(event) => onFieldChange("startDate", event.target.value)}
@@ -384,7 +386,8 @@ export function ExperienceFormModal({
               {errors.startDate ? <p id="experience-start-date-error" className="text-sm text-red-600">{errors.startDate}</p> : null}
             </div>
 
-            <div className="space-y-2">
+            {isLaboralExperience ? (
+              <div className="space-y-2">
               <Label id="experience-end-date-label" htmlFor="experience-end-date" className="text-[#003A6C]">
                 Fecha de finalización {!isCurrentActive ? <span aria-hidden="true">*</span> : null}
               </Label>
@@ -402,7 +405,8 @@ export function ExperienceFormModal({
                 aria-describedby={errors.endDate ? "experience-end-date-error" : undefined}
               />
               {errors.endDate ? <p id="experience-end-date-error" className="text-sm text-red-600">{errors.endDate}</p> : null}
-            </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-3">
@@ -415,7 +419,7 @@ export function ExperienceFormModal({
               className={`size-4 rounded border-[#A5D7E8] text-[#003A6C] focus:ring-[#A5D7E8] ${disabledControlClassName}`}
             />
             <Label id="experience-current-label" htmlFor="experience-current" className="cursor-pointer text-[#003A6C]">
-              {isLaboralExperience ? "Trabajo actual" : "Actualmente estudio aquí"}
+              {isLaboralExperience ? "Trabajo actual" : "Aún sigo estudiando"}
             </Label>
           </div>
 

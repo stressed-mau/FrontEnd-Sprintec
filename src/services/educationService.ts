@@ -22,8 +22,14 @@ type EducationDto = {
   field_of_study?: string | null
   field?: string | null
   description?: string | null
+  descripcion?: string | null
   start_date?: string | null
   initial_date?: string | null
+  issue_date?: string | null
+  issued_at?: string | null
+  date_issued?: string | null
+  emission_date?: string | null
+  fecha_emision?: string | null
   end_date?: string | null
   final_date?: string | null
   startDate?: string | null
@@ -198,8 +204,17 @@ function normalizeEducation(dto: EducationDto, index: number): ExperienceItem {
     position: asString(dto.title ?? dto.degree),
     location: "",
     fieldOfStudy: asString(dto.field_to_study ?? dto.field_of_study ?? dto.field),
-    description: asString(dto.description),
-    startDate: normalizeDateValue(dto.start_date ?? dto.initial_date ?? dto.startDate),
+    description: asString(dto.description ?? dto.descripcion),
+    startDate: normalizeDateValue(
+      dto.issue_date ??
+      dto.issued_at ??
+      dto.date_issued ??
+      dto.emission_date ??
+      dto.fecha_emision ??
+      dto.start_date ??
+      dto.initial_date ??
+      dto.startDate,
+    ),
     endDate,
     current: explicitCurrent ?? !endDate,
     image: "",
@@ -237,13 +252,18 @@ function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "
   const formData = new FormData()
 
   const description = payload.description.trim()
-  const endDate = payload.endDate.trim()
+  const issueDate = payload.startDate.trim()
 
   if (options?.mode !== "update") {
     formData.append("institution", payload.company.trim())
     formData.append("title", payload.position.trim())
     formData.append("field_to_study", payload.fieldOfStudy.trim())
-    formData.append("start_date", payload.startDate.trim())
+
+    if (issueDate) {
+      formData.append("start_date", issueDate)
+      formData.append("issue_date", issueDate)
+      formData.append("date_issued", issueDate)
+    }
 
     if (payload.certificateFile) {
       formData.append("certificate", payload.certificateFile)
@@ -254,10 +274,6 @@ function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "
     formData.append("description", description)
   }
 
-  if (endDate) {
-    formData.append("end_date", endDate)
-  }
-
   formData.append("is_current", payload.current ? "1" : "0")
   formData.append("current", payload.current ? "1" : "0")
 
@@ -265,10 +281,15 @@ function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "
 }
 
 function buildEducationUpdateBody(payload: ExperiencePayload) {
-  return {
+  const body: { description: string; end_date?: string | null } = {
     description: payload.description.trim(),
-    end_date: payload.current ? null : payload.endDate.trim() || null,
   }
+
+  if (payload.endDate.trim()) {
+    body.end_date = payload.endDate.trim()
+  }
+
+  return body
 }
 
 export async function getEducation(): Promise<ExperienceItem[]> {

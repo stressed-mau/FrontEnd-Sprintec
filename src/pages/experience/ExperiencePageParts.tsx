@@ -93,11 +93,27 @@ export function ExperienceSearch({ value, onChange }: ExperienceSearchProps) {
 }
 
 export function ExperienceStatusBadge({ experience }: { experience: ExperienceItem }) {
+  if (experience.type === "academica") {
+    return experience.current ? (
+      <Badge className="bg-[#D9EAF4] text-[#003A6C]">Estudiando</Badge>
+    ) : (
+      <Badge className="bg-slate-100 text-slate-700">Concluido</Badge>
+    )
+  }
+
   return experience.current ? (
     <Badge className="bg-[#D9EAF4] text-[#003A6C]">Actual</Badge>
   ) : (
     <Badge className="bg-slate-100 text-slate-700">Finalizado</Badge>
   )
+}
+
+function formatExperiencePeriod(experience: ExperienceItem) {
+  if (experience.type === "academica") {
+    return formatExperienceDate(experience.startDate)
+  }
+
+  return `${formatExperienceDate(experience.startDate)} - ${experience.current ? "Actual" : formatExperienceDate(experience.endDate)}`
 }
 
 export function ExperienceTypeBadge({ type }: { type: ExperienceItem["type"] }) {
@@ -205,7 +221,7 @@ export function ExperienceTable({
                         : experience.location || "-"}
                     </td>
                     <td className="px-4 py-4 text-sm text-[#355468]">
-                      {formatExperienceDate(experience.startDate)} - {experience.current ? "Actual" : formatExperienceDate(experience.endDate)}
+                      {formatExperiencePeriod(experience)}
                     </td>
                     <td className="px-4 py-4">
                       <ExperienceStatusBadge experience={experience} />
@@ -324,8 +340,12 @@ export function ExperienceDetailsModal({ experience, onClose }: ExperienceDetail
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <DetailItem label="Inicio" value={formatExperienceDate(experience.startDate)} />
-            <DetailItem label="Fin" value={experience.current ? "Actual" : formatExperienceDate(experience.endDate)} />
+            <DetailItem label={experience.type === "academica" ? "Fecha de emisión" : "Inicio"} value={formatExperienceDate(experience.startDate)} />
+            {experience.type === "academica" ? (
+              <DetailItem label="Estado" value={experience.current ? "Aún sigo estudiando" : "Concluido"} />
+            ) : (
+              <DetailItem label="Fin" value={experience.current ? "Actual" : formatExperienceDate(experience.endDate)} />
+            )}
             <DetailItem label="Correo" value={experience.email || "No especificado"} />
             <DetailItem
               label={experience.type === "academica" ? "Campo de estudio" : "Ubicación"}

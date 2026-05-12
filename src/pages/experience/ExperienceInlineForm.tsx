@@ -135,7 +135,7 @@ export function ExperienceInlineForm({
   const isEducation = mode === "education"
   const companyLabel = isEducation ? "Institución académica" : "Empresa"
   const positionLabel = isEducation ? "Nivel de formación" : "Cargo"
-  const currentLabel = isEducation ? "Cursando actualmente" : "Trabajo actual"
+  const currentLabel = isEducation ? "Aún sigo estudiando" : "Trabajo actual"
   const submitLabel = isEducation ? "Registrar Formación Académica" : "Registrar Experiencia Laboral"
   const descriptionPlaceholder = isEducation
     ? "Describe tu Formación Académica, logros, especializaciones..."
@@ -269,7 +269,7 @@ export function ExperienceInlineForm({
           ) : null}
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <FieldError label="Fecha de inicio" id="startDate" error={errors.startDate} required>
+            <FieldError label={isEducation ? "Fecha de emisión" : "Fecha de inicio"} id="startDate" error={errors.startDate} required={!isEducation || !formData.current}>
               <Input
                 id="startDate"
                 type="date"
@@ -283,19 +283,21 @@ export function ExperienceInlineForm({
               />
             </FieldError>
 
-            <FieldError label="Fecha de finalización" id="endDate" error={errors.endDate} required={!formData.current}>
-              <Input
-                id="endDate"
-                type="date"
-                value={formData.endDate}
-                disabled={formData.current || isSaving}
-                max={today}
-                onBlur={() => onBlur("endDate")}
-                onChange={(event) => onFieldChange("endDate", event.target.value)}
-                aria-invalid={Boolean(errors.endDate)}
-                className="h-10 border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
-              />
-            </FieldError>
+            {!isEducation ? (
+              <FieldError label="Fecha de finalización" id="endDate" error={errors.endDate} required={!formData.current}>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={formData.endDate}
+                  disabled={formData.current || isSaving}
+                  max={today}
+                  onBlur={() => onBlur("endDate")}
+                  onChange={(event) => onFieldChange("endDate", event.target.value)}
+                  aria-invalid={Boolean(errors.endDate)}
+                  className="h-10 border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
+                />
+              </FieldError>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-2">

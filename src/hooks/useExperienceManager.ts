@@ -351,8 +351,14 @@ function validateExperienceField(
   }
 
   if (field === "startDate") {
+    if (values.type === "academica" && !startDate && values.current) {
+      return ""
+    }
+
     if (!startDate) {
-      return "El campo Fecha de inicio es obligatorio."
+      return values.type === "academica"
+        ? "Ingresa una fecha de emisión o marca Aún sigo estudiando."
+        : "El campo Fecha de inicio es obligatorio."
     }
 
     if (!isIsoDate(startDate) || !parseDate(startDate)) {
@@ -365,6 +371,10 @@ function validateExperienceField(
   }
 
   if (field === "endDate") {
+    if (values.type === "academica") {
+      return ""
+    }
+
     if (!endDate && !values.current) {
       return "El campo Fecha de finalización es obligatorio."
     }
@@ -717,7 +727,7 @@ export function useExperienceManager() {
       fieldOfStudy: experience.fieldOfStudy,
       description: experience.description,
       startDate: normalizeFormDate(experience.startDate),
-      endDate: normalizeFormDate(experience.endDate),
+      endDate: normalizeExperienceTypeValue(experience.type) === "academica" ? "" : normalizeFormDate(experience.endDate),
       current: experience.current,
       image: experience.image,
       certificate: experience.certificate,
@@ -745,9 +755,20 @@ export function useExperienceManager() {
 
   function updateField(field: keyof ExperienceFormValues, value: string | boolean) {
     if (editingExperience && originalEditingValues) {
-      const lockedFields: Array<keyof ExperienceFormValues> = ["type", "company", "email", "position", "startDate"]
+      const lockedFields: Array<keyof ExperienceFormValues> = ["type", "company", "email", "position"]
 
       if (lockedFields.includes(field)) {
+        return
+      }
+
+      if (field === "current") {
+        return
+      }
+
+      if (
+        field === "startDate" &&
+        (editingExperience.type === "laboral" || !originalEditingValues.current)
+      ) {
         return
       }
 
@@ -785,6 +806,7 @@ export function useExperienceManager() {
       setErrors((currentErrors) => ({
         ...currentErrors,
         current: "",
+        startDate: validateManagedField("startDate", nextValues),
         endDate: validateExperienceField("endDate", nextValues),
       }))
       return
@@ -942,6 +964,13 @@ export function useExperienceManager() {
       if (editingExperience) {
         if (payload.type === "academica") {
           await updateEducation(editingExperience.id, payload)
+
+          const remoteEducation = await getEducation()
+          const persistedEducation = remoteEducation.find((education) => education.id === editingExperience.id)
+
+          if (!persistedEducation || persistedEducation.description.trim() !== payload.description.trim()) {
+            throw new Error("El backend no confirmó la actualización de la descripción. Intenta nuevamente.")
+          }
         } else {
           await updateExperience(editingExperience.id, payload)
         }
@@ -1069,7 +1098,7 @@ export function useExperienceManager() {
       fieldOfStudy: formData.fieldOfStudy.trim(),
       description: formData.description.trim(),
       startDate: formData.startDate.trim(),
-      endDate: formData.endDate.trim(),
+      endDate: formData.type === "academica" ? "" : formData.endDate.trim(),
       current: formData.current,
       logoFile: selectedImageFile,
       certificateFile: selectedCertificateFile,

@@ -70,7 +70,9 @@ export function ExperienceSection({
                       ) : null}
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-[#6B7E8E]">
                         <p>
-                          {formatExperienceDate(experience.startDate)} - {experience.current ? "Actual" : formatExperienceDate(experience.endDate)}
+                          {experience.type === "academica"
+                            ? formatExperienceDate(experience.startDate)
+                            : `${formatExperienceDate(experience.startDate)} - ${experience.current ? "Actual" : formatExperienceDate(experience.endDate)}`}
                         </p>
                         {experience.current ? (
                           <span className="inline-flex items-center justify-center rounded-full bg-green-600 p-1 text-white" aria-label="Experiencia activa" title="Experiencia activa">
