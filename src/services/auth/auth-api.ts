@@ -14,7 +14,7 @@ export async function registerUser(payload: RegisterRequest) {
     const response = await api.post<AuthResponse>("/register", payload)
     return response.data
   } catch (error) {
-    throw buildAuthServiceError(error, "No se pudo completar el registro.")
+    throw buildAuthServiceError(error, "")
   }
 }
 

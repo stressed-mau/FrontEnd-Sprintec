@@ -1,4 +1,5 @@
-import { Eye, EyeOff, LockKeyhole, Mail, UserPlus, UserRound } from "lucide-react"
+import { useEffect, useRef } from "react"
+import { Eye, EyeOff, LockKeyhole, Mail, UserPlus, UserRound, X } from "lucide-react"
 import { Link } from "react-router-dom"
 
 import { Footer } from "@/components/Footer"
@@ -26,6 +27,10 @@ export default function RegisterPage() {
   } = useRegisterForm()
   const { isVisible: showPassword, toggleVisibility: togglePasswordVisibility } = usePasswordVisibility()
   const { isVisible: showConfirmPassword, toggleVisibility: toggleConfirmPasswordVisibility } = usePasswordVisibility()
+  const nameInputRef = useRef<HTMLInputElement>(null)
+  const emailInputRef = useRef<HTMLInputElement>(null)
+  const passwordInputRef = useRef<HTMLInputElement>(null)
+  const confirmPasswordInputRef = useRef<HTMLInputElement>(null)
   const idEntradaNombre = "registro-nombre-usuario"
   const idEntradaCorreo = "registro-correo"
   const idEntradaContrasena = "registro-contrasena"
@@ -36,6 +41,20 @@ export default function RegisterPage() {
   const idErrorContrasena = "registro-error-contrasena"
   const idErrorConfirmarContrasena = "registro-error-confirmar-contrasena"
   const idErrorFormulario = "registro-error-formulario"
+
+  useEffect(() => {
+    const firstErrorField =
+      (errors.name && nameInputRef.current) ||
+      (errors.email && emailInputRef.current) ||
+      (errors.password && passwordInputRef.current) ||
+      (errors.confirmPassword && confirmPasswordInputRef.current) ||
+      null
+
+    if (!firstErrorField) return
+
+    firstErrorField.scrollIntoView({ behavior: "smooth", block: "center" })
+    firstErrorField.focus({ preventScroll: true })
+  }, [errors.name, errors.email, errors.password, errors.confirmPassword])
 
   return (
     <div className="flex min-h-screen flex-col bg-[#C2DBED]">
@@ -64,6 +83,7 @@ export default function RegisterPage() {
                   <div className="relative">
                     <UserRound className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
+                      ref={nameInputRef}
                       id={idEntradaNombre}
                       type="text"
                       placeholder="Tu nombre de usuario"
@@ -81,11 +101,12 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor={idEntradaCorreo} className="text-[#003A6C]">
-                    Correo electronico <span aria-hidden="true">*</span>
+                    Correo electrónico <span aria-hidden="true">*</span>
                   </Label>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
+                      ref={emailInputRef}
                       id={idEntradaCorreo}
                       type="email"
                       placeholder="tu@email.com"
@@ -101,7 +122,7 @@ export default function RegisterPage() {
                   {errors.email ? <p id={idErrorCorreo} className="text-sm text-red-600">{errors.email}</p> : null}
                   {!errors.email && emailSuggestion ? (
                     <p className="text-sm text-amber-700">
-                      Quisiste decir{" "}
+                      ¿Quisiste decir{" "}
                       <a
                         href={`mailto:${emailSuggestion.full}`}
                         className="font-medium underline underline-offset-2 transition hover:text-amber-900"
@@ -119,14 +140,15 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor={idEntradaContrasena} className="text-[#003A6C]">
-                    Contrasena <span aria-hidden="true">*</span>
+                    Contraseña <span aria-hidden="true">*</span>
                   </Label>
                   <p id={idAyudaContrasena} className="text-xs leading-5 text-[#5E7D95]">
-                    La contrasena debe contener entre 8 y 20 caracteres, e incluir al menos una letra mayuscula, un numero y un caracter especial.
+                    La contraseña debe contener entre 8 y 20 caracteres, e incluir al menos una letra mayúscula, un número y un carácter especial.
                   </p>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
+                      ref={passwordInputRef}
                       id={idEntradaContrasena}
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
@@ -142,7 +164,7 @@ export default function RegisterPage() {
                       type="button"
                       onClick={togglePasswordVisibility}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B88A0] transition hover:text-[#003A6C]"
-                      aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
@@ -152,11 +174,12 @@ export default function RegisterPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor={idEntradaConfirmarContrasena} className="text-[#003A6C]">
-                    Confirmar contrasena <span aria-hidden="true">*</span>
+                    Confirmar contraseña <span aria-hidden="true">*</span>
                   </Label>
                   <div className="relative">
                     <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#6B88A0]" />
                     <Input
+                      ref={confirmPasswordInputRef}
                       id={idEntradaConfirmarContrasena}
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="••••••••"
@@ -172,7 +195,7 @@ export default function RegisterPage() {
                       type="button"
                       onClick={toggleConfirmPasswordVisibility}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B88A0] transition hover:text-[#003A6C]"
-                      aria-label={showConfirmPassword ? "Ocultar confirmar contrasena" : "Mostrar confirmar contrasena"}
+                      aria-label={showConfirmPassword ? "Ocultar confirmar contraseña" : "Mostrar confirmar contraseña"}
                     >
                       {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>
@@ -206,9 +229,9 @@ export default function RegisterPage() {
 
               <div className="flex flex-col items-center gap-3 text-center text-sm text-[#4F6F88]">
                 <p>
-                  Ya tienes cuenta?{" "}
+                  ¿Ya tienes cuenta?{" "}
                   <Link to={LOGIN_ROUTE} className="font-medium text-[#4982AD] transition hover:text-[#003A6C]">
-                    Inicia sesion aqui
+                    Inicia sesión aquí
                   </Link>
                 </p>
               </div>
@@ -220,16 +243,24 @@ export default function RegisterPage() {
 
       {showSuccessModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl">
+          <div className="relative w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl">
+            <button
+              type="button"
+              onClick={closeSuccessModal}
+              className="absolute right-5 top-5 text-gray-400 transition-colors hover:text-gray-600"
+              aria-label="Cerrar modal de registro exitoso"
+            >
+              <X className="size-6" />
+            </button>
             <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full bg-green-100 text-green-600">
               <svg className="size-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-[#003A6C]">Registro exitoso</h2>
-            <p className="mt-3 text-sm leading-6 text-[#4F6F88]">Tu cuenta ha sido creada correctamente. Completa tus datos personales para entrar a tu panel.</p>
+            <p className="mt-3 text-sm leading-6 text-[#4F6F88]">Tu cuenta ha sido creada correctamente.</p>
             <Button onClick={closeSuccessModal} className="mt-6 h-11 w-full bg-[#003A6C] text-white hover:bg-[#4982AD]">
-              Completar datos personales
+              Continuar
             </Button>
           </div>
         </div>

@@ -3,10 +3,14 @@ import Sidebar from '../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { getAuthSession } from "@/services/auth";
 import { FolderGit2, Palette, Share2, Info } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useUserPersonalData } from "@/hooks/useUserPersonalData";
+import { REGISTER_PROFILE_ROUTE } from "@/routes/route-paths";
 
 const UserHome = () => {
   const session = getAuthSession();
   const displayName = session?.user?.username ;
+  const { loading, hasPersonalData } = useUserPersonalData();
 
   return (
     <div id="userhome-page" className="min-h-screen bg-[#F7F0E1] flex flex-col">
@@ -22,6 +26,23 @@ const UserHome = () => {
               <h1 className="text-[#003A6C] text-3xl md:text-5xl font-black mb-4">  ¡Bienvenido a PortfolioGen, {displayName}! </h1>
               <p className="text-gray-600 text-lg"> Tu espacio para crear, gestionar y compartir tu portafolio profesional con el mundo  </p>
             </div>
+
+            {!loading && !hasPersonalData ? (
+              <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-[#6dacbf] bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-[#003A6C]">Completa tus datos personales</h2>
+                  <p className="mt-1 text-sm leading-6 text-gray-600">
+                    Es muy importante finalizar el llenado de tus datos personales. Este registro solo se puede realizar una sola vez.
+                  </p>
+                </div>
+                <Link
+                  to={REGISTER_PROFILE_ROUTE}
+                  className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl bg-[#003A6C] px-5 text-sm font-bold text-white transition-colors hover:bg-[#002d54]"
+                >
+                  Registrar datos personales
+                </Link>
+              </div>
+            ) : null}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
               

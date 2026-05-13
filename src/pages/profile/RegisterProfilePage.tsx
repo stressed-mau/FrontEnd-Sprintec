@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { allCountries } from 'country-telephone-data';
-import { Upload, X, User } from 'lucide-react';
+import { AlertTriangle, Upload, X, User } from 'lucide-react';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header'; // Usamos el Header público/general
@@ -10,10 +10,16 @@ import { USER_HOME_ROUTE } from '@/routes/route-paths';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ConfirmActionModal from '@/components/ConfirmActionModal';
+import ConfirmationModal from '@/components/ConfirmationModal';
+import HeaderUser from '@/components/HeaderUser';
+import Sidebar from '@/components/Sidebar';
 
 export default function RegisterProfilePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const isInitialRegisterFlow = Boolean((location.state as { fromRegister?: boolean } | null)?.fromRegister);
 
   // Reutilizamos toda la lógica del hook existente
   const {
@@ -34,6 +40,8 @@ export default function RegisterProfilePage() {
     handleFileChange,
     removeImage,
     charLimitWarning,
+    loading,
+    hasPersonalData,
   } = useUserPersonalData();
   
   const handleConfirmSave = async () => {
@@ -45,16 +53,82 @@ export default function RegisterProfilePage() {
     try {
         const success = await handleSubmit(fakeEvent);
         if (!success) return; 
-        navigate(USER_HOME_ROUTE, { replace: true }); 
+        setShowSuccessModal(true);
         
     } catch (error) {
         console.error("Error al registrar los datos:", error);
     }
   };
+
+  const renderHeader = () => (isInitialRegisterFlow ? <Header /> : <HeaderUser />);
+  const renderMain = (content: React.ReactNode) =>
+    isInitialRegisterFlow ? (
+      <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6 sm:py-14">{content}</main>
+    ) : (
+      <div className="flex flex-col lg:flex-row flex-1">
+        <Sidebar />
+        <main className="flex-1 p-4 sm:p-6 md:p-10">{content}</main>
+      </div>
+    );
+
+  if (loading) {
+    return (
+      <div className={`flex min-h-screen flex-col ${isInitialRegisterFlow ? 'bg-[#C2DBED]' : 'bg-[#F7F0E1]'}`}>
+        {renderHeader()}
+        {renderMain(
+          <div className="flex items-center text-[#003A6C]">
+            <div className="mr-2 h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            Cargando...
+          </div>
+        )}
+        <Footer />
+      </div>
+    );
+  }
+
+  if (hasPersonalData) {
+    return (
+      <div className={`flex min-h-screen flex-col ${isInitialRegisterFlow ? 'bg-[#C2DBED]' : 'bg-[#F7F0E1]'}`}>
+        {renderHeader()}
+        {renderMain(
+          <Card className="mx-auto w-full max-w-xl border-2 border-[#F2C94C] bg-white/95 text-center shadow-2xl backdrop-blur-sm">
+            <CardHeader className="flex flex-col items-center space-y-4 px-8 pt-8 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FFF4CC] text-[#B7791F]">
+                <AlertTriangle className="h-9 w-9" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-[#003A6C]">Registro ya completado</CardTitle>
+              <CardDescription className="mx-auto max-w-md text-center text-sm leading-6 text-[#4F6F88]">
+                El registro de datos personales solo se hace una vez. Si quieres modificar tu informacion, ve a la subseccion de editar datos personales.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="mx-auto flex w-full max-w-md flex-col gap-3 px-8 pb-8 sm:flex-row">
+              <Button
+                type="button"
+                onClick={() => navigate('/personal/editar')}
+                className="h-11 flex-1 bg-[#003A6C] text-white hover:bg-[#002d54]"
+              >
+                Ir a editar datos personales
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(USER_HOME_ROUTE)}
+                className="h-11 flex-1 border-[#4982AD] text-[#003A6C] hover:bg-[#E2EEF6]"
+              >
+                Volver al Home
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+        <Footer />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen flex-col bg-[#C2DBED]">
-      <Header />
-      <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6 sm:py-14">
+    <div className={`flex min-h-screen flex-col ${isInitialRegisterFlow ? 'bg-[#C2DBED]' : 'bg-[#F7F0E1]'}`}>
+      {renderHeader()}
+      {renderMain(
         <div className="w-full max-w-6xl"> {/* Un poco más ancho para este formulario */}
           <Card className="border-[#9CC2DB] bg-white/95 shadow-2xl backdrop-blur-sm">
             <CardHeader className="space-y-4 text-center">
@@ -262,20 +336,29 @@ export default function RegisterProfilePage() {
                 </div>
 
                 {/* Botón de Enviar - Estilo CrearCuenta */}
-                <div className="pt-4">
+                <div className="flex flex-col gap-3 pt-4 sm:flex-row">
                     <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full h-12 bg-[#003A6C] hover:bg-[#002d54] text-white font-bold rounded-xl shadow-lg transition-all"
+                        className="h-12 flex-1 bg-[#003A6C] hover:bg-[#002d54] text-white font-bold rounded-xl shadow-lg transition-all"
                     >
-                        {isSubmitting ? "Guardando..." : "Finalizar y entrar al Home"}
+                        {isSubmitting ? "Guardando..." : isInitialRegisterFlow ? "Registrar datos personales" : "Registrar"}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isSubmitting}
+                        onClick={() => navigate(USER_HOME_ROUTE, { replace: true })}
+                        className="h-12 flex-1 border-[#4982AD] bg-white text-[#003A6C] font-bold rounded-xl hover:bg-[#E2EEF6]"
+                    >
+                        {isInitialRegisterFlow ? "Dejar para despues y entrar al Home" : "Cancelar"}
                     </Button>
                     </div>
               </form>
             </CardContent>
           </Card>
         </div>
-      </main>
+      )}
       <Footer />
 
       {/* Modal de Confirmación - Reutilizado */}
@@ -284,9 +367,17 @@ export default function RegisterProfilePage() {
         title="¿Completar registro?"
         message="Tus datos personales se guardarán y serás redirigido a tu panel principal."
         confirmText="Aceptar"
-        cancelText="Revisar"
+        cancelText="Cancelar"
         onConfirm={handleConfirmSave} // Aquí es donde ocurre la navegación
         onCancel={() => setShowConfirmModal(false)}
+      />
+      <ConfirmationModal
+        isOpen={showSuccessModal}
+        message="Datos personales registrados correctamente."
+        onClose={() => {
+          setShowSuccessModal(false);
+          navigate(USER_HOME_ROUTE, { replace: true });
+        }}
       />
     </div>
   );

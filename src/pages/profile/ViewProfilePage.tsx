@@ -4,8 +4,10 @@ import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { useUserPersonalData } from '../../hooks/useUserPersonalData';
 import { getAuthSession } from '@/services/auth';
+import { Link } from 'react-router-dom';
+import { REGISTER_PROFILE_ROUTE } from '@/routes/route-paths';
 const ViewProfilePage = () => {
-  const { form, phoneNumber, countryCode } = useUserPersonalData();
+  const { form, phoneNumber, countryCode, loading, hasPersonalData } = useUserPersonalData();
   const session = getAuthSession();
   const accountEmail = session?.user?.email || "No disponible";
   return (
@@ -18,6 +20,25 @@ const ViewProfilePage = () => {
             <h1 className="text-[#003A6C] text-3xl font-bold mb-2">Datos Personales</h1>
             <p className="text-gray-600 mb-6 text-sm">Información de tu perfil</p>
 
+            {loading ? (
+              <div className="flex h-64 items-center justify-center text-[#003A6C]">
+                <div className="mr-2 h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Cargando...
+              </div>
+            ) : !hasPersonalData ? (
+              <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
+                <h2 className="text-2xl font-bold text-[#003A6C]">Aun no hay registro</h2>
+                <p className="mt-3 text-sm leading-6 text-gray-600">
+                  Registra tus datos personales para que esta informacion se muestre en tu portafolio publico. Este registro solo se puede realizar una vez.
+                </p>
+                <Link
+                  to={REGISTER_PROFILE_ROUTE}
+                  className="mt-6 inline-flex rounded-xl bg-[#003A6C] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#002d54]"
+                >
+                  Registrar datos personales
+                </Link>
+              </div>
+            ) : (
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center mb-10">
                 {/* Avatar y Nombre Principal */}
@@ -55,6 +76,7 @@ const ViewProfilePage = () => {
                 <InfoItem icon={<Briefcase className="text-indigo-500" />} label="Profesión" value={form.occupation} />
               </div>
             </div>
+            )}
           </div>
         </main>
       </div>

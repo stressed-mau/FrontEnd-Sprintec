@@ -79,6 +79,7 @@ export const useUserPersonalData = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
+  const [hasPersonalData, setHasPersonalData] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(form.email);
@@ -95,12 +96,15 @@ export const useUserPersonalData = () => {
       return "";
 
     case "occupation":
+      if (EMOJI_REGEX.test(value)) return "La ocupación no permite emoticones.";
       return value.length > 80 ? "La ocupación no puede exceder los 80 caracteres." : "";
 
     case "bio":
+      if (EMOJI_REGEX.test(value)) return "La biografía no permite emoticones.";
       return value.length > 300 ? "La biografía no puede exceder los 300 caracteres." : "";
 
     case "location":
+      if (EMOJI_REGEX.test(value)) return "La residencia actual no permite emoticones.";
       return value.length > 100 ? "La ubicación no puede exceder los 100 caracteres." : "";
 
     case "email": {
@@ -200,6 +204,15 @@ export const useUserPersonalData = () => {
       if (!session || !session.user?.id) return;
 
       const user = await getUserInformation();
+      const userHasPersonalData = Boolean(
+        user.fullname ||
+        user.occupation ||
+        user.biography ||
+        user.nationality ||
+        user.phone_number ||
+        user.public_email ||
+        user.image_url
+      );
 
       const mappedForm = {
         fullName: user.fullname || "",
@@ -212,12 +225,15 @@ export const useUserPersonalData = () => {
 
       setForm(mappedForm);
       setOriginalForm(mappedForm);
+      setHasPersonalData(userHasPersonalData);
       const initialErrors: any = {};
 
-      Object.keys(mappedForm).forEach((key) => {
-        const error = validateField(key, (mappedForm as any)[key]);
-        if (error) initialErrors[key] = error;
-      });
+      if (userHasPersonalData) {
+        Object.keys(mappedForm).forEach((key) => {
+          const error = validateField(key, (mappedForm as any)[key]);
+          if (error) initialErrors[key] = error;
+        });
+      }
 
       setErrors(initialErrors);
 
@@ -362,6 +378,7 @@ const handleChange = (e: any) => {
 
       setForm(updatedForm);
       setOriginalForm(updatedForm);
+      setHasPersonalData(true);
       setOriginalCountryCode(countryCode);
       setOriginalPhoneNumber(phoneNumber);
 
@@ -458,6 +475,7 @@ const handleChange = (e: any) => {
     handleFileChange,
     removeImage,
     loading,
+    hasPersonalData,
     charLimitWarning,
     setCharLimitWarning,
     emailSuggestion: suggestion,

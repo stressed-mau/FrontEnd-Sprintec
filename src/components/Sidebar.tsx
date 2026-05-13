@@ -40,6 +40,7 @@ const navItems: NavItem[] = [
     icon: User,
     path: "/personal",
     children: [
+      { id: "personal-registrar", label: "Registrar datos personales", path: "/registro/completar-perfil" },
       { id: "personal-ver", label: "Ver datos personales", path: "/personal/ver" },
       { id: "personal-editar", label: "Editar datos personales", path: "/personal/editar" },
     ],
@@ -124,7 +125,18 @@ const Sidebar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
   const activeSectionId = useMemo(
-    () => navItems.find((item) => item.children?.length && currentPath.startsWith(normalizePath(item.path)))?.id ?? null,
+    () =>
+      navItems.find((item) => {
+        if (!item.children?.length) return false;
+
+        const itemPath = normalizePath(item.path);
+        const hasActiveChild = item.children.some((child) => {
+          const childPath = normalizePath(child.path);
+          return currentPath === childPath || currentPath.startsWith(`${childPath}/`);
+        });
+
+        return currentPath.startsWith(itemPath) || hasActiveChild;
+      })?.id ?? null,
     [currentPath]
   );
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(activeSectionId);
@@ -186,8 +198,14 @@ const Sidebar = () => {
       <nav className={`custom-scrollbar flex-1 space-y-1 overflow-y-auto overflow-x-hidden ${isCollapsed ? "" : "pr-2"}`}>
         {navItems.map((item) => {
           const itemPath = normalizePath(item.path);
-          const isParentActive = currentPath.startsWith(itemPath);
           const hasChildren = Boolean(item.children?.length);
+          const hasActiveChild = Boolean(
+            item.children?.some((child) => {
+              const childPath = normalizePath(child.path);
+              return currentPath === childPath || currentPath.startsWith(`${childPath}/`);
+            })
+          );
+          const isParentActive = currentPath.startsWith(itemPath) || hasActiveChild;
           const isExpanded = expandedSectionId === item.id;
 
           if (isCollapsed) {

@@ -669,7 +669,7 @@ export function ProjectForm({
                       </button>
                     ))
                   ) : (
-                    <p className="px-3 py-2 text-xs text-gray-400">No se encontrÃ³ el rol</p>
+                    <p className="px-3 py-2 text-xs text-gray-400">No se encontrá el rol</p>
                   )}
                 </div>
               ) : null}

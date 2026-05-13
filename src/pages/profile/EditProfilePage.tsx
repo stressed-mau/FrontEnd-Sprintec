@@ -13,6 +13,7 @@ import { useUserPersonalData } from '@/hooks/useUserPersonalData';
 const EditProfilePage = () => {
   const navigate = useNavigate();
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
+  const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const {
     form,
@@ -30,6 +31,8 @@ const EditProfilePage = () => {
     handleSubmit,
     success,
     setSuccess,
+    loading,
+    hasPersonalData,
     handleFileChange,
     handleClick,
     charLimitWarning,
@@ -37,8 +40,20 @@ const EditProfilePage = () => {
     applyEmailSuggestion,
   } = useUserPersonalData();
 
-  const handleSaveTrigger = async (event: React.FormEvent<HTMLFormElement>) => {
-    await handleSubmit(event);
+  const handleSaveTrigger = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (canSavePersonalData) {
+      setShowSaveConfirmModal(true);
+    }
+  };
+
+  const confirmSave = async () => {
+    setShowSaveConfirmModal(false);
+    const fakeEvent = {
+      preventDefault: () => {},
+    } as React.FormEvent<HTMLFormElement>;
+
+    await handleSubmit(fakeEvent);
   };
 
   const confirmCancel = () => {
@@ -57,6 +72,51 @@ const EditProfilePage = () => {
       setShowSuccessModal(true);
     }
   }, [success, showSuccessModal]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
+        <Header />
+        <div className="flex flex-col lg:flex-row flex-1">
+          <Sidebar />
+          <main className="flex-1 p-4 sm:p-6 md:p-10">
+            <div className="flex h-64 items-center justify-center text-[#003A6C]">
+              <div className="mr-2 h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              Cargando...
+            </div>
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!hasPersonalData) {
+    return (
+      <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
+        <Header />
+        <div className="flex flex-col lg:flex-row flex-1">
+          <Sidebar />
+          <main className="flex-1 p-4 sm:p-6 md:p-10">
+            <div className="mx-auto max-w-3xl rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
+              <h1 className="text-2xl font-bold text-[#003A6C]">Aun no hay registro</h1>
+              <p className="mt-3 text-sm leading-6 text-gray-600">
+                Primero debes registrar tus datos personales. Ese registro solo se realiza una vez; despues podras editar la informacion desde esta subseccion.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/registro/completar-perfil')}
+                className="mt-6 rounded-xl bg-[#003A6C] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#002d54]"
+              >
+                Registrar datos personales
+              </button>
+            </div>
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
@@ -249,11 +309,19 @@ const EditProfilePage = () => {
         onConfirm={confirmCancel}
         onCancel={() => setShowCancelConfirmModal(false)}
       />
+      <ConfirmActionModal
+        isOpen={showSaveConfirmModal}
+        title="Confirmar cambios"
+        message="¿Está seguro de que desea guardar los cambios en sus datos personales?"
+        confirmText={isSubmitting ? "Guardando..." : "Aceptar"}
+        cancelText="Cancelar"
+        onConfirm={confirmSave}
+        onCancel={() => setShowSaveConfirmModal(false)}
+      />
       <ConfirmationModal
         isOpen={showSuccessModal}
-        title="Operación exitosa"
+        title="Éxito"
         message="Información actualizada correctamente."
-        buttonText="Aceptar"
         onClose={handleSuccessClose}
       />
       <Footer />

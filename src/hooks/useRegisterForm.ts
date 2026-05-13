@@ -1,4 +1,4 @@
-﻿import { useState } from "react"
+﻿﻿import { useState } from "react"
 
 import { useNavigate } from "react-router-dom"
 
@@ -32,7 +32,8 @@ const INITIAL_VALUES: RegisterValues = {
 }
 
 const SPECIAL_CHARACTER_REGEX = /[^A-Za-z0-9]/
-const EMOJI_REGEX = /\p{Extended_Pictographic}/u
+const DUPLICATE_USERNAME_MESSAGE = "El nombre de usuario ya está registrado, elige otro."
+const DUPLICATE_EMAIL_MESSAGE = "El correo electrónico ya está registrado, elige otro."
 
 export const WELCOME_MESSAGE = `¡Te damos la bienvenida a Portafolio Gen!
 
@@ -45,7 +46,6 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
 
   if (field === "name") {
     if (!name) return "El campo Nombre usuario es obligatorio."
-    if (EMOJI_REGEX.test(values.name)) return "El nombre de usuario no permite emoticones."
     if (/\s/.test(values.name)) return "El nombre de usuario no permite espacios."
     if (name.length > 30) return "El campo Nombre de usuario no permite un máximo de 30 caracteres."
   }
@@ -58,7 +58,7 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
     if (!password) return "El campo Contraseña es obligatorio."
     if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres."
     if (password.length > 20) return "La contraseña permite un máximo de 20 caracteres."
-    if (/\s/.test(password)) return "La contraseña no puede contener espacios en blanco."
+    if (/\s/.test(password)) return "La contraseña no permite espacios en blanco."
     if (!/[A-Z]/.test(password)) return "La contraseña debe contener al menos una letra mayúscula."
     if (!/\d/.test(password)) return "La contraseña debe contener al menos un número."
     if (!SPECIAL_CHARACTER_REGEX.test(password)) {
@@ -74,24 +74,71 @@ function validateRegisterField(field: keyof RegisterValues, values: RegisterValu
   return ""
 }
 
-function getValidationMessage(errorList?: string[]) {
-  return Array.isArray(errorList) && errorList.length > 0 ? errorList[0] : ""
+function getValidationMessages(errorList?: unknown) {
+  if (typeof errorList === "string") return [errorList]
+  return Array.isArray(errorList) ? errorList.filter((item): item is string => typeof item === "string") : []
 }
 
-function normalizeRegisterApiMessage(message: string) {
-  if (/(username|user name|nombre).*(taken|used|exist|duplicate|unique)/i.test(message)) {
-    return "El nombre de usuario ya está registrado, elige otro."
+function getValidationMessage(errorList?: unknown) {
+  return getValidationMessages(errorList)[0] ?? ""
+}
+
+function hasDuplicateIndicator(message: string) {
+  return /(taken|used|exist|existe|registrad|registrado|duplicate|duplicad|unique|ya est|ya está)/i.test(message)
+}
+
+function messageMentionsEmail(message: string) {
+  return /(email|e-mail|correo|mail)/i.test(message)
+}
+
+function messageMentionsUsername(message: string) {
+  return /(username|user name|nombre de usuario|nombre_usuario)/i.test(message)
+}
+
+function getRegisterFieldFromErrorKey(key: string): "name" | "email" | null {
+  const normalizedKey = key.toLowerCase()
+
+  if (/(^|[._-])(email|e-mail|correo|mail)([._-]|$)/i.test(normalizedKey)) {
+    return "email"
   }
 
-  if (/email.*(taken|used|exist|duplicate|unique)/i.test(message)) {
-    return "El correo electrónico ya está registrado, elige otro."
+  if (/(^|[._-])(username|user_name|nombre_usuario|name)([._-]|$)/i.test(normalizedKey)) {
+    return "name"
+  }
+
+  return null
+}
+
+function normalizeRegisterApiMessage(message: string, field?: "name" | "email") {
+  if (!message) return ""
+
+  if (hasDuplicateIndicator(message)) {
+    if (messageMentionsEmail(message) || field === "email") {
+      return DUPLICATE_EMAIL_MESSAGE
+    }
+
+    if (messageMentionsUsername(message) || field === "name") {
+      return DUPLICATE_USERNAME_MESSAGE
+    }
   }
 
   return message
 }
 
-function isDuplicateRegisterError(message: string) {
-  return /(exist|registrad|taken|used|duplicate|unique)/i.test(message)
+function mapTopLevelRegisterError(message: string): RegisterFormErrors {
+  if (!message) return {}
+
+  if (hasDuplicateIndicator(message)) {
+    if (messageMentionsEmail(message)) {
+      return { email: DUPLICATE_EMAIL_MESSAGE }
+    }
+
+    if (messageMentionsUsername(message)) {
+      return { name: DUPLICATE_USERNAME_MESSAGE }
+    }
+  }
+
+  return { form: message }
 }
 
 function mapApiErrors(validationErrors?: ApiValidationErrors): RegisterFormErrors {
@@ -99,12 +146,33 @@ function mapApiErrors(validationErrors?: ApiValidationErrors): RegisterFormError
     return {}
   }
 
-  return {
-    name: normalizeRegisterApiMessage(getValidationMessage(validationErrors.username)),
-    email: normalizeRegisterApiMessage(getValidationMessage(validationErrors.email)),
+  const fieldErrors: RegisterFormErrors = {
     password: normalizeRegisterApiMessage(getValidationMessage(validationErrors.password)),
     confirmPassword: normalizeRegisterApiMessage(getValidationMessage(validationErrors.password_confirmation)),
   }
+
+  Object.entries(validationErrors).forEach(([key, value]) => {
+    const fieldFromKey = getRegisterFieldFromErrorKey(key)
+
+    getValidationMessages(value).forEach((message) => {
+      const fieldFromMessage = messageMentionsEmail(message)
+        ? "email"
+        : messageMentionsUsername(message)
+          ? "name"
+          : null
+      const field = fieldFromMessage ?? fieldFromKey
+
+      if (field === "email") {
+        fieldErrors.email = fieldErrors.email || normalizeRegisterApiMessage(message, "email")
+      }
+
+      if (field === "name") {
+        fieldErrors.name = fieldErrors.name || normalizeRegisterApiMessage(message, "name")
+      }
+    })
+  })
+
+  return fieldErrors
 }
 
 export function useRegisterForm() {
@@ -207,17 +275,16 @@ export function useRegisterForm() {
       )
 
       setShowSuccessModal(true)
-      window.setTimeout(() => {
-        navigate(REGISTER_PROFILE_ROUTE, { replace: true })
-      }, 1200)
     } catch (error) {
       if (error instanceof AuthServiceError) {
         const fieldErrors = mapApiErrors(error.validationErrors)
         const hasSpecificDuplicateError = Boolean(fieldErrors.email || fieldErrors.name)
+        const topLevelErrors = hasSpecificDuplicateError ? {} : mapTopLevelRegisterError(error.message)
 
         setErrors({
           ...fieldErrors,
-          form: hasSpecificDuplicateError || isDuplicateRegisterError(error.message) ? "" : error.message,
+          ...topLevelErrors,
+          form: topLevelErrors.form || "",
         })
         return
       }
@@ -230,7 +297,7 @@ export function useRegisterForm() {
 
   function closeSuccessModal() {
     setShowSuccessModal(false)
-    navigate(REGISTER_PROFILE_ROUTE, { replace: true })
+    navigate(REGISTER_PROFILE_ROUTE, { replace: true, state: { fromRegister: true } })
   }
 
   function applyEmailSuggestion(suggestedEmail: string) {
