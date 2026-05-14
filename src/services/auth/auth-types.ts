@@ -31,11 +31,6 @@ export type AuthUser = {
   username: string
   email: string
   role_id: number
-  /**
-   * Compat: algunos endpoints antiguos devuelven `info_id`.
-   * El backend actual devuelve `user_information` y este id vive en `user_information.id`.
-   */
-  info_id?: number
   is_active: boolean
   created_at: string
   updated_at: string

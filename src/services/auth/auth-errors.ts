@@ -38,7 +38,7 @@ function asValidationMessages(value: unknown): string[] {
   return []
 }
 
-function normalizeValidationErrors(value: unknown): ApiValidationErrors | undefined {
+export function normalizeValidationErrors(value: unknown): ApiValidationErrors | undefined {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return undefined
   }
