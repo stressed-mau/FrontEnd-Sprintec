@@ -19,7 +19,7 @@ export function NotificationBell({ initialNotifications = [] }: NotificationBell
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications)
+ const [notifications, setNotifications] = useState<Notification[]>(() => initialNotifications)
 
   // Mock temporal comentado para cuando no exista API en entorno local.
   // const mockNotifications: Notification[] = [
@@ -41,9 +41,6 @@ export function NotificationBell({ initialNotifications = [] }: NotificationBell
   //   },
   // ]
 
-  useEffect(() => {
-    setNotifications(initialNotifications)
-  }, [initialNotifications])
 
   const unreadCount = notifications.filter((notification) => !notification.read).length
 

@@ -14,6 +14,8 @@ const PublishPortfolio = () => {
     handleUnpublish,
     loading,
     checkInitialStatus,
+    hasPortfolioContent,
+    validatePortfolioContent,
     selectedTemplate 
   } = usePublishPortfolio()
 
@@ -22,6 +24,7 @@ const PublishPortfolio = () => {
     const syncStatus = async () => {
       console.log("LLAMANDO checkInitialStatus");
       await checkInitialStatus();
+      await validatePortfolioContent();
     };
     void syncStatus();
   }, []);
@@ -95,13 +98,24 @@ const PublishPortfolio = () => {
                   <Upload className="w-10 h-10 text-gray-400" />
                 </div>
                 <div>
-                  <h3 className="text-[#003A6C] text-2xl font-bold">¿Listo para despegar?</h3>
+                  <h3 className="text-[#003A6C] text-2xl font-bold">Tu portafolio no es visible públicamente.</h3>
                   <p className="text-gray-500 max-w-md mx-auto mt-2">
                     Una vez publicado, tu portafolio será accesible mediante un enlace único que podrás compartir con reclutadores.
                   </p>
                 </div>
-
-                <button
+                <div
+                  className={`w-full max-w-3xl flex flex-col md:flex-row items-center gap-4 ${
+                    !hasPortfolioContent
+                      ? "md:justify-between"
+                      : "md:justify-center"
+                  }`}
+                >
+                {!hasPortfolioContent && (
+                  <p className="text-sm text-red-500 font-medium text-center md:text-left">
+                    Debes registrar al menos un elemento de alguna sección antes de publicar.
+                  </p>
+                )}
+                  <button
                   disabled={!selectedTemplate || loading}
                   onClick={() => {
                     if (!selectedTemplate) return;
@@ -118,8 +132,9 @@ const PublishPortfolio = () => {
                   ) : (
                     <Upload className="w-5 h-5 group-hover:bounce" />
                   )}
-                  <span>{loading ? "Publicando..." : "Publicar Portafolio Ahora"}</span>
+                  <span>{loading ? "Publicando..." : "Publicar Portafolio"}</span>
                 </button>
+                </div>
               </div>
             ) : (
               /* Sección cuando ya está publicado */
@@ -130,7 +145,7 @@ const PublishPortfolio = () => {
                       <CheckCircle2 className="w-8 h-8 text-white" />
                     </div>
                     <div className="text-center md:text-left">
-                      <h3 className="text-[#003A6C] text-xl font-bold">¡Tu portafolio está en vivo!</h3>
+                      <h3 className="text-[#003A6C] text-xl font-bold">Tu portafolio es visible para todos.</h3>
                       <p className="text-green-700 font-medium">Estado: Público y Activo</p>
                     </div>
                   </div>

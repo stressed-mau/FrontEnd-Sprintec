@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin, Mail, Phone, Heart, Globe, GraduationCap, Award } from 'lucide-react';
 import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
+import ProjectModalModern from "./Modals/ProjectModalModern";
 interface ModernTemplateProps {
   profile?: ModernTemplateProfile | null;
   isPreview?: boolean;
@@ -26,8 +27,7 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
     certificates: [],
     networks: [],
   };
-  console.log("EXPERIENCE:", data.experience);
-  console.log("NETWORKS:", data.networks);
+  const [selectedProject, setSelectedProject] = useState<any | null>(null);
   const userProfile = profile ?? {
     fullname: '',
     occupation: '',
@@ -190,7 +190,11 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {visibleProjects.map((project) => (
-              <div key={`${project.sourceTable ?? 'projects'}-${project.id}`} className="group relative h-48 rounded-[2rem] overflow-hidden bg-[#2f606b]">
+              <div 
+                key={`${project.sourceTable ?? 'projects'}-${project.id}`} 
+                onClick={() => setSelectedProject(project)} 
+                className="group relative h-48 cursor-pointer rounded-[2rem] overflow-hidden bg-[#2f606b] transition-transform hover:scale-[1.02]"
+              >  
                 <div className="absolute inset-0 bg-linear-to-t from-[#173b61] via-transparent to-transparent opacity-100 p-8 flex flex-col justify-end">
                   <h4 className="text-[#fcecd4] text-2xl font-black">{project.label}</h4>
                   <p className="text-[#ee8e3b] font-bold text-sm mt-1">{project.sublabel}</p>
@@ -291,6 +295,12 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
           Portafolio Profesional • {displayName}
         </p>
       </footer>
+      {selectedProject && (
+        <ProjectModalModern 
+          project={selectedProject} 
+          onClose={() => setSelectedProject(null)} 
+        />
+      )}
     </div>
   );
 };

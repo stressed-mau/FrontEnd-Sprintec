@@ -7,6 +7,7 @@ import {
 } from "lucide-react"
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
+import ProjectModalCorporate from "../templates/Modals/ProjectModalCorporate";
 type CorporatePortfolioLink = {
   id: string
   label: string
@@ -159,6 +160,7 @@ export function CorporatePortfolioTemplate({ profile }: Props) {
   const displayLocation = userProfile.residence.trim() || "Ubicación pendiente"
   const displayProfileImage = userProfile.image_url.trim()
   const initials = getInitials(displayName)
+  const [selectedProject, setSelectedProject] = useState<any | null>(null);
 
   const visibleProjects = useMemo(() => safeData.projects.filter((item) => item.checked), [safeData.projects])
   const visibleSkills = useMemo(() => safeData.skills.filter((item) => item.checked), [safeData.skills])
@@ -459,8 +461,12 @@ const certificates = useMemo(() => {
               {projects.map((project, index) => (
                 <article
                   key={project.id}
-                  className="rounded-[1.8rem] border border-black/10 bg-white p-6 transition duration-300 hover:-translate-y-2 hover:border-[#111111] hover:shadow-[0_24px_50px_rgba(0,0,0,0.12)]"
-                >
+                  onClick={() => {
+                    const fullProject = safeData.projects.find(p => String(p.id) === String(project.id));
+                    setSelectedProject(fullProject || null);
+                  }}
+                    className="cursor-pointer group relative rounded-[1.8rem] overflow-hidden bg-[#F8FAFC] border border-[#E2E8F0] p-6 transition-all hover:shadow-lg hover:-translate-y-1"
+                  >
                   <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#8C6E46]">
                     Proyecto {String(index + 1).padStart(2, "0")}
                   </p>
@@ -975,8 +981,12 @@ const certificates = useMemo(() => {
                     resolvedProjects.map((project, index) => (
                       <article
                         key={project.id}
-                        className="rounded-[1.8rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-6 transition duration-300 hover:-translate-y-2 hover:border-[#8C6E46] hover:shadow-[0_24px_50px_rgba(0,0,0,0.12)]"
-                      >
+                        onClick={() => {
+                          const fullProject = safeData.projects.find(p => String(p.id) === String(project.id));
+                          setSelectedProject(fullProject || null);
+                        }}
+                          className="cursor-pointer group relative rounded-[1.8rem] overflow-hidden bg-[#F8FAFC] border border-[#E2E8F0] p-6 transition-all hover:shadow-lg hover:-translate-y-1"
+                        >
                         <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#8C6E46]">
                           Proyecto {String(index + 1).padStart(2, "0")}
                         </p>
@@ -1011,6 +1021,12 @@ const certificates = useMemo(() => {
             </div>
           </section>
         ) : null}
+        {selectedProject && (
+          <ProjectModalCorporate 
+            project={selectedProject} 
+            onClose={() => setSelectedProject(null)} 
+          />
+        )}
       </div>
     </article>
   )
