@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { publishPortfolioRequest } from "../services/PublishPortfolioService";
+import { getPortfolioVisibilityData } from "@/services/portfolioVisibilityService";
 import { api } from "../services/api";
 import { getAuthSession } from "@/services/auth/auth-storage";
 export const usePublishPortfolio = () => {
@@ -8,27 +9,55 @@ export const usePublishPortfolio = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
-const cleanUrl = (url: any): string => {
-  if (!url || typeof url !== 'string' || !url.startsWith('http')) return "";
+  const [hasPortfolioContent, setHasPortfolioContent] = useState(true);
+  const cleanUrl = (url: any): string => {
+    if (!url || typeof url !== 'string' || !url.startsWith('http')) return "";
 
-  try {
-    const urlObj = new URL(url);
-    
-    // Cambiamos el puerto solo si estamos en localhost
-    if (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') {
-      urlObj.port = '5173'; 
+    try {
+      const urlObj = new URL(url);
+      
+      // Cambiamos el puerto solo si estamos en localhost
+      if (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') {
+        urlObj.port = '5173'; 
+      }
+
+      // Limpiamos el path: eliminamos /api del inicio si existe
+      urlObj.pathname = urlObj.pathname.replace(/^\/api/, '');
+
+      return urlObj.toString();
+    } catch (e) {
+      // Si falla la conversión, devolvemos un fallback seguro
+      return url.replace('/api/p/', '/p/').replace(':8000', ':5173');
     }
+  };
+  const validatePortfolioContent = async () => {
+    try {
+      const data = await getPortfolioVisibilityData();
 
-    // Limpiamos el path: eliminamos /api del inicio si existe
-    urlObj.pathname = urlObj.pathname.replace(/^\/api/, '');
+      const hasContent =
+        data.projects.length > 0 ||
+        data.skills.length > 0 ||
+        data.experience.length > 0 ||
+        data.education.length > 0 ||
+        data.certificates.length > 0 ||
+        data.networks.length > 0;
 
-    return urlObj.toString();
-  } catch (e) {
-    // Si falla la conversión, devolvemos un fallback seguro
-    return url.replace('/api/p/', '/p/').replace(':8000', ':5173');
-  }
-};
+      setHasPortfolioContent(hasContent);
+
+      return hasContent;
+    } catch (error) {
+      console.error("Error validando contenido:", error);
+      setHasPortfolioContent(false);
+      return false;
+    }
+  };
   const handlePublish = async (template: number, isPublic: boolean = true) => {
+    const hasContent = await validatePortfolioContent();
+
+    if (!hasContent) {
+      setError("Debes registrar al menos un elemento de alguna sección antes de publicar.");
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
@@ -110,5 +139,7 @@ const cleanUrl = (url: any): string => {
     handlePublish,
     handleUnpublish,
     checkInitialStatus,
+    hasPortfolioContent,
+    validatePortfolioContent,
   };
 };

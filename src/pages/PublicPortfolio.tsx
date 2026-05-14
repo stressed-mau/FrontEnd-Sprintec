@@ -19,10 +19,19 @@ const PublicPortfolio = () => {
     )
   }
 
+  if (portfolio && portfolio.config?.is_public === false) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-gray-500 text-lg font-medium">
+          Este portafolio no está disponible.
+        </p>
+      </div>
+    )
+  }
   if (!portfolio) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p className="text-gray-500">El portafolio no está disponible.</p>
+        <p className="text-gray-500">Este portafolio no está disponible.</p>
       </div>
     )
   }
