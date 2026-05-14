@@ -1,5 +1,7 @@
-﻿﻿import { useState } from "react"
+﻿import { useState } from "react"
 
+import axios from "axios"
+import type { FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { useEmailValidation } from "@/hooks/useEmailValidation"
@@ -83,6 +85,73 @@ function getValidationMessage(errorList?: unknown) {
   return getValidationMessages(errorList)[0] ?? ""
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value))
+}
+
+function normalizeRegisterValidationErrors(value: unknown): ApiValidationErrors | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  const normalized: ApiValidationErrors = {}
+
+  Object.entries(value).forEach(([key, entry]) => {
+    const messages = getValidationMessages(entry)
+    if (messages.length > 0) {
+      normalized[key] = messages
+    }
+  })
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined
+}
+
+function getRegisterValidationErrors(error: unknown): ApiValidationErrors | undefined {
+  if (error instanceof AuthServiceError) {
+    return error.validationErrors
+  }
+
+  if (isRecord(error)) {
+    const validationErrors = normalizeRegisterValidationErrors(error.validationErrors)
+    if (validationErrors) return validationErrors
+  }
+
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data
+    const responseRecord = isRecord(responseData) ? responseData : {}
+    const nestedData = isRecord(responseRecord.data) ? responseRecord.data : {}
+
+    return (
+      normalizeRegisterValidationErrors(responseRecord.errors) ??
+      normalizeRegisterValidationErrors(nestedData.errors) ??
+      normalizeRegisterValidationErrors(responseRecord.validationErrors) ??
+      normalizeRegisterValidationErrors(nestedData.validationErrors)
+    )
+  }
+
+  return undefined
+}
+
+function getRegisterErrorMessage(error: unknown) {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data
+    if (typeof responseData === "string") return responseData
+
+    if (isRecord(responseData)) {
+      const message = responseData.message ?? responseData.error ?? responseData.detail
+      if (typeof message === "string" && message.trim()) {
+        return message
+      }
+    }
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message
+  }
+
+  return ""
+}
+
 function hasDuplicateIndicator(message: string) {
   return /(taken|used|exist|existe|registrad|registrado|duplicate|duplicad|unique|ya est|ya está)/i.test(message)
 }
@@ -96,13 +165,14 @@ function messageMentionsUsername(message: string) {
 }
 
 function getRegisterFieldFromErrorKey(key: string): "name" | "email" | null {
-  const normalizedKey = key.toLowerCase()
+  const normalizedKey = key.toLowerCase().replace(/\[[^\]]*\]/g, "")
+  const keyParts = normalizedKey.split(/[._-]/).filter(Boolean)
 
-  if (/(^|[._-])(email|e-mail|correo|mail)([._-]|$)/i.test(normalizedKey)) {
+  if (keyParts.some((part) => ["email", "correo", "mail"].includes(part))) {
     return "email"
   }
 
-  if (/(^|[._-])(username|user_name|nombre_usuario|name)([._-]|$)/i.test(normalizedKey)) {
+  if (keyParts.some((part) => ["username", "user", "nombre", "usuario", "name"].includes(part))) {
     return "name"
   }
 
@@ -147,8 +217,10 @@ function mapApiErrors(validationErrors?: ApiValidationErrors): RegisterFormError
   }
 
   const fieldErrors: RegisterFormErrors = {
-    password: normalizeRegisterApiMessage(getValidationMessage(validationErrors.password)),
-    confirmPassword: normalizeRegisterApiMessage(getValidationMessage(validationErrors.password_confirmation)),
+    name: normalizeRegisterApiMessage(getValidationMessage(validationErrors.username), "name"),
+    email: normalizeRegisterApiMessage(getValidationMessage(validationErrors.email), "email"),
+    password: getValidationMessage(validationErrors.password),
+    confirmPassword: getValidationMessage(validationErrors.password_confirmation),
   }
 
   Object.entries(validationErrors).forEach(([key, value]) => {
@@ -162,11 +234,11 @@ function mapApiErrors(validationErrors?: ApiValidationErrors): RegisterFormError
           : null
       const field = fieldFromMessage ?? fieldFromKey
 
-      if (field === "email") {
+      if (field === "email" && !fieldErrors.email) {
         fieldErrors.email = fieldErrors.email || normalizeRegisterApiMessage(message, "email")
       }
 
-      if (field === "name") {
+      if (field === "name" && !fieldErrors.name) {
         fieldErrors.name = fieldErrors.name || normalizeRegisterApiMessage(message, "name")
       }
     })
@@ -222,7 +294,7 @@ export function useRegisterForm() {
     }))
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const emailValidation = validateEmail(values.email)
@@ -275,10 +347,10 @@ export function useRegisterForm() {
 
       navigate(USER_HOME_ROUTE, { replace: true })
     } catch (error) {
-      if (error instanceof AuthServiceError) {
-        const fieldErrors = mapApiErrors(error.validationErrors)
+      if (error instanceof AuthServiceError || axios.isAxiosError(error) || isRecord(error)) {
+        const fieldErrors = mapApiErrors(getRegisterValidationErrors(error))
         const hasSpecificDuplicateError = Boolean(fieldErrors.email || fieldErrors.name)
-        const topLevelErrors = hasSpecificDuplicateError ? {} : mapTopLevelRegisterError(error.message)
+        const topLevelErrors = hasSpecificDuplicateError ? {} : mapTopLevelRegisterError(getRegisterErrorMessage(error))
 
         setErrors({
           ...fieldErrors,

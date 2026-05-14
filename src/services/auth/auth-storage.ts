@@ -3,20 +3,41 @@ import type { AuthResponse, AuthSession, AuthUser } from "@/services/auth/auth-t
 export const AUTH_SESSION_STORAGE_KEY = "portfolio_auth_session"
 const AUTH_SESSION_DURATION_MS = 8 * 60 * 60 * 1000
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value))
+}
+
+function getResponseUser(response: AuthResponse): AuthUser | null {
+  const responseRecord = response as unknown as Record<string, unknown>
+  const data = responseRecord.data
+
+  if (isRecord(data)) {
+    return data as AuthUser
+  }
+
+  const user = responseRecord.user
+  if (isRecord(user)) {
+    return user as AuthUser
+  }
+
+  return null
+}
+
 export function saveAuthSession(response: AuthResponse) {
   if (typeof window === "undefined") {
     return
   }
 
-  const infoIdFromNested = response.data?.user_information?.id
+  const user = getResponseUser(response)
+  if (!user) {
+    throw new Error("Respuesta de autenticación inválida.")
+  }
+
   const session: AuthSession = {
     accessToken: response.access_token,
     tokenType: response.token_type,
     expiresAt: Date.now() + AUTH_SESSION_DURATION_MS,
-    user: {
-      ...response.data,
-      info_id: response.data.info_id ?? infoIdFromNested,
-    },
+    user,
   }
 
   window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session))
