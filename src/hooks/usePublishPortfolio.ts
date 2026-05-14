@@ -56,14 +56,13 @@ export const usePublishPortfolio = () => {
 
     if (!hasContent) {
       setError("Debes registrar al menos un elemento de alguna sección antes de publicar.");
+      await publishPortfolioRequest(template, false);
       return;
     }
     try {
       setLoading(true);
       setError(null);
-      console.log("INICIANDO PUBLICACIÓN");
       const result = await publishPortfolioRequest(template, isPublic);
-      console.log("RESULT:", result);
       window.dispatchEvent(new Event("portfolioUpdated"));
 
       setIsPublished(result.is_public); 
@@ -107,6 +106,7 @@ export const usePublishPortfolio = () => {
         setSelectedTemplate(portfolioData.config?.template ?? null);
         setIsPublished(config?.is_public ?? portfolioData.is_public ?? false);
         setPortfolioUrl(cleanUrl(portfolioData.public_url));
+
         const userSlug = config?.slug || username;
         const finalUrl = portfolioData.public_url 
         ? cleanUrl(portfolioData.public_url) 
@@ -116,7 +116,7 @@ export const usePublishPortfolio = () => {
     } catch (err: any) {
     if (err?.response?.status === 404) {
         // No borres la URL aquí si quieres mostrar una URL "predeterminada"
-        setSelectedTemplate(null);
+        //setSelectedTemplate(null);
         setIsPublished(false);
         const session = getAuthSession();
         setPortfolioUrl(`${window.location.origin}/p/${session?.user?.username}`);

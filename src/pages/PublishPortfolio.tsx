@@ -110,13 +110,13 @@ const PublishPortfolio = () => {
                   </p>
                 )}
                   <button
-                  disabled={!selectedTemplate || loading}
+                  disabled={!selectedTemplate || loading || !hasPortfolioContent}
                   onClick={() => {
                     if (!selectedTemplate) return;
                     void handlePublish(selectedTemplate);
                   }}
                   className={`group relative flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-white transition-all shadow-xl active:scale-95 ${
-                    loading || !selectedTemplate
+                    loading || !selectedTemplate || !hasPortfolioContent
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-[#003A6C] hover:bg-[#002a4d] hover:-translate-y-1"
                   }`}
