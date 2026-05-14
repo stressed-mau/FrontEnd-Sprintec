@@ -129,43 +129,48 @@ export default function RegisterProfilePage() {
     <div className={`flex min-h-screen flex-col ${isInitialRegisterFlow ? 'bg-[#C2DBED]' : 'bg-[#F7F0E1]'}`}>
       {renderHeader()}
       {renderMain(
-        <div className="w-full max-w-6xl"> {/* Un poco más ancho para este formulario */}
-          <Card className="border-[#9CC2DB] bg-white/95 shadow-2xl backdrop-blur-sm">
-            <CardHeader className="space-y-4 text-center">
-              <div className="space-y-2">
-                <CardTitle className="text-2xl font-bold text-[#003A6C]">Completar Datos Personales</CardTitle>
-                <CardDescription className="text-sm leading-6 text-[#4F6F88]">
-                  Esta información es importante para tu perfil profesional.
-                </CardDescription>
-              </div>
-            </CardHeader>
+        <div className="w-full max-w-6xl space-y-6">
+          <div className="text-center sm:text-left">
+            <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">Registro de datos personales</h1>
+            <p className="mt-2 text-sm text-[#4B778D] md:text-base">
+              Registra tus datos con cuidado y verifica que esten correctos, porque este registro solo se podra realizar una sola vez. Despues podras ajustar la informacion permitida desde la subseccion de editar datos personales.
+            </p>
+          </div>
 
-            <CardContent>
+          <div className="flex items-start gap-3 rounded-xl border border-[#F97316] bg-[#FFF7ED] px-4 py-3">
+            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-[#EA580C]" />
+            <p className="text-xs font-medium leading-5 text-[#7C2D12]">
+              Revisa especialmente tu nombre, correo, telefono y foto antes de guardar. Esta informacion se usara en tu perfil profesional.
+            </p>
+          </div>
+
+          <Card className="border-[#9CC2DB] bg-white/95 shadow-2xl backdrop-blur-sm">
+            <CardContent className="px-5 py-5 sm:px-6 sm:py-6">
               {/* Usamos el formulario directamente, estilizado como en el modal pero integrado en la card */}
               <form 
                 noValidate 
                 onSubmit={(e) => { e.preventDefault(); setShowConfirmModal(true); }} 
-                className="flex flex-col gap-8"
+                className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]"
               >
                 {/* Sección de Foto de Perfil - Reutilizada del modal */}
-                <div className="flex flex-col items-center gap-2 border-b border-[#C2DBED] pb-6">
-                  <div className="w-32 h-32 bg-[#E2E8F0] rounded-full flex items-center justify-center overflow-hidden border border-gray-400 shadow-inner">
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-[#C2DBED] bg-[#F8FBFD] p-4 text-center lg:self-start">
+                  <div className="flex size-24 items-center justify-center overflow-hidden rounded-full border border-gray-300 bg-[#E2E8F0] shadow-inner">
                     {preview || form.image ? (
                       <img src={preview || form.image} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <User size={60} className="text-gray-400" />
+                      <User size={44} className="text-gray-400" />
                     )}
                   </div>
                   
-                  <p className="text-[#003A6C] text-sm font-medium mt-2">Foto de perfil *</p>
+                  <p className="text-sm font-bold text-[#003A6C]">Foto de perfil *</p>
                   
                   <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                   
-                  <div className="flex gap-2 mt-1">
+                  <div className="flex w-full flex-col gap-2">
                     <button 
                       type="button" 
                       onClick={handleClick}
-                      className="bg-[#c2dbed] border border-[#4982AD] text-[#003A6C] px-5 py-2 rounded-xl text-sm flex items-center gap-2 hover:bg-white transition-all shadow-sm"
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#4982AD] bg-[#c2dbed] px-4 text-sm font-medium text-[#003A6C] shadow-sm transition-all hover:bg-white"
                     >
                       <Upload size={16} /> {form.image || preview ? 'Cambiar foto' : 'Subir foto'}
                     </button>
@@ -174,24 +179,24 @@ export default function RegisterProfilePage() {
                       <button 
                         type="button"
                         onClick={removeImage}
-                        className="bg-[#003A6C] text-white px-4 py-2 text-sm rounded-xl font-medium hover:bg-[#1a4f85] transition-colors"           
+                        className="inline-flex h-10 items-center justify-center rounded-xl bg-[#003A6C] px-4 text-sm font-medium text-white transition-colors hover:bg-[#1a4f85]"           
                       >
                         <X size={16} className="mr-1 inline" /> Eliminar
                       </button>
                     )}
                   </div>
                   
-                  <p className="text-gray-500 text-[11px] mt-1">Formatos: JPG, PNG (máx. 2MB)</p>
+                  <p className="text-[11px] leading-4 text-gray-500">Formatos: JPG, PNG (máx. 2MB)</p>
                   {errors.image && (
                     <p className="text-red-500 text-xs mt-1">{errors.image}</p>
                   )}
                 </div>
 
                 {/* Campos de Texto - Reutilizados y adaptados al estilo de CrearCuenta */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                  <div className="flex flex-col gap-6">
+                <div className="grid grid-cols-1 gap-x-5 gap-y-4 md:grid-cols-2">
+                  <div className="flex flex-col gap-4">
                   {/* Nombre completo */}
-                  <div className="space-y-2 md:col-span-2">
+                  <div className="space-y-1.5 md:col-span-2">
                     <label htmlFor="fullName" className="block text-sm font-medium text-[#003A6C]">Nombre completo *</label>
                     <input 
                       id="fullName" 
@@ -200,7 +205,7 @@ export default function RegisterProfilePage() {
                       type="text" 
                       maxLength={100} 
                       placeholder="Ej: Juan Pérez" 
-                      className="w-full px-4 py-2.5 rounded-lg border border-[#C2DBED] bg-white text-sm outline-none focus:ring-2 focus:ring-[#4982AD]/50 text-[#003A6C] placeholder:text-[#7B98AF]" 
+                      className="h-10 w-full rounded-lg border border-[#C2DBED] bg-white px-3 text-sm text-[#003A6C] outline-none placeholder:text-[#7B98AF] focus:ring-2 focus:ring-[#4982AD]/50" 
                     />
                     {errors.fullName ? (
                       <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
@@ -209,16 +214,16 @@ export default function RegisterProfilePage() {
                     )}
                   </div>
                  {/* Biografía */}
-                  <div className="space-y-2 md:col-span-2">
+                  <div className="space-y-1.5 md:col-span-2">
                     <label htmlFor="bio" className="block text-sm font-medium text-[#003A6C]">Biografía</label>
                     <textarea 
                       id="bio" 
                       value={form.bio} 
                       onChange={handleChange} 
-                      rows={6} 
+                      rows={4} 
                       maxLength={300} 
                       placeholder="Cuéntanos sobre ti y tu experiencia..." 
-                      className="w-full px-4 py-2.5 rounded-lg border border-[#C2DBED] bg-white text-sm outline-none focus:ring-2 focus:ring-[#4982AD]/50 text-[#003A6C] placeholder:text-[#7B98AF] resize-none" 
+                      className="w-full resize-none rounded-lg border border-[#C2DBED] bg-white px-3 py-2 text-sm text-[#003A6C] outline-none placeholder:text-[#7B98AF] focus:ring-2 focus:ring-[#4982AD]/50" 
                     />
                     {errors.bio ? (
                       <p className="text-red-500 text-xs mt-1">{errors.bio}</p>
@@ -227,9 +232,9 @@ export default function RegisterProfilePage() {
                     )}
                    </div>
                    </div>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {/* Ocupación */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <label htmlFor="occupation" className="block text-sm font-medium text-[#003A6C]">Ocupación</label>
                     <input 
                       id="occupation" 
@@ -238,7 +243,7 @@ export default function RegisterProfilePage() {
                       type="text" 
                       maxLength={80} 
                       placeholder="Ej: Desarrollador Full Stack" 
-                      className="w-full px-4 py-2.5 rounded-lg border border-[#C2DBED] bg-white text-sm outline-none focus:ring-2 focus:ring-[#4982AD]/50 text-[#003A6C] placeholder:text-[#7B98AF]" 
+                      className="h-10 w-full rounded-lg border border-[#C2DBED] bg-white px-3 text-sm text-[#003A6C] outline-none placeholder:text-[#7B98AF] focus:ring-2 focus:ring-[#4982AD]/50" 
                     />
                     {errors.occupation ? (
                       <p className="text-red-500 text-xs mt-1">{errors.occupation}</p>
@@ -248,7 +253,7 @@ export default function RegisterProfilePage() {
                   </div>
 
                   {/* Residencia actual */}
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <label htmlFor="location" className="block text-sm font-medium text-[#003A6C]">Residencia actual</label>
                     <input 
                       id="location" 
@@ -257,7 +262,7 @@ export default function RegisterProfilePage() {
                       type="text" 
                       maxLength={100} 
                       placeholder="Ej: La Paz, Bolivia" 
-                      className="w-full px-4 py-2.5 rounded-lg border border-[#C2DBED] bg-white text-sm outline-none focus:ring-2 focus:ring-[#4982AD]/50 text-[#003A6C] placeholder:text-[#7B98AF]" 
+                      className="h-10 w-full rounded-lg border border-[#C2DBED] bg-white px-3 text-sm text-[#003A6C] outline-none placeholder:text-[#7B98AF] focus:ring-2 focus:ring-[#4982AD]/50" 
                     />
                     {errors.location ? (
                       <p className="text-red-500 text-xs mt-1">{errors.location}</p>
@@ -274,13 +279,13 @@ export default function RegisterProfilePage() {
                     </label>
                     <input 
                         id="email" 
-                        name="email" // Importante: debe coincidir con la propiedad en tu estado 'form'
+                        name="email"
                         value={form.email} 
                         onChange={handleChange} 
                         type="email" 
                         maxLength={60} 
                         placeholder="Ej: juan.perez@example.com" 
-                        className="w-full px-4 py-3 rounded-xl border border-[#9CC2DB] focus:ring-2 focus:ring-[#7C4AA6] outline-none transition-all placeholder:text-[#7B98AF]" 
+                        className="h-10 w-full rounded-lg border border-[#C2DBED] bg-white px-3 text-sm text-[#003A6C] outline-none placeholder:text-[#7B98AF] focus:ring-2 focus:ring-[#4982AD]/50" 
                     />
 
                     {errors.email ? (
@@ -302,13 +307,13 @@ export default function RegisterProfilePage() {
                     ) : null}
                     </div>
                   {/* Número de contacto */}
-                  <div className="space-y-2 md:col-span-2">
+                  <div className="space-y-1.5 md:col-span-2">
                     <label htmlFor="phone" className="block text-sm font-medium text-[#003A6C]">Numero de contacto *</label>
                     <div className="flex gap-2">
                       <select 
                         value={countryCode} 
                         onChange={(e) => setCountryCode(e.target.value)}
-                        className="w-28 px-3 py-2.5 rounded-lg border border-[#C2DBED] bg-white text-sm outline-none focus:ring-2 focus:ring-[#4982AD]/50 text-[#003A6C]"
+                        className="h-10 w-28 rounded-lg border border-[#C2DBED] bg-white px-2 text-sm text-[#003A6C] outline-none focus:ring-2 focus:ring-[#4982AD]/50"
                       >
                         {allCountries.map((c) => (
                           <option key={c.iso2} value={c.dialCode}>+{c.dialCode} ({c.iso2.toUpperCase()})</option>
@@ -323,7 +328,7 @@ export default function RegisterProfilePage() {
                         maxLength={8}
                         inputMode="numeric"
                         pattern="[0-9]*"
-                        className="flex-1 px-4 py-2.5 rounded-lg border border-[#C2DBED] bg-white text-sm outline-none focus:ring-2 focus:ring-[#4982AD]/50 text-[#003A6C] placeholder:text-[#7B98AF]" 
+                        className="h-10 flex-1 rounded-lg border border-[#C2DBED] bg-white px-3 text-sm text-[#003A6C] outline-none placeholder:text-[#7B98AF] focus:ring-2 focus:ring-[#4982AD]/50" 
                       />
                     </div>
                     {errors.phone ? (
@@ -336,11 +341,11 @@ export default function RegisterProfilePage() {
                 </div>
 
                 {/* Botón de Enviar - Estilo CrearCuenta */}
-                <div className="flex flex-col gap-3 pt-4 sm:flex-row">
+                <div className="flex flex-col gap-3 pt-1 sm:flex-row lg:col-span-2">
                     <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="h-12 flex-1 bg-[#003A6C] hover:bg-[#002d54] text-white font-bold rounded-xl shadow-lg transition-all"
+                        className="h-10 w-full bg-[#003A6C] hover:bg-[#002d54] text-white font-bold rounded-lg shadow-md transition-all sm:w-32"
                     >
                         {isSubmitting ? "Guardando..." : isInitialRegisterFlow ? "Registrar datos personales" : "Registrar"}
                     </Button>
@@ -349,7 +354,7 @@ export default function RegisterProfilePage() {
                         variant="outline"
                         disabled={isSubmitting}
                         onClick={() => navigate(USER_HOME_ROUTE, { replace: true })}
-                        className="h-12 flex-1 border-[#4982AD] bg-white text-[#003A6C] font-bold rounded-xl hover:bg-[#E2EEF6]"
+                        className="h-10 w-full border-[#4982AD] bg-white text-[#003A6C] font-bold rounded-lg hover:bg-[#E2EEF6] sm:w-32"
                     >
                         {isInitialRegisterFlow ? "Dejar para despues y entrar al Home" : "Cancelar"}
                     </Button>
@@ -364,19 +369,20 @@ export default function RegisterProfilePage() {
       {/* Modal de Confirmación - Reutilizado */}
       <ConfirmActionModal
         isOpen={showConfirmModal}
-        title="¿Completar registro?"
-        message="Tus datos personales se guardarán y serás redirigido a tu panel principal."
-        confirmText="Aceptar"
+        title="Confirmar registro"
+        message="¿Está seguro de que desea guardar sus datos personales?"
+        confirmText={isSubmitting ? "Guardando..." : "Aceptar"}
         cancelText="Cancelar"
-        onConfirm={handleConfirmSave} // Aquí es donde ocurre la navegación
+        onConfirm={handleConfirmSave}
         onCancel={() => setShowConfirmModal(false)}
       />
       <ConfirmationModal
         isOpen={showSuccessModal}
+        title="Éxito"
         message="Datos personales registrados correctamente."
         onClose={() => {
           setShowSuccessModal(false);
-          navigate(USER_HOME_ROUTE, { replace: true });
+          navigate('/personal/ver', { replace: true });
         }}
       />
     </div>

@@ -3,7 +3,7 @@
 import { useNavigate } from "react-router-dom"
 
 import { useEmailValidation } from "@/hooks/useEmailValidation"
-import { REGISTER_PROFILE_ROUTE } from "@/routes/route-paths"
+import { USER_HOME_ROUTE } from "@/routes/route-paths"
 import {
   AuthServiceError,
   clearAuthSession,
@@ -179,7 +179,6 @@ export function useRegisterForm() {
   const navigate = useNavigate()
   const [values, setValues] = useState<RegisterValues>(INITIAL_VALUES)
   const [errors, setErrors] = useState<RegisterFormErrors>({})
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(INITIAL_VALUES.email)
 
@@ -274,7 +273,7 @@ export function useRegisterForm() {
         }),
       )
 
-      setShowSuccessModal(true)
+      navigate(USER_HOME_ROUTE, { replace: true })
     } catch (error) {
       if (error instanceof AuthServiceError) {
         const fieldErrors = mapApiErrors(error.validationErrors)
@@ -293,11 +292,6 @@ export function useRegisterForm() {
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  function closeSuccessModal() {
-    setShowSuccessModal(false)
-    navigate(REGISTER_PROFILE_ROUTE, { replace: true, state: { fromRegister: true } })
   }
 
   function applyEmailSuggestion(suggestedEmail: string) {
@@ -320,12 +314,10 @@ export function useRegisterForm() {
     values,
     errors,
     emailSuggestion: suggestion,
-    showSuccessModal,
     isSubmitting,
     updateField,
     handleBlur,
     handleSubmit,
     applyEmailSuggestion,
-    closeSuccessModal,
   }
 }

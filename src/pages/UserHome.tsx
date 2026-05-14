@@ -2,7 +2,7 @@ import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { getAuthSession } from "@/services/auth";
-import { FolderGit2, Palette, Share2, Info } from "lucide-react";
+import { AlertTriangle, FolderGit2, Palette, Share2, Info } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useUserPersonalData } from "@/hooks/useUserPersonalData";
 import { REGISTER_PROFILE_ROUTE } from "@/routes/route-paths";
@@ -28,16 +28,21 @@ const UserHome = () => {
             </div>
 
             {!loading && !hasPersonalData ? (
-              <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-[#6dacbf] bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-[#003A6C]">Completa tus datos personales</h2>
-                  <p className="mt-1 text-sm leading-6 text-gray-600">
+              <div className="mb-8 flex flex-col gap-4 rounded-2xl border-2 border-[#F97316] bg-gradient-to-r from-[#FFF1E6] via-[#FFE4E6] to-[#FEF3C7] p-5 shadow-lg shadow-orange-900/10 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-4">
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#DC2626] text-white shadow-md">
+                    <AlertTriangle className="size-6" />
+                  </div>
+                  <div>
+                  <h2 className="text-lg font-black text-[#B91C1C]">Completa tus datos personales</h2>
+                  <p className="mt-1 text-sm font-medium leading-6 text-[#7C2D12]">
                     Es muy importante finalizar el llenado de tus datos personales. Este registro solo se puede realizar una sola vez.
                   </p>
+                  </div>
                 </div>
                 <Link
                   to={REGISTER_PROFILE_ROUTE}
-                  className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl bg-[#003A6C] px-5 text-sm font-bold text-white transition-colors hover:bg-[#002d54]"
+                  className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl bg-[#EA580C] px-5 text-sm font-bold text-white shadow-md transition-colors hover:bg-[#C2410C]"
                 >
                   Registrar datos personales
                 </Link>

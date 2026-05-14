@@ -98,8 +98,14 @@ const EditProfilePage = () => {
         <div className="flex flex-col lg:flex-row flex-1">
           <Sidebar />
           <main className="flex-1 p-4 sm:p-6 md:p-10">
+            <div className="mx-auto max-w-6xl space-y-6">
+              <div className="text-center sm:text-left">
+                <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">Editar datos personales</h1>
+                <p className="mt-2 text-sm text-[#4B778D] md:text-base">Actualiza con cuidado la informacion visible en tu perfil profesional.</p>
+              </div>
+
             <div className="mx-auto max-w-3xl rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
-              <h1 className="text-2xl font-bold text-[#003A6C]">Aun no hay registro</h1>
+              <h2 className="text-2xl font-bold text-[#003A6C]">Aun no hay registro</h2>
               <p className="mt-3 text-sm leading-6 text-gray-600">
                 Primero debes registrar tus datos personales. Ese registro solo se realiza una vez; despues podras editar la informacion desde esta subseccion.
               </p>
@@ -110,6 +116,7 @@ const EditProfilePage = () => {
               >
                 Registrar datos personales
               </button>
+            </div>
             </div>
           </main>
         </div>
@@ -124,13 +131,15 @@ const EditProfilePage = () => {
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <div className="max-w-5xl mx-auto">
-            <h1 className="text-[#003A6C] text-3xl font-bold mb-2">Editar Datos Personales</h1>
-            <p className="text-gray-600 mb-8 text-sm">Actualiza la información de tu perfil</p>
+          <div className="mx-auto max-w-6xl space-y-6">
+            <div className="text-center sm:text-left">
+              <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">Editar datos personales</h1>
+              <p className="mt-2 text-sm text-[#4B778D] md:text-base">Actualiza con cuidado la informacion visible en tu perfil profesional.</p>
+            </div>
 
-            <form onSubmit={handleSaveTrigger} className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-              <div className="flex flex-col items-center justify-center mb-10 text-center">
-                <div className="w-32 h-32 bg-[#E2E8F0] rounded-full flex items-center justify-center overflow-hidden border border-gray-300 mb-4">
+            <form onSubmit={handleSaveTrigger} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <div className="flex flex-col items-center justify-center mb-6 text-center">
+                <div className="w-24 h-24 bg-[#E2E8F0] rounded-full flex items-center justify-center overflow-hidden border border-gray-300 mb-3">
                   {preview || form.image ? (
                     <img src={preview || form.image} alt="Vista previa" className="w-full h-full object-cover" />
                   ) : (
@@ -156,8 +165,8 @@ const EditProfilePage = () => {
                 {errors.image ? <p className="text-red-500 text-xs mt-1">{errors.image}</p> : null}
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-10 gap-y-6">
-                <div className="flex flex-col gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-5">
+                <div className="flex flex-col gap-5">
                   <div className="space-y-1">
                     <label className="block text-sm font-medium text-[#003A6C]">Nombre completo *</label>
                     <input
@@ -176,7 +185,7 @@ const EditProfilePage = () => {
                       id="bio"
                       value={form.bio}
                       onChange={handleChange}
-                      rows={10}
+                      rows={6}
                       maxLength={300}
                       placeholder="Cuéntanos sobre ti y tu experiencia..."
                       className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]"
@@ -185,7 +194,7 @@ const EditProfilePage = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-5">
                   <div className="space-y-1">
                     <label className="block text-sm font-medium text-[#003A6C]">Correo electrónico público *</label>
                     <input
