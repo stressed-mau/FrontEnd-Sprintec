@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
-import { Home, LogOut, User, Search} from "lucide-react"
+import { Home, LogOut, User, Search, BarChart2, FileText} from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
+import { NotificationBell } from "./NotificationBell"
 
 import logo from "@/assets/logo.png"
 import { useLogout } from "@/hooks/useLogout"
@@ -73,42 +74,57 @@ const HeaderUser = () => {
         </button>
       </nav>
 
-      <div className="relative order-2 flex justify-end md:order-3 md:flex-1">
-        <button
-          id="btn-user-menu"
-          onClick={() => setIsMenuOpen((current) => !current)}
-          className="flex items-center gap-2 rounded-lg border border-[#4982ad] bg-white px-3 py-1.5 transition-all hover:bg-[#F7F0E1] md:px-4"
-        >
-          <User className="h-5 w-5 text-[#003A6C]" />
-          <span className="hidden text-sm font-medium text-[#003A6C] md:inline">{displayName}</span>
-        </button>
+      <div className="relative order-2 flex items-center gap-3 md:order-3 md:flex-1 justify-end">
+        
+        <NotificationBell />
+        <div className="relative">
+          <button
+            id="btn-user-menu"
+            onClick={() => setIsMenuOpen((current) => !current)}
+            className="flex items-center gap-2 rounded-lg border border-[#4982ad] bg-white px-3 py-1.5 transition-all hover:bg-[#F7F0E1] md:px-4" >
+            <User className="h-5 w-5 text-[#003A6C]" />
+            <span className="hidden text-sm font-medium text-[#003A6C] md:inline">{displayName}</span>
+          </button>
 
-        {isMenuOpen ? (
-          <>
-            <div className="fixed inset-0 z-[-1]" onClick={() => setIsMenuOpen(false)} />
-            <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-[#4982ad] bg-white shadow-lg animate-in fade-in zoom-in duration-200 md:w-60">
-              <div className="border-b border-[#0E7D96] p-4 text-left">
-                <p className="text-sm font-normal text-gray-800">{displayName}</p>
-                <p className="truncate text-xs text-[#0E7D96]">{displayEmail}</p>
-                <p className="mt-1 text-xs text-[#0E7D96]">{displayRole}</p>
+          {isMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-[-1]" onClick={() => setIsMenuOpen(false)} />
+              <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-[#4982ad] bg-white shadow-lg animate-in fade-in zoom-in duration-200 md:w-60">
+                <div className="border-b border-[#0E7D96] p-4 text-left">
+                  <p className="text-sm font-normal text-gray-800">{displayName}</p>
+                  <p className="truncate text-xs text-[#0E7D96]">{displayEmail}</p>
+                  <p className="mt-1 text-xs text-[#0E7D96]">{displayRole}</p>
+                </div>
+                <div className="px-3 py-2">
+                  <button
+                    onClick={() => navigateTo("/perfil")}
+                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]" >
+                    <User size={16} className="text-gray-500" /> Mi perfil
+                  </button>
+
+                  <button
+                    onClick={() => navigateTo("/analitica")}
+                    className="mt-2 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"                >
+                    <BarChart2 size={16} className="text-gray-500" /> Analítica
+                  </button>
+
+                  <button
+                    onClick={() => navigateTo("/tendencia-plantillas")}
+                    className="mt-2 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"  >
+                    <FileText size={16} className="text-gray-500" /> Reportes
+                  </button>
+                </div>
+                <div className="border-t border-[#0E7D96] px-3 py-2">
+                  <button
+                    onClick={logout}
+                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-[#C4A57C]" >
+                    <LogOut size={16} /> Cerrar sesión
+                  </button>
+                </div>
               </div>
-              <div className="px-3 py-2">
-                <button
-                  onClick={() => navigateTo("/perfil")}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]" >
-                  <User size={16} className="text-gray-500" />  Mi perfil
-                </button>
-              </div>
-              <div className="border-t border-[#0E7D96] px-3 py-2">
-                <button
-                  onClick={logout}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-[#C4A57C]"   >
-                  <LogOut size={16} />  Cerrar sesión
-                </button>
-              </div>
-            </div>
-          </>
-        ) : null}
+            </>
+          )}
+        </div>
       </div>
     </header>
   )

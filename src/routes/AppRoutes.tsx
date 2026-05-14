@@ -38,6 +38,7 @@ import ViewProjectsPage from "@/pages/projects/ViewProjectsPage"
 import RegisterProfilePage from '@/pages/profile/RegisterProfilePage';
 import EditProfilePage from '@/pages/profile/EditProfilePage';
 import ViewProfilePage from '@/pages/profile/ViewProfilePage';
+import TemplateTrendsPage from "@/pages/TemplateTrendsPage"
 import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE, REGISTER_PROFILE_ROUTE, CERTIFICATES_ROUTE } from "@/routes/route-paths"
 
 function AppRoutes() {
@@ -63,6 +64,7 @@ function AppRoutes() {
         <Route path="/habilidades/añadir" element={<AddSkillsPage />} />
         <Route path="/habilidades/editar" element={<EditSkillsPage />} />
         <Route path="/habilidades/eliminar" element={<DeleteSkillsPage />} />
+        <Route path="/tendencia-plantillas" element={<TemplateTrendsPage />} />
         <Route path="/red-profesional" element={<NetworksPage />} />
         <Route path="/proyectos" element={<Navigate to="/proyectos/ver" replace />} />
         <Route path="/proyectos/ver" element={<ViewProjectsPage />} />
@@ -84,7 +86,7 @@ function AppRoutes() {
         <Route path="/certificados/añadir" element={<AddCertificatesPage />} />
         <Route path="/certificados/editar" element={<EditCertificatesPage />} />
         <Route path="/certificados/eliminar" element={<DeleteCertificatesPage />} />
-        
+
         <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
         <Route path="/personal/ver" element={<ViewProfilePage />} />
         <Route path="/personal/editar" element={<EditProfilePage />} />
