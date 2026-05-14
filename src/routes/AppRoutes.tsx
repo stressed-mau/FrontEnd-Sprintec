@@ -15,6 +15,7 @@ import LoginPage from "@/pages/LoginPage"
 import NetworksPage from "@/pages/NetworksPage"
 import PortfolioTemplatesPage from "@/pages/PortfolioTemplatesPage"
 import PortfolioVisibilityConfigPage from "@/pages/PortfolioVisibilityConfigPage"
+import PortfolioViewsReportPage from "@/pages/PortfolioViewsReportPage"
 import ProfilePage from "@/pages/ProfilePage"
 import PublishPortfolio from "@/pages/PublishPortfolio"
 import RegisterPage from "@/pages/RegisterPage"
@@ -56,6 +57,7 @@ function AppRoutes() {
         <Route path="/publicar" element={<PublishPortfolio />} />
         <Route path="/plantillas" element={<PortfolioTemplatesPage />} />
         <Route path="/perfil" element={<ProfilePage />} />
+        <Route path="/visualizaciones" element={<PortfolioViewsReportPage />} />
         <Route path={REGISTER_PROFILE_ROUTE} element={<RegisterProfilePage />} />
          
         <Route path="/habilidades" element={<ViewSkillsPage />} /> 
