@@ -1,0 +1,25 @@
+import Header from '../../components/HeaderUser'; 
+import AdminSidebar from '../../components/Admin/AdminSidebar';
+import { Footer } from '@/components/Footer';
+const UserReports = () => {
+  return (
+    <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
+      <Header />
+      <div className="flex flex-col lg:flex-row flex-1">
+        <AdminSidebar />
+        <main className="flex-1 p-4 sm:p-6 md:p-10">
+          <div className="mx-auto max-w-6xl space-y-6">
+            <div className="text-center sm:text-left">
+              <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">Gestión de Usuarios</h1>
+              <p className="mt-2 text-sm text-[#4B778D] md:text-base">Administra los usuarios registrados en el sistema</p>
+            </div>
+          </div>
+        </main>
+      </div>
+      <Footer />
+    </div>
+  );
+};
+
+
+export default UserReports;

@@ -39,6 +39,9 @@ import ViewProjectsPage from "@/pages/projects/ViewProjectsPage"
 import RegisterProfilePage from '@/pages/profile/RegisterProfilePage';
 import EditProfilePage from '@/pages/profile/EditProfilePage';
 import ViewProfilePage from '@/pages/profile/ViewProfilePage';
+import AdminDashboard from "@/pages/admin/AdminDashboard"
+import UserReports from "@/pages/admin/UserReports"
+import CertificateReports from "@/pages/admin/CertificateReports"
 import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE, REGISTER_PROFILE_ROUTE, CERTIFICATES_ROUTE } from "@/routes/route-paths"
 
 function AppRoutes() {
@@ -92,8 +95,11 @@ function AppRoutes() {
         <Route path="/personal/editar" element={<EditProfilePage />} />
         
         <Route path="/portafolio" element={<MyPortfolio />} />
-      </Route>   
+      </Route> 
       <Route path="/p/:slug" element={<PublicPortfolio />} />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      <Route path="/admin/usuarios" element={<UserReports />} />
+      <Route path="/admin/certificados" element={<CertificateReports />} />
     </Routes>
   )
 }

@@ -201,7 +201,8 @@ const EditProfilePage = () => {
                       id="email"
                       value={form.email}
                       onChange={handleChange}
-                      type="email"
+                      type="text" 
+                      inputMode="email"
                       maxLength={60}
                       placeholder="Ej: juan.perez@example.com"
                       className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm outline-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]"

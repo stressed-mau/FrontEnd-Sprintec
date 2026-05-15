@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { allCountries } from 'country-telephone-data';
-import { AlertTriangle, Upload, X, User } from 'lucide-react';
+import { AlertTriangle, Check, Upload, X, User } from 'lucide-react';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header'; // Usamos el Header público/general
@@ -33,43 +33,44 @@ export default function RegisterProfilePage() {
     handlePhoneChange,
     handleChange,
     isSubmitting,
-    emailSuggestion,        
+    emailSuggestion,
     applyEmailSuggestion,
-    handleSubmit,    
+    handleSubmit,
     handleClick,
     handleFileChange,
     removeImage,
     charLimitWarning,
     loading,
     hasPersonalData,
+    success,
+    setSuccess,
   } = useUserPersonalData();
   
   const handleConfirmSave = async () => {
     setShowConfirmModal(false);
+
     const fakeEvent = {
-        preventDefault: () => {},
+      preventDefault: () => {},
     } as React.FormEvent<HTMLFormElement>;
 
-    try {
-        const success = await handleSubmit(fakeEvent);
-        if (!success) return; 
-        setShowSuccessModal(true);
-        
-    } catch (error) {
-        console.error("Error al registrar los datos:", error);
-    }
+    await handleSubmit(fakeEvent);
   };
 
   const renderHeader = () => (isInitialRegisterFlow ? <Header /> : <HeaderUser />);
   const renderMain = (content: React.ReactNode) =>
-    isInitialRegisterFlow ? (
-      <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6 sm:py-14">{content}</main>
-    ) : (
-      <div className="flex flex-col lg:flex-row flex-1">
-        <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 md:p-10">{content}</main>
-      </div>
-    );
+  isInitialRegisterFlow ? (
+    <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6 sm:py-14">{content}</main>
+  ) : (
+    <div className="flex flex-col lg:flex-row flex-1">
+      <Sidebar />
+      <main className="flex-1 p-4 sm:p-6 md:p-10">{content}</main>
+    </div>
+  );
+  useEffect(() => {
+    if (success && !showSuccessModal) {
+      setShowSuccessModal(true);
+    }
+  }, [success, showSuccessModal]);
 
   if (loading) {
     return (
@@ -86,34 +87,27 @@ export default function RegisterProfilePage() {
     );
   }
 
-  if (hasPersonalData) {
+  if (hasPersonalData && !showSuccessModal) {
     return (
       <div className={`flex min-h-screen flex-col ${isInitialRegisterFlow ? 'bg-[#C2DBED]' : 'bg-[#F7F0E1]'}`}>
         {renderHeader()}
         {renderMain(
-          <Card className="mx-auto w-full max-w-xl border-2 border-[#F2C94C] bg-white/95 text-center shadow-2xl backdrop-blur-sm">
+          <Card className="mx-auto w-full max-w-xl border-2 border-gray-100 bg-white/95 text-center backdrop-blur-sm">
             <CardHeader className="flex flex-col items-center space-y-4 px-8 pt-8 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#FFF4CC] text-[#B7791F]">
-                <AlertTriangle className="h-9 w-9" />
+              <div className="w-16 h-16 bg-[#E1EFFE] rounded-full flex items-center justify-center mb-6">
+                <Check className="size-8 text-[#003A6C] stroke-[3px]" />
               </div>
               <CardTitle className="text-2xl font-bold text-[#003A6C]">Registro ya completado</CardTitle>
               <CardDescription className="mx-auto max-w-md text-center text-sm leading-6 text-[#4F6F88]">
-                El registro de datos personales solo se hace una vez. Si quieres modificar tu informacion, ve a la subseccion de editar datos personales.
+                Tus datos personales ya se encuentran registrados correctamente en la plataforma.
               </CardDescription>
             </CardHeader>
             <CardContent className="mx-auto flex w-full max-w-md flex-col gap-3 px-8 pb-8 sm:flex-row">
               <Button
                 type="button"
-                onClick={() => navigate('/personal/editar')}
-                className="h-11 flex-1 bg-[#003A6C] text-white hover:bg-[#002d54]"
-              >
-                Ir a editar datos personales
-              </Button>
-              <Button
-                type="button"
                 variant="outline"
                 onClick={() => navigate(USER_HOME_ROUTE)}
-                className="h-11 flex-1 border-[#4982AD] text-[#003A6C] hover:bg-[#E2EEF6]"
+                className="h-11 flex-1 bg-[#003A6C] text-white hover:bg-[#002d54] hover:text-white"
               >
                 Volver al Home
               </Button>
@@ -220,7 +214,7 @@ export default function RegisterProfilePage() {
                       id="bio" 
                       value={form.bio} 
                       onChange={handleChange} 
-                      rows={4} 
+                      rows={5} 
                       maxLength={300} 
                       placeholder="Cuéntanos sobre ti y tu experiencia..." 
                       className="w-full resize-none rounded-lg border border-[#C2DBED] bg-white px-3 py-2 text-sm text-[#003A6C] outline-none placeholder:text-[#7B98AF] focus:ring-2 focus:ring-[#4982AD]/50" 
@@ -275,7 +269,7 @@ export default function RegisterProfilePage() {
                    {/* --- CORREO PÚBLICO --- */}
                     <div className="space-y-1.5 md:col-span-2">
                     <label htmlFor="email" className="text-sm font-semibold text-[#003A6C] ml-1">
-                        Correo público *
+                        Correo electrónico público *
                     </label>
                     <input 
                         id="email" 
@@ -382,6 +376,7 @@ export default function RegisterProfilePage() {
         message="Datos personales registrados correctamente."
         onClose={() => {
           setShowSuccessModal(false);
+          setSuccess('');
           navigate('/personal/ver', { replace: true });
         }}
       />

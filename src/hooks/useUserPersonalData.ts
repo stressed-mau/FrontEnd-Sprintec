@@ -89,9 +89,9 @@ export const useUserPersonalData = () => {
   const validateField = (id: string, value: string) => {
   switch (id) {
     case "fullName":
-      if (!value.trim()) return "El nombre completo es obligatorio.";
-      if (EMOJI_REGEX.test(value)) return "El nombre completo no permite emoticones.";
-      if (!/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/.test(value)) return "El nombre completo solo puede contener letras.";
+      if (!value.trim()) return "El campo Nombre completo es obligatorio.";
+      if (EMOJI_REGEX.test(value)) return "El nombre solo puede contener letras.";
+      if (!/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/.test(value)) return "El nombre solo puede contener letras.";
       if (value.length > 100) return "El nombre no puede exceder los 100 caracteres.";
       return "";
 
@@ -105,21 +105,18 @@ export const useUserPersonalData = () => {
 
     case "location":
       if (EMOJI_REGEX.test(value)) return "La residencia actual no permite emoticones.";
-      return value.length > 100 ? "La ubicación no puede exceder los 100 caracteres." : "";
+      return value.length > 100 ? "La residencia actual no puede exceder los 100 caracteres." : "";
 
     case "email": {
       const rawValue = value;
-      if (rawValue.length > 0 && rawValue.trim().length === 0) {
-        return "El correo electrónico no puede contener espacios en blanco.";
-      }
-      if (!rawValue.trim()) {
+      if (rawValue.length === 0) {
         return "El campo Correo electrónico es obligatorio.";
+      }
+      if (/\s/.test(rawValue) || rawValue.trim().length === 0) {
+        return "El correo electrónico no puede contener espacios en blanco.";
       }
 
       const cleanValue = rawValue.trim();
-      if (/\s/.test(rawValue)) {
-        return "El correo electrónico no puede contener espacios en blanco.";
-      }
 
       if (cleanValue.length > 60) {
         return "El correo no puede exceder los 60 caracteres.";
@@ -133,7 +130,7 @@ export const useUserPersonalData = () => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanValue)) {
         // Aquí usamos mailcheck para sugerencia aunque sea inválido
         validateEmail(cleanValue);
-        return "El Correo electrónico debe tener un formato válido (ej. usuario@uno.com).";
+        return "El Correo electrónico debe tener un formato válido (ej. usuario@gmail.com).";
       }
       // Validación completa (usa validator + mailcheck)
       const result = validateEmail(cleanValue);
@@ -146,11 +143,11 @@ export const useUserPersonalData = () => {
 
       if (!cleanValue) {
         return rawValue.length > 0
-          ? "El Numero de contacto no puede contener espacios en blanco."
-          : "El campo Numero de contacto es obligatorio.";
+          ? "El Número de contacto no puede contener espacios en blanco."
+          : "El campo Número de contacto es obligatorio.";
       }
       if (/\s/.test(rawValue)) {
-        return "El Numero de contacto no puede contener espacios en blanco.";
+        return "El Número de contacto no puede contener espacios en blanco.";
       }
       if (!/^[0-9]+$/.test(cleanValue)) {
         return "El Número de contacto solo puede contener números.";
@@ -447,7 +444,7 @@ const handleChange = (e: any) => {
     }
     setErrors(prev => ({
       ...prev,
-      image: "La Foto de perfil es obligatoria"
+      image: "La Foto de perfil es obligatoria."
     }));
   };
 
