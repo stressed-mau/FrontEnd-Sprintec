@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react"
-import { Home, LogOut, User, Search} from "lucide-react"
+import { BarChart3, FileText, Home, LogOut, Search, User } from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 import logo from "@/assets/logo.png"
 import { useLogout } from "@/hooks/useLogout"
-import { USER_HOME_ROUTE } from "@/routes/route-paths"
+import { ANALYTICS_ROUTE, TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 import { getAuthSession } from "@/services/auth"
 
 const ROLE_LABELS: Record<number, string> = {
@@ -97,6 +97,18 @@ const HeaderUser = () => {
                   onClick={() => navigateTo("/perfil")}
                   className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]" >
                   <User size={16} className="text-gray-500" />  Mi perfil
+                </button>
+                <button
+                  onClick={() => navigateTo(ANALYTICS_ROUTE)}
+                  className="mt-2 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"
+                >
+                  <BarChart3 size={16} className="text-gray-500" />  Analítica
+                </button>
+                <button
+                  onClick={() => navigateTo(TEMPLATE_TRENDS_ROUTE)}
+                  className="mt-2 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"
+                >
+                  <FileText size={16} className="text-gray-500" />  Reportes
                 </button>
               </div>
               <div className="border-t border-[#0E7D96] px-3 py-2">
