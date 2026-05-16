@@ -18,9 +18,8 @@ type NavItem = {
 };
 
 const adminNavItems: NavItem[] = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
-  { id: "usuarios", label: "Usuarios", icon: Users, path: "/admin/usuarios" },
-  { id: "certificados", label: "Certificados", icon: BadgeCheck, path: "/admin/certificados" },
+  { id: "usuarios", label: "Reporte de Usuarios", icon: Users, path: "/admin/usuarios" },
+  { id: "certificados", label: "Reporte de Certificados", icon: BadgeCheck, path: "/admin/certificados" },
 ];
 
 const normalizePath = (path: string) => {
