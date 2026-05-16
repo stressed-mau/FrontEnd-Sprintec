@@ -58,7 +58,7 @@ const PortfolioViewsReportPage = () => {
                       <Eye className="h-6 w-6" />
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-blue-100">Pendiente de conexion con analiticas</p>
+                  <p className="mt-3 text-sm text-blue-100">Pendiente de conexion con datos de visualizaciones</p>
                 </CardContent>
               </Card>
 

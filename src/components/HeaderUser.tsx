@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react"
-import { BarChart3, Home, LogOut, User, Search} from "lucide-react"
+import { BarChart3, FileText, Home, LogOut, Search, User } from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 import logo from "@/assets/logo.png"
+import { NotificationBell } from "@/components/NotificationBell"
 import { useLogout } from "@/hooks/useLogout"
-import { USER_HOME_ROUTE } from "@/routes/route-paths"
+import { TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 import { getAuthSession } from "@/services/auth"
 
 const ROLE_LABELS: Record<number, string> = {
@@ -47,6 +48,7 @@ const HeaderUser = () => {
 
       <nav className="order-3 mt-3 flex w-full justify-start gap-4 md:order-2 md:mt-0 md:w-auto md:justify-center md:gap-6">
         <button
+          type="button"
           id="btn-go-dashboard"
           onClick={() => navigateTo(USER_HOME_ROUTE)}
           className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium transition-colors ${
@@ -60,6 +62,7 @@ const HeaderUser = () => {
         </button>
 
         <button
+          type="button"
           id="btn-go-explore"
           onClick={() => navigateTo("/explore")}
           className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium transition-colors ${
@@ -73,8 +76,10 @@ const HeaderUser = () => {
         </button>
       </nav>
 
-      <div className="relative order-2 flex justify-end md:order-3 md:flex-1">
+      <div className="relative order-2 flex items-center justify-end gap-3 md:order-3 md:flex-1">
+        <NotificationBell />
         <button
+          type="button"
           id="btn-user-menu"
           onClick={() => setIsMenuOpen((current) => !current)}
           className="flex items-center gap-2 rounded-lg border border-[#4982ad] bg-white px-3 py-1.5 transition-all hover:bg-[#F7F0E1] md:px-4"
@@ -86,7 +91,7 @@ const HeaderUser = () => {
         {isMenuOpen ? (
           <>
             <div className="fixed inset-0 z-[-1]" onClick={() => setIsMenuOpen(false)} />
-            <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-[#4982ad] bg-white shadow-lg animate-in fade-in zoom-in duration-200 md:w-60">
+            <div className="absolute right-0 top-full z-50 mt-3 w-56 overflow-hidden rounded-xl border border-[#4982ad] bg-white shadow-lg animate-in fade-in zoom-in duration-200 md:w-60">
               <div className="border-b border-[#0E7D96] p-4 text-left">
                 <p className="text-sm font-normal text-gray-800">{displayName}</p>
                 <p className="truncate text-xs text-[#0E7D96]">{displayEmail}</p>
@@ -94,21 +99,34 @@ const HeaderUser = () => {
               </div>
               <div className="px-3 py-2">
                 <button
+                  type="button"
                   onClick={() => navigateTo("/perfil")}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]" >
-                  <User size={16} className="text-gray-500" />  Mi perfil
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"
+                >
+                  <User size={16} className="text-gray-500" /> Mi perfil
                 </button>
                 <button
+                  type="button"
                   onClick={() => navigateTo("/visualizaciones")}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]" >
-                  <BarChart3 size={16} className="text-gray-500" />  Visualizaciones
+                  className="mt-2 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"
+                >
+                  <BarChart3 size={16} className="text-gray-500" /> Visualizaciones
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigateTo(TEMPLATE_TRENDS_ROUTE)}
+                  className="mt-2 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"
+                >
+                  <FileText size={16} className="text-gray-500" /> Reportes
                 </button>
               </div>
               <div className="border-t border-[#0E7D96] px-3 py-2">
                 <button
+                  type="button"
                   onClick={logout}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-[#C4A57C]"   >
-                  <LogOut size={16} />  Cerrar sesión
+                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-[#C4A57C]"
+                >
+                  <LogOut size={16} /> Cerrar sesion
                 </button>
               </div>
             </div>

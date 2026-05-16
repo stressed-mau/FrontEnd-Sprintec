@@ -2,7 +2,6 @@ import {
   BadgeCheck,
   ChevronLeft,
   ChevronRight,
-  LayoutDashboard,
   Users,
   X,
   type LucideIcon,
