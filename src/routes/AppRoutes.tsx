@@ -40,7 +40,8 @@ import EditProfilePage from '@/pages/profile/EditProfilePage';
 import ViewProfilePage from '@/pages/profile/ViewProfilePage';
 import AnaliticaPage from "@/pages/AnaliticaPage"
 import TendenciaPlantillasPage from "@/pages/TendenciaPlantillasPage"
-import { ANALYTICS_ROUTE, CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_PROFILE_ROUTE, REGISTER_ROUTE, TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+import { NotificationsPage } from "@/pages/NotificationsPage"
+import { ANALYTICS_ROUTE, CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, NOTIFICATIONS_ROUTE, REGISTER_PROFILE_ROUTE, REGISTER_ROUTE, TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 
 function AppRoutes() {
   return (
@@ -90,6 +91,7 @@ function AppRoutes() {
         <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
         <Route path={ANALYTICS_ROUTE} element={<AnaliticaPage />} />
         <Route path={TEMPLATE_TRENDS_ROUTE} element={<TendenciaPlantillasPage />} />
+        <Route path={NOTIFICATIONS_ROUTE} element={<NotificationsPage />} />
         <Route path="/personal/ver" element={<ViewProfilePage />} />
         <Route path="/personal/editar" element={<EditProfilePage />} />
         

@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react"
 import { Bell, TrendingUp } from "lucide-react"
 import { Link } from "react-router-dom"
 
+import { NOTIFICATIONS_ROUTE } from "@/routes/route-paths"
+
 interface Notification {
   id: string
   title: string
@@ -15,7 +17,9 @@ interface NotificationBellProps {
   initialNotifications?: Notification[]
 }
 
-export function NotificationBell({ initialNotifications = [] }: NotificationBellProps) {
+const EMPTY_NOTIFICATIONS: Notification[] = []
+
+export function NotificationBell({ initialNotifications = EMPTY_NOTIFICATIONS }: NotificationBellProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -85,6 +89,7 @@ export function NotificationBell({ initialNotifications = [] }: NotificationBell
             <h3 className="text-sm font-semibold text-[#003A6C] sm:text-base">Notificaciones</h3>
             {unreadCount > 0 && (
               <button
+                type="button"
                 onClick={markAllAsRead}
                 className="text-xs text-[#003A6C] transition-colors hover:underline"
               >
@@ -128,7 +133,7 @@ export function NotificationBell({ initialNotifications = [] }: NotificationBell
 
           <div className="border-t border-[#6DACBF]/20 bg-gray-50/50">
             <Link
-              to="/notificaciones"
+              to={NOTIFICATIONS_ROUTE}
               onClick={() => setIsOpen(false)}
               className="block px-4 py-3 text-center text-sm font-bold text-[#003A6C] transition-colors hover:bg-[#F7F0E1]"
             >

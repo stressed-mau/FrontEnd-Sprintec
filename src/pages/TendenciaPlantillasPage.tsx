@@ -1,178 +1,208 @@
-import { useEffect, useMemo, useState } from "react"
-import { ChartColumnIncreasing, LoaderCircle, TrendingUp } from "lucide-react"
-import { Footer } from '@/components/Footer';
+import { ChevronLeft, ChevronRight, Clock, Crown, MousePointer2, TrendingDown, TrendingUp, Users } from "lucide-react"
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
-import { api } from "@/services/api"
-
-type TemplateTrendStat = {
-  template_name?: string
-  read_time?: string | number
-  interest_rate?: string | number
-  variation?: string | number
-  footerBadge?: string
-  footerColor?: string
-  isCurrent?: boolean
-}
-
-function normalizeStats(value: unknown): TemplateTrendStat[] {
-  if (!value) return []
-
-  if (Array.isArray(value)) {
-    return value.filter((item): item is TemplateTrendStat => Boolean(item && typeof item === "object"))
-  }
-
-  if (typeof value === "object") {
-    const payload = value as { stats?: unknown; data?: unknown }
-    if (Array.isArray(payload.stats)) return normalizeStats(payload.stats)
-    if (Array.isArray(payload.data)) return normalizeStats(payload.data)
-  }
-
-  return []
-}
-
-const formatMetric = (metric: string | number | undefined) => {
-  if (metric === undefined || metric === null || metric === "") return "No disponible"
-  return String(metric)
-}
+import { Footer } from "@/components/Footer"
+import { useTemplateTrends } from "@/hooks/useTemplateTrends"
+import type { TrendChartPoint, TrendStats } from "@/services/templateTrendsService"
 
 const TendenciaPlantillasPage = () => {
-  const [stats, setStats] = useState<TemplateTrendStat[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
+  const { loading, stats, chartData, pageError } = useTemplateTrends()
 
-  useEffect(() => {
-    let isMounted = true
+  // Mock de referencia comentado mientras el backend entrega la estructura final.
+  // const mockStats: TrendStats[] = [
+  //   {
+  //     template_name: "Moderna",
+  //     read_time: "4 min 32 seg",
+  //     interest_rate: "92%",
+  //     variation: "+12%",
+  //     footerBadge: "Más usada",
+  //     footerColor: "bg-[#003A6C]",
+  //     isCurrent: true,
+  //   },
+  //   {
+  //     template_name: "Corporativa",
+  //     read_time: "3 min 58 seg",
+  //     interest_rate: "81%",
+  //     variation: "+5%",
+  //     footerBadge: "Alta demanda",
+  //     footerColor: "bg-[#0E7D96]",
+  //   },
+  //   {
+  //     template_name: "Minimalista",
+  //     read_time: "5 min 10 seg",
+  //     interest_rate: "76%",
+  //     variation: "-3%",
+  //     footerBadge: "En descenso",
+  //     footerColor: "bg-[#4982AD]",
+  //   },
+  // ]
+  // const mockChartData: TrendChartPoint[] = [
+  //   { day: "Lun", moderna: 320, minimalista: 210, corporativa: 280 },
+  //   { day: "Mar", moderna: 360, minimalista: 240, corporativa: 310 },
+  //   { day: "Mié", moderna: 390, minimalista: 270, corporativa: 340 },
+  //   { day: "Jue", moderna: 345, minimalista: 230, corporativa: 300 },
+  //   { day: "Vie", moderna: 410, minimalista: 260, corporativa: 350 },
+  //   { day: "Sáb", moderna: 280, minimalista: 180, corporativa: 240 },
+  //   { day: "Dom", moderna: 265, minimalista: 170, corporativa: 230 },
+  // ]
 
-    const loadStats = async () => {
-      setLoading(true)
-      setError("")
+  const fallbackStats: TrendStats[] = []
+  const fallbackChartData: TrendChartPoint[] = []
 
-      try {
-        const response = await api.get("/trends/templates")
-        const nextStats = normalizeStats(response.data?.stats ?? response.data?.data?.stats ?? response.data?.data ?? response.data)
-
-        if (isMounted) {
-          setStats(nextStats)
-        }
-      } catch (requestError) {
-        if (isMounted) {
-          setError(requestError instanceof Error ? requestError.message : "No se pudo cargar la información de tendencias.")
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
-      }
-    }
-
-    void loadStats()
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
-
-  const topStat = useMemo(() => stats[0] ?? null, [stats])
+  const visibleStats = stats.length > 0 ? stats : fallbackStats
+  const visibleChartData = chartData.length > 0 ? chartData : fallbackChartData
+  const leadStat = visibleStats[0]
 
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
       <Header />
+
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 md:p-10">
-          <div className="mx-auto max-w-6xl space-y-6">
-            <div className="flex flex-col gap-4 rounded-3xl border border-[#C2DBED] bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
+
+        <main className="flex-1 p-4 sm:p-6 lg:p-10 overflow-x-hidden">
+          <div className="mx-auto max-w-6xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#4B778D]">Reportes</p>
-                <h1 className="mt-2 text-3xl font-black text-[#003A6C] md:text-4xl">Tendencia de Plantillas</h1>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-600 md:text-base">
-                  Vista de lectura rápida sobre el uso de plantillas. Si el backend devuelve datos, se muestran aquí sin alterar el resto de la navegación.
-                </p>
+                <h1 className="mb-1 text-2xl sm:text-3xl font-semibold text-gray-900">Tendencia de Plantillas</h1>
+                <p className="text-[#4B778D]">Descubre qué plantilla prefieren los reclutadores esta semana</p>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-2xl bg-[#EBF5FF] px-4 py-3 text-[#003A6C] shadow-sm">
-                <TrendingUp className="h-5 w-5" />
-                <span className="text-sm font-semibold">Endpoint /trends/templates</span>
+
+              <div className="flex flex-wrap items-center justify-center bg-white border border-[#0E7D96]/20 rounded-xl px-3 sm:px-4 py-2 gap-2 sm:gap-4 shadow-sm">
+                <button className="text-[#003A6C] hover:bg-gray-100 p-1 rounded-lg transition-colors" type="button">
+                  <ChevronLeft size={20} />
+                </button>
+
+                <span className="text-sm font-bold text-[#003A6C]">Semana del 5 al 11 de mayo, 2026</span>
+
+                <button className="text-[#003A6C] hover:bg-gray-100 p-1 rounded-lg transition-colors" type="button">
+                  <ChevronRight size={20} />
+                </button>
               </div>
             </div>
 
-            {error ? (
-              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+            <div className="mb-5 p-2 bg-[#E0F2FE] border border-[#7DD3FC] rounded-2xl w-fit">
+              <span className="text-[#0369A1] font-bold text-sm italic">
+                Tu plantilla actual: {leadStat?.template_name ?? "Pendiente de API"}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              <KPICard label="Plantilla líder" value={leadStat?.template_name ?? "Pendiente"} change={leadStat?.variation ?? "Sin dato"} icon={<Crown size={18} />} isNegative={Boolean(leadStat?.variation?.startsWith("-"))} />
+              <KPICard label="Tiempo de lectura" value={leadStat?.read_time ?? "Pendiente"} change={leadStat?.variation ?? "Sin dato"} icon={<Clock size={18} />} />
+              <KPICard label="Tasa interés" value={leadStat?.interest_rate ?? "Pendiente"} change={leadStat?.variation ?? "Sin dato"} icon={<MousePointer2 size={18} />} isNegative={Boolean(leadStat?.variation?.startsWith("-"))} />
+              <KPICard label="Registros API" value={String(visibleStats.length)} change={visibleStats.length > 0 ? "Disponible" : "Sin dato"} icon={<Users size={18} />} />
+            </div>
+
+            <h2 className="mb-4 text-2xl font-semibold text-gray-900">Comparativa de plantillas ésta semana</h2>
+
+            {pageError ? (
+              <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                {pageError}
+              </div>
             ) : null}
 
             {loading ? (
-              <div className="flex items-center justify-center rounded-3xl border border-[#C2DBED] bg-white py-16 text-[#003A6C] shadow-sm">
-                <div className="flex items-center gap-3 text-sm font-semibold">
-                  <LoaderCircle className="h-5 w-5 animate-spin" />
-                  Cargando tendencias...
+              <div className="mb-12 rounded-2xl border border-[#C9E1F0] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
+                Cargando tendencias de plantillas...
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
+                  {visibleStats.length > 0 ? (
+                    visibleStats.map((item, idx) => <TrendCard key={idx} {...item} />)
+                  ) : (
+                    <div className="sm:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-[#C9E1F0] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
+                      Aún no hay datos de plantillas para mostrar.
+                    </div>
+                  )}
                 </div>
-              </div>
-            ) : null}
 
-            {!loading && stats.length === 0 && !error ? (
-              <div className="rounded-3xl border border-dashed border-[#C2DBED] bg-white px-6 py-14 text-center text-sm text-gray-500 shadow-sm">
-                No hay tendencias disponibles por el momento.
-              </div>
-            ) : null}
+                <div className="bg-white rounded-3xl border border-[#C9E1F0] p-8 shadow-sm">
+                  <h3 className="font-bold text-[#003A6C] mb-6 text-3xl">Evolución semanal de visitas</h3>
 
-            {!loading && stats.length > 0 ? (
-              <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {stats.map((item, index) => (
-                  <article key={`${item.template_name ?? "template"}-${index}`} className="overflow-hidden rounded-[2rem] border border-[#C9E1F0] bg-white shadow-sm">
-                    <div className="border-b border-[#EEF5F9] px-6 py-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <h2 className="text-xl font-bold text-[#003A6C]">{item.template_name || "Plantilla sin nombre"}</h2>
-                        {item.isCurrent ? (
-                          <span className="rounded-full bg-slate-900 px-2 py-1 text-[10px] font-bold text-white">TU PLANTILLA</span>
-                        ) : null}
-                      </div>
-                      <p className="mt-2 text-sm text-[#4B778D]">{item.footerBadge || "Tendencia registrada"}</p>
-                    </div>
-
-                    <div className="grid gap-4 p-6 sm:grid-cols-3">
-                      <div className="rounded-2xl bg-[#F8FBFD] p-4">
-                        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Lectura</p>
-                        <p className="mt-2 text-2xl font-black text-[#003A6C]">{formatMetric(item.read_time)}</p>
-                      </div>
-                      <div className="rounded-2xl bg-[#F8FBFD] p-4">
-                        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Interés</p>
-                        <p className="mt-2 text-2xl font-black text-[#003A6C]">{formatMetric(item.interest_rate)}</p>
-                      </div>
-                      <div className="rounded-2xl bg-[#F8FBFD] p-4">
-                        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Variación</p>
-                        <p className="mt-2 text-2xl font-black text-[#003A6C]">{formatMetric(item.variation)}</p>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-[#EEF5F9] px-6 py-4 text-sm text-gray-600">
-                      {item.footerColor ? (
-                        <span className="inline-flex items-center gap-2 rounded-full bg-[#EBF5FF] px-3 py-1 text-[#003A6C]">
-                          <ChartColumnIncreasing className="h-4 w-4" />
-                          {item.footerColor}
-                        </span>
-                      ) : (
-                        "Se muestran métricas recibidas del backend."
-                      )}
-                    </div>
-                  </article>
-                ))}
-              </section>
-            ) : null}
-
-            {topStat ? (
-              <div className="rounded-3xl border border-[#C2DBED] bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-bold text-[#003A6C]">Resumen rápido</h2>
-                <p className="mt-2 text-sm text-gray-600">
-                  {topStat.template_name || "La plantilla principal"} concentra la lectura de referencia. Mantuvimos esta vista aislada para no afectar el resto de pantallas existentes.
-                </p>
-              </div>
-            ) : null}
+                  <div className="h-80 sm:h-105 lg:h-112.5 rounded-2xl bg-[#F5F5F5] p-3 sm:p-6 overflow-x-auto">
+                    {visibleChartData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={visibleChartData} barGap={8}>
+                          <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#B7D4EA" />
+                          <XAxis dataKey="day" tick={{ fill: "#3B73A5", fontSize: 16, fontWeight: 500 }} axisLine={{ stroke: "#6FA3C8" }} tickLine={false} />
+                          <YAxis tick={{ fill: "#3B73A5", fontSize: 14 }} axisLine={{ stroke: "#6FA3C8" }} tickLine={false} />
+                          <Tooltip
+                            cursor={{ fill: "rgba(120,120,120,0.18)" }}
+                            contentStyle={{ borderRadius: "16px", border: "1px solid #78B4D4", backgroundColor: "#FFFFFF", padding: "16px" }}
+                            labelStyle={{ color: "#003A6C", fontWeight: 700, fontSize: "18px", marginBottom: "10px" }}
+                          />
+                          <Legend wrapperStyle={{ paddingTop: "24px", fontSize: "18px" }} />
+                          <Bar dataKey="moderna" name="Moderna" fill="#003A6C" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="minimalista" name="Minimalista" fill="#4D88B3" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="corporativa" name="Corporativa" fill="#A8D0E3" radius={[6, 6, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-sm text-[#4B778D]">La gráfica se mostrará cuando la API devuelva la serie semanal.</div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </main>
       </div>
+
       <Footer />
     </div>
   )
 }
+
+const KPICard = ({ label, value, change, icon, isNegative }: any) => (
+  <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+    <div className="flex items-center gap-2 text-gray-400 mb-3">
+      {icon}
+      <span className="text-xs font-bold uppercase tracking-widest">{label}</span>
+    </div>
+
+    <div className="flex justify-between items-end">
+      <span className="text-2xl font-bold text-[#003A6C]">{value}</span>
+      <span className={`flex items-center gap-1 text-xs font-bold ${isNegative ? "text-red-500" : "text-green-500"}`}>
+        {isNegative ? <TrendingDown className="w-4 h-4 mr-1" /> : <TrendingUp className="w-4 h-4 mr-1" />}
+        {change}
+      </span>
+    </div>
+  </div>
+)
+
+const TrendCard = ({ template_name, read_time, interest_rate, variation, footerBadge, footerColor, isCurrent }: TrendStats) => (
+  <div className="bg-white rounded-[2rem] border border-[#C9E1F0] overflow-hidden flex flex-col shadow-sm">
+    <div className="p-5 sm:p-8 flex-1">
+      <div className="flex justify-between items-start mb-6">
+        <h3 className="text-xl sm:text-2xl font-bold text-[#003A6C]">{template_name}</h3>
+
+        {isCurrent ? <span className="bg-slate-900 text-white text-[10px] px-2 py-1 rounded-lg font-bold">TU PLANTILLA</span> : null}
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex justify-between text-sm border-b pb-2">
+          <span className="text-gray-400">Tiempo lectura</span>
+          <span className="font-bold text-[#003A6C]">{read_time}</span>
+        </div>
+
+        <div className="flex justify-between text-sm border-b pb-2">
+          <span className="text-gray-400">Tasa interés</span>
+          <span className="font-bold text-[#003A6C]">{interest_rate}</span>
+        </div>
+
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">Variación</span>
+          <span className="font-bold text-green-500">{variation}</span>
+        </div>
+      </div>
+    </div>
+
+    <div className={`${footerColor} py-3 text-center text-white text-sm font-bold uppercase tracking-widest`}>{footerBadge}</div>
+  </div>
+)
 
 export default TendenciaPlantillasPage

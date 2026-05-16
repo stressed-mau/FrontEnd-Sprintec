@@ -7,3 +7,5 @@ export const LEGACY_DASHBOARD_ROUTE = "/dashboard"
 export const CERTIFICATES_ROUTE = "/certificados"
 export const ANALYTICS_ROUTE = "/analitica"
 export const TEMPLATE_TRENDS_ROUTE = "/tendencia-plantillas"
+export const NOTIFICATIONS_ROUTE = "/notificaciones"
+
