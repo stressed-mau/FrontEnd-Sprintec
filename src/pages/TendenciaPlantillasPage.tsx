@@ -1,6 +1,5 @@
 import { ChevronLeft, ChevronRight, Clock, Crown, MousePointer2, TrendingDown, TrendingUp, Users } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
-
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
 import { Footer } from "@/components/Footer"
@@ -9,45 +8,6 @@ import type { TrendChartPoint, TrendStats } from "@/services/templateTrendsServi
 
 const TendenciaPlantillasPage = () => {
   const { loading, stats, chartData, pageError } = useTemplateTrends()
-
-  // Mock de referencia comentado mientras el backend entrega la estructura final.
-  // const mockStats: TrendStats[] = [
-  //   {
-  //     template_name: "Moderna",
-  //     read_time: "4 min 32 seg",
-  //     interest_rate: "92%",
-  //     variation: "+12%",
-  //     footerBadge: "Más usada",
-  //     footerColor: "bg-[#003A6C]",
-  //     isCurrent: true,
-  //   },
-  //   {
-  //     template_name: "Corporativa",
-  //     read_time: "3 min 58 seg",
-  //     interest_rate: "81%",
-  //     variation: "+5%",
-  //     footerBadge: "Alta demanda",
-  //     footerColor: "bg-[#0E7D96]",
-  //   },
-  //   {
-  //     template_name: "Minimalista",
-  //     read_time: "5 min 10 seg",
-  //     interest_rate: "76%",
-  //     variation: "-3%",
-  //     footerBadge: "En descenso",
-  //     footerColor: "bg-[#4982AD]",
-  //   },
-  // ]
-  // const mockChartData: TrendChartPoint[] = [
-  //   { day: "Lun", moderna: 320, minimalista: 210, corporativa: 280 },
-  //   { day: "Mar", moderna: 360, minimalista: 240, corporativa: 310 },
-  //   { day: "Mié", moderna: 390, minimalista: 270, corporativa: 340 },
-  //   { day: "Jue", moderna: 345, minimalista: 230, corporativa: 300 },
-  //   { day: "Vie", moderna: 410, minimalista: 260, corporativa: 350 },
-  //   { day: "Sáb", moderna: 280, minimalista: 180, corporativa: 240 },
-  //   { day: "Dom", moderna: 265, minimalista: 170, corporativa: 230 },
-  // ]
-
   const fallbackStats: TrendStats[] = []
   const fallbackChartData: TrendChartPoint[] = []
 

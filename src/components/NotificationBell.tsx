@@ -25,26 +25,6 @@ export function NotificationBell({ initialNotifications = EMPTY_NOTIFICATIONS }:
 
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications)
 
-  // Mock temporal comentado para cuando no exista API en entorno local.
-  // const mockNotifications: Notification[] = [
-  //   {
-  //     id: "1",
-  //     title: "Reporte semanal disponible",
-  //     description: "Semana del 28 de abril al 4 de mayo · Tendencia de Plantillas",
-  //     time: "Hace 3 horas",
-  //     read: false,
-  //     link: "/tendencia-plantillas",
-  //   },
-  //   {
-  //     id: "2",
-  //     title: "Reporte semanal disponible",
-  //     description: "Semana del 21 al 27 de abril · Tendencia de Plantillas",
-  //     time: "Hace 1 semana",
-  //     read: false,
-  //     link: "/tendencia-plantillas",
-  //   },
-  // ]
-
   useEffect(() => {
     setNotifications(initialNotifications)
   }, [initialNotifications])
