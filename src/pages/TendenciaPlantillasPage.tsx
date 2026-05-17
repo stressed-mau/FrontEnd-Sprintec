@@ -1,15 +1,18 @@
-import { ChevronLeft, ChevronRight, Clock, Crown, MousePointer2, TrendingDown, TrendingUp, Users } from "lucide-react"
+import { ChevronLeft, ChevronRight, Clock, Crown, MousePointer2, TrendingDown, TrendingUp, Users, Download } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
 import { Footer } from "@/components/Footer"
 import { useTemplateTrends } from "@/hooks/useTemplateTrends"
 import type { TrendChartPoint, TrendStats } from "@/services/templateTrendsService"
+import { Button } from "@/components/ui/button"
+import { useCurrentWeekRange } from "@/hooks/useCurrentWeekRange"
 
 const TendenciaPlantillasPage = () => {
   const { loading, stats, chartData, pageError } = useTemplateTrends()
   const fallbackStats: TrendStats[] = []
   const fallbackChartData: TrendChartPoint[] = []
+  const currentWeekRange = useCurrentWeekRange()
 
   const visibleStats = stats.length > 0 ? stats : fallbackStats
   const visibleChartData = chartData.length > 0 ? chartData : fallbackChartData
@@ -24,24 +27,41 @@ const TendenciaPlantillasPage = () => {
 
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-6xl">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-              <div>
-                <h1 className="mb-2 text-3xl font-bold text-[#003A6C]">Tendencia de Plantillas</h1>
-                <p className="text-[#4B778D]">Descubre qué plantilla prefieren los reclutadores esta semana</p>
-              </div>
+            <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4">
+             <div>
+                <h1 className="mb-2 text-3xl font-bold text-[#003A6C]"> Tendencia de Plantillas </h1>
+                <p className="text-[#4B778D]"> Descubre qué plantilla prefieren los reclutadores esta semana </p>
+             </div>
 
-              <div className="flex flex-wrap items-center justify-center bg-white border border-[#0E7D96]/20 rounded-xl px-3 sm:px-4 py-2 gap-2 sm:gap-4 shadow-sm">
-                <button className="text-[#003A6C] hover:bg-gray-100 p-1 rounded-lg transition-colors" type="button">
-                  <ChevronLeft size={20} />
-                </button>
+         <div className="flex flex-col items-start gap-3 md:items-end">
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+          <Button
+            type="button"
+            disabled
+            className="bg-[#003A6C] text-white shadow-sm transition-colors hover:bg-[#4982AD]" >
+           <Download className="mr-2 h-4 w-4" />
+             Exportar a PDF
+          </Button>
+          <p className="text-sm font-medium text-[#4B778D]">  Disponible cuando existan datos registrados </p>
+        </div>
 
-                <span className="text-sm font-bold text-[#003A6C]">Semana del 5 al 11 de mayo, 2026</span>
+    <div className="flex flex-wrap items-center justify-center bg-white border border-[#0E7D96]/20 rounded-xl px-3 sm:px-4 py-2 gap-2 sm:gap-4 shadow-sm">
+      <button
+        className="text-[#003A6C] hover:bg-gray-100 p-1 rounded-lg transition-colors"
+        type="button"      >
+        <ChevronLeft size={20} />
+      </button>
 
-                <button className="text-[#003A6C] hover:bg-gray-100 p-1 rounded-lg transition-colors" type="button">
-                  <ChevronRight size={20} />
-                </button>
-              </div>
-            </div>
+      <span className="text-sm font-bold text-[#003A6C]">    {currentWeekRange}   </span>
+
+      <button
+        className="text-[#003A6C] hover:bg-gray-100 p-1 rounded-lg transition-colors"
+        type="button"   >
+        <ChevronRight size={20} />
+      </button>
+    </div>
+  </div>
+</div>
 
             <div className="mb-5 p-2 bg-[#E0F2FE] border border-[#7DD3FC] rounded-2xl w-fit">
               <span className="text-[#0369A1] font-bold text-sm italic">
