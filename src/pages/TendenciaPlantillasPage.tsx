@@ -22,11 +22,11 @@ const TendenciaPlantillasPage = () => {
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-10 overflow-x-hidden">
+        <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-6xl">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
               <div>
-                <h1 className="mb-1 text-2xl sm:text-3xl font-semibold text-gray-900">Tendencia de Plantillas</h1>
+                <h1 className="mb-2 text-3xl font-bold text-[#003A6C]">Tendencia de Plantillas</h1>
                 <p className="text-[#4B778D]">Descubre qué plantilla prefieren los reclutadores esta semana</p>
               </div>
 
@@ -56,7 +56,7 @@ const TendenciaPlantillasPage = () => {
               <KPICard label="Registros API" value={String(visibleStats.length)} change={visibleStats.length > 0 ? "Disponible" : "Sin dato"} icon={<Users size={18} />} />
             </div>
 
-            <h2 className="mb-4 text-2xl font-semibold text-gray-900">Comparativa de plantillas ésta semana</h2>
+            <h2 className="mb-2 text-2xl font-semibold text-[#003A6C]">Comparativa de plantillas ésta semana</h2>
 
             {pageError ? (
               <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
@@ -81,7 +81,7 @@ const TendenciaPlantillasPage = () => {
                 </div>
 
                 <div className="bg-white rounded-3xl border border-[#C9E1F0] p-8 shadow-sm">
-                  <h3 className="font-bold text-[#003A6C] mb-6 text-3xl">Evolución semanal de visitas</h3>
+                  <h3 className="mb-2 text-2xl font-semibold text-[#003A6C]">Evolución semanal de visitas</h3>
 
                   <div className="h-80 sm:h-105 lg:h-112.5 rounded-2xl bg-[#F5F5F5] p-3 sm:p-6 overflow-x-auto">
                     {visibleChartData.length > 0 ? (

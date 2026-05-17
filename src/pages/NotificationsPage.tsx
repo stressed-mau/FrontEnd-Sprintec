@@ -77,9 +77,9 @@ export function NotificationsPage() {
       <Header />
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 lg:p-10">
+        <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-5xl space-y-6">
-            <div className="flex flex-col gap-3 rounded-3xl border border-[#C2DBED] bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col gap-3 p-2 md:flex-row md:justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-[#003A6C]">Notificaciones</h1>
                 {unreadCount > 0 && (
