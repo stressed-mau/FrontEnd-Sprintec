@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Eye } from "lucide-react"; 
+import { ChevronLeft, ChevronRight, Eye, Search, SlidersHorizontal } from "lucide-react"; 
 import { Header } from "@/components/Header"; 
 import HeaderUser from "@/components/HeaderUser";
 import Sidebar from "@/components/Sidebar";
@@ -8,19 +8,9 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePagination } from "@/hooks/usePagination";
+import { useExplorePortfolioFilters, type PortfolioCard } from "@/hooks/useExplorePortfolioFilters";
 import { isAuthenticated } from "@/services/auth";
 import { getExplorePortfolios } from "@/services/explorePortfoliosService";
-
-interface PortfolioCard {
-  id: string;
-  slug: string;
-  fullName: string;
-  occupation: string;
-  profileImage: string;
-  projectsCount: number;
-  skillsCount: number;
-  topSkills: string[];
-}
 
 export default function ExplorePortfolios() {
   const navigate = useNavigate();
@@ -50,25 +40,18 @@ export default function ExplorePortfolios() {
   };
 }, []);
 
-  // Extraemos goToPage para que los botones numéricos funcionen
-  const { currentData, currentPage, totalPages, next, prev, goToPage } = usePagination({ 
-    items: portfolios, 
+  const {   searchTerm, setSearchTerm,  isFiltersOpen,  setIsFiltersOpen, selectedOccupation,  setSelectedOccupation,
+           minProjects, setMinProjects, minSkills,  setMinSkills,  occupationOptions,  filteredPortfolios,  hasActiveFilters, clearFilters,  } = useExplorePortfolioFilters(portfolios)
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedOccupation, minProjects, minSkills]);
+
+  const { currentData, currentPage, totalPages, next, prev, goToPage, setCurrentPage } = usePagination({ 
+    items: filteredPortfolios, 
     itemsPerPage 
   });
 
-  //useEffect(() => {
-    // Simulación de datos reales
-    //const mockData = Array(20).fill(null).map((_, i) => ({
-    //  id: `${i}`,
-    //  fullName: i % 2 === 0 ? "María García" : "Carlos Martínez",
-    //  occupation: i % 2 === 0 ? "Full Stack Developer" : "Mobile Developer",
-    //  profileImage: `https://i.pravatar.cc/150?u=${i}`,
-    //  projectsCount: 5,
-     // skillsCount: 10,
-     // topSkills: ["React", "Node.js", "Tailwind"]
-   // }));
-   // setPortfolios(mockData);
-  //}, []);
 function getInitials(name: string): string {
   return name
     .split(" ")
@@ -91,6 +74,95 @@ function getInitials(name: string): string {
               <h1 className="text-2xl font-black text-[#003A6C] md:text-3xl"> Explorar Portafolios </h1>
               <p className="text-sm text-gray-500">Descubre los portafolios de desarrolladores</p>
             </section>
+
+            <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:mb-5 sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#5B8FB9] sm:left-4 sm:size-5" />
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Buscar por nombre, cargo o habilidad"
+                  className="h-11 w-full rounded-2xl border border-[#6DACBF]/40 bg-white pl-10 pr-3 text-sm text-[#003A6C] shadow-sm outline-none transition focus:border-[#4982AD] focus:ring-2 focus:ring-[#4982AD]/20 sm:h-12 sm:pl-12 sm:pr-4"
+                />
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsFiltersOpen((current) => !current)}
+                className={`h-11 shrink-0 rounded-2xl border-[#6DACBF]/40 bg-white px-3 text-[#003A6C] shadow-sm hover:bg-[#F7F0E1] sm:h-12 sm:px-4 ${hasActiveFilters ? "border-[#4982AD] bg-[#F7F0E1]" : ""}`}
+              >
+                <SlidersHorizontal className="size-4" />
+                      </Button>
+            </div>
+
+            {isFiltersOpen && (
+              <div className="mb-4 rounded-2xl border border-[#6DACBF]/40 bg-white p-3 shadow-sm sm:mb-5 sm:rounded-3xl sm:p-4 md:p-5">
+                <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
+                  <div>
+                    <h2 className="text-sm font-bold text-[#003A6C]">Filtros</h2>
+                    <p className="text-[11px] text-[#5B8FB9] sm:text-xs">Ajusta el listado por cargo y volumen de contenido.</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-8 rounded-xl px-3 text-xs font-semibold text-[#003A6C] hover:bg-[#F7F0E1] sm:h-9"
+                    onClick={clearFilters}
+                  >
+                    Limpiar
+                  </Button>
+                </div>
+
+                <div className="grid gap-2 sm:gap-3 md:grid-cols-3">
+                  <label className="space-y-2">
+                    <span className="block text-[11px] font-semibold uppercase tracking-wider text-[#5B8FB9] sm:text-xs">Cargo</span>
+                    <select
+                      value={selectedOccupation}
+                      onChange={(event) => setSelectedOccupation(event.target.value)}
+                      className="h-10 w-full rounded-2xl border border-[#6DACBF]/40 bg-[#FDF8F0] px-3 text-sm text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-2 focus:ring-[#4982AD]/20 sm:h-11 sm:px-4"
+                    >
+                      <option value="all">Todos</option>
+                      {occupationOptions.map((occupation) => (
+                        <option key={occupation} value={occupation}>
+                          {occupation}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="space-y-2">
+                    <span className="block text-[11px] font-semibold uppercase tracking-wider text-[#5B8FB9] sm:text-xs">Proyectos mínimos</span>
+                    <select
+                      value={minProjects}
+                      onChange={(event) => setMinProjects(event.target.value)}
+                      className="h-10 w-full rounded-2xl border border-[#6DACBF]/40 bg-[#FDF8F0] px-3 text-sm text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-2 focus:ring-[#4982AD]/20 sm:h-11 sm:px-4"
+                    >
+                      <option value="all">Cualquiera</option>
+                      <option value="1">1 o más</option>
+                      <option value="3">3 o más</option>
+                      <option value="5">5 o más</option>
+                      <option value="10">10 o más</option>
+                    </select>
+                  </label>
+
+                  <label className="space-y-2">
+                    <span className="block text-[11px] font-semibold uppercase tracking-wider text-[#5B8FB9] sm:text-xs">Skills mínimas</span>
+                    <select
+                      value={minSkills}
+                      onChange={(event) => setMinSkills(event.target.value)}
+                      className="h-10 w-full rounded-2xl border border-[#6DACBF]/40 bg-[#FDF8F0] px-3 text-sm text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-2 focus:ring-[#4982AD]/20 sm:h-11 sm:px-4"
+                    >
+                      <option value="all">Cualquiera</option>
+                      <option value="1">1 o más</option>
+                      <option value="3">3 o más</option>
+                      <option value="5">5 o más</option>
+                      <option value="8">8 o más</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {currentData.map((portfolio) => (
@@ -183,7 +255,7 @@ function getInitials(name: string): string {
               <Button 
                 variant="outline" 
                 onClick={next} 
-                disabled={currentPage === totalPages}
+                disabled={currentPage === totalPages || totalPages === 0}
                 className="rounded-xl border-gray-200 px-2 md:px-4 bg-white" >
                 <span className="hidden md:inline mr-1">Siguiente</span>
                 <ChevronRight className="size-5" />
