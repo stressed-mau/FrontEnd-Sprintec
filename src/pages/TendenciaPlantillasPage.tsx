@@ -71,7 +71,7 @@ const TendenciaPlantillasPage = () => {
               onClick={handleExportPDF}
               className="bg-[#003A6C] text-white shadow-sm transition-colors hover:bg-[#4982AD]"  >
             <Download className="mr-2 h-4 w-4" />
-            Exportar a PDF
+            Generar PDF
         </Button>
           </div>
           <p className="print:hidden text-sm font-medium text-[#4B778D]">  Disponible cuando existan datos registrados </p>
