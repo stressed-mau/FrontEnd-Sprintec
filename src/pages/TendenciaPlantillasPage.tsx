@@ -7,12 +7,19 @@ import { useTemplateTrends } from "@/hooks/useTemplateTrends"
 import type { TrendChartPoint, TrendStats } from "@/services/templateTrendsService"
 import { Button } from "@/components/ui/button"
 import { useCurrentWeekRange } from "@/hooks/useCurrentWeekRange"
+import { useRef } from "react"
+import { useReactToPrint } from "react-to-print"
 
 const TendenciaPlantillasPage = () => {
   const { loading, stats, chartData, pageError } = useTemplateTrends()
+  const reportRef = useRef<HTMLDivElement>(null)
   const fallbackStats: TrendStats[] = []
   const fallbackChartData: TrendChartPoint[] = []
   const currentWeekRange = useCurrentWeekRange()
+  const handleExportPDF = useReactToPrint({
+  contentRef: reportRef,
+  documentTitle: `Reporte-Plantillas-${currentWeekRange}`,
+})
 
   const visibleStats = stats.length > 0 ? stats : fallbackStats
   const visibleChartData = chartData.length > 0 ? chartData : fallbackChartData
@@ -26,22 +33,55 @@ const TendenciaPlantillasPage = () => {
         <Sidebar />
 
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
-          <div className="mx-auto max-w-6xl">
-            <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4">
-             <div>
-                <h1 className="mb-2 text-3xl font-bold text-[#003A6C]"> Tendencia de Plantillas </h1>
-                <p className="text-[#4B778D]"> Descubre qué plantilla prefieren los reclutadores esta semana </p>
-             </div>
+<div ref={reportRef} className="mx-auto max-w-6xl">
+
+  {/* SOLO VISIBLE EN PDF */}
+  <div className="hidden print:flex items-center justify-between mb-8 border-b pb-4">
+    <div>
+      <h1 className="text-3xl font-bold text-[#003A6C]">
+        Reporte Semanal de Plantillas
+      </h1>
+
+      <p className="text-sm text-gray-500 mt-1">
+        PortfolioGen • {currentWeekRange}
+      </p>
+    </div>
+
+    <div className="text-right">
+      <p className="text-sm text-gray-400">
+        Generado automáticamente
+      </p>
+
+      <p className="text-sm font-semibold text-[#003A6C]">
+        {new Date().toLocaleDateString()}
+      </p>
+    </div>
+  </div>
+
+  <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4">
+
+    <div>
+      <h1 className="mb-2 text-3xl font-bold text-[#003A6C]">
+        Tendencia de Plantillas
+      </h1>
+
+      <p className="text-[#4B778D]">
+        Descubre qué plantilla prefieren los reclutadores esta semana
+      </p>
+    </div>
 
          <div className="flex flex-col items-start gap-3 md:items-end">
           <div className="flex flex-col items-start gap-2 sm:items-end">
-          <Button
-            type="button"
-            disabled
-            className="bg-[#003A6C] text-white shadow-sm transition-colors hover:bg-[#4982AD]" >
-           <Download className="mr-2 h-4 w-4" />
-             Exportar a PDF
-          </Button>
+           <div className="print:hidden">
+        <Button
+              type="button"
+              onClick={handleExportPDF}
+              disabled={visibleStats.length === 0}
+              className="bg-[#003A6C] text-white shadow-sm transition-colors hover:bg-[#4982AD]"  >
+            <Download className="mr-2 h-4 w-4" />
+            Exportar a PDF
+        </Button>
+          </div>
           <p className="text-sm font-medium text-[#4B778D]">  Disponible cuando existan datos registrados </p>
         </div>
 
