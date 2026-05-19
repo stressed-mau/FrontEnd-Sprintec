@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { useCurrentWeekRange } from "@/hooks/useCurrentWeekRange"
 import { useRef } from "react"
 import { useReactToPrint } from "react-to-print"
+import logo from "@/assets/logo/LogoPG.png"
 
 const TendenciaPlantillasPage = () => {
   const { loading, stats, chartData, pageError } = useTemplateTrends()
@@ -33,41 +34,33 @@ const TendenciaPlantillasPage = () => {
         <Sidebar />
 
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
-<div ref={reportRef} className="mx-auto max-w-6xl">
+       <div   ref={reportRef} className="mx-auto max-w-6xl print:max-w-full print:scale-[0.92] print:origin-top" >
 
-  {/* SOLO VISIBLE EN PDF */}
-  <div className="hidden print:flex items-center justify-between mb-8 border-b pb-4">
-    <div>
-      <h1 className="text-3xl font-bold text-[#003A6C]">
-        Reporte Semanal de Plantillas
-      </h1>
-
-      <p className="text-sm text-gray-500 mt-1">
-        PortfolioGen • {currentWeekRange}
-      </p>
-    </div>
-
+ {/* SOLO VISIBLE EN PDF */}
+<div className="hidden print:flex items-center justify-between mb-4 border-b border-gray-300 pb-3">
+  {/* LOGO IZQUIERDA */}
+  <div className="w-1/3 flex justify-start">
+    <img src={logo} alt="Logo"  className="w-12 h-12 object-contain"  />
+  </div>
+  {/* TITULO CENTRADO */}
+  <div className="w-1/3 text-center">
+    <h1 className="text-2xl font-bold text-[#003A6C] leading-tight">    Reporte Semanal de Plantillas    </h1>
+    <p className="text-sm text-gray-500"> {currentWeekRange} </p>
+  </div>
+  {/* FECHA DERECHA */}
+  <div className="w-1/3 flex justify-end">
     <div className="text-right">
-      <p className="text-sm text-gray-400">
-        Generado automáticamente
-      </p>
-
-      <p className="text-sm font-semibold text-[#003A6C]">
-        {new Date().toLocaleDateString()}
-      </p>
+      <p className="text-sm font-semibold text-[#003A6C]">     {new Date().toLocaleDateString()}  </p>
     </div>
   </div>
+
+</div>
 
   <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4">
 
     <div>
-      <h1 className="mb-2 text-3xl font-bold text-[#003A6C]">
-        Tendencia de Plantillas
-      </h1>
-
-      <p className="text-[#4B778D]">
-        Descubre qué plantilla prefieren los reclutadores esta semana
-      </p>
+      <h1 className="mb-2 text-3xl sm:text-3xl font-bold text-[#003A6C]">   Tendencia de Plantillas    </h1>
+      <p className="text-sm sm:text-base text-[#4B778D]"> Descubre qué plantilla prefieren los reclutadores esta semana  </p>
     </div>
 
          <div className="flex flex-col items-start gap-3 md:items-end">
@@ -109,7 +102,7 @@ const TendenciaPlantillasPage = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 print:gap-2 print:mb-4">
               <KPICard label="Plantilla líder" value={leadStat?.template_name ?? "Pendiente"} change={leadStat?.variation ?? "Sin dato"} icon={<Crown size={18} />} isNegative={Boolean(leadStat?.variation?.startsWith("-"))} />
               <KPICard label="Tiempo de lectura" value={leadStat?.read_time ?? "Pendiente"} change={leadStat?.variation ?? "Sin dato"} icon={<Clock size={18} />} />
               <KPICard label="Tasa interés" value={leadStat?.interest_rate ?? "Pendiente"} change={leadStat?.variation ?? "Sin dato"} icon={<MousePointer2 size={18} />} isNegative={Boolean(leadStat?.variation?.startsWith("-"))} />
@@ -140,10 +133,10 @@ const TendenciaPlantillasPage = () => {
                   )}
                 </div>
 
-                <div className="bg-white rounded-3xl border border-[#C9E1F0] p-8 shadow-sm">
+                <div className="bg-white rounded-3xl border border-[#C9E1F0] p-5 print:p-3 shadow-sm print:break-inside-avoid">
                   <h3 className="mb-2 text-2xl font-semibold text-[#003A6C]">Evolución semanal de visitas</h3>
 
-                  <div className="h-80 sm:h-105 lg:h-112.5 rounded-2xl bg-[#F5F5F5] p-3 sm:p-6 overflow-x-auto">
+                  <div className="h-64 sm:h-80 lg:h-96 print:h-56 rounded-2xl bg-[#F5F5F5] p-3 sm:p-6 overflow-x-auto">
                     {visibleChartData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={visibleChartData} barGap={8}>
@@ -178,14 +171,14 @@ const TendenciaPlantillasPage = () => {
 }
 
 const KPICard = ({ label, value, change, icon, isNegative }: any) => (
-  <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+  <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm">
     <div className="flex items-center gap-2 text-gray-400 mb-3">
       {icon}
       <span className="text-xs font-bold uppercase tracking-widest">{label}</span>
     </div>
 
     <div className="flex justify-between items-end">
-      <span className="text-2xl font-bold text-[#003A6C]">{value}</span>
+      <span className="text-xl sm:text-2xl font-bold text-[#003A6C]">{value}</span>
       <span className={`flex items-center gap-1 text-xs font-bold ${isNegative ? "text-red-500" : "text-green-500"}`}>
         {isNegative ? <TrendingDown className="w-4 h-4 mr-1" /> : <TrendingUp className="w-4 h-4 mr-1" />}
         {change}
@@ -196,14 +189,14 @@ const KPICard = ({ label, value, change, icon, isNegative }: any) => (
 
 const TrendCard = ({ template_name, read_time, interest_rate, variation, footerBadge, footerColor, isCurrent }: TrendStats) => (
   <div className="bg-white rounded-[2rem] border border-[#C9E1F0] overflow-hidden flex flex-col shadow-sm">
-    <div className="p-5 sm:p-8 flex-1">
+    <div className="p-4 sm:p-5 flex-1">
       <div className="flex justify-between items-start mb-6">
         <h3 className="text-xl sm:text-2xl font-bold text-[#003A6C]">{template_name}</h3>
 
         {isCurrent ? <span className="bg-slate-900 text-white text-[10px] px-2 py-1 rounded-lg font-bold">TU PLANTILLA</span> : null}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex justify-between text-sm border-b pb-2">
           <span className="text-gray-400">Tiempo lectura</span>
           <span className="font-bold text-[#003A6C]">{read_time}</span>
