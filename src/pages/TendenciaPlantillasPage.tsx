@@ -34,7 +34,7 @@ const TendenciaPlantillasPage = () => {
         <Sidebar />
 
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
-       <div   ref={reportRef} className="mx-auto max-w-6xl print:max-w-full print:scale-[0.92] print:origin-top" >
+       <div   ref={reportRef} className="mx-auto max-w-6xl print:max-w-full print:px-2 print:pt-6 print:scale-[0.92] print:origin-top" >
 
  {/* SOLO VISIBLE EN PDF */}
 <div className="hidden print:flex items-center justify-between mb-4 border-b border-gray-300 pb-3">
@@ -69,16 +69,15 @@ const TendenciaPlantillasPage = () => {
         <Button
               type="button"
               onClick={handleExportPDF}
-              disabled={visibleStats.length === 0}
               className="bg-[#003A6C] text-white shadow-sm transition-colors hover:bg-[#4982AD]"  >
             <Download className="mr-2 h-4 w-4" />
             Exportar a PDF
         </Button>
           </div>
-          <p className="text-sm font-medium text-[#4B778D]">  Disponible cuando existan datos registrados </p>
+          <p className="print:hidden text-sm font-medium text-[#4B778D]">  Disponible cuando existan datos registrados </p>
         </div>
 
-    <div className="flex flex-wrap items-center justify-center bg-white border border-[#0E7D96]/20 rounded-xl px-3 sm:px-4 py-2 gap-2 sm:gap-4 shadow-sm">
+    <div className="print:hidden flex flex-wrap items-center justify-center bg-white border border-[#0E7D96]/20 rounded-xl px-3 sm:px-4 py-2 gap-2 sm:gap-4 shadow-sm">
       <button
         className="text-[#003A6C] hover:bg-gray-100 p-1 rounded-lg transition-colors"
         type="button"      >
