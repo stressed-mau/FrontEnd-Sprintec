@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom"
 
+import { UserGuide } from "@/components/UserGuide"
 import { LOGIN_ROUTE } from "@/routes/route-paths"
 import { isAuthenticated } from "@/services/auth"
 
@@ -10,5 +11,10 @@ export default function ProtectedRoute() {
     return <Navigate to={LOGIN_ROUTE} replace state={{ from: location }} />
   }
 
-  return <Outlet />
+  return (
+    <>
+      <Outlet />
+      <UserGuide />
+    </>
+  )
 }

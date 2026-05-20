@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom"
 
 import { useEmailValidation } from "@/hooks/useEmailValidation"
 import { USER_HOME_ROUTE } from "@/routes/route-paths"
+import { USER_GUIDE_PENDING_KEY } from "@/components/UserGuide"
 import {
   AuthServiceError,
   clearAuthSession,
@@ -408,6 +409,7 @@ export function useRegisterForm() {
           body: WELCOME_MESSAGE,
         }),
       )
+      window.localStorage.setItem(USER_GUIDE_PENDING_KEY, "1")
 
       navigate(USER_HOME_ROUTE, { replace: true })
     } catch (error) {
