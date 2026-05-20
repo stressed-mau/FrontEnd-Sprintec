@@ -6,10 +6,24 @@ import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
 import { useParams } from "react-router-dom"
+import { useEffect, useRef } from "react"
+import { recordPortfolioView } from "@/services/portfolioAnalyticsService"
 
 const PublicPortfolio = () => {
   const { slug } = useParams()
   const { portfolio, loading } = usePortfolio(slug) as { portfolio: any, loading: boolean };
+  const recordedViewRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const portfolioId = portfolio?.id ?? portfolio?.config?.id ?? portfolio?.config?.portfolio_id
+
+    if (loading || !portfolioId || recordedViewRef.current === String(portfolioId)) {
+      return
+    }
+
+    recordedViewRef.current = String(portfolioId)
+    recordPortfolioView(portfolioId)
+  }, [loading, portfolio])
 
   if (loading) {
     return (

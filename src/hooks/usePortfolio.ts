@@ -18,6 +18,10 @@ const normalizeProfile = (d: any) => ({
   phone_number: d.profile.phone || "",
   nationality: d.profile.nacionality || d.profile.nationality || "",
 });
+
+const getPortfolioId = (d: any) =>
+  d.id ?? d.portfolio_id ?? d.config?.id ?? d.config?.portfolio_id ?? d.profile?.portfolio_id ?? null;
+
 export const usePortfolio = (externalSlug?: string) => {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,6 +45,7 @@ export const usePortfolio = (externalSlug?: string) => {
         if (res.data.success) {
           const d = res.data.data;
           setPortfolio({
+            id: getPortfolioId(d) ? String(getPortfolioId(d)) : undefined,
             user: {
               id: String(d.profile.id),
               fullname: d.profile.name,
@@ -85,6 +90,7 @@ export const usePortfolio = (externalSlug?: string) => {
         ]);
 
         setPortfolio({
+          id: undefined,
           user: {
             id: String(userData.id),
             fullname: (userData as any).name || (userData as any).fullname || (userData as any).full_name || session.user.username,
