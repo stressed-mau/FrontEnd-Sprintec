@@ -18,9 +18,27 @@ const normalizeProfile = (d: any) => ({
   phone_number: d.profile.phone || "",
   nationality: d.profile.nacionality || d.profile.nationality || "",
 });
+
+const trackVisit = async (portfolioData: any) => {
+  try {
+    const res = await api.post('/tracking/visit', {
+      portfolio_slug: portfolioData.slug,
+      template_type: portfolioData.template_type, // 'moderna' | 'minimalista' | 'corporativa'
+      visited_at: new Date().toISOString(),
+    });
+    // Obtener el ID de la visita (puede variar según la estructura exacta de respuesta del backend)
+    return res.data?.visit_id || res.data?.id || res.data?.data?.visit_id || res.data?.data?.id || null;
+  } catch (error) {
+    // Silenciar errores de tracking — no interrumpir la experiencia del visitante
+    console.warn('Tracking no disponible:', error);
+    return null;
+  }
+};
+
 export const usePortfolio = (externalSlug?: string) => {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [loading, setLoading] = useState(true);
+  const [visitId, setVisitId] = useState<string | null>(null);
 
   const fetchAll = useCallback(async () => {
     const session = getAuthSession();
@@ -66,6 +84,20 @@ export const usePortfolio = (externalSlug?: string) => {
             config: d.config, 
             profile: normalizeProfile(d)
           });
+
+          const templateMap: Record<number, string> = {
+            1: 'moderna',
+            2: 'minimalista',
+            3: 'corporativa'
+          };
+
+          trackVisit({
+            slug: slugToFetch,
+            template_type: templateMap[Number(d.config.template)] || 'moderna'
+          }).then(vId => {
+            if (vId) setVisitId(vId);
+          });
+
           return; // Éxito: salimos de la función
         }
       } catch {
@@ -135,6 +167,7 @@ export const usePortfolio = (externalSlug?: string) => {
   return { 
     portfolio, 
     loading, 
-    refresh: fetchAll 
+    refresh: fetchAll,
+    visitId
   };
 };
