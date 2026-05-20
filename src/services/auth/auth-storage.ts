@@ -33,6 +33,10 @@ export function saveAuthSession(response: AuthResponse) {
     throw new Error("Respuesta de autenticación inválida.")
   }
 
+  if (typeof response.access_token !== "string" || typeof response.token_type !== "string") {
+    throw new Error("Respuesta de autenticación inválida.")
+  }
+
   const session: AuthSession = {
     accessToken: response.access_token,
     tokenType: response.token_type,
