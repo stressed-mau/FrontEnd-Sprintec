@@ -193,7 +193,7 @@ const NetworksPage = () => {
                 <div className="flex items-start gap-3">
                   <div
                     id="icono-informacion-oauth-redes"
-                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-100"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100"
                   >
                     <Link2 className="h-5 w-5 text-blue-600" />
                   </div>
@@ -240,7 +240,7 @@ const NetworksPage = () => {
                               <div className="mt-2 h-4 w-full rounded bg-gray-100" />
                             </div>
                           </div>
-                          <div className="sm:pl-[4.5rem]">
+                          <div className="sm:pl-18">
                             <div className="h-9 rounded bg-gray-100 sm:h-10" />
                           </div>
                         </div>
@@ -271,7 +271,7 @@ const NetworksPage = () => {
                             <div className="flex items-start gap-3 sm:gap-4">
                               <div
                                 id={`icono-red-${network.id}`}
-                                className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl sm:h-14 sm:w-14 ${network.lightColor}`}
+                                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl sm:h-14 sm:w-14 ${network.lightColor}`}
                               >
                                 <Icon className={`h-6 w-6 sm:h-7 sm:w-7 ${network.textColor}`} />
                               </div>
@@ -297,7 +297,7 @@ const NetworksPage = () => {
                               </div>
                             </div>
 
-                            <div className="pl-0 sm:pl-[4.5rem]">
+                            <div className="pl-0 sm:pl-18">
                               {isConnected && networkData ? (
                                 <div id={`contenedor-url-red-${network.id}`} className="mb-3 rounded-lg border border-gray-200 bg-white p-3 text-left">
                                   <a
@@ -308,7 +308,7 @@ const NetworksPage = () => {
                                     className="group flex items-center gap-1.5 text-sm text-gray-700 hover:text-blue-600"
                                   >
                                     <span className="truncate">{networkData.url}</span>
-                                    <ExternalLink className="h-3.5 w-3.5 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+                                    <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
                                   </a>
                                 </div>
                               ) : null}

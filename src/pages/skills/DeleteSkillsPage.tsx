@@ -34,12 +34,12 @@ const DeleteSkillsPage = () => {
       <Header />
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 md:p-10">
+        <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-6xl space-y-6">
 
             {/* Encabezado */}
               <div>
-                <h1 className="mb-1 text-2xl font-semibold text-gray-900">
+                <h1 className="mb-2 text-3xl font-bold text-[#003A6C]">
                   Eliminar Habilidades
                 </h1>
                 <p className="text-sm text-[#4B778D] md:text-base">
