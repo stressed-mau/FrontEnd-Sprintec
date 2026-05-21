@@ -1,19 +1,37 @@
-import { ChevronLeft, ChevronRight, Clock, Crown, MousePointer2, TrendingDown, TrendingUp, Users } from "lucide-react"
+import { ChevronLeft, ChevronRight, Clock, Crown, MousePointer2, TrendingDown, TrendingUp, Users, Download } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
 import { Footer } from "@/components/Footer"
 import { useTemplateTrends } from "@/hooks/useTemplateTrends"
-import type { TrendChartPoint, TrendStats } from "@/services/templateTrendsService"
+import { formatTemplateTime, formatTemplateVariation, type TrendStats } from "@/services/templateTrendsService"
+import { Button } from "@/components/ui/button"
+import { useCurrentWeekRange } from "@/hooks/useCurrentWeekRange"
+import { useMemo, useRef, useState } from "react"
+import { useReactToPrint } from "react-to-print"
+import logo from "@/assets/logo/LogoPG.png"
 
 const TendenciaPlantillasPage = () => {
-  const { loading, stats, chartData, pageError } = useTemplateTrends()
-  const fallbackStats: TrendStats[] = []
-  const fallbackChartData: TrendChartPoint[] = []
+  const [weekOffset, setWeekOffset] = useState(0)
+  const { loading, stats, chartData, report, pageError } = useTemplateTrends(weekOffset)
+  const reportRef = useRef<HTMLDivElement>(null)
+  const currentWeekRange = useCurrentWeekRange(weekOffset)
+  const reportPeriod = report?.periodLabel ?? currentWeekRange
+  const totalPortfolios = report?.totalPortfolios ?? 0
+  const canGoNext = weekOffset < 0
+  const weekOffsetLabel = useMemo(() => {
+    if (weekOffset === 0) return "Semana actual"
+    return weekOffset < 0 ? `Hace ${Math.abs(weekOffset)} semana(s)` : `+${weekOffset} semana(s)`
+  }, [weekOffset])
+  const handleExportPDF = useReactToPrint({
+  contentRef: reportRef,
+  documentTitle: `Reporte-Plantillas-${reportPeriod}`,
+})
 
-  const visibleStats = stats.length > 0 ? stats : fallbackStats
-  const visibleChartData = chartData.length > 0 ? chartData : fallbackChartData
+  const visibleStats = stats
+  const visibleChartData = chartData
   const leadStat = visibleStats[0]
+  const leadVariation = leadStat?.variation ?? 0
 
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
@@ -22,41 +40,85 @@ const TendenciaPlantillasPage = () => {
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-10 overflow-x-hidden">
-          <div className="mx-auto max-w-6xl">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
+       <div   ref={reportRef} className="mx-auto max-w-6xl print:max-w-full print:px-2 print:pt-6 print:scale-[0.92] print:origin-top" >
+
+            <div className="hidden print:flex items-center justify-between mb-4 border-b border-gray-300 pb-3">
+              <div className="w-1/3 flex justify-start">
+                <img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
+              </div>
+              <div className="w-1/3 text-center">
+                <h1 className="text-2xl font-bold text-[#003A6C] leading-tight">Reporte Semanal de Plantillas</h1>
+                <p className="text-sm text-gray-500">{reportPeriod}</p>
+              </div>
+              <div className="w-1/3 flex justify-end">
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-[#003A6C]">{new Date().toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4">
+
               <div>
-                <h1 className="mb-1 text-2xl sm:text-3xl font-semibold text-gray-900">Tendencia de Plantillas</h1>
-                <p className="text-[#4B778D]">Descubre qué plantilla prefieren los reclutadores esta semana</p>
+                <h1 className="mb-2 text-3xl sm:text-3xl font-bold text-[#003A6C]">Tendencia de Plantillas</h1>
+                <p className="text-sm sm:text-base text-[#4B778D]">Resumen del reporte semanal del portafolio autenticado</p>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center bg-white border border-[#0E7D96]/20 rounded-xl px-3 sm:px-4 py-2 gap-2 sm:gap-4 shadow-sm">
-                <button className="text-[#003A6C] hover:bg-gray-100 p-1 rounded-lg transition-colors" type="button">
-                  <ChevronLeft size={20} />
-                </button>
+              <div className="flex flex-col items-start gap-3 md:items-end">
+                <div className="flex flex-col items-start gap-2 sm:items-end">
+                  <div className="print:hidden">
+                    <Button
+                      type="button"
+                      onClick={handleExportPDF}
+                      className="bg-[#003A6C] text-white shadow-sm transition-colors hover:bg-[#4982AD]"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Generar PDF
+                    </Button>
+                  </div>
+                  <p className="print:hidden text-sm font-medium text-[#4B778D]">{report ? reportPeriod : "Cargando reporte semanal..."}</p>
+                </div>
 
-                <span className="text-sm font-bold text-[#003A6C]">Semana del 5 al 11 de mayo, 2026</span>
-
-                <button className="text-[#003A6C] hover:bg-gray-100 p-1 rounded-lg transition-colors" type="button">
-                  <ChevronRight size={20} />
-                </button>
+                <div className="print:hidden flex flex-wrap items-center justify-center bg-white border border-[#0E7D96]/20 rounded-xl px-3 sm:px-4 py-2 gap-2 sm:gap-4 shadow-sm">
+                  <button
+                    className="rounded-lg p-1 text-[#003A6C] transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    type="button"
+                    onClick={() => setWeekOffset((current) => current - 1)}
+                    aria-label="Ver semana anterior"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <span className="text-sm font-bold text-[#003A6C]">{reportPeriod}</span>
+                  <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
+                  <span className="text-sm font-semibold text-[#4B778D]">{totalPortfolios} portafolios analizados</span>
+                  <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
+                  <button
+                    className="rounded-lg p-1 text-[#003A6C] transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    type="button"
+                    onClick={() => setWeekOffset((current) => Math.min(current + 1, 0))}
+                    disabled={!canGoNext}
+                    aria-label="Volver a la semana actual"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+                <p className="text-xs text-[#4B778D]">{weekOffsetLabel}</p>
               </div>
             </div>
 
             <div className="mb-5 p-2 bg-[#E0F2FE] border border-[#7DD3FC] rounded-2xl w-fit">
-              <span className="text-[#0369A1] font-bold text-sm italic">
-                Tu plantilla actual: {leadStat?.template_name ?? "Pendiente de API"}
-              </span>
+              <span className="text-[#0369A1] font-bold text-sm italic">Periodo actual: {reportPeriod}</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              <KPICard label="Plantilla líder" value={leadStat?.template_name ?? "Pendiente"} change={leadStat?.variation ?? "Sin dato"} icon={<Crown size={18} />} isNegative={Boolean(leadStat?.variation?.startsWith("-"))} />
-              <KPICard label="Tiempo de lectura" value={leadStat?.read_time ?? "Pendiente"} change={leadStat?.variation ?? "Sin dato"} icon={<Clock size={18} />} />
-              <KPICard label="Tasa interés" value={leadStat?.interest_rate ?? "Pendiente"} change={leadStat?.variation ?? "Sin dato"} icon={<MousePointer2 size={18} />} isNegative={Boolean(leadStat?.variation?.startsWith("-"))} />
-              <KPICard label="Registros API" value={String(visibleStats.length)} change={visibleStats.length > 0 ? "Disponible" : "Sin dato"} icon={<Users size={18} />} />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 print:gap-2 print:mb-4">
+              <KPICard label="Plantilla líder" value={leadStat?.template_name ?? "Pendiente"} change={formatTemplateVariation(leadVariation)} helper="Mayor retención semanal" icon={<Crown size={18} />} isNegative={leadVariation < 0} />
+              <KPICard label="Retención" value={leadStat ? `${leadStat.retention}%` : "Pendiente"} change={leadStat ? formatTemplateVariation(leadStat.variation) : "Sin dato"} helper="Promedio del template líder" icon={<MousePointer2 size={18} />} isNegative={leadVariation < 0} />
+              <KPICard label="Tiempo promedio" value={leadStat ? formatTemplateTime(leadStat.avg_time) : "Pendiente"} change="Semana actual" helper="Tiempo medio de lectura" icon={<Clock size={18} />} />
+              <KPICard label="Portafolios" value={String(totalPortfolios)} change={report ? "Reportado" : "Sin dato"} helper="Portafolios analizados" icon={<Users size={18} />} />
             </div>
 
-            <h2 className="mb-4 text-2xl font-semibold text-gray-900">Comparativa de plantillas ésta semana</h2>
+            <h2 className="mb-2 text-2xl font-semibold text-[#003A6C]">Comparativa de plantillas esta semana</h2>
 
             {pageError ? (
               <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
@@ -66,7 +128,7 @@ const TendenciaPlantillasPage = () => {
 
             {loading ? (
               <div className="mb-12 rounded-2xl border border-[#C9E1F0] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
-                Cargando tendencias de plantillas...
+                Cargando reporte de plantillas...
               </div>
             ) : (
               <>
@@ -75,15 +137,15 @@ const TendenciaPlantillasPage = () => {
                     visibleStats.map((item, idx) => <TrendCard key={idx} {...item} />)
                   ) : (
                     <div className="sm:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-[#C9E1F0] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
-                      Aún no hay datos de plantillas para mostrar.
+                      Aún no hay datos de plantillas para mostrar en este periodo.
                     </div>
                   )}
                 </div>
 
-                <div className="bg-white rounded-3xl border border-[#C9E1F0] p-8 shadow-sm">
-                  <h3 className="font-bold text-[#003A6C] mb-6 text-3xl">Evolución semanal de visitas</h3>
+                <div className="bg-white rounded-3xl border border-[#C9E1F0] p-5 print:p-3 shadow-sm print:break-inside-avoid">
+                  <h3 className="mb-2 text-2xl font-semibold text-[#003A6C]">Evolución semanal de visitas</h3>
 
-                  <div className="h-80 sm:h-105 lg:h-112.5 rounded-2xl bg-[#F5F5F5] p-3 sm:p-6 overflow-x-auto">
+                  <div className="h-64 sm:h-80 lg:h-96 print:h-56 rounded-2xl bg-[#F5F5F5] p-3 sm:p-6 overflow-x-auto">
                     {visibleChartData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={visibleChartData} barGap={8}>
@@ -102,7 +164,7 @@ const TendenciaPlantillasPage = () => {
                         </BarChart>
                       </ResponsiveContainer>
                     ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-[#4B778D]">La gráfica se mostrará cuando la API devuelva la serie semanal.</div>
+                      <div className="flex h-full items-center justify-center text-sm text-[#4B778D]">La gráfica se mostrará cuando la API devuelva las visitas diarias.</div>
                     )}
                   </div>
                 </div>
@@ -117,46 +179,51 @@ const TendenciaPlantillasPage = () => {
   )
 }
 
-const KPICard = ({ label, value, change, icon, isNegative }: any) => (
-  <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+const KPICard = ({ label, value, change, helper, icon, isNegative }: any) => (
+  <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm">
     <div className="flex items-center gap-2 text-gray-400 mb-3">
       {icon}
       <span className="text-xs font-bold uppercase tracking-widest">{label}</span>
     </div>
 
-    <div className="flex justify-between items-end">
-      <span className="text-2xl font-bold text-[#003A6C]">{value}</span>
-      <span className={`flex items-center gap-1 text-xs font-bold ${isNegative ? "text-red-500" : "text-green-500"}`}>
-        {isNegative ? <TrendingDown className="w-4 h-4 mr-1" /> : <TrendingUp className="w-4 h-4 mr-1" />}
-        {change}
-      </span>
+    <div className="flex justify-between items-end gap-3">
+      <div>
+        <span className="text-xl sm:text-2xl font-bold text-[#003A6C]">{value}</span>
+        {helper ? <p className="mt-1 text-[11px] font-medium text-gray-400">{helper}</p> : null}
+      </div>
+      {change ? (
+        <span className={`flex items-center gap-1 text-xs font-bold ${isNegative ? "text-red-500" : "text-green-500"}`}>
+          {isNegative ? <TrendingDown className="w-4 h-4 mr-1" /> : <TrendingUp className="w-4 h-4 mr-1" />}
+          {change}
+        </span>
+      ) : null}
     </div>
   </div>
 )
 
-const TrendCard = ({ template_name, read_time, interest_rate, variation, footerBadge, footerColor, isCurrent }: TrendStats) => (
+const TrendCard = ({ template_name, retention, avg_time, variation, footerBadge, footerColor, isCurrent }: TrendStats) => (
   <div className="bg-white rounded-[2rem] border border-[#C9E1F0] overflow-hidden flex flex-col shadow-sm">
-    <div className="p-5 sm:p-8 flex-1">
+    <div className="p-4 sm:p-5 flex-1">
       <div className="flex justify-between items-start mb-6">
         <h3 className="text-xl sm:text-2xl font-bold text-[#003A6C]">{template_name}</h3>
 
-        {isCurrent ? <span className="bg-slate-900 text-white text-[10px] px-2 py-1 rounded-lg font-bold">TU PLANTILLA</span> : null}
+        {isCurrent ? <span className="bg-slate-900 text-white text-[10px] px-2 py-1 rounded-lg font-bold">LÍDER</span> : null}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex justify-between text-sm border-b pb-2">
-          <span className="text-gray-400">Tiempo lectura</span>
-          <span className="font-bold text-[#003A6C]">{read_time}</span>
+          <span className="text-gray-400">Retención</span>
+          <span className="font-bold text-[#003A6C]">{retention}%</span>
         </div>
 
         <div className="flex justify-between text-sm border-b pb-2">
-          <span className="text-gray-400">Tasa interés</span>
-          <span className="font-bold text-[#003A6C]">{interest_rate}</span>
+          <span className="text-gray-400">Tiempo promedio</span>
+          <span className="font-bold text-[#003A6C]">{formatTemplateTime(avg_time)}</span>
         </div>
 
         <div className="flex justify-between text-sm">
           <span className="text-gray-400">Variación</span>
-          <span className="font-bold text-green-500">{variation}</span>
+          <span className={`font-bold ${variation < 0 ? "text-red-500" : "text-green-500"}`}>{formatTemplateVariation(variation)}</span>
         </div>
       </div>
     </div>
