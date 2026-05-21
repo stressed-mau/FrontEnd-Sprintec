@@ -1,4 +1,4 @@
-import { Check, TrendingUp } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { Footer } from '@/components/Footer'
@@ -7,7 +7,9 @@ import Sidebar from '@/components/Sidebar'
 import { useNotifications } from '@/hooks/useNotifications'
 
 export function NotificationsPage() {
-  const { notifications, unreadCount, loading, pageError, markAsRead, markAllAsRead } = useNotifications()
+  const { notifications, unreadCount, loading, pageError, markAsRead, markAllAsRead, page, setPage, meta } = useNotifications()
+  const hasPreviousPage = page > 1
+  const hasNextPage = page < meta.totalPages
 
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
@@ -24,17 +26,43 @@ export function NotificationsPage() {
                     Tienes {unreadCount} notificación{unreadCount !== 1 ? "es" : ""} sin leer
                   </p>
                 )}
+                <p className="text-xs text-[#5B8FB9] mt-1">
+                   {meta.total} notificaciones
+                </p>
               </div>
-              {unreadCount > 0 && (
-                <button
-                  type="button"
-                  onClick={markAllAsRead}
-                  className="text-sm text-[#003A6C] hover:text-[#4982AD] transition-colors flex items-center gap-2"
-                >
-                  <Check className="h-4 w-4" />
-                  Marcar todas como leídas
-                </button>
-              )}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 rounded-xl border border-[#6DACBF]/30 bg-white px-3 py-2 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setPage(page - 1)}
+                    disabled={!hasPreviousPage || loading}
+                    className="rounded-lg p-1 text-[#003A6C] transition-colors hover:bg-[#F7F0E1] disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label="Página anterior"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <span className="min-w-24 text-center text-xs font-semibold text-[#003A6C]">{meta.currentPage}</span>
+                  <button
+                    type="button"
+                    onClick={() => setPage(page + 1)}
+                    disabled={!hasNextPage || loading}
+                    className="rounded-lg p-1 text-[#003A6C] transition-colors hover:bg-[#F7F0E1] disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label="Página siguiente"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => void markAllAsRead()}
+                    className="text-sm text-[#003A6C] hover:text-[#4982AD] transition-colors flex items-center gap-2"
+                  >
+                    <Check className="h-4 w-4" />
+                    Marcar todas como leídas
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="bg-white rounded-3xl border border-[#6DACBF] shadow-sm divide-y divide-[#6DACBF]/30">
@@ -64,7 +92,7 @@ export function NotificationsPage() {
                           <span className="text-xs text-[#5B8FB9]">{notification.time}</span>
                           <div className="flex items-center gap-3">
                             {!notification.read && (
-                              <button type="button" onClick={() => markAsRead(notification.id)} className="text-xs text-[#003A6C] hover:underline">
+                              <button type="button" onClick={() => void markAsRead(notification.id)} className="text-xs text-[#003A6C] hover:underline">
                                 Marcar como leída
                               </button>
                             )}

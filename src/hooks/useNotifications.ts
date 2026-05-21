@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react"
 
-import { getNotifications, type NotificationItem } from "@/services/notificationsService"
+import {
+  getNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+  type NotificationItem,
+  type NotificationsPageMeta,
+} from "@/services/notificationsService"
 
 export function useNotifications() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [loading, setLoading] = useState(true)
   const [pageError, setPageError] = useState("")
+  const [page, setPage] = useState(1)
+  const [meta, setMeta] = useState<NotificationsPageMeta>({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 })
 
   useEffect(() => {
     let isMounted = true
@@ -14,15 +22,17 @@ export function useNotifications() {
       setLoading(true)
 
       try {
-        const result = await getNotifications()
+        const result = await getNotifications(page)
 
         if (isMounted) {
-          setNotifications(result)
+          setNotifications(result.notifications)
+          setMeta(result.meta)
           setPageError("")
         }
       } catch (error) {
         if (isMounted) {
           setNotifications([])
+          setMeta({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 })
           setPageError(error instanceof Error ? error.message : "No se pudieron cargar las notificaciones.")
         }
       } finally {
@@ -37,14 +47,32 @@ export function useNotifications() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [page])
 
-  const markAsRead = (id: string) => {
-    setNotifications((previous) => previous.map((notification) => (notification.id === id ? { ...notification, read: true } : notification)))
+  const refreshNotifications = async () => {
+    const result = await getNotifications(page)
+    setNotifications(result.notifications)
+    setMeta(result.meta)
   }
 
-  const markAllAsRead = () => {
-    setNotifications((previous) => previous.map((notification) => ({ ...notification, read: true })))
+  const markAsRead = async (id: string) => {
+    try {
+      await markNotificationAsRead(id)
+      await refreshNotifications()
+      setPageError("")
+    } catch (error) {
+      setPageError(error instanceof Error ? error.message : "No se pudo actualizar la notificación.")
+    }
+  }
+
+  const markAllAsRead = async () => {
+    try {
+      await markAllNotificationsAsRead()
+      await refreshNotifications()
+      setPageError("")
+    } catch (error) {
+      setPageError(error instanceof Error ? error.message : "No se pudieron marcar todas las notificaciones como leídas.")
+    }
   }
 
   const unreadCount = notifications.filter((notification) => !notification.read).length
@@ -56,5 +84,8 @@ export function useNotifications() {
     pageError,
     markAsRead,
     markAllAsRead,
+    page,
+    setPage,
+    meta,
   }
 }
