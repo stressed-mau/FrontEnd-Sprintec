@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
 
-import { getTemplateTrends, normalizeTemplateTrendsError, type TrendChartPoint, type TrendStats } from "@/services/templateTrendsService"
+import { getTemplateTrends, normalizeTemplateTrendsError, type TemplateTrendsReport, type TrendChartPoint, type TrendStats } from "@/services/templateTrendsService"
 
 export function useTemplateTrends() {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<TrendStats[]>([])
   const [chartData, setChartData] = useState<TrendChartPoint[]>([])
+  const [report, setReport] = useState<TemplateTrendsReport | null>(null)
   const [pageError, setPageError] = useState("")
 
   useEffect(() => {
@@ -19,12 +20,14 @@ export function useTemplateTrends() {
         if (isMounted) {
           setStats(result.stats)
           setChartData(result.chartData)
+          setReport(result.report)
           setPageError("")
         }
       } catch (error) {
         if (isMounted) {
           setStats([])
           setChartData([])
+          setReport(null)
           setPageError(normalizeTemplateTrendsError(error).message)
         }
       } finally {
@@ -41,5 +44,5 @@ export function useTemplateTrends() {
     }
   }, [])
 
-  return { loading, stats, chartData, pageError, setPageError }
+  return { loading, stats, chartData, report, pageError, setPageError }
 }
