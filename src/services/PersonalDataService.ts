@@ -15,6 +15,17 @@ export type UserInformation = {
   image_url: string;
 };
 
+export type UserInformationPayload = {
+  fullname: string;
+  occupation: string;
+  biography: string;
+  nationality: string;
+  phone_number: string;
+  public_email: string;
+};
+
+export type UserInformationRequest = UserInformationPayload | FormData;
+
 function asString(value: unknown): string {
   if (typeof value === 'string') return value.trim();
   if (typeof value === 'number') return String(value);
@@ -72,15 +83,15 @@ function assertSuccessfulUserInformationResponse(data: any, fallbackMessage: str
   }
 }
 
-export const createUserInformation = async (formData: FormData): Promise<UserInformation> => {
-  const res = await api.post(USER_ENDPOINT, formData);
+export const createUserInformation = async (payload: UserInformationRequest): Promise<UserInformation> => {
+  const res = await api.post(USER_ENDPOINT, payload);
 
   assertSuccessfulUserInformationResponse(res.data, 'Error al registrar datos');
   return normalizeUserInformation(res.data);
 };
 
-export const updateUserInformation = async (formData: FormData): Promise<UserInformation> => {
-  const res = await api.put(UPDATE_USER_ENDPOINT, formData);
+export const updateUserInformation = async (payload: UserInformationRequest): Promise<UserInformation> => {
+  const res = await api.put(UPDATE_USER_ENDPOINT, payload);
 
   assertSuccessfulUserInformationResponse(res.data, 'Error al actualizar datos');
   return normalizeUserInformation(res.data);

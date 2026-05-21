@@ -2,7 +2,12 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { getAuthSession } from "@/services/auth/auth-storage";
 import { allCountries } from 'country-telephone-data';
 import { useEmailValidation } from "@/hooks/useEmailValidation";
-import { createUserInformation, getUserInformation, updateUserInformation } from "@/services/PersonalDataService";
+import {
+  createUserInformation,
+  getUserInformation,
+  updateUserInformation,
+  type UserInformation,
+} from "@/services/PersonalDataService";
 
 const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
 
@@ -87,6 +92,57 @@ export const useUserPersonalData = () => {
   const [originalForm, setOriginalForm] = useState<PersonalDataForm | null>(null);
   const [originalCountryCode, setOriginalCountryCode] = useState("591");
   const [originalPhoneNumber, setOriginalPhoneNumber] = useState("");
+  const applyUserInformation = (user: UserInformation) => {
+    const mappedForm = {
+      fullName: user.fullname || "",
+      occupation: user.occupation || "",
+      bio: user.biography || "",
+      location: user.nationality || "",
+      email: user.public_email || "",
+      image: user.image_url || "",
+    };
+
+    setForm(mappedForm);
+    setOriginalForm(mappedForm);
+    setHasPersonalData(Boolean(
+      user.fullname ||
+      user.occupation ||
+      user.biography ||
+      user.nationality ||
+      user.phone_number ||
+      user.public_email ||
+      user.image_url
+    ));
+
+    if (user.phone_number) {
+      const foundCountry = allCountries.find(c =>
+        user.phone_number.startsWith("+" + c.dialCode)
+      );
+
+      if (foundCountry) {
+        const numberWithoutCode = user.phone_number.replace(
+          "+" + foundCountry.dialCode,
+          ""
+        );
+
+        setCountryCode(foundCountry.dialCode);
+        setPhoneNumber(numberWithoutCode);
+        setOriginalCountryCode(foundCountry.dialCode);
+        setOriginalPhoneNumber(numberWithoutCode);
+      } else {
+        setPhoneNumber(user.phone_number);
+        setOriginalPhoneNumber(user.phone_number);
+      }
+    } else {
+      setCountryCode("591");
+      setPhoneNumber("");
+      setOriginalCountryCode("591");
+      setOriginalPhoneNumber("");
+    }
+
+    return mappedForm;
+  };
+
   const validateField = (id: string, value: string) => {
   switch (id) {
     case "fullName":
@@ -211,19 +267,7 @@ export const useUserPersonalData = () => {
         user.public_email ||
         user.image_url
       );
-
-      const mappedForm = {
-        fullName: user.fullname || "",
-        occupation: user.occupation || "",
-        bio: user.biography || "",
-        location: user.nationality || "",
-        email: user.public_email || "",
-        image: user.image_url || "",
-      };
-
-      setForm(mappedForm);
-      setOriginalForm(mappedForm);
-      setHasPersonalData(userHasPersonalData);
+      const mappedForm = applyUserInformation(user);
       const initialErrors: any = {};
 
       if (userHasPersonalData) {
@@ -234,29 +278,6 @@ export const useUserPersonalData = () => {
       }
 
       setErrors(initialErrors);
-
-      if (user.phone_number) {
-        const foundCountry = allCountries.find(c =>
-          user.phone_number.startsWith("+" + c.dialCode)
-        );
-
-        if (foundCountry) {
-          setCountryCode(foundCountry.dialCode);
-
-          const numberWithoutCode = user.phone_number.replace(
-            "+" + foundCountry.dialCode,
-            ""
-          );
-
-          setPhoneNumber(numberWithoutCode);
-          setOriginalCountryCode(foundCountry.dialCode);
-          setOriginalPhoneNumber(numberWithoutCode);
-        } else {
-          // fallback
-          setPhoneNumber(user.phone_number);
-          setOriginalPhoneNumber(user.phone_number);
-        }
-      }
     } catch (error) {
       console.error("Error al obtener datos:", error);
     } finally {
@@ -350,34 +371,34 @@ const handleChange = (e: any) => {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("fullname", form.fullName);
-      formData.append("occupation", form.occupation);
-      formData.append("biography", form.bio);
-      formData.append("nationality", form.location);
-      formData.append("phone_number", `+${countryCode}${phoneNumber}`);
-      formData.append("public_email", form.email);
-
-      if (fileInputRef.current?.files?.[0]) {
-        formData.append("image_url", fileInputRef.current.files[0]);
-      }
-      const updatedUser = hasPersonalData
-        ? await updateUserInformation(formData)
-        : await createUserInformation(formData);
-      const updatedForm = {
-        fullName: updatedUser.fullname || "", 
-        occupation: updatedUser.occupation || "",
-        bio: updatedUser.biography || "", 
-        location: updatedUser.nationality || "", 
-        email: updatedUser.public_email || "", 
-        image: updatedUser.image_url || "", 
+      const payload = {
+        fullname: form.fullName,
+        occupation: form.occupation,
+        biography: form.bio,
+        nationality: form.location,
+        phone_number: `+${countryCode}${phoneNumber}`,
+        public_email: form.email,
       };
+      const imageFile = fileInputRef.current?.files?.[0];
+      const requestPayload = imageFile ? new FormData() : payload;
 
-      setForm(updatedForm);
-      setOriginalForm(updatedForm);
-      setHasPersonalData(true);
-      setOriginalCountryCode(countryCode);
-      setOriginalPhoneNumber(phoneNumber);
+      if (requestPayload instanceof FormData) {
+        Object.entries(payload).forEach(([key, value]) => {
+          requestPayload.append(key, value);
+        });
+        if (imageFile) {
+          requestPayload.append("image_url", imageFile);
+        }
+      }
+
+      if (hasPersonalData) {
+        await updateUserInformation(requestPayload);
+      } else {
+        await createUserInformation(requestPayload);
+      }
+
+      const persistedUser = await getUserInformation();
+      applyUserInformation(persistedUser);
 
       setPreview(null);
       setSuccess("Información actualizada correctamente.");
