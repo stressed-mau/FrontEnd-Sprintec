@@ -297,6 +297,7 @@ export function useRegisterForm() {
   const [values, setValues] = useState<RegisterValues>(INITIAL_VALUES)
   const [errors, setErrors] = useState<RegisterFormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [registrationComplete, setRegistrationComplete] = useState(false)
   const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(INITIAL_VALUES.email)
 
   function updateField(field: keyof RegisterValues, value: string) {
@@ -409,9 +410,7 @@ export function useRegisterForm() {
           body: WELCOME_MESSAGE,
         }),
       )
-      window.localStorage.setItem(USER_GUIDE_PENDING_KEY, "1")
-
-      navigate(USER_HOME_ROUTE, { replace: true })
+      setRegistrationComplete(true)
     } catch (error) {
       if (error instanceof AuthServiceError || axios.isAxiosError(error) || isRecord(error)) {
         const fieldErrors = mapApiErrors(getRegisterValidationErrors(error))
@@ -477,14 +476,22 @@ export function useRegisterForm() {
     }))
   }
 
+  function continueAfterRegistration() {
+    setRegistrationComplete(false)
+    window.localStorage.setItem(USER_GUIDE_PENDING_KEY, "1")
+    navigate(USER_HOME_ROUTE, { replace: true })
+  }
+
   return {
     values,
     errors,
     emailSuggestion: suggestion,
     isSubmitting,
+    registrationComplete,
     updateField,
     handleBlur,
     handleSubmit,
     applyEmailSuggestion,
+    continueAfterRegistration,
   }
 }

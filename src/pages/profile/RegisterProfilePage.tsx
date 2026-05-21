@@ -54,7 +54,10 @@ export default function RegisterProfilePage() {
       preventDefault: () => {},
     } as React.FormEvent<HTMLFormElement>;
 
-    await handleSubmit(fakeEvent);
+    const saved = await handleSubmit(fakeEvent);
+    if (saved) {
+      setShowSuccessModal(true);
+    }
   };
 
   const renderHeader = () => (isInitialRegisterFlow ? <Header /> : <HeaderUser />);
@@ -388,6 +391,7 @@ export default function RegisterProfilePage() {
         isOpen={showSuccessModal}
         title="Éxito"
         message="Datos personales registrados correctamente."
+        buttonText="Continuar"
         onClose={() => {
           setShowSuccessModal(false);
           setSuccess('');
