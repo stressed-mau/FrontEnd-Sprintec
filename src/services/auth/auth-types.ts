@@ -41,8 +41,8 @@ export type AuthResponse = {
   success: boolean
   message: string
   data: AuthUser
-  access_token: string
-  token_type: string
+  access_token?: string
+  token_type?: string
 }
 
 export type AuthSession = {
