@@ -227,6 +227,7 @@ const Sidebar = () => {
             <div key={item.id} className="space-y-1">
               {hasChildren ? (
                 <button
+                  id={`guide-nav-${item.id}`}
                   onClick={() => toggleSection(item.id)}
                   className={`flex w-full items-center justify-between rounded-xl px-3 py-3 transition-all ${
                     isParentActive ? "bg-[#003A6C] text-white" : "text-[#4982ad] hover:bg-[#77b6e6]/10"
@@ -240,6 +241,7 @@ const Sidebar = () => {
                 </button>
               ) : (
                 <Link
+                  id={`guide-nav-${item.id}`}
                   to={item.path}
                   className={`flex w-full items-center gap-2 rounded-xl px-3 py-3 transition-all ${
                     location.pathname === item.path ? "bg-[#003A6C] text-white" : "text-[#4982ad] hover:bg-[#77b6e6]/10"
