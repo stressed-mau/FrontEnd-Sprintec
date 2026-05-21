@@ -119,8 +119,10 @@ function buildErrorMessage(error: unknown) {
   return "No se pudo cargar el reporte de plantillas."
 }
 
-export async function getTemplateTrends(): Promise<TemplateTrendsResponse> {
-  const response = await api.get("/tracking/report")
+export async function getTemplateTrends(weekOffset = 0): Promise<TemplateTrendsResponse> {
+  const response = await api.get("/tracking/report", {
+    params: weekOffset !== 0 ? { week_offset: weekOffset } : undefined,
+  })
   const payload = normalizeReportPayload(response.data?.data ?? response.data)
 
   if (!payload) {

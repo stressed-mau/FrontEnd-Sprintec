@@ -1,4 +1,4 @@
-import { Clock, Crown, MousePointer2, TrendingDown, TrendingUp, Users, Download } from "lucide-react"
+import { ChevronLeft, ChevronRight, Clock, Crown, MousePointer2, TrendingDown, TrendingUp, Users, Download } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
@@ -7,16 +7,22 @@ import { useTemplateTrends } from "@/hooks/useTemplateTrends"
 import { formatTemplateTime, formatTemplateVariation, type TrendStats } from "@/services/templateTrendsService"
 import { Button } from "@/components/ui/button"
 import { useCurrentWeekRange } from "@/hooks/useCurrentWeekRange"
-import { useRef } from "react"
+import { useMemo, useRef, useState } from "react"
 import { useReactToPrint } from "react-to-print"
 import logo from "@/assets/logo/LogoPG.png"
 
 const TendenciaPlantillasPage = () => {
-  const { loading, stats, chartData, report, pageError } = useTemplateTrends()
+  const [weekOffset, setWeekOffset] = useState(0)
+  const { loading, stats, chartData, report, pageError } = useTemplateTrends(weekOffset)
   const reportRef = useRef<HTMLDivElement>(null)
-  const currentWeekRange = useCurrentWeekRange()
+  const currentWeekRange = useCurrentWeekRange(weekOffset)
   const reportPeriod = report?.periodLabel ?? currentWeekRange
   const totalPortfolios = report?.totalPortfolios ?? 0
+  const canGoNext = weekOffset < 0
+  const weekOffsetLabel = useMemo(() => {
+    if (weekOffset === 0) return "Semana actual"
+    return weekOffset < 0 ? `Hace ${Math.abs(weekOffset)} semana(s)` : `+${weekOffset} semana(s)`
+  }, [weekOffset])
   const handleExportPDF = useReactToPrint({
   contentRef: reportRef,
   documentTitle: `Reporte-Plantillas-${reportPeriod}`,
@@ -75,10 +81,29 @@ const TendenciaPlantillasPage = () => {
                 </div>
 
                 <div className="print:hidden flex flex-wrap items-center justify-center bg-white border border-[#0E7D96]/20 rounded-xl px-3 sm:px-4 py-2 gap-2 sm:gap-4 shadow-sm">
+                  <button
+                    className="rounded-lg p-1 text-[#003A6C] transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    type="button"
+                    onClick={() => setWeekOffset((current) => current - 1)}
+                    aria-label="Ver semana anterior"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
                   <span className="text-sm font-bold text-[#003A6C]">{reportPeriod}</span>
                   <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
                   <span className="text-sm font-semibold text-[#4B778D]">{totalPortfolios} portafolios analizados</span>
+                  <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
+                  <button
+                    className="rounded-lg p-1 text-[#003A6C] transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    type="button"
+                    onClick={() => setWeekOffset((current) => Math.min(current + 1, 0))}
+                    disabled={!canGoNext}
+                    aria-label="Volver a la semana actual"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
                 </div>
+                <p className="text-xs text-[#4B778D]">{weekOffsetLabel}</p>
               </div>
             </div>
 

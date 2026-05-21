@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 
 import { getTemplateTrends, normalizeTemplateTrendsError, type TemplateTrendsReport, type TrendChartPoint, type TrendStats } from "@/services/templateTrendsService"
 
-export function useTemplateTrends() {
+export function useTemplateTrends(weekOffset = 0) {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<TrendStats[]>([])
   const [chartData, setChartData] = useState<TrendChartPoint[]>([])
@@ -16,7 +16,7 @@ export function useTemplateTrends() {
       setLoading(true)
 
       try {
-        const result = await getTemplateTrends()
+        const result = await getTemplateTrends(weekOffset)
         if (isMounted) {
           setStats(result.stats)
           setChartData(result.chartData)
@@ -42,7 +42,7 @@ export function useTemplateTrends() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [weekOffset])
 
   return { loading, stats, chartData, report, pageError, setPageError }
 }

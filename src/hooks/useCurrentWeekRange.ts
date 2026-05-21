@@ -1,4 +1,4 @@
-export const useCurrentWeekRange = () => {
+export const useCurrentWeekRange = (weekOffset = 0) => {
   const today = new Date()
 
   const firstDay = new Date(today)
@@ -8,8 +8,9 @@ export const useCurrentWeekRange = () => {
 
   // Ajustar para que la semana inicie en lunes
   const diffToMonday = day === 0 ? -6 : 1 - day
+  const offsetDays = weekOffset * 7
 
-  firstDay.setDate(today.getDate() + diffToMonday)
+  firstDay.setDate(today.getDate() + diffToMonday + offsetDays)
   lastDay.setDate(firstDay.getDate() + 6)
 
   const startDay = firstDay.getDate()
