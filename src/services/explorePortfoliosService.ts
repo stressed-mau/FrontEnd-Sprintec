@@ -35,8 +35,31 @@ interface PortfoliosResponseDto {
   success?: boolean;
   data?: {
     count?: number;
+    current_page?: number;
+    per_page?: number;
     portfolios?: PortfolioApiDto[];
   };
+}
+
+export interface ExplorePortfoliosFilters {
+  search?: string;
+  roles?: string[];
+  technologies?: string[];
+  minProjects?: number;
+  minSkills?: number;
+  page?: number;
+}
+
+export interface ExplorePortfoliosMeta {
+  currentPage: number;
+  perPage: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface ExplorePortfoliosResponse {
+  portfolios: ExplorePortfolioCard[];
+  meta: ExplorePortfoliosMeta;
 }
 
 export interface ExplorePortfolioCard {
@@ -72,20 +95,6 @@ function normalizePortfolio(dto: PortfolioApiDto, index: number): ExplorePortfol
   };
 }
 
-function extractPortfolios(payload: unknown): PortfolioApiDto[] {
-  if (!payload || typeof payload !== "object") {
-    return [];
-  }
-
-  const parsed = payload as PortfoliosResponseDto;
-
-  if (Array.isArray(parsed.data?.portfolios)) {
-    return parsed.data.portfolios;
-  }
-
-  return [];
-}
-
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {
     const backendMessage =
@@ -98,11 +107,64 @@ function formatError(error: unknown): Error {
   return new Error("No se pudieron cargar los portafolios.");
 }
 
-export async function getExplorePortfolios(): Promise<ExplorePortfolioCard[]> {
+function buildQueryString(filters: ExplorePortfoliosFilters = {}) {
+  const searchParams = new URLSearchParams();
+
+  if (filters.search?.trim()) {
+    searchParams.set("search", filters.search.trim());
+  }
+
+  filters.roles?.filter(Boolean).forEach((role) => {
+    searchParams.append("roles[]", role);
+  });
+
+  filters.technologies?.filter(Boolean).forEach((technology) => {
+    searchParams.append("technologies[]", technology);
+  });
+
+  if (typeof filters.minProjects === "number" && Number.isFinite(filters.minProjects)) {
+    searchParams.set("min_projects", String(filters.minProjects));
+  }
+
+  if (typeof filters.minSkills === "number" && Number.isFinite(filters.minSkills)) {
+    searchParams.set("min_skills", String(filters.minSkills));
+  }
+
+  if (typeof filters.page === "number" && filters.page > 1) {
+    searchParams.set("page", String(filters.page));
+  }
+
+  return searchParams.toString();
+}
+
+function normalizeResponse(responseData: unknown, pageFallback = 1): ExplorePortfoliosResponse {
+  const payload = (responseData && typeof responseData === "object"
+    ? (responseData as { data?: PortfoliosResponseDto["data"] })
+    : null)?.data ?? responseData;
+
+  const record = payload && typeof payload === "object" ? (payload as PortfoliosResponseDto["data"] & Record<string, unknown>) : {};
+  const portfoliosSource = Array.isArray(record.portfolios) ? record.portfolios : [];
+  const currentPage = Number(record.current_page ?? pageFallback);
+  const perPage = Number(record.per_page ?? 15);
+  const total = Number(record.count ?? portfoliosSource.length);
+  const totalPages = perPage > 0 ? Math.max(1, Math.ceil(total / perPage)) : 1;
+
+  return {
+    portfolios: portfoliosSource.map(normalizePortfolio),
+    meta: {
+      currentPage,
+      perPage,
+      total,
+      totalPages,
+    },
+  };
+}
+
+export async function getExplorePortfolios(filters: ExplorePortfoliosFilters = {}): Promise<ExplorePortfoliosResponse> {
   try {
-    const response = await publicApi.get<PortfoliosResponseDto>("/portfolios");
-    const list = extractPortfolios(response.data);
-    return list.map(normalizePortfolio);
+    const queryString = buildQueryString(filters);
+    const response = await publicApi.get<PortfoliosResponseDto>(queryString ? `/portfolios?${queryString}` : "/portfolios");
+    return normalizeResponse(response.data, filters.page ?? 1);
   } catch (error) {
     throw formatError(error);
   }

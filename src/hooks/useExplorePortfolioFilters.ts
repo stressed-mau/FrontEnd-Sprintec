@@ -17,6 +17,7 @@ export function useExplorePortfolioFilters(portfolios: PortfolioCard[]) {
   const [searchTerm, setSearchTerm] = useState("")
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [selectedOccupation, setSelectedOccupation] = useState("all")
+  const [selectedTechnology, setSelectedTechnology] = useState("all")
   const [minProjects, setMinProjects] = useState<ThresholdValue>("all")
   const [minSkills, setMinSkills] = useState<ThresholdValue>("all")
 
@@ -24,29 +25,24 @@ export function useExplorePortfolioFilters(portfolios: PortfolioCard[]) {
     return Array.from(new Set(portfolios.map((portfolio) => portfolio.occupation).filter(Boolean))).sort()
   }, [portfolios])
 
-  const filteredPortfolios = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase()
-    const projectsThreshold = minProjects === "all" ? null : Number(minProjects)
-    const skillsThreshold = minSkills === "all" ? null : Number(minSkills)
-
-    return portfolios.filter((portfolio) => {
-      const searchableText = [portfolio.fullName, portfolio.occupation, ...portfolio.topSkills].join(" ").toLowerCase()
-
-      const matchesSearch = !query || searchableText.includes(query)
-      const matchesOccupation = selectedOccupation === "all" || portfolio.occupation === selectedOccupation
-      const matchesProjects = projectsThreshold === null || portfolio.projectsCount >= projectsThreshold
-      const matchesSkills = skillsThreshold === null || portfolio.skillsCount >= skillsThreshold
-
-      return matchesSearch && matchesOccupation && matchesProjects && matchesSkills
-    })
-  }, [portfolios, searchTerm, selectedOccupation, minProjects, minSkills])
+  const technologyOptions = useMemo(() => {
+    return Array.from(
+      new Set(
+        portfolios
+          .flatMap((portfolio) => portfolio.topSkills)
+          .map((skill) => skill.trim())
+          .filter((skill) => skill && skill !== "Sin habilidades"),
+      ),
+    ).sort()
+  }, [portfolios])
 
   const hasActiveFilters =
-    searchTerm.trim().length > 0 || selectedOccupation !== "all" || minProjects !== "all" || minSkills !== "all"
+    searchTerm.trim().length > 0 || selectedOccupation !== "all" || selectedTechnology !== "all" || minProjects !== "all" || minSkills !== "all"
 
   const clearFilters = () => {
     setSearchTerm("")
     setSelectedOccupation("all")
+    setSelectedTechnology("all")
     setMinProjects("all")
     setMinSkills("all")
     setIsFiltersOpen(false)
@@ -59,12 +55,14 @@ export function useExplorePortfolioFilters(portfolios: PortfolioCard[]) {
     setIsFiltersOpen,
     selectedOccupation,
     setSelectedOccupation,
+    selectedTechnology,
+    setSelectedTechnology,
     minProjects,
     setMinProjects,
     minSkills,
     setMinSkills,
     occupationOptions,
-    filteredPortfolios,
+    technologyOptions,
     hasActiveFilters,
     clearFilters,
   }
