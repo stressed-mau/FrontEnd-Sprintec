@@ -2,6 +2,7 @@ import { api } from './api';
 import { toAbsoluteAssetUrl } from '@/services/assetUrl';
 
 const USER_ENDPOINT = '/user_information';
+const UPDATE_USER_ENDPOINT = '/update/user_information';
 
 export type UserInformation = {
   id?: string | number;
@@ -59,20 +60,28 @@ export const getUserInformation = async (_id?: string): Promise<UserInformation>
   void _id;
 
   const res = await api.get(USER_ENDPOINT);
-  if (!res.data.success) {
+  if (res.data?.success === false || res.data?.status === 'error') {
     throw new Error('Error al obtener datos del usuario');
   }
   return normalizeUserInformation(res.data);
 };
 
-export const updateUserInformation = async (formData: FormData): Promise<UserInformation> => {
-  const res = await api.post('/update/user_information', formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  if (!res.data.success) {
-    throw new Error('Error al actualizar datos');
+function assertSuccessfulUserInformationResponse(data: any, fallbackMessage: string) {
+  if (data?.success === false || data?.status === 'error') {
+    throw new Error(data?.message || fallbackMessage);
   }
+}
+
+export const createUserInformation = async (formData: FormData): Promise<UserInformation> => {
+  const res = await api.post(USER_ENDPOINT, formData);
+
+  assertSuccessfulUserInformationResponse(res.data, 'Error al registrar datos');
+  return normalizeUserInformation(res.data);
+};
+
+export const updateUserInformation = async (formData: FormData): Promise<UserInformation> => {
+  const res = await api.put(UPDATE_USER_ENDPOINT, formData);
+
+  assertSuccessfulUserInformationResponse(res.data, 'Error al actualizar datos');
   return normalizeUserInformation(res.data);
 };

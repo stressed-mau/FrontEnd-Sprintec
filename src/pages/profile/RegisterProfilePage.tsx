@@ -42,6 +42,7 @@ export default function RegisterProfilePage() {
     charLimitWarning,
     loading,
     hasPersonalData,
+    canSavePersonalData,
     success,
     setSuccess,
   } = useUserPersonalData();
@@ -143,7 +144,15 @@ export default function RegisterProfilePage() {
               {/* Usamos el formulario directamente, estilizado como en el modal pero integrado en la card */}
               <form 
                 noValidate 
-                onSubmit={(e) => { e.preventDefault(); setShowConfirmModal(true); }} 
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (canSavePersonalData) {
+                    setShowConfirmModal(true);
+                    return;
+                  }
+
+                  await handleSubmit(e);
+                }} 
                 className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]"
               >
                 {/* Sección de Foto de Perfil - Reutilizada del modal */}
@@ -156,7 +165,7 @@ export default function RegisterProfilePage() {
                     )}
                   </div>
                   
-                  <p className="text-sm font-bold text-[#003A6C]">Foto de perfil *</p>
+                  <p className="text-sm font-bold text-[#003A6C]">Foto de perfil</p>
                   
                   <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                   
@@ -336,6 +345,11 @@ export default function RegisterProfilePage() {
 
                 {/* Botón de Enviar - Estilo CrearCuenta */}
                 <div className="flex flex-col gap-3 pt-1 sm:flex-row lg:col-span-2">
+                    {errors.server && (
+                      <p className="text-sm font-medium text-red-600 sm:flex-1">
+                        {errors.server}
+                      </p>
+                    )}
                     <Button
                         type="submit"
                         disabled={isSubmitting}

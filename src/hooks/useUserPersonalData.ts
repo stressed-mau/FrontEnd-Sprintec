@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { getAuthSession } from "@/services/auth/auth-storage";
 import { allCountries } from 'country-telephone-data';
 import { useEmailValidation } from "@/hooks/useEmailValidation";
-import { getUserInformation, updateUserInformation } from "@/services/PersonalDataService";
+import { createUserInformation, getUserInformation, updateUserInformation } from "@/services/PersonalDataService";
 
 const EMOJI_REGEX = /\p{Extended_Pictographic}/u;
 
@@ -58,6 +58,7 @@ export const useUserPersonalData = () => {
   setPhoneNumber(value);
   setErrors((prev: any) => ({
     ...prev,
+    server: "",
     phone: validateField("phone", value)
   }));
 };
@@ -169,7 +170,7 @@ export const useUserPersonalData = () => {
       return false;
     }
 
-    if (!preview && !form.image && !fileInputRef.current?.files?.[0]) {
+    if (!form.fullName.trim() || !form.email.trim() || !phoneNumber.trim()) {
       return false;
     }
 
@@ -301,6 +302,7 @@ const handleChange = (e: any) => {
   // VALIDACIÓN
   setErrors((prev: any) => ({
     ...prev,
+    server: "",
     [id]: validateField(id, newValue)
   }));
 };
@@ -331,9 +333,6 @@ const handleChange = (e: any) => {
       }
     }
 
-    if (!preview && !form.image && !fileInputRef.current?.files?.[0]) {
-      newErrors.image = "La Foto de perfil es obligatoria";
-    }
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
@@ -352,7 +351,6 @@ const handleChange = (e: any) => {
       }
 
       const formData = new FormData();
-      formData.append("_method", "PUT"); // ← déjalo si usas Laravel
       formData.append("fullname", form.fullName);
       formData.append("occupation", form.occupation);
       formData.append("biography", form.bio);
@@ -363,7 +361,9 @@ const handleChange = (e: any) => {
       if (fileInputRef.current?.files?.[0]) {
         formData.append("image_url", fileInputRef.current.files[0]);
       }
-      const updatedUser = await updateUserInformation(formData);
+      const updatedUser = hasPersonalData
+        ? await updateUserInformation(formData)
+        : await createUserInformation(formData);
       const updatedForm = {
         fullName: updatedUser.fullname || "", 
         occupation: updatedUser.occupation || "",
@@ -383,11 +383,28 @@ const handleChange = (e: any) => {
       setSuccess("Información actualizada correctamente.");
       return true;
     } catch (error: any) {
-      if (error.response?.data?.errors?.public_email) {
-        setErrors({ email: error.response.data.errors.public_email[0] });
+      const responseData = error.response?.data;
+      const validationErrors = responseData?.errors;
+
+      if (validationErrors && typeof validationErrors === "object") {
+        const nextErrors: FormErrors = {};
+
+        Object.entries(validationErrors).forEach(([field, messages]) => {
+          const message = Array.isArray(messages) ? messages[0] : String(messages);
+
+          if (field === "fullname") nextErrors.fullName = message;
+          else if (field === "biography") nextErrors.bio = message;
+          else if (field === "nationality") nextErrors.location = message;
+          else if (field === "public_email") nextErrors.email = message;
+          else if (field === "phone_number") nextErrors.phone = message;
+          else if (field === "image_url") nextErrors.image = message;
+          else nextErrors.server = message;
+        });
+
+        setErrors(nextErrors);
       } else {
         setErrors({
-          server: error.response?.data?.message || "Error al guardar datos"
+          server: responseData?.error || responseData?.message || error.message || "Error al guardar datos"
         });
       }
     } finally {
@@ -433,7 +450,7 @@ const handleChange = (e: any) => {
 
     const imageUrl = URL.createObjectURL(file);
     setPreview(imageUrl);
-    setErrors(prev => ({ ...prev, image: "" }));
+    setErrors(prev => ({ ...prev, server: "", image: "" }));
   };
 
   const removeImage = () => {
@@ -487,6 +504,7 @@ const handleChange = (e: any) => {
 
       setErrors(prev => ({
         ...prev,
+        server: "",
         email: error
       }));
     }
