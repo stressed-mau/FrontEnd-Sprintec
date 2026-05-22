@@ -80,6 +80,14 @@ function TechnologyDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
   return <FilterDropdown {...props} placeholder="Todas" />
 }
 
+function ProjectsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
+  return <FilterDropdown {...props} placeholder="Cualquiera" />
+}
+
+function SkillsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
+  return <FilterDropdown {...props} placeholder="Cualquiera" />
+}
+
 export default function ExplorePortfolios() {
   const navigate = useNavigate();
   const occupationContainerRef = useRef<HTMLDivElement | null>(null)
@@ -261,76 +269,99 @@ export default function ExplorePortfolios() {
             </div>
 
             {isFiltersOpen && (
-              <div className="mb-3 rounded-xl border border-[#6DACBF]/30 bg-white p-3 shadow-sm sm:p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xs font-bold uppercase tracking-wide text-[#003A6C]">Filtros</h2>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="h-7 rounded-lg px-2 text-[11px] text-xs font-semibold text-[#003A6C] hover:bg-[#F7F0E1] sm:h-9"
-                    onClick={handleClearFilters}
-                  >
-                    Limpiar
-                  </Button>
-                </div>
+  <div className="mb-3 rounded-xl border border-[#6DACBF]/30 bg-white p-3 shadow-sm sm:p-3">
+    
+    <div className="mb-2 flex items-center justify-between">
+      <div>
+        <h2 className="text-xs font-bold uppercase tracking-wide text-[#003A6C]">
+          Filtros
+        </h2>
+      </div>
 
-                <div className="grid gap-2 md:grid-cols-4">
-                  <label className="space-y-2 relative">
-                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">Cargo</span>
-                    <div ref={occupationContainerRef} className="relative">
-                      <OccupationDropdown
-                        value={selectedOccupation}
-                        options={occupationOptions}
-                        onChange={(v) => handleOccupationChange(v)}
-                      />
-                    </div>
-                  </label>
+      <Button
+        type="button"
+        variant="ghost"
+        className="h-7 rounded-lg px-2 text-[11px] font-semibold text-[#003A6C] hover:bg-[#F7F0E1]"
+        onClick={handleClearFilters}
+      >
+        Limpiar
+      </Button>
+    </div>
 
-                  <label className="space-y-2 relative">
-                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">Tecnologías</span>
-                    <div ref={technologyContainerRef} className="relative">
-                      <TechnologyDropdown
-                        value={selectedTechnology}
-                        options={technologyOptions}
-                        onChange={(v) => handleTechnologyChange(v)}
-                      />
-                    </div>
-                  </label>
+    <div className="grid gap-2 md:grid-cols-4">
 
-                  <label className="space-y-2">
-                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">Proyectos mínimos</span>
-                    <select
-                      value={minProjects}
-                      onChange={(event) => handleProjectsChange(event.target.value)}
-                      className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-1 focus:ring-[#4982AD]/20"
-                    >
-                      <option value="all">Cualquiera</option>
-                      <option value="1">1 o más</option>
-                      <option value="3">3 o más</option>
-                      <option value="5">5 o más</option>
-                      <option value="10">10 o más</option>
-                    </select>
-                  </label>
+      {/* CARGO */}
+      <label className="space-y-1 relative">
+        <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
+          Cargo
+        </span>
 
-                  <label className="space-y-2">
-                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">Skills mínimas</span>
-                    <select
-                      value={minSkills}
-                      onChange={(event) => handleSkillsChange(event.target.value)}
-                      className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-1 focus:ring-[#4982AD]/20"
-                    >
-                      <option value="all">Cualquiera</option>
-                      <option value="1">1 o más</option>
-                      <option value="3">3 o más</option>
-                      <option value="5">5 o más</option>
-                      <option value="8">8 o más</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
-            )}
+        <div ref={occupationContainerRef} className="relative">
+          <OccupationDropdown
+            value={selectedOccupation}
+            options={occupationOptions}
+            onChange={(v) => handleOccupationChange(v)}
+          />
+        </div>
+      </label>
+
+      {/* TECNOLOGIAS */}
+      <label className="space-y-1 relative">
+        <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
+          Tecnologías
+        </span>
+
+        <div ref={technologyContainerRef} className="relative">
+          <TechnologyDropdown
+            value={selectedTechnology}
+            options={technologyOptions}
+            onChange={(v) => handleTechnologyChange(v)}
+          />
+        </div>
+      </label>
+
+      {/* PROYECTOS */}
+      <label className="space-y-1 relative">
+  <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
+    Proyectos mínimos
+  </span>
+
+  <div className="relative">
+    <ProjectsDropdown
+      value={minProjects}
+      options={[
+        "1 o más",
+        "3 o más",
+        "5 o más",
+        "10 o más",
+      ]}
+      onChange={(v) => handleProjectsChange(v)}
+    />
+  </div>
+</label>
+      {/* SKILLS */}
+     <label className="space-y-1 relative">
+  <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
+    Skills mínimas
+  </span>
+
+  <div className="relative">
+    <SkillsDropdown
+      value={minSkills}
+      options={[
+        "1 o más",
+        "3 o más",
+        "5 o más",
+        "8 o más",
+      ]}
+      onChange={(v) => handleSkillsChange(v)}
+    />
+  </div>
+</label>
+
+    </div>
+  </div>
+)}
 
             {pageError ? (
               <div className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
