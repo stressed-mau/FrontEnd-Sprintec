@@ -134,6 +134,51 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.portfolio-user-guide-popover {
+  max-width: min(320px, calc(100vw - 32px));
+  border-radius: 14px;
+  border: 1px solid #c2dbed;
+  box-shadow: 0 22px 60px rgb(15 23 42 / 24%);
+}
+
+.portfolio-user-guide-popover .driver-popover-title {
+  color: #003a6c;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.portfolio-user-guide-popover .driver-popover-description {
+  color: #4b778d;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.portfolio-user-guide-popover .driver-popover-progress-text {
+  color: #4b778d;
+  font-weight: 700;
+}
+
+.portfolio-user-guide-popover .driver-popover-next-btn,
+.portfolio-user-guide-popover .driver-popover-prev-btn,
+.portfolio-user-guide-popover .driver-popover-close-btn {
+  border-radius: 10px;
+  font-weight: 800;
+}
+
+.portfolio-user-guide-popover .driver-popover-next-btn {
+  background: #003a6c;
+  border-color: #003a6c;
+  color: white;
+  text-shadow: none;
+}
+
+.portfolio-user-guide-popover .driver-popover-prev-btn {
+  background: white;
+  border-color: #c2dbed;
+  color: #003a6c;
+  text-shadow: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

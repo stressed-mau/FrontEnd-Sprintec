@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react"
 //import type { Portfolio } from "@/types/portfolio"
 import { usePortfolio } from "@/hooks/usePortfolio"
 //import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
@@ -6,11 +7,58 @@ import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
 import { useParams } from "react-router-dom"
+import { api } from "@/services/api"
+import { recordPortfolioView } from "@/services/portfolioAnalyticsService"
 
 const PublicPortfolio = () => {
   const { slug } = useParams()
-  const { portfolio, loading } = usePortfolio(slug) as { portfolio: any, loading: boolean };
+  const { portfolio, loading, visitId } = usePortfolio(slug) as { portfolio: any, loading: boolean, visitId: string | null };
+  const recordedViewRef = useRef<string | null>(null)
 
+  useEffect(() => {
+    if (!visitId) return;
+
+    // Enviar pulso de permanencia cada 30 segundos
+    const pulseInterval = setInterval(async () => {
+      try {
+        await api.post('/tracking/pulse', {
+          visit_id: visitId,
+          seconds_elapsed: 30, // Incremento fijo por cada pulso
+        });
+      } catch (error) {
+        console.warn('Pulso de tracking fallido:', error);
+      }
+    }, 30000); // 30,000ms = 30 segundos
+
+    // Limpiar el intervalo cuando el usuario cambia de página
+    return () => clearInterval(pulseInterval);
+  }, [visitId]);
+
+  useEffect(() => {
+    const portfolioId = portfolio?.id ?? portfolio?.config?.id ?? portfolio?.config?.portfolio_id
+
+    if (loading || !portfolioId || recordedViewRef.current === String(portfolioId)) {
+      return
+    }
+
+    recordedViewRef.current = String(portfolioId)
+    recordPortfolioView(portfolioId)
+  }, [loading, portfolio])
+
+  const handleProjectClick = async (projectId?: string | number) => {
+    if (!projectId) return;
+    if (!visitId) return; // Si no hay visita registrada, ignoramos silenciosamente
+    try {
+      await api.post('/tracking/project-click', {
+        visit_id: visitId,           // ID de la visita activa
+        project_id: projectId,        // ID del proyecto clickeado
+        clicked_at: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.warn('Click tracking fallido:', error);
+    }
+    // Continuar con la navegación normal independientemente del tracking
+  };
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center font-bold text-[#003A6C]">
@@ -165,7 +213,11 @@ const PublicPortfolio = () => {
 
                 <div className="mt-6 grid gap-4">
                   {portfolio.projects.map((project: any, index: number) => (
-                    <div key={index} className="bg-gray-50 border-l-4 border-[#003A6C] p-4">
+                    <div 
+                      key={index} 
+                      className="bg-gray-50 border-l-4 border-[#003A6C] p-4"
+                      onClick={() => handleProjectClick(project.id)}
+                    >
                       <h4 className="font-bold text-sm uppercase">
                         {project.nombre || "Proyecto sin título"}
                       </h4>

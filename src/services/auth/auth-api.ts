@@ -15,7 +15,7 @@ function buildLoginPayload(payload: LoginRequest): LoginRequest {
 
 function assertSuccessfulAuthResponse(payload: unknown, status?: number) {
   if (!isRecord(payload)) {
-    throw new AuthServiceError("Respuesta de autenticación inválida.", { status })
+    throw new AuthServiceError("El servidor no devolvió una respuesta JSON válida.", { status })
   }
 
   const validationErrors = normalizeValidationErrors(payload.errors)
@@ -29,10 +29,26 @@ function assertSuccessfulAuthResponse(payload: unknown, status?: number) {
   }
 }
 
+function assertSuccessfulRegisterResponse(payload: unknown, status?: number) {
+  if (!isRecord(payload)) {
+    throw new AuthServiceError("El servidor no devolvió una respuesta JSON válida.", { status })
+  }
+
+  const validationErrors = normalizeValidationErrors(payload.errors)
+  if (payload.success === false || validationErrors) {
+    const message = typeof payload.message === "string" ? payload.message : "Hay errores en el formulario."
+    throw new AuthServiceError(message, { status, validationErrors })
+  }
+
+  if (!isRecord(payload.data) && !isRecord(payload.user)) {
+    throw new AuthServiceError("Respuesta de registro inválida.", { status })
+  }
+}
+
 export async function registerUser(payload: RegisterRequest) {
   try {
     const response = await api.post<AuthResponse>("/register", payload)
-    assertSuccessfulAuthResponse(response.data, response.status)
+    assertSuccessfulRegisterResponse(response.data, response.status)
     return response.data
   } catch (error) {
     if (error instanceof AuthServiceError) {
@@ -46,6 +62,7 @@ export async function registerUser(payload: RegisterRequest) {
 export async function loginUser(payload: LoginRequest) {
   try {
     const response = await api.post<AuthResponse>("/login", buildLoginPayload(payload))
+    assertSuccessfulAuthResponse(response.data, response.status)
     return response.data
   } catch (error) {
     throw buildAuthServiceError(error, "No se pudo iniciar sesión.")

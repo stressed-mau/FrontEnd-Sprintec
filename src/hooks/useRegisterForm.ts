@@ -6,12 +6,16 @@ import { useNavigate } from "react-router-dom"
 
 import { useEmailValidation } from "@/hooks/useEmailValidation"
 import { USER_HOME_ROUTE } from "@/routes/route-paths"
+import { USER_GUIDE_PENDING_KEY } from "@/components/UserGuide"
 import {
   AuthServiceError,
   clearAuthSession,
+  loginUser,
   registerUser,
   saveAuthSession,
   type ApiValidationErrors,
+  type AuthResponse,
+  type RegisterRequest,
 } from "@/services/auth"
 
 export type RegisterValues = {
@@ -199,16 +203,57 @@ function mapTopLevelRegisterError(message: string): RegisterFormErrors {
   if (!message) return {}
 
   if (hasDuplicateIndicator(message)) {
+    const errors: RegisterFormErrors = {}
+
     if (messageMentionsEmail(message)) {
-      return { email: DUPLICATE_EMAIL_MESSAGE }
+      errors.email = DUPLICATE_EMAIL_MESSAGE
     }
 
     if (messageMentionsUsername(message)) {
-      return { name: DUPLICATE_USERNAME_MESSAGE }
+      errors.name = DUPLICATE_USERNAME_MESSAGE
+    }
+
+    if (errors.email || errors.name) {
+      return errors
     }
   }
 
   return { form: message }
+}
+
+function hasAuthTokens(response: AuthResponse) {
+  return typeof response.access_token === "string" && typeof response.token_type === "string"
+}
+
+function shouldLoginAfterRegisterError(error: unknown) {
+  return (
+    error instanceof AuthServiceError &&
+    typeof error.status === "number" &&
+    error.status >= 200 &&
+    error.status < 300 &&
+    !error.validationErrors
+  )
+}
+
+function buildDuplicateProbePayload(payload: RegisterRequest, field: "name" | "email"): RegisterRequest {
+  const uniqueSuffix = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`
+
+  return {
+    username: field === "name" ? payload.username : `probe${uniqueSuffix}`.slice(0, 30),
+    email: field === "email" ? payload.email : `probe-${uniqueSuffix}@example.com`,
+    password: payload.password,
+    password_confirmation: `${payload.password}_probe_mismatch`,
+  }
+}
+
+async function probeDuplicateRegisterField(payload: RegisterRequest, field: "name" | "email") {
+  try {
+    await registerUser(buildDuplicateProbePayload(payload, field))
+  } catch (error) {
+    return mapApiErrors(getRegisterValidationErrors(error))
+  }
+
+  return {}
 }
 
 function mapApiErrors(validationErrors?: ApiValidationErrors): RegisterFormErrors {
@@ -252,6 +297,7 @@ export function useRegisterForm() {
   const [values, setValues] = useState<RegisterValues>(INITIAL_VALUES)
   const [errors, setErrors] = useState<RegisterFormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [registrationComplete, setRegistrationComplete] = useState(false)
   const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(INITIAL_VALUES.email)
 
   function updateField(field: keyof RegisterValues, value: string) {
@@ -323,16 +369,36 @@ export function useRegisterForm() {
 
     setIsSubmitting(true)
 
+    const normalizedEmail = emailValidation.normalizedEmail.toLowerCase()
+    const registerPayload: RegisterRequest = {
+      username: normalizedValues.name.trim(),
+      email: normalizedEmail,
+      password: normalizedValues.password,
+      password_confirmation: normalizedValues.confirmPassword,
+    }
+    const loginPayload = {
+      user: normalizedEmail,
+      password: normalizedValues.password,
+    }
+
     try {
       clearAuthSession()
 
-      const normalizedEmail = emailValidation.normalizedEmail.toLowerCase()
-      const response = await registerUser({
-        username: normalizedValues.name.trim(),
-        email: normalizedEmail,
-        password: normalizedValues.password,
-        password_confirmation: normalizedValues.confirmPassword,
-      })
+      let response: AuthResponse
+
+      try {
+        response = await registerUser(registerPayload)
+      } catch (error) {
+        if (!shouldLoginAfterRegisterError(error)) {
+          throw error
+        }
+
+        response = await loginUser(loginPayload)
+      }
+
+      if (!hasAuthTokens(response)) {
+        response = await loginUser(loginPayload)
+      }
 
       saveAuthSession(response)
 
@@ -344,18 +410,46 @@ export function useRegisterForm() {
           body: WELCOME_MESSAGE,
         }),
       )
-
-      navigate(USER_HOME_ROUTE, { replace: true })
+      setRegistrationComplete(true)
     } catch (error) {
       if (error instanceof AuthServiceError || axios.isAxiosError(error) || isRecord(error)) {
         const fieldErrors = mapApiErrors(getRegisterValidationErrors(error))
-        const hasSpecificDuplicateError = Boolean(fieldErrors.email || fieldErrors.name)
-        const topLevelErrors = hasSpecificDuplicateError ? {} : mapTopLevelRegisterError(getRegisterErrorMessage(error))
+        const topLevelErrors = mapTopLevelRegisterError(getRegisterErrorMessage(error))
+        const initialFieldErrors: RegisterFormErrors = {
+          ...fieldErrors,
+          name: fieldErrors.name || topLevelErrors.name,
+          email: fieldErrors.email || topLevelErrors.email,
+        }
+        const duplicateProbePromises: Promise<RegisterFormErrors>[] = []
+
+        if (initialFieldErrors.name && !initialFieldErrors.email) {
+          duplicateProbePromises.push(probeDuplicateRegisterField(registerPayload, "email"))
+        }
+
+        if (initialFieldErrors.email && !initialFieldErrors.name) {
+          duplicateProbePromises.push(probeDuplicateRegisterField(registerPayload, "name"))
+        }
+
+        const duplicateProbeErrors = (await Promise.all(duplicateProbePromises)).reduce<RegisterFormErrors>(
+          (nextErrors, probeErrors) => ({
+            ...nextErrors,
+            name: nextErrors.name || probeErrors.name,
+            email: nextErrors.email || probeErrors.email,
+          }),
+          {},
+        )
+        const mergedFieldErrors: RegisterFormErrors = {
+          ...initialFieldErrors,
+          name: initialFieldErrors.name || duplicateProbeErrors.name,
+          email: initialFieldErrors.email || duplicateProbeErrors.email,
+        }
+        const hasSpecificDuplicateError = Boolean(mergedFieldErrors.email || mergedFieldErrors.name)
+        const remainingTopLevelErrors = hasSpecificDuplicateError ? {} : topLevelErrors
 
         setErrors({
-          ...fieldErrors,
-          ...topLevelErrors,
-          form: topLevelErrors.form || "",
+          ...mergedFieldErrors,
+          ...remainingTopLevelErrors,
+          form: remainingTopLevelErrors.form || "",
         })
         return
       }
@@ -382,14 +476,22 @@ export function useRegisterForm() {
     }))
   }
 
+  function continueAfterRegistration() {
+    setRegistrationComplete(false)
+    window.localStorage.setItem(USER_GUIDE_PENDING_KEY, "1")
+    navigate(USER_HOME_ROUTE, { replace: true })
+  }
+
   return {
     values,
     errors,
     emailSuggestion: suggestion,
     isSubmitting,
+    registrationComplete,
     updateField,
     handleBlur,
     handleSubmit,
     applyEmailSuggestion,
+    continueAfterRegistration,
   }
 }

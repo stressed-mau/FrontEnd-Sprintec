@@ -31,18 +31,21 @@ export type AuthUser = {
   username: string
   email: string
   role_id: number
+  is_admin?: boolean
   is_active: boolean
   created_at: string
   updated_at: string
+  info?: AuthUserInformation | null
   user_information?: AuthUserInformation
 }
 
 export type AuthResponse = {
   success: boolean
   message: string
+  redirect?: "admin" | "home" | string
   data: AuthUser
-  access_token: string
-  token_type: string
+  access_token?: string
+  token_type?: string
 }
 
 export type AuthSession = {

@@ -28,7 +28,7 @@ const UserHome = () => {
             </div>
 
             {!loading && !hasPersonalData ? (
-              <div className="mb-8 flex flex-col gap-4 rounded-2xl border-2 border-[#F97316] bg-gradient-to-r from-[#FFF1E6] via-[#FFE4E6] to-[#FEF3C7] p-5 shadow-lg shadow-orange-900/10 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mb-8 flex flex-col gap-4 rounded-2xl border-2 border-[#F97316] bg-linear-to-r from-[#FFF1E6] via-[#FFE4E6] to-[#FEF3C7] p-5 shadow-lg shadow-orange-900/10 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-4">
                   <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#DC2626] text-white shadow-md">
                     <AlertTriangle className="size-6" />

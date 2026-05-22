@@ -124,7 +124,10 @@ export interface SocialNetwork {
 // PORTFOLIO AGREGADO
 // =========================
 export interface Portfolio {
+  id?: string;
   config: {
+    id?: string | number;
+    portfolio_id?: string | number;
     slug: string;
     template: string;
     is_public?: boolean;

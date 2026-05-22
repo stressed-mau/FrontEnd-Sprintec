@@ -41,7 +41,9 @@ import EditProfilePage from '@/pages/profile/EditProfilePage';
 import ViewProfilePage from '@/pages/profile/ViewProfilePage';
 import UserReports from "@/pages/admin/UserReports"
 import CertificateReports from "@/pages/admin/CertificateReports"
-import { LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, REGISTER_ROUTE, USER_HOME_ROUTE, REGISTER_PROFILE_ROUTE, CERTIFICATES_ROUTE } from "@/routes/route-paths"
+import TendenciaPlantillasPage from "@/pages/TendenciaPlantillasPage"
+import { NotificationsPage } from "@/pages/NotificationsPage"
+import { ADMIN_DASHBOARD_ROUTE, CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, NOTIFICATIONS_ROUTE, REGISTER_PROFILE_ROUTE, REGISTER_ROUTE, TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 
 function AppRoutes() {
   return (
@@ -90,14 +92,20 @@ function AppRoutes() {
         <Route path="/certificados/eliminar" element={<DeleteCertificatesPage />} />
         
         <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
+        <Route path={TEMPLATE_TRENDS_ROUTE} element={<TendenciaPlantillasPage />} />
+        <Route path={NOTIFICATIONS_ROUTE} element={<NotificationsPage />} />
         <Route path="/personal/ver" element={<ViewProfilePage />} />
         <Route path="/personal/editar" element={<EditProfilePage />} />
         
         <Route path="/portafolio" element={<MyPortfolio />} />
       </Route> 
       <Route path="/p/:slug" element={<PublicPortfolio />} />
-      <Route path="/admin/usuarios" element={<UserReports />} />
-      <Route path="/admin/certificados" element={<CertificateReports />} />
+      <Route element={<ProtectedRoute requireAdmin />}>
+        <Route path="/admin" element={<Navigate to={ADMIN_DASHBOARD_ROUTE} replace />} />
+        <Route path={ADMIN_DASHBOARD_ROUTE} element={<UserReports />} />
+        <Route path="/admin/usuarios" element={<UserReports />} />
+        <Route path="/admin/certificados" element={<CertificateReports />} />
+      </Route>
     </Routes>
   )
 }

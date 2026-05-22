@@ -20,10 +20,10 @@ const AddSkillsPage = () => {
       <Header />
       <div className="flex flex-col lg:flex-row flex-1">
         <Sidebar />
-        <main className="flex-1 p-4 sm:p-6 md:p-10">
+        <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-6xl space-y-6">
 
-              <h1 className="mb-1 text-2xl font-semibold text-gray-900">
+              <h1 className="mb-2 text-3xl font-bold text-[#003A6C]">
                 Registro de habilidad
               </h1>
               <p className="text-sm text-[#4B778D] md:text-base">
@@ -101,11 +101,11 @@ const AddSkillsPage = () => {
                   </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <div className="flex justify-center items-center gap-4 pt-2">
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="flex items-center justify-center gap-2 w-50 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60" >
+                    className="flex items-center justify-center gap-1 w-48 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60" >
                     <Plus className="size-4" />
                     {isSaving ? 'Guardando...' : 'Registrar habilidad'}
                   </button>
@@ -113,7 +113,7 @@ const AddSkillsPage = () => {
                     type="button"
                     onClick={handleCancel}
                     disabled={isSaving}
-                    className="w-48 justify-center border-[#A5D7E8] bg-white text-[#003A6C] py-3 rounded-xl font-bold border hover:bg-[#F7F0E1] transition-all disabled:opacity-60" >
+                    className="w-35 justify-center border-[#A5D7E8] bg-white text-[#003A6C] py-3 rounded-xl font-bold border hover:bg-[#F7F0E1] transition-all disabled:opacity-60" >
                     Cancelar 
                   </button>
                 </div>

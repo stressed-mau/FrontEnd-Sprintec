@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import ConfirmationModal from "@/components/ConfirmationModal"
 
 export default function RegisterPage() {
   const {
@@ -22,6 +23,8 @@ export default function RegisterPage() {
     handleBlur,
     handleSubmit,
     applyEmailSuggestion,
+    registrationComplete,
+    continueAfterRegistration,
   } = useRegisterForm()
   const { isVisible: showPassword, toggleVisibility: togglePasswordVisibility } = usePasswordVisibility()
   const { isVisible: showConfirmPassword, toggleVisibility: toggleConfirmPasswordVisibility } = usePasswordVisibility()
@@ -237,6 +240,13 @@ export default function RegisterPage() {
           </Card>
         </div>
       </main>
+      <ConfirmationModal
+        isOpen={registrationComplete}
+        title="Éxito"
+        message="Registro en el sistema completado correctamente."
+        buttonText="Continuar"
+        onClose={continueAfterRegistration}
+      />
       <Footer />
     </div>
   )

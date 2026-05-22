@@ -159,7 +159,7 @@ const EditProfilePage = () => {
                   onClick={handleClick}
                   className="flex items-center gap-2 px-6 py-2 border border-[#4982AD] rounded-lg text-[#003A6C] text-sm bg-[#E2EEF6] hover:bg-white transition-all shadow-sm mb-2 font-medium"
                 >
-                  <Upload size={16} /> Cambiar foto *
+                  <Upload size={16} /> Cambiar foto
                 </button>
                 <p className="text-gray-500 text-[11px]">JPG, PNG, JPEG (max. 2MB)</p>
                 {errors.image ? <p className="text-red-500 text-xs mt-1">{errors.image}</p> : null}

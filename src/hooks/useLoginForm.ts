@@ -2,7 +2,7 @@
 
 import { useNavigate } from "react-router-dom"
 
-import { USER_HOME_ROUTE } from "@/routes/route-paths"
+import { ADMIN_DASHBOARD_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 import { AuthServiceError, clearAuthSession, loginUser, saveAuthSession } from "@/services/auth"
 
 export type LoginValues = {
@@ -95,14 +95,9 @@ export function useLoginForm() {
       saveAuthSession(response)
       setErrors({})
       setSuccessMessage(response.message || "Inicio de sesión exitoso")
-      //navigate(USER_HOME_ROUTE, { replace: true })
 
-      if (response.data.role_id === 2) {
-        navigate("/admin/usuarios", { replace: true })
-      } else {
-        navigate(USER_HOME_ROUTE, { replace: true })
-      }
-
+      const shouldGoToAdmin = response.redirect === "admin" || response.data?.is_admin === true || response.data?.role_id === 2
+      navigate(shouldGoToAdmin ? ADMIN_DASHBOARD_ROUTE : USER_HOME_ROUTE, { replace: true })
     } catch (error) {
       setSuccessMessage("")
 
