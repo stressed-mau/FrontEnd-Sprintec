@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Eye, Search, SlidersHorizontal } from "lucide-react"; 
 import { Header } from "@/components/Header"; 
@@ -12,8 +12,78 @@ import { getLanguages, getWorkOptions } from "@/services/ProjectService";
 import { isAuthenticated } from "@/services/auth";
 import { getExplorePortfolios, type ExplorePortfoliosMeta } from "@/services/explorePortfoliosService";
 
+type FilterDropdownProps = {
+  value: string
+  options: string[]
+  placeholder?: string
+  onChange: (value: string) => void
+}
+
+function FilterDropdown({ value, options, placeholder, onChange }: FilterDropdownProps) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (!ref.current) return
+      if (e.target instanceof Node && !ref.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+
+    window.addEventListener('click', handleClick)
+    return () => window.removeEventListener('click', handleClick)
+  }, [])
+
+  const selectedLabel = value === 'all' ? placeholder ?? 'Todos' : value
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((s) => !s)}
+        className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] flex items-center justify-between outline-none"
+      >
+        <span className="truncate">{selectedLabel}</span>
+        <svg className={`ml-2 h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+      </button>
+
+      {open && (
+        <ul className="absolute left-0 right-0 mt-1 z-50 max-h-48 overflow-auto rounded-md border border-[#E6EDF2] bg-white shadow-lg">
+          <li
+            key="all"
+            onClick={() => { onChange('all'); setOpen(false) }}
+            className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === 'all' ? 'font-semibold' : ''}`}
+          >
+            {placeholder ?? 'Todos'}
+          </li>
+          {options.map((opt) => (
+            <li
+              key={opt}
+              onClick={() => { onChange(opt); setOpen(false) }}
+              className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === opt ? 'font-semibold' : ''}`}
+            >
+              {opt}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function OccupationDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
+  return <FilterDropdown {...props} placeholder="Todos" />
+}
+
+function TechnologyDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
+  return <FilterDropdown {...props} placeholder="Todas" />
+}
+
 export default function ExplorePortfolios() {
   const navigate = useNavigate();
+  const occupationContainerRef = useRef<HTMLDivElement | null>(null)
+  const technologyContainerRef = useRef<HTMLDivElement | null>(null)
   const [portfolios, setPortfolios] = useState<PortfolioCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
@@ -207,36 +277,26 @@ export default function ExplorePortfolios() {
                 </div>
 
                 <div className="grid gap-2 md:grid-cols-4">
-                  <label className="space-y-2">
+                  <label className="space-y-2 relative">
                     <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">Cargo</span>
-                    <select
-                      value={selectedOccupation}
-                      onChange={(event) => handleOccupationChange(event.target.value)}
-                      className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-1 focus:ring-[#4982AD]/20"
-                    >
-                      <option value="all">Todos</option>
-                      {occupationOptions.map((occupation) => (
-                        <option key={occupation} value={occupation}>
-                          {occupation}
-                        </option>
-                      ))}
-                    </select>
+                    <div ref={occupationContainerRef} className="relative">
+                      <OccupationDropdown
+                        value={selectedOccupation}
+                        options={occupationOptions}
+                        onChange={(v) => handleOccupationChange(v)}
+                      />
+                    </div>
                   </label>
 
-                  <label className="space-y-2">
+                  <label className="space-y-2 relative">
                     <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">Tecnologías</span>
-                    <select
-                      value={selectedTechnology}
-                      onChange={(event) => handleTechnologyChange(event.target.value)}
-                      className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-1 focus:ring-[#4982AD]/20"
-                    >
-                      <option value="all">Todas</option>
-                      {technologyOptions.map((technology) => (
-                        <option key={technology} value={technology}>
-                          {technology}
-                        </option>
-                      ))}
-                    </select>
+                    <div ref={technologyContainerRef} className="relative">
+                      <TechnologyDropdown
+                        value={selectedTechnology}
+                        options={technologyOptions}
+                        onChange={(v) => handleTechnologyChange(v)}
+                      />
+                    </div>
                   </label>
 
                   <label className="space-y-2">
