@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, Legend 
@@ -8,17 +8,8 @@ import Header from '../../components/HeaderUser';
 import AdminSidebar from '../../components/Admin/AdminSidebar';
 import { Footer } from '@/components/Footer';
 import { useReactToPrint } from 'react-to-print';
+import { useCertificateReports } from '@/hooks/useCertificateReports';
 
-// --- Interfaces ---
-interface IssuerData {
-  name: string;
-  cantidad: number;
-}
-
-interface PieChartData {
-  name: string;
-  value: number;
-}
 interface PieLabelProps {
   cx?: number;
   cy?: number;
@@ -27,38 +18,25 @@ interface PieLabelProps {
   outerRadius?: number;
   percent?: number;
 }
-interface Stats {
-  totalCertificados: number;
-  conLink: number;
-  conArchivo: number;
-  conAmbos: number;
-}
-
-interface ResponseData {
-  stats: Stats;
-  issuers: IssuerData[];
-  formatDist: PieChartData[];
-  expirationDist: PieChartData[];
-}
-
 const CertificateReports = () => {
-  const [stats, setStats] = useState<Stats>({
+  const {data, loading, error, } = useCertificateReports();
+  const stats = data?.stats || {
     totalCertificados: 0,
     conLink: 0,
     conArchivo: 0,
     conAmbos: 0,
-  });
-  
-  const [issuersData, setIssuersData] = useState<IssuerData[]>([]);
-  const [formatData, setFormatData] = useState<PieChartData[]>([]);
-  const [expirationData, setExpirationData] = useState<PieChartData[]>([]);
-  const [loading, setLoading] = useState(true);
+  };
+  const issuersData = data?.issuers || [];
+  const formatData = data?.formatDist || [];
+  const expirationData = data?.expirationDist || [];
+
+
   const reportRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef: reportRef,
     documentTitle: 'Reporte-Certificados',
   });
-  // Colores para las gráficas de pastel (según imagen)
+  // Colores para las gráficas de pastel 
   const COLORS_FORMAT = ['#36A2EB', '#FFCE56', '#FF334B', '#4BC0C0'];
   const COLORS_EXPIRATION = ['#FF9F40', '#51db86'];
   const renderCustomizedLabel = ({
@@ -89,91 +67,18 @@ const CertificateReports = () => {
       </text>
     );
   };
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Simulación de carga
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const response: ResponseData = {
-          stats: {
-            totalCertificados: 1248,
-            conLink: 890,
-            conArchivo: 1104,
-            conAmbos: 672,
-          },
-          issuers: [
-            { name: 'AWS', cantidad: 145 },
-            { name: 'Coursera', cantidad: 132 },
-            { name: 'Universidad X', cantidad: 118 },
-            { name: 'Google', cantidad: 105 },
-            { name: 'Platzi', cantidad: 98 },
-            { name: 'LinkedIn Learning', cantidad: 85 },
-            { name: 'Cisco', cantidad: 75 },
-            { name: 'Microsoft', cantidad: 68 },
-            { name: 'edX', cantidad: 52 },
-            { name: 'IBM', cantidad: 45 },
-          ],
-          formatDist: [
-            { name: 'PDF', value: 40 },
-            { name: 'Imágenes', value: 30 },
-            { name: 'Solo URL', value: 15 },
-            { name: 'Ambos', value: 15 },
-          ],
-          expirationDist: [
-            { name: 'Con vencimiento', value: 35 },
-            { name: 'Sin vencimiento', value: 65 },
-          ]
-        };
-
-        setStats(response.stats);
-        setIssuersData(response.issuers);
-        setFormatData(response.formatDist);
-        setExpirationData(response.expirationDist);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  //useEffect(() => {
-    //const fetchData = async () => {
-      //try {
-        //setLoading(true);
-
-        //const response = await fetch(
-          //'http://localhost:8000/api/admin/certificate-reports'
-        //);
-
-        //if (!response.ok) {
-          //throw new Error('Error al obtener reportes');
-        //}
-
-        //const data: ResponseData = await response.json();
-
-        //setStats(data.stats);
-        //setIssuersData(data.issuers);
-        //setFormatData(data.formatDist);
-        //setExpirationData(data.expirationDist);
-
-      //} catch (error) {
-        //console.error(error);
-      //} finally {
-        //setLoading(false);
-      //}
-    //};
-
-    //fetchData();
-  //}, []);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center font-bold text-[#003A6C]">
         <p>Cargando reporte de certificados...</p>
+      </div>
+    );
+  }
+ if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-bold text-red-500">
+        <p>{error}</p>
       </div>
     );
   }
@@ -239,7 +144,7 @@ const CertificateReports = () => {
               {/* Pastel: Distribución por Formato */}
               <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid">
                 <div className="mb-4">
-                  <h2 className="text-xl font-bold text-[#003A6C]">Distribución por Formato</h2>
+                  <h2 className="text-xl font-bold text-[#003A6C]">Distribución por formato</h2>
                   <p className="text-sm text-[#4B778D]">Tipos de archivo de respaldo</p>
                 </div>
                 <div className="h-64">

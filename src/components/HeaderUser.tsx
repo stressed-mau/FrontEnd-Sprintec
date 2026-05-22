@@ -98,11 +98,13 @@ const HeaderUser = () => {
                   className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]" >
                   <User size={16} className="text-gray-500" />  Mi perfil
                 </button>
-                <button
-                  onClick={() => navigateTo("/visualizaciones")}
-                  className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]" >
-                  <BarChart3 size={16} className="text-gray-500" />  Visualizaciones
-                </button>
+                {user?.role_id === 1 && (
+                  <button
+                    onClick={() => navigateTo("/visualizaciones")}
+                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]" >
+                    <BarChart3 size={16} className="text-gray-500" />  Visualizaciones
+                  </button>
+                )}
               </div>
               <div className="border-t border-[#0E7D96] px-3 py-2">
                 <button

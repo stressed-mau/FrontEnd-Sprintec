@@ -95,7 +95,14 @@ export function useLoginForm() {
       saveAuthSession(response)
       setErrors({})
       setSuccessMessage(response.message || "Inicio de sesión exitoso")
-      navigate(USER_HOME_ROUTE, { replace: true })
+      //navigate(USER_HOME_ROUTE, { replace: true })
+
+      if (response.data.role_id === 2) {
+        navigate("/admin/usuarios", { replace: true })
+      } else {
+        navigate(USER_HOME_ROUTE, { replace: true })
+      }
+
     } catch (error) {
       setSuccessMessage("")
 
