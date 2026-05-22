@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useExplorePortfolioFilters, type PortfolioCard } from "@/hooks/useExplorePortfolioFilters";
+import { getLanguages, getWorkOptions } from "@/services/ProjectService";
 import { isAuthenticated } from "@/services/auth";
 import { getExplorePortfolios, type ExplorePortfoliosMeta } from "@/services/explorePortfoliosService";
 
@@ -20,6 +21,11 @@ export default function ExplorePortfolios() {
   const [meta, setMeta] = useState<ExplorePortfoliosMeta>({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 });
   const isUserAuthenticated = isAuthenticated();
 
+  // 1. Declaramos primero los estados que necesita el hook customizado
+  const [serverOccupationOptions, setServerOccupationOptions] = useState<string[] | null>(null)
+  const [serverTechnologyOptions, setServerTechnologyOptions] = useState<string[] | null>(null)
+
+  // 2. Desestructuramos el hook UNA SOLA VEZ correctamente
   const {
     searchTerm,
     setSearchTerm,
@@ -37,7 +43,29 @@ export default function ExplorePortfolios() {
     technologyOptions,
     hasActiveFilters,
     clearFilters,
-  } = useExplorePortfolioFilters(portfolios)
+  } = useExplorePortfolioFilters(portfolios, serverOccupationOptions ?? undefined, serverTechnologyOptions ?? undefined)
+
+  useEffect(() => {
+    let mounted = true
+
+    const loadOptions = async () => {
+      try {
+        const [langs, work] = await Promise.all([getLanguages(), getWorkOptions()])
+        if (!mounted) return
+        const techs = Array.isArray(langs) ? langs.map((t: any) => (typeof t.name === "string" ? t.name : String(t))) : []
+        setServerTechnologyOptions(techs)
+        setServerOccupationOptions(Array.isArray(work?.roles) ? work.roles : [])
+      } catch (err) {
+        console.error("Error cargando opciones de filtros:", err)
+      }
+    }
+
+    loadOptions()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   useEffect(() => {
     let isMounted = true;
@@ -116,14 +144,15 @@ export default function ExplorePortfolios() {
     setCurrentPage(1)
   }
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(word => word[0].toUpperCase())
-    .join("");
-}
+  function getInitials(name: string): string {
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(word => word[0].toUpperCase())
+      .join("");
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-[#FDF8F0]">
       {isUserAuthenticated ? <HeaderUser /> : <Header />}
@@ -158,7 +187,7 @@ function getInitials(name: string): string {
                 className={`h-11 shrink-0 rounded-2xl border-[#6DACBF]/40 bg-white px-3 text-[#003A6C] shadow-sm hover:bg-[#F7F0E1] sm:h-12 sm:px-4 ${hasActiveFilters ? "border-[#4982AD] bg-[#F7F0E1]" : ""}`}
               >
                 <SlidersHorizontal className="size-4" />
-                      </Button>
+              </Button>
             </div>
 
             {isFiltersOpen && (
@@ -195,24 +224,20 @@ function getInitials(name: string): string {
                   </label>
 
                   <label className="space-y-2">
-                 <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">
-    Tecnologías
-  </span>
-
-  <select
-    value={selectedTechnology}
-    onChange={(event) => handleTechnologyChange(event.target.value)}
-    className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-1 focus:ring-[#4982AD]/20"
-  >
-    <option value="all">Todas</option>
-
-    {technologyOptions.map((technology) => (
-      <option key={technology} value={technology}>
-        {technology}
-      </option>
-    ))}
-  </select>
-</label>
+                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">Tecnologías</span>
+                    <select
+                      value={selectedTechnology}
+                      onChange={(event) => handleTechnologyChange(event.target.value)}
+                      className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-1 focus:ring-[#4982AD]/20"
+                    >
+                      <option value="all">Todas</option>
+                      {technologyOptions.map((technology) => (
+                        <option key={technology} value={technology}>
+                          {technology}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
                   <label className="space-y-2">
                     <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">Proyectos mínimos</span>

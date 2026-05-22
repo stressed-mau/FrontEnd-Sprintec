@@ -13,7 +13,11 @@ export interface PortfolioCard {
 
 type ThresholdValue = "all" | string
 
-export function useExplorePortfolioFilters(portfolios: PortfolioCard[]) {
+export function useExplorePortfolioFilters(
+  portfolios: PortfolioCard[],
+  serverOccupationOptions?: string[],
+  serverTechnologyOptions?: string[],
+) {
   const [searchTerm, setSearchTerm] = useState("")
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [selectedOccupation, setSelectedOccupation] = useState("all")
@@ -22,10 +26,13 @@ export function useExplorePortfolioFilters(portfolios: PortfolioCard[]) {
   const [minSkills, setMinSkills] = useState<ThresholdValue>("all")
 
   const occupationOptions = useMemo(() => {
+    if (Array.isArray(serverOccupationOptions) && serverOccupationOptions.length > 0) return serverOccupationOptions.slice().sort()
     return Array.from(new Set(portfolios.map((portfolio) => portfolio.occupation).filter(Boolean))).sort()
-  }, [portfolios])
+  }, [portfolios, serverOccupationOptions])
 
   const technologyOptions = useMemo(() => {
+    if (Array.isArray(serverTechnologyOptions) && serverTechnologyOptions.length > 0) return serverTechnologyOptions.slice().sort()
+
     return Array.from(
       new Set(
         portfolios
@@ -34,7 +41,7 @@ export function useExplorePortfolioFilters(portfolios: PortfolioCard[]) {
           .filter((skill) => skill && skill !== "Sin habilidades"),
       ),
     ).sort()
-  }, [portfolios])
+  }, [portfolios, serverTechnologyOptions])
 
   const hasActiveFilters =
     searchTerm.trim().length > 0 || selectedOccupation !== "all" || selectedTechnology !== "all" || minProjects !== "all" || minSkills !== "all"
