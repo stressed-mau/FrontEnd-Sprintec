@@ -62,7 +62,7 @@ const TendenciaPlantillasPage = () => {
 
               <div>
                 <h1 className="mb-2 text-3xl sm:text-3xl font-bold text-[#003A6C]">Tendencia de Plantillas</h1>
-                <p className="text-sm sm:text-base text-[#4B778D]">Resumen del reporte semanal del portafolio autenticado</p>
+                <p className="text-sm sm:text-base text-[#4B778D]">Resumen global del rendimiento de las plantillas en la plataforma</p>
               </div>
 
               <div className="flex flex-col items-start gap-3 md:items-end">
