@@ -59,7 +59,6 @@ const TendenciaPlantillasPage = () => {
               </div>
               <div className="w-1/3 text-center">
                 <h1 className="text-2xl font-bold text-[#003A6C] leading-tight">Reporte Semanal de Plantillas</h1>
-                <p className="text-sm text-gray-500">{reportPeriod}</p>
               </div>
               <div className="w-1/3 flex justify-end">
                 <div className="text-right">
@@ -81,8 +80,7 @@ const TendenciaPlantillasPage = () => {
                     <Button
                       type="button"
                       onClick={handleExportPDF}
-                      className="bg-[#003A6C] text-white shadow-sm transition-colors hover:bg-[#4982AD]"
-                    >
+                      className="bg-[#003A6C] text-white shadow-sm transition-colors hover:bg-[#4982AD]" >
                       <Download className="mr-2 h-4 w-4" />
                       Generar PDF
                     </Button>
@@ -99,7 +97,6 @@ const TendenciaPlantillasPage = () => {
                   >
                     <ChevronLeft size={20} />
                   </button>
-                  <span className="text-sm font-bold text-[#003A6C]">{reportPeriod}</span>
                   <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
                   <span className="text-sm font-semibold text-[#4B778D]">{totalPortfolios} portafolios analizados</span>
                   <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
@@ -113,7 +110,6 @@ const TendenciaPlantillasPage = () => {
                     <ChevronRight size={20} />
                   </button>
                 </div>
-                <p className="text-xs text-[#4B778D]">{weekOffsetLabel}</p>
               </div>
             </div>
 
