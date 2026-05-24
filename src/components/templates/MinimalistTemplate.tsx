@@ -139,7 +139,12 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
                 {projects.length > 0 ? projects.map((p: any) => (
                   <div key={p.id} className="bg-stone-50/50 border border-stone-100 rounded-2xl p-4 transition-all hover:bg-white hover:shadow-xl hover:shadow-stone-200/50 group">
                     <h3 className="font-bold text-sm text-zinc-900 uppercase mb-1">{p.label || p.title}</h3>
-                    <p className="text-[10px] text-stone-400 leading-relaxed line-clamp-2 italic">{p.sublabel || p.description}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">{p.project_rol || p.role || p.rol || "Rol no especificado"}</p>
+                    {(p.technologies?.length || p.tecnologias?.length) ? (
+                      <p className="mt-2 text-[10px] text-stone-400 leading-relaxed">
+                        {(p.technologies ?? p.tecnologias?.map((technology: any) => technology.name ?? technology) ?? []).join(" / ")}
+                      </p>
+                    ) : null}
                   </div>
                 )) : (
                   <p className="text-sm text-stone-400 italic">No hay proyectos marcados como visibles.</p>

@@ -193,7 +193,12 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
               <div key={`${project.sourceTable ?? 'projects'}-${project.id}`} className="group relative h-48 rounded-[2rem] overflow-hidden bg-[#2f606b]">
                 <div className="absolute inset-0 bg-linear-to-t from-[#173b61] via-transparent to-transparent opacity-100 p-8 flex flex-col justify-end">
                   <h4 className="text-[#fcecd4] text-2xl font-black">{project.nombre || project.title}</h4>
-                  <p className="text-[#ee8e3b] font-bold text-sm mt-1">{project.descripcion || project.description}</p>
+                  <p className="text-[#ee8e3b] font-bold text-sm mt-1">{project.project_rol || project.role || project.rol || "Rol no especificado"}</p>
+                  {(project.technologies?.length || project.tecnologias?.length) ? (
+                    <p className="mt-2 text-xs font-semibold text-[#fcecd4]/80">
+                      {(project.technologies ?? project.tecnologias?.map((technology: any) => technology.name ?? technology) ?? []).join(" · ")}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             ))}

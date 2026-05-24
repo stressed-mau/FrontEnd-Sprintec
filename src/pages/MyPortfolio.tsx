@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar"
 import type { Portfolio } from "@/types/portfolio"
 import { usePortfolio } from "@/hooks/usePortfolio"
 import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
-import { Mail, Globe, MapPin, Briefcase, Code } from "lucide-react"
+import { Mail, Globe, MapPin, Briefcase, Code, GraduationCap, Award } from "lucide-react"
 import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
@@ -20,7 +20,7 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
   projects: portfolio.projects.map((p, index) => ({
     id: Number(p.id ?? index),
     label: p.nombre ?? "",
-    sublabel: p.descripcion ?? "",
+    sublabel: (p as any).project_rol ?? (p as any).role ?? (p as any).rol ?? "",
     checked: asBoolean(p.is_public),
     sourceTable: "projects",
   })),
@@ -45,14 +45,14 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
     id: Number(e.id ?? index),
     label: e.title || "Sin título",
     sublabel: e.institution || "Sin institución",
-    checked: true,
+    checked: asBoolean(e.is_public),
     sourceTable: "educations",
   })) ?? [],
   certificates: (portfolio as any).certificates?.map((cert: any, index: number) => ({
     id: index,
     label: cert.name ?? "",
     sublabel: cert.issuer ?? "",
-    checked: true,
+    checked: asBoolean(cert.is_public),
     sourceTable: "certificates",
     date: cert.date_issued,
     url: cert.credential_url,
@@ -123,9 +123,18 @@ const MyPortfolio = () => {
   const visibleSkills = visibilityData.skills.filter(s => s.checked)
   const visibleExperience = visibilityData.experience.filter(e => e.checked)
   const visibleProjects = visibilityData.projects.filter(p => p.checked)
-  //const visibleEducation = visibilityData.education.filter(e => e.checked)
-  //const visibleCertificates = visibilityData.certificates.filter(c => c.checked)
+  const visibleEducation = visibilityData.education.filter(e => e.checked)
+  const visibleCertificates = visibilityData.certificates.filter(c => c.checked)
   const visibleNetworks = visibilityData.networks.filter(n => n.checked)
+  const visiblePortfolio = {
+    ...portfolio,
+    projects: portfolio.projects.filter((item: any) => asBoolean(item.is_public)),
+    skills: portfolio.skills.filter((item: any) => asBoolean(item.is_public)),
+    experiences: portfolio.experiences.filter((item: any) => item.type !== "academica" && asBoolean(item.is_public)),
+    educations: portfolio.educations?.filter((item: any) => asBoolean(item.is_public)) ?? [],
+    certificates: (portfolio as any).certificates?.filter((item: any) => asBoolean(item.is_public)) ?? [],
+    socialNetworks: portfolio.socialNetworks.filter((item: any) => asBoolean(item.is_public)),
+  }
   console.log("PROFILE FINAL MYPORTFOLIO:", profile)
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
@@ -137,17 +146,20 @@ const MyPortfolio = () => {
         <main className="flex-1 p-4 md:p-10">
           {isModern && <ModernTemplate 
           //data={visibilityData} 
-          profile={profile} />}
+          profile={profile}
+          portfolio={visiblePortfolio} />}
 
           {isMinimalist && <MinimalistTemplate 
             //data={visibilityData}           
             profile={profile} 
+            portfolio={visiblePortfolio}
             isPreview={true} 
           />}
 
           {isCorporate && <CorporatePortfolioTemplate 
           //data={visibilityData} 
-          profile={profile} />}
+          profile={profile}
+          portfolio={visiblePortfolio} />}
 
           {!isModern && !isMinimalist && !isCorporate && (
             <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">
@@ -245,15 +257,76 @@ const MyPortfolio = () => {
                         visibleProjects.map((project) => (
                           <div key={project.id} className="bg-gray-50 border-l-4 border-[#003A6C] p-4">
                             <h4 className="font-bold text-sm uppercase">
-                              {project.label || "Proyecto sin título"}
+                              {project.label || "Proyecto sin titulo"}
                             </h4>
                             <p className="text-sm text-gray-600 mt-1">
-                              {project.sublabel || "Sin descripción"}
+                              {project.sublabel || "Rol no especificado"}
                             </p>
+                            {(
+                              visiblePortfolio.projects.find((item: any) => Number(item.id) === project.id)?.technologies ??
+                              visiblePortfolio.projects.find((item: any) => Number(item.id) === project.id)?.tecnologias?.map((technology: any) => technology.name ?? technology) ??
+                              []
+                            ).length ? (
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {(
+                                  visiblePortfolio.projects.find((item: any) => Number(item.id) === project.id)?.technologies ??
+                                  visiblePortfolio.projects.find((item: any) => Number(item.id) === project.id)?.tecnologias?.map((technology: any) => technology.name ?? technology) ??
+                                  []
+                                ).map((technology: string) => (
+                                    <span key={technology} className="rounded-full bg-[#EEF5F9] px-2.5 py-1 text-xs font-semibold text-[#003A6C]">
+                                      {technology}
+                                    </span>
+                                  ))}
+                              </div>
+                            ) : null}
                           </div>
                         ))
                       ) : (
                         <p className="text-sm text-gray-400 italic">Sin proyectos visibles</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="flex items-center gap-2 text-xl font-bold uppercase">
+                      <GraduationCap size={18} /> Formacion academica
+                    </h3>
+
+                    <div className="mt-6 grid gap-4">
+                      {visibleEducation.length > 0 ? (
+                        visibleEducation.map((education) => (
+                          <div key={education.id} className="bg-gray-50 border-l-4 border-[#6DACBF] p-4">
+                            <h4 className="font-bold text-sm uppercase">
+                              {education.label || "Formacion sin titulo"}
+                            </h4>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {education.sublabel || "Sin institucion"}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-400 italic">Sin formacion academica visible</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="flex items-center gap-2 text-xl font-bold uppercase">
+                      <Award size={18} /> Certificados
+                    </h3>
+
+                    <div className="mt-6 grid gap-4">
+                      {visibleCertificates.length > 0 ? (
+                        visibleCertificates.map((certificate) => (
+                          <div key={certificate.id} className="bg-gray-50 border-l-4 border-[#C4A57C] p-4">
+                            <h4 className="font-bold text-sm uppercase">
+                              {certificate.label || "Certificado sin titulo"}
+                            </h4>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {certificate.sublabel || "Sin institucion"}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-400 italic">Sin certificados visibles</p>
                       )}
                     </div>
                   </div>
