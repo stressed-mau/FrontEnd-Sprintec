@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { USER_GUIDE_OPEN_SIDEBAR_EVENT } from "@/components/UserGuide";
 
 type NavChild = {
   id: string;
@@ -154,6 +155,19 @@ const Sidebar = () => {
       setIsDesktopCollapsed(true);
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    const openSidebarForGuide = () => {
+      setIsMobileOpen(true);
+      setIsDesktopCollapsed(false);
+    };
+
+    window.addEventListener(USER_GUIDE_OPEN_SIDEBAR_EVENT, openSidebarForGuide);
+
+    return () => {
+      window.removeEventListener(USER_GUIDE_OPEN_SIDEBAR_EVENT, openSidebarForGuide);
+    };
+  }, []);
 
   const toggleSection = (id: string) => {
     setExpandedSectionId((current) => (current === id ? null : id));

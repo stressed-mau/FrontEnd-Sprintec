@@ -1,4 +1,4 @@
-import { Edit3, ExternalLink, FolderGit2, GitBranch, Plus, Search, X } from "lucide-react";
+import { Edit3, ExternalLink, FolderGit2, GitBranch, Search, X } from "lucide-react";
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -499,6 +499,7 @@ export function ProjectForm({
   canEditEndDate?: boolean;
 }) {
   const isModalTone = tone === "modal";
+  const isRegisterSubmit = submitLabel.toLowerCase().startsWith("registrar");
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [activeRoleIndex, setActiveRoleIndex] = useState(0);
   const [technologySearch, setTechnologySearch] = useState("");
@@ -849,12 +850,23 @@ export function ProjectForm({
         </div>
       </Field>
 
-      <div className="flex flex-wrap gap-3 pt-2">
+      <div className={`flex flex-wrap gap-3 pt-2 ${isRegisterSubmit ? "justify-center" : ""}`}>
         <Button type="submit" disabled={isSaving || !canSave} className="bg-[#003A6C] text-white shadow-sm hover:bg-[#4982AD]">
-          {!isSaving ? <Plus className="size-4" /> : null}
-          {isSaving ? "Guardando..." : submitLabel}
+          {isSaving ? "Guardando..." : isRegisterSubmit ? "Registrar" : submitLabel}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving} className={isModalTone ? "border-gray-300 bg-white text-gray-700 hover:bg-gray-50" : "border-[#A5D7E8] bg-white text-[#003A6C]"}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSaving}
+          className={
+            isRegisterSubmit
+              ? "border-[#A5D7E8] bg-[#F7F0E1] text-[#003A6C] hover:bg-[#F7F0E1]/80"
+              : isModalTone
+                ? "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                : "border-[#A5D7E8] bg-white text-[#003A6C]"
+          }
+        >
           Cancelar
         </Button>
       </div>

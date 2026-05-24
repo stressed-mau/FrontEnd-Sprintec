@@ -1,5 +1,5 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode, type RefObject } from "react"
-import { Award, Plus, Upload, X } from "lucide-react"
+import { Upload, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -140,7 +140,6 @@ export function ExperienceInlineForm({
   const companyLabel = isEducation ? "Institución académica" : "Empresa"
   const positionLabel = isEducation ? "Nivel de formación" : "Cargo"
   const currentLabel = isEducation ? "Cursando actualmente" : "Trabajo actual"
-  const submitLabel = isEducation ? "Registrar Formación Académica" : "Registrar Experiencia Laboral"
   const descriptionPlaceholder = isEducation
     ? "Describe tu Formación Académica, logros, especializaciones..."
     : "Describe tus responsabilidades y logros..."
@@ -402,17 +401,16 @@ export function ExperienceInlineForm({
             </div>
           ) : null}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex justify-center gap-3 pt-2">
             <Button type="submit" disabled={isSaving} className="h-10 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
-              {isEducation ? <Award className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}
-              {isSaving ? "Guardando..." : submitLabel}
+              {isSaving ? "Guardando..." : "Registrar"}
             </Button>
             <Button
               type="button"
               variant="outline"
               disabled={isSaving}
               onClick={onCancel}
-              className="h-10 border-gray-300 bg-white hover:bg-gray-50"
+              className="h-10 border-gray-300 bg-[#F7F0E1] hover:bg-[#F7F0E1]/80"
             >
               Cancelar
             </Button>

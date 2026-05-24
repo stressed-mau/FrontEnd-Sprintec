@@ -1,5 +1,5 @@
 import { useMemo, useState, type ChangeEvent, type FormEvent, type ReactNode, type RefObject } from "react"
-import { Award, Upload, X } from "lucide-react"
+import { Upload, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -237,12 +237,11 @@ export function EducationInlineForm({
         </div>
       </div>
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex justify-center gap-3 pt-2">
         <Button type="submit" disabled={isSaving} className="h-10 bg-[#003A6C] text-white hover:bg-[#1a4f7a]">
-          <Award className="mr-2 h-4 w-4" />
-          {isSaving ? "Guardando..." : "Registrar Formacion Academica"}
+          {isSaving ? "Guardando..." : "Registrar"}
         </Button>
-        <Button type="button" variant="outline" disabled={isSaving} onClick={onCancel} className="h-10 border-gray-300 bg-white hover:bg-gray-50">
+        <Button type="button" variant="outline" disabled={isSaving} onClick={onCancel} className="h-10 border-gray-300 bg-[#F7F0E1] hover:bg-[#F7F0E1]/80">
           Cancelar
         </Button>
       </div>
