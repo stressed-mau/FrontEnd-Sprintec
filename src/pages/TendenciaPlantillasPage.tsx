@@ -7,12 +7,22 @@ import { useTemplateTrends } from "@/hooks/useTemplateTrends"
 import { formatTemplateTime, formatTemplateVariation, type TrendStats } from "@/services/templateTrendsService"
 import { Button } from "@/components/ui/button"
 import { useCurrentWeekRange } from "@/hooks/useCurrentWeekRange"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useReactToPrint } from "react-to-print"
+import { useSearchParams } from "react-router-dom"
 import logo from "@/assets/logo/LogoPG.png"
 
 const TendenciaPlantillasPage = () => {
-  const [weekOffset, setWeekOffset] = useState(0)
+  const [searchParams, setSearchParams] = useSearchParams()
+  
+  const [weekOffset, setWeekOffset] = useState(() => {
+    return parseInt(searchParams.get("offset") || "0", 10)
+  })
+
+  useEffect(() => {
+    setSearchParams({ offset: weekOffset.toString() }, { replace: true })
+  }, [weekOffset, setSearchParams])
+
   const { loading, stats, chartData, report, pageError } = useTemplateTrends(weekOffset)
   const reportRef = useRef<HTMLDivElement>(null)
   const currentWeekRange = useCurrentWeekRange(weekOffset)

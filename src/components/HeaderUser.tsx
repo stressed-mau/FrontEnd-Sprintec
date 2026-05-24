@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import logo from "@/assets/logo.png"
 import { NotificationBell } from "@/components/NotificationBell"
 import { useLogout } from "@/hooks/useLogout"
-import { TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+import { REPORTES_INDEX_ROUTE, TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 import { getAuthSession } from "@/services/auth"
 
 const ROLE_LABELS: Record<number, string> = {
@@ -114,7 +114,7 @@ const HeaderUser = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigateTo(TEMPLATE_TRENDS_ROUTE)}
+                  onClick={() => navigateTo(REPORTES_INDEX_ROUTE)}
                   className="mt-2 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"
                 >
                   <FileText size={16} className="text-gray-500" /> Reportes
