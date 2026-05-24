@@ -6,13 +6,22 @@ import AdminSidebar from '../../components/Admin/AdminSidebar';
 import { Footer } from '@/components/Footer';
 import { useReactToPrint } from 'react-to-print';
 import { useUserReports } from "@/hooks/useUserReports";
-
+import logo from "@/assets/logo/LogoPG.png";
 
 const UserReports = () => {
 
   const [selectedPeriod, setSelectedPeriod] = useState<
     'Día' | 'Semana' | 'Mes' | 'Año'
   >('Mes');
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const usersPerPage = 6;
+
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+
+
 
   const rangeMap = {
     Día: "day",
@@ -40,12 +49,48 @@ const UserReports = () => {
   const loginData = data?.loginData || [];
   const userData = data?.users || [];
 
+  const currentUsers = userData.slice(
+    indexOfFirstUser,
+    indexOfLastUser
+  );
+
+  const totalPages = Math.ceil(userData.length / usersPerPage);
   const reportRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
-    contentRef: reportRef,
-    documentTitle: 'Reporte-Usuarios',
-  });
+  contentRef: reportRef,
+  documentTitle: 'Reporte-Usuarios',
+  pageStyle: `
+    @page {
+      size: auto;
+      margin: 20mm 12mm 20mm 12mm;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      table {
+        page-break-inside: auto;
+      }
+
+      tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+      }
+
+      thead {
+        display: table-header-group;
+      }
+
+      tfoot {
+        display: table-footer-group;
+      }
+    }
+  `,
+});
 
   if (loading) {
     return (
@@ -71,8 +116,31 @@ const UserReports = () => {
         <main className="flex-1 p-4 sm:p-6 md:p-10">
           <div
             ref={reportRef}
-            className="mx-auto max-w-6xl space-y-8 p-4"
+            className="mx-auto max-w-6xl space-y-8 p-4 print:max-w-full print:px-2 print:pt-6 print:scale-[0.95] print:origin-top"
           >
+          <div className="hidden print:flex items-center justify-between mb-4 border-b border-gray-300 pb-3">
+            <div className="w-1/3 flex justify-start">
+              <img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
+            </div>
+
+            <div className="w-1/3 text-center">
+              <h1 className="text-2xl font-bold text-[#003A6C] leading-tight">
+                Reporte de Usuarios
+              </h1>
+
+              <p className="text-sm text-gray-500">
+                Gestión y análisis de usuarios registrados
+              </p>
+            </div>
+
+            <div className="w-1/3 flex justify-end">
+              <div className="text-right">
+                <p className="text-sm font-semibold text-[#003A6C]">
+                  {new Date().toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          </div>
             
             {/* Título y Subtítulo */}
             {/* Título + Botón */}
@@ -87,11 +155,16 @@ const UserReports = () => {
               </div>
               <button
                 onClick={handlePrint}
-                className="h-11 flex items-center justify-center gap-2 px-5 rounded-xl bg-[#003A6C] text-white hover:bg-[#002d54] hover:text-white transition-colors"
+                className="print:hidden h-11 flex items-center justify-center gap-2 px-5 rounded-xl bg-[#003A6C] text-white hover:bg-[#002d54] hover:text-white transition-colors"
               >
                 <Download className="w-5 h-5" />
                 Exportar a PDF
               </button>
+            </div>
+            <div className="mb-2 p-2 bg-[#E0F2FE] border border-[#7DD3FC] rounded-2xl w-fit">
+              <span className="text-[#0369A1] font-bold text-sm italic">
+                Reporte actualizado automáticamente
+              </span>
             </div>
             {/* Tarjetas de Métricas Superiores */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -111,8 +184,8 @@ const UserReports = () => {
                   {selectedPeriod === 'Año' && 'Registros por mes (últimos 12 meses)'}
                 </p>
               </div>
-              <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-64 w-full overflow-hidden print:h-64 print:w-[950px]">
+                <ResponsiveContainer width="99%" height="100%" debounce={0}>
                   <LineChart
                     data={
                       selectedPeriod === 'Día'
@@ -123,16 +196,35 @@ const UserReports = () => {
                         ? monthlyData
                         : yearlyData
                     }
+                    margin={{
+                      top: 10,
+                      right: 20,
+                      left: 10,
+                      bottom: 10,
+                    }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={35} tickMargin={10} tick={{fill: '#4B778D', fontSize: 12}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#4B778D', fontSize: 12}} />
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      interval={0}
+                      minTickGap={20}
+                      tickMargin={8}
+                      padding={{ left: 20, right: 20 }}
+                      tick={{
+                        fill: '#4B778D',
+                        fontSize: 11,
+                      }}
+                    />
+                    <YAxis width={35} axisLine={false} tickLine={false} tick={{fill: '#4B778D', fontSize: 12}} />
                     <Tooltip />
                     <Line 
                       type="monotone" 
                       dataKey="registros" 
                       stroke="#22C55E" 
                       strokeWidth={3} 
+                      isAnimationActive={false}
                       dot={{ r: 6, fill: '#22C55E', strokeWidth: 2, stroke: '#fff' }} 
                       activeDot={{ r: 8 }}
                     />
@@ -141,7 +233,7 @@ const UserReports = () => {
               </div>
               
               {/* Selectores de Tiempo (Estilo Figma) */}
-              <div className="flex justify-center mt-6">
+              <div className="flex justify-center mt-6 print:hidden">
                 <div className="inline-flex bg-[#D1E3EB] p-1 rounded-xl">
                   {['Día', 'Semana', 'Mes', 'Año'].map((period) => (
                     <button 
@@ -173,18 +265,18 @@ const UserReports = () => {
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#4B778D', fontSize: 12}} />
                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#4B778D', fontSize: 12}} />
                     <Tooltip cursor={{fill: '#F1F5F9'}} />
-                    <Bar dataKey="registros" fill="#10B981" radius={[4, 4, 0, 0]} barSize={60} />
+                    <Bar dataKey="registros" fill="#10B981" radius={[4, 4, 0, 0]} barSize={60} isAnimationActive={false} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             {/* Tabla de Usuarios */}
-            <div className="bg-white border border-[#A5C9D7] rounded-3xl overflow-hidden shadow-sm break-inside-avoid">
+            <div className="bg-white border border-[#A5C9D7] rounded-3xl overflow-hidden shadow-sm">
               <div className="p-6 border-b border-[#E2E8F0]">
                 <h2 className="text-xl font-bold text-[#003A6C]">Usuarios registrados ({stats?.totalUsers ?? 0})</h2>
               </div> 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto print:hidden">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="text-[#4B778D] text-sm uppercase tracking-wider">
@@ -196,13 +288,63 @@ const UserReports = () => {
                     </tr>
                   </thead>
                   <tbody className="text-[#003A6C] divide-y divide-[#E2E8F0]">
-                    {userData.map((user, idx) => (
+                    {currentUsers.map((user, idx) => (
                       <tr key={idx} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 font-medium">{user.name}</td>
-                        <td className="px-6 py-4 text-[#4B778D]">{user.email}</td>
+                        <td className="px-6 py-4 ">{user.email}</td>
                         <td className="px-6 py-4">{user.job}</td>
                         <td className="px-6 py-4 text-sm">{user.date}</td>
                         <td className="px-6 py-4 text-sm">{user.last}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="print:hidden flex items-center justify-between px-6 py-4 border-t border-[#E2E8F0]">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-lg border border-[#A5C9D7] text-[#003A6C] disabled:opacity-50"
+                  >
+                    ← Anterior
+                  </button>
+
+                  <span className="text-sm text-[#4B778D]">
+                    Página {currentPage} de {totalPages}
+                  </span>
+
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) =>
+                        Math.min(prev + 1, totalPages)
+                      )
+                    }
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 rounded-lg border border-[#A5C9D7] text-[#003A6C] disabled:opacity-50"
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              </div>
+              <div className="hidden print:block">
+                <table className="w-full text-left border-collapse mt-6">
+                  <thead>
+                    <tr className="text-[#4B778D] text-sm uppercase tracking-wider">
+                      <th className="px-4 py-3 border-b">Nombre</th>
+                      <th className="px-4 py-3 border-b">Correo</th>
+                      <th className="px-4 py-3 border-b">Ocupación</th>
+                      <th className="px-4 py-3 border-b">Fecha de registro</th>
+                      <th className="px-4 py-3 border-b">Última conexión</th>
+                    </tr>
+                  </thead>
+
+                  <tbody className="text-[#003A6C]">
+                    {userData.map((user, idx) => (
+                      <tr key={idx} className="border-b border-[#E2E8F0]">
+                        <td className="px-4 py-3">{user.name}</td>
+                        <td className="px-4 py-3">{user.email}</td>
+                        <td className="px-4 py-3">{user.job}</td>
+                        <td className="px-4 py-3">{user.date}</td>
+                        <td className="px-4 py-3">{user.last}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -225,15 +367,27 @@ interface StatCardProps {
 }
 
 const StatCard = ({ title, value, subtext, Icon }: StatCardProps) => (
-  <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm relative overflow-hidden">
+  <div className="bg-white border border-[#C9E1F0] rounded-[2rem] p-5 shadow-sm transition-all hover:border-[#70A1B9] print:shadow-none">
     <div className="flex justify-between items-start">
       <div className="space-y-2">
-        <p className="text-[#4B778D] font-medium text-sm">{title}</p>
-        <p className="text-4xl font-bold text-[#003A6C]">{value}</p>
-        <p className="text-xs text-[#70A1B9]">{subtext}</p>
+        <p className="text-[#4B778D] font-semibold text-sm uppercase tracking-wide">
+          {title}
+        </p>
+
+        <p className="text-4xl font-bold text-[#003A6C]">
+          {value}
+        </p>
+
+        <p className="text-xs text-[#70A1B9] font-medium">
+          {subtext}
+        </p>
       </div>
-      <div className="p-2 bg-[#F1F7F9] rounded-lg">
-        <Icon className="w-6 h-6 text-[#003A6C]" strokeWidth={1.5} />
+
+      <div className="p-2 rounded-xl bg-[#F5FAFD]">
+        <Icon
+          className="w-5 h-5 text-[#003A6C]"
+          strokeWidth={1.8}
+        />
       </div>
     </div>
   </div>

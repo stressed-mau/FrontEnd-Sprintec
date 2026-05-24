@@ -103,9 +103,11 @@ function AppRoutes() {
       <Route element={<ProtectedRoute requireAdmin />}>
         <Route path="/admin" element={<Navigate to={ADMIN_DASHBOARD_ROUTE} replace />} />
         <Route path={ADMIN_DASHBOARD_ROUTE} element={<UserReports />} />
-        <Route path="/admin/usuarios" element={<UserReports />} />
-        <Route path="/admin/certificados" element={<CertificateReports />} />
+
+        
       </Route>
+      <Route path="/admin/certificados" element={<CertificateReports />} />
+      <Route path="/admin/usuarios" element={<UserReports />} />
     </Routes>
   )
 }

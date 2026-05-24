@@ -9,17 +9,23 @@ import FotoP from "@/assets/images/fotoPorque.jpeg"
 import PortadaModern from "@/assets/images/PortadaModern1.png"
 import PortadaMin from "@/assets/images/PortadaMin.png"
 import PortadaCorp from "@/assets/images/PortadaCorp.png"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { api } from "@/services/api";
 
 export default function Home() {
+  const hasSent = useRef(false)
   const navigate = useNavigate()
-   useEffect(() => {
+
+  useEffect(() => {
+    if (hasSent.current) return
+
+    hasSent.current = true
+
     const registerVisit = async () => {
       try {
-        await api.post('/logsUser')
+        await api.post('/visitor')
       } catch (error) {
-        console.error('Error registrando visita:', error)
+        console.error(error)
       }
     }
 

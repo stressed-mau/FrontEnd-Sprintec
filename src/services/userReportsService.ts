@@ -31,10 +31,14 @@ export interface ResponseData {
 
 const transformChartData = (
   labels: string[],
-  totals: number[]
+  totals: number[],
+  range?: "day" | "week" | "month" | "year"
 ): ChartData[] => {
   return labels.map((label, index) => ({
-    name: label,
+    name:
+      range === "day"
+        ? label.split(" ")[1] || label
+        : label,
     registros: totals[index],
   }));
 };
@@ -67,7 +71,8 @@ export const getUserReports = async (
       backendData.registered_users.range === "day"
         ? transformChartData(
             backendData.registered_users.labels,
-            backendData.registered_users.totals
+            backendData.registered_users.totals,
+            "day"
           )
         : [],
 
@@ -75,7 +80,8 @@ export const getUserReports = async (
       backendData.registered_users.range === "week"
         ? transformChartData(
             backendData.registered_users.labels,
-            backendData.registered_users.totals
+            backendData.registered_users.totals,
+            "week"
           )
         : [],
 
@@ -83,7 +89,8 @@ export const getUserReports = async (
       backendData.registered_users.range === "month"
         ? transformChartData(
             backendData.registered_users.labels,
-            backendData.registered_users.totals
+            backendData.registered_users.totals,
+            "month"
           )
         : [],
 
@@ -91,7 +98,8 @@ export const getUserReports = async (
       backendData.registered_users.range === "year"
         ? transformChartData(
             backendData.registered_users.labels,
-            backendData.registered_users.totals
+            backendData.registered_users.totals,
+            "year"
           )
         : [],
 

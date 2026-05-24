@@ -107,7 +107,7 @@ const PublicPortfolio = () => {
 
       {isMinimalist && <MinimalistTemplate 
       //data={visibilityData} 
-      profile={profile} isPreview={false} />}
+      profile={profile} portfolio={portfolio} isPreview={false} />}
 
       {isCorporate && <CorporatePortfolioTemplate 
       //data={visibilityData} 

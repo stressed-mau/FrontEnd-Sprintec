@@ -1,20 +1,20 @@
 import React, { useState, useMemo } from "react";
-//import type { PortfolioVisibilityData } from '@/services/portfolioVisibilityService';
+//import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
 import { ArrowLeft, ArrowRight, Globe, Code2, Link, Mail, MapPin } from "lucide-react";
-import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
+
 interface MinimalistTemplateProps {
   profile?: any | null;
+  portfolio?: any | null;
   isPreview?: boolean;
 }
 
 const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   profile,
+  portfolio,
   isPreview = false,
 }) => {
-  const { data } = usePortfolioVisibility();
-  
+  console.log("PORTFOLIO TEMPLATE", portfolio);
   const [page, setPage] = useState(0);
-  
   // 1. Perfil del Usuario (Real o Mock)
   const user = profile || {
     fullname: "NOMBRE DE USUARIO",
@@ -24,16 +24,25 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   };
 
   // 2. Lógica de Filtrado por Visibilidad
-  const visibleProjects = useMemo(() => data.projects.filter(p => p.checked), [data.projects]);
-  const visibleSkills = useMemo(() => data.skills.filter(s => s.checked), [data.skills]);
-  const visibleExperience = useMemo(
-    () => data.experience?.filter(e => e.checked) ?? [],
-    [data.experience]
-  );
-  const visibleNetworks = useMemo(() => data.networks.filter(n => n.checked), [data.networks]);
-  const visibleEducation = data.education?.filter(e => e.checked) ?? []
-  const visibleCertificates = useMemo(() => data.certificates?.filter(c => c.checked) || [], [data.certificates]);
-  // Si es Vista Previa o no hay datos visibles, podríamos mostrar mocks (opcional)
+  const visibleProjects = useMemo(() => {
+    return portfolio?.projects ?? [];
+  }, [portfolio]);
+  const visibleSkills = useMemo(() => {
+    return portfolio?.skills ?? [];
+  }, [portfolio]);
+  const visibleExperience = useMemo(() => {
+    return portfolio?.experiences ?? [];
+  }, [portfolio]);
+  const visibleNetworks = useMemo(() => {
+    return portfolio?.socialNetworks ?? [];
+  }, [portfolio]);
+  const visibleEducation = useMemo(() => {
+    return portfolio?.educations ?? [];
+  }, [portfolio]);
+  const visibleCertificates = useMemo(() => {
+    return portfolio?.certificates ?? [];
+  }, [portfolio]);
+  // Si es Vista Previa o no hay datos visibles
   const projects = isPreview && visibleProjects.length === 0 ? [] : visibleProjects;
   const skills = isPreview && visibleSkills.length === 0 ? [] : visibleSkills;
   const experiences = isPreview && visibleExperience.length === 0 ? [] : visibleExperience;
@@ -144,17 +153,25 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
               <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Experiencias</h2>
               
               <div className="space-y-6 pt-2">
-                {experiences.length > 0 ? experiences.map((exp: any) => (
-                  <div key={exp.id} className="flex gap-6 items-start">
-                    <div className="text-[10px] font-black text-stone-300 pt-1 uppercase tracking-tighter w-16">
-                      {exp.sublabel || "Empresa"}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-zinc-900 uppercase">{exp.label}</h4>
-                      <p className="text-xs text-stone-400 italic">{exp.sublabel}</p>
-                    </div>
+                {experiences.length > 0 ? experiences.map((exp: any, index: number) => (
+                <div key={index} className="flex gap-6 items-start">
+                  
+                  <div className="text-[10px] font-black text-stone-300 pt-1 uppercase tracking-tighter w-24">
+                    {exp.company_name || "Empresa"}
                   </div>
-                )) : (
+
+                  <div>
+                    <h4 className="font-bold text-sm text-zinc-900 uppercase">
+                      {exp.rol || "Sin cargo"}
+                    </h4>
+
+                    <p className="text-xs text-stone-400 italic">
+                      {exp.description || exp.company_email || "Sin descripción"}
+                    </p>
+                  </div>
+
+                </div>
+              )) : (
                   <p className="text-sm text-stone-400 italic">No hay experiencia marcada como visible.</p>
                 )}
               </div>
@@ -168,13 +185,13 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
               {visibleEducation.length > 0 ? visibleEducation.map((edu: any) => (
-                <div key={edu.id} className="bg-stone-50 border border-stone-100 rounded-2xl p-4 hover:shadow-md transition-all">
+                <div key={edu.id } className="bg-stone-50 border border-stone-100 rounded-2xl p-4 hover:shadow-md transition-all">
                   <div className="text-[10px] font-black text-stone-300 pt-1 uppercase tracking-tighter w-16">
-                    {edu.sublabel}
+                    {edu.institution || "Institución"}
                   </div>
                   <div>
-                    <h4 className="font-bold text-sm text-zinc-900 uppercase">{edu.label}</h4>
-                    <p className="text-xs text-stone-400 italic">{edu.sublabel}</p>
+                    <h4 className="font-bold text-sm text-zinc-900 uppercase">{edu.title}</h4>
+                    <p className="text-xs text-stone-400 italic">{edu.institution}</p>
                   </div>
                 </div>
               )) : (
@@ -194,8 +211,8 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
                   key={cert.id} 
                   className="bg-stone-50 border border-stone-100 rounded-2xl p-4 hover:shadow-md transition-all"
                 >
-                  <h4 className="font-bold text-sm text-zinc-900 uppercase">{cert.label || "Certificado"}</h4>
-                  <p className="text-xs text-stone-400 italic">{cert.sublabel || "Institución"}</p>
+                  <h4 className="font-bold text-sm text-zinc-900 uppercase">{cert.name || "Certificado"}</h4>
+                  <p className="text-xs text-stone-400 italic">{cert.issuer || "Institución"}</p>
                 </div>
               )) : (
                 <p className="text-sm text-stone-400 italic">No hay certificados visibles.</p>
@@ -225,13 +242,13 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
             {visibleNetworks?.length > 0 && visibleNetworks.map((sn: any) => (
               <a 
                 key={sn.id} 
-                href={sn.sublabel || "#"}
+                href={sn.url || "#"}
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="hover:text-zinc-900 transition-colors"
-                title={sn.label}
+                title={sn.name}
               >
-                {getSocialIcon(sn.label)}
+                {getSocialIcon(sn.name)}
               </a>
             ))}
           </div>

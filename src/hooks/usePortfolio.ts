@@ -61,6 +61,9 @@ export const usePortfolio = (externalSlug?: string) => {
         
         if (res.data.success) {
           const d = res.data.data;
+          console.log("PORTAFOLIO PUBLICO:", d)
+          console.log("PUBLIC RESPONSE", d);
+          console.log("WORK EXPERIENCES", d.work_experiences);
           setPortfolio({
             id: getPortfolioId(d) ? String(getPortfolioId(d)) : undefined,
             user: {
@@ -79,7 +82,20 @@ export const usePortfolio = (externalSlug?: string) => {
               descripcion: p.description, 
             })),
             skills: d.skills,
-            experiences: d.work_experiences,
+            experiences: (d.work_experiences || []).map((exp: any) => ({
+              ...exp,
+              label:
+                exp.rol ||
+                exp.position ||
+                exp.title ||
+                "Rol no especificado",
+
+              sublabel:
+                exp.company_name ||
+                exp.company ||
+                exp.enterprise ||
+                "Empresa no especificada",
+            })),
             educations: d.educations ?? [],
             socialNetworks: d.social_networks,
             certificates: d.certificates ?? [],
@@ -110,7 +126,7 @@ export const usePortfolio = (externalSlug?: string) => {
 
       // --- PASO 2: CARGA DE EMERGENCIA (DATOS INDIVIDUALES) ---
       // Si no hay portafolio publicado pero tenemos sesión, traemos sus datos base
-      if (session?.user?.id) {
+      if (!externalSlug && session?.user?.id) {
         const [userData, skills, experiences, education, projects, social] = await Promise.all([
           getUserInformation(String(session.user.id)),
           getSkills(),
