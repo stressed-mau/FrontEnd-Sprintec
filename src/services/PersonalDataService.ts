@@ -91,7 +91,11 @@ export const createUserInformation = async (payload: UserInformationRequest): Pr
 };
 
 export const updateUserInformation = async (payload: UserInformationRequest): Promise<UserInformation> => {
-  const res = await api.put(UPDATE_USER_ENDPOINT, payload);
+  if (payload instanceof FormData && !payload.has('_method')) {
+    payload.append('_method', 'PUT');
+  }
+
+  const res = await api.post(UPDATE_USER_ENDPOINT, payload);
 
   assertSuccessfulUserInformationResponse(res.data, 'Error al actualizar datos');
   return normalizeUserInformation(res.data);

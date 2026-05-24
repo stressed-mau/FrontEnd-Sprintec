@@ -371,30 +371,44 @@ const handleChange = (e: any) => {
         return;
       }
 
-      const payload = {
-        fullname: form.fullName,
-        occupation: form.occupation,
-        biography: form.bio,
-        nationality: form.location,
-        phone_number: `+${countryCode}${phoneNumber}`,
-        public_email: form.email,
-      };
-      const imageFile = fileInputRef.current?.files?.[0];
-      const requestPayload = imageFile ? new FormData() : payload;
+      const buildRequestPayload = () => {
+        const payload = {
+          fullname: form.fullName,
+          occupation: form.occupation,
+          biography: form.bio,
+          nationality: form.location,
+          phone_number: phoneNumber.trim() ? `+${countryCode}${phoneNumber}` : "",
+          public_email: form.email,
+        };
+        const imageFile = fileInputRef.current?.files?.[0];
+        const requestPayload = new FormData();
 
-      if (requestPayload instanceof FormData) {
         Object.entries(payload).forEach(([key, value]) => {
           requestPayload.append(key, value);
         });
+
         if (imageFile) {
           requestPayload.append("image_url", imageFile);
         }
-      }
+
+        return requestPayload;
+      };
 
       if (hasPersonalData) {
-        await updateUserInformation(requestPayload);
+        await updateUserInformation(buildRequestPayload());
       } else {
-        await createUserInformation(requestPayload);
+        try {
+          await createUserInformation(buildRequestPayload());
+        } catch (createError: any) {
+          const message = String(createError.response?.data?.message || createError.response?.data?.error || createError.message || "");
+          const shouldRetryAsUpdate = /creating user information|duplicate|unique|user_id/i.test(message);
+
+          if (!shouldRetryAsUpdate) {
+            throw createError;
+          }
+
+          await updateUserInformation(buildRequestPayload());
+        }
       }
 
       const persistedUser = await getUserInformation();
