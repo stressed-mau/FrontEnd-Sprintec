@@ -7,7 +7,7 @@ import { usePublishPortfolio } from "../hooks/usePublishPortfolio"
 //import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility"
 import { getAuthSession } from "@/services/auth/auth-storage"
 import { getUserInformation } from "@/services/PersonalDataService"
-
+import { useNavigate } from "react-router-dom"
 // Componentes de Plantillas y Assets [cite: 1-4]
 import ModernTemplate, { type ModernTemplateProfile } from "../components/templates/ModernTemplate"
 import MinimalistTemplate from "../components/templates/MinimalistTemplate"
@@ -17,14 +17,16 @@ import PortadaMin from "@/assets/images/PortadaMin.png"
 import PortadaCorp from "@/assets/images/PortadaCorp.png"
 
 const PortfolioTemplatesPage = () => {
-  // Lógica de visibilidad para la vista previa [cite: 1-2]
+  // Lógica de visibilidad para la vista previa
   //const { data } = usePortfolioVisibility()
-  // Lógica de publicación para persistir la plantilla seleccionada [cite: 4, 105-106]
+  // Lógica de publicación para persistir la plantilla seleccionada
+  const navigate = useNavigate()
   const {
     handlePublish,
     checkInitialStatus,
     selectedTemplate: selectedIdFromHook,
-    isPublished
+    isPublished,
+    loading
   } = usePublishPortfolio()
 
   // Estados locales para la UI 
@@ -102,7 +104,65 @@ const PortfolioTemplatesPage = () => {
     await handlePublish(dbId, isPublished); 
     //await checkInitialStatus();
   };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center text-[#003A6C]">
+          <div className="mr-2 h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          Cargando...
+        </div>
+      </div>
+    )
+  }
+  if (isPublished) {
+    return (
+      <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
+        <Header />
 
+        <div className="flex flex-col md:flex-row flex-1">
+          <Sidebar />
+
+          <main className="flex-1 p-4 md:p-10">
+            <div className="max-w-5xl mx-auto space-y-6">
+
+              <div className="text-center md:text-left">
+                <h1 className="text-[#003A6C] text-3xl md:text-4xl font-bold mb-2">
+                  Plantillas de Portafolio
+                </h1>
+
+                <p className="text-gray-600 text-sm md:text-base">
+                  Gestiona el diseño visual de tu portafolio público
+                </p>
+              </div>
+
+              <div className="mx-auto max-w-3xl rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
+
+                <h2 className="text-2xl font-bold text-[#003A6C]">
+                  Plantillas bloqueadas
+                </h2>
+
+                <p className="mt-3 text-sm leading-6 text-gray-600">
+                  No puedes modificar las plantillas mientras tu portafolio
+                  esté publicado. Primero debes despublicar el portafolio desde la sección
+                  de publicación.
+                </p>
+                <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={() => navigate("/publicar")}
+                    className="px-5 py-2.5 rounded-xl bg-[#003A6C] text-white font-bold hover:bg-[#002a4d] transition"
+                  >
+                    Despublicar portafolio
+                  </button>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+
+        <Footer />
+      </div>
+    )
+  }
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
       <Header />

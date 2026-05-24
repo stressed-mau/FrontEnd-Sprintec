@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { useExplorePortfolioFilters, type PortfolioCard } from "@/hooks/useExplorePortfolioFilters";
 import { isAuthenticated } from "@/services/auth";
 import { getExplorePortfolios, type ExplorePortfoliosMeta } from "@/services/explorePortfoliosService";
-
+import AdminSidebar from "../components/Admin/AdminSidebar";
+import { getAuthSession } from "@/services/auth";
 export default function ExplorePortfolios() {
   const navigate = useNavigate();
   const [portfolios, setPortfolios] = useState<PortfolioCard[]>([]);
@@ -19,7 +20,9 @@ export default function ExplorePortfolios() {
   const [currentPage, setCurrentPage] = useState(1);
   const [meta, setMeta] = useState<ExplorePortfoliosMeta>({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 });
   const isUserAuthenticated = isAuthenticated();
-
+  const session = getAuthSession();
+  const roleId = session?.user?.role_id;
+  const isAdmin = roleId === 2;
   const {
     searchTerm,
     setSearchTerm,
@@ -129,7 +132,9 @@ function getInitials(name: string): string {
       {isUserAuthenticated ? <HeaderUser /> : <Header />}
 
       <div className="flex flex-1">
-        {isUserAuthenticated && <Sidebar />}
+        {isUserAuthenticated && (
+          isAdmin ? <AdminSidebar /> : <Sidebar />
+        )}
 
         <main className="flex-1 px-4 py-4 md:px-8 md:py-6">
           <div className="mx-auto max-w-7xl">

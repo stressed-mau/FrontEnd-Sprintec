@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import logo from "@/assets/logo.png"
 import { NotificationBell } from "@/components/NotificationBell"
 import { useLogout } from "@/hooks/useLogout"
-import { TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+import { TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE, ADMIN_DASHBOARD_ROUTE } from "@/routes/route-paths"
 import { getAuthSession } from "@/services/auth"
 
 const ROLE_LABELS: Record<number, string> = {
@@ -24,10 +24,13 @@ const HeaderUser = () => {
   const displayName = user?.username || "Usuario"
   const displayEmail = user?.email || "Sin correo"
   const displayRole = user?.role_id ? ROLE_LABELS[user.role_id] || `Rol ${user.role_id}` : "Usuario"
-  const isDashboard = useMemo(
-    () => location.pathname === USER_HOME_ROUTE || location.pathname === "/dashboard",
-    [location.pathname],
-  )
+  const isDashboard = useMemo(() => {
+    return (
+      location.pathname === USER_HOME_ROUTE ||
+      location.pathname === ADMIN_DASHBOARD_ROUTE ||
+      location.pathname === "/dashboard"
+    )
+  }, [location.pathname])
 
   const isExplore = useMemo(
     () => location.pathname === "/explore",
@@ -38,6 +41,9 @@ const HeaderUser = () => {
     setIsMenuOpen(false)
     navigate(path)
   }
+  const homeRoute = user?.role_id === 2 
+  ? ADMIN_DASHBOARD_ROUTE 
+  : USER_HOME_ROUTE
 
   return (
     <header className="sticky top-0 z-50 flex min-h-16 h-auto flex-wrap items-center justify-between border-b border-[#4982ad] bg-[#003A6C] px-4 py-3 md:flex-nowrap md:px-8 md:py-0">
@@ -50,7 +56,7 @@ const HeaderUser = () => {
         <button
           type="button"
           id="btn-go-dashboard"
-          onClick={() => navigateTo(USER_HOME_ROUTE)}
+          onClick={() => navigateTo(homeRoute)}
           className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium transition-colors ${
             isDashboard
               ? "bg-[#77b6e6] text-[#003A6C] md:bg-transparent md:text-[#77b6e6]"
