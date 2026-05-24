@@ -15,9 +15,9 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { USER_GUIDE_OPEN_SIDEBAR_EVENT } from "@/components/UserGuide";
+import { USER_GUIDE_OPEN_SIDEBAR_EVENT, USER_GUIDE_RESTORE_SIDEBAR_EVENT } from "@/components/UserGuide";
 
 type NavChild = {
   id: string;
@@ -125,6 +125,7 @@ const Sidebar = () => {
   const currentPath = normalizePath(location.pathname);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
+  const guidePreviousSidebarStateRef = useRef<{ isDesktopCollapsed: boolean; isMobileOpen: boolean } | null>(null);
   const activeSectionId = useMemo(
     () =>
       navItems.find((item) => {
@@ -158,16 +159,31 @@ const Sidebar = () => {
 
   useEffect(() => {
     const openSidebarForGuide = () => {
+      if (!guidePreviousSidebarStateRef.current) {
+        guidePreviousSidebarStateRef.current = { isDesktopCollapsed, isMobileOpen };
+      }
       setIsMobileOpen(true);
       setIsDesktopCollapsed(false);
     };
 
+    const restoreSidebarAfterGuide = () => {
+      const previousState = guidePreviousSidebarStateRef.current;
+
+      if (!previousState) return;
+
+      setIsMobileOpen(previousState.isMobileOpen);
+      setIsDesktopCollapsed(previousState.isDesktopCollapsed);
+      guidePreviousSidebarStateRef.current = null;
+    };
+
     window.addEventListener(USER_GUIDE_OPEN_SIDEBAR_EVENT, openSidebarForGuide);
+    window.addEventListener(USER_GUIDE_RESTORE_SIDEBAR_EVENT, restoreSidebarAfterGuide);
 
     return () => {
       window.removeEventListener(USER_GUIDE_OPEN_SIDEBAR_EVENT, openSidebarForGuide);
+      window.removeEventListener(USER_GUIDE_RESTORE_SIDEBAR_EVENT, restoreSidebarAfterGuide);
     };
-  }, []);
+  }, [isDesktopCollapsed, isMobileOpen]);
 
   const toggleSection = (id: string) => {
     setExpandedSectionId((current) => (current === id ? null : id));

@@ -2,14 +2,42 @@ import { useEffect, useMemo, useRef } from "react"
 import { CircleHelp } from "lucide-react"
 import { driver, type Config, type DriveStep } from "driver.js"
 import "driver.js/dist/driver.css"
+import { getAuthSession } from "@/services/auth"
 
 export const USER_GUIDE_PENDING_KEY = "portfolio_user_guide_pending"
 const USER_GUIDE_SEEN_KEY = "portfolio_user_guide_seen"
 export const USER_GUIDE_OPEN_SIDEBAR_EVENT = "portfolio:user-guide-open-sidebar"
+export const USER_GUIDE_RESTORE_SIDEBAR_EVENT = "portfolio:user-guide-restore-sidebar"
+export const USER_GUIDE_OPEN_USER_MENU_EVENT = "portfolio:user-guide-open-user-menu"
+export const USER_GUIDE_RESTORE_USER_MENU_EVENT = "portfolio:user-guide-restore-user-menu"
 
 const openSidebarStep = (_element: Element | undefined, _step: DriveStep, opts: { driver: ReturnType<typeof driver> }) => {
   openSidebarForGuide()
-  window.setTimeout(() => opts.driver.refresh(), 280)
+  window.setTimeout(() => opts.driver.refresh(), 320)
+}
+
+const refreshHighlightedStep = (_element: Element | undefined, _step: DriveStep, opts: { driver: ReturnType<typeof driver> }) => {
+  window.requestAnimationFrame(() => opts.driver.refresh())
+}
+
+const moveNextWithSidebarReady = (_element: Element | undefined, _step: DriveStep, opts: { driver: ReturnType<typeof driver> }) => {
+  openSidebarForGuide()
+  window.setTimeout(() => opts.driver.moveNext(), 320)
+}
+
+const openUserMenuStep = (_element: Element | undefined, _step: DriveStep, opts: { driver: ReturnType<typeof driver> }) => {
+  openUserMenuForGuide()
+  window.setTimeout(() => opts.driver.refresh(), 180)
+}
+
+const moveNextWithUserMenuReady = (_element: Element | undefined, _step: DriveStep, opts: { driver: ReturnType<typeof driver> }) => {
+  openUserMenuForGuide()
+  window.setTimeout(() => opts.driver.moveNext(), 180)
+}
+
+const moveNextWithSidebarRestored = (_element: Element | undefined, _step: DriveStep, opts: { driver: ReturnType<typeof driver> }) => {
+  restoreSidebarAfterGuide()
+  window.setTimeout(() => opts.driver.moveNext(), 180)
 }
 
 function findVisibleElement(selector: string) {
@@ -36,11 +64,28 @@ function openSidebarForGuide() {
   window.dispatchEvent(new Event(USER_GUIDE_OPEN_SIDEBAR_EVENT))
 }
 
-type GuideElementResolver = (() => Element) & { selector: string }
+function restoreSidebarAfterGuide() {
+  window.dispatchEvent(new Event(USER_GUIDE_RESTORE_SIDEBAR_EVENT))
+}
 
-function resolveGuideElement(selector: string): GuideElementResolver {
+function openUserMenuForGuide() {
+  window.dispatchEvent(new Event(USER_GUIDE_OPEN_USER_MENU_EVENT))
+}
+
+function restoreUserMenuAfterGuide() {
+  window.dispatchEvent(new Event(USER_GUIDE_RESTORE_USER_MENU_EVENT))
+}
+
+function scrollToTopForGuide() {
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+}
+
+type GuideElementResolver = (() => Element) & { keepWhenMissing?: boolean; selector: string }
+
+function resolveGuideElement(selector: string, options: { keepWhenMissing?: boolean } = {}): GuideElementResolver {
   const resolver = (() => findVisibleElement(selector) ?? document.querySelector<HTMLElement>(selector) ?? document.body) as unknown as GuideElementResolver
   resolver.selector = selector
+  resolver.keepWhenMissing = options.keepWhenMissing
   return resolver
 }
 
@@ -55,88 +100,204 @@ const guideSteps: DriveStep[] = [
     },
   },
   {
+    element: resolveGuideElement("#btn-go-explore"),
+    popover: {
+      title: "Explorar portafolios",
+      description: "Busca y revisa portafolios publicos de otros usuarios desde esta seccion.",
+      side: "bottom",
+      align: "center",
+      onNextClick: moveNextWithSidebarReady,
+    },
+  },
+  {
+    element: resolveGuideElement("#guide-nav-portafolio"),
+    onHighlightStarted: openSidebarStep,
+    onHighlighted: refreshHighlightedStep,
+    popover: {
+      title: "Ver mi portafolio",
+      description: "Revisa como se ve tu portafolio publico con la informacion que ya cargaste.",
+      side: "right",
+      align: "center",
+    },
+  },
+  {
     element: resolveGuideElement("#guide-nav-personal"),
     onHighlightStarted: openSidebarStep,
+    onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Datos personales",
       description: "Completa primero esta seccion. Es la base de tu perfil publico.",
       side: "right",
-      align: "start",
+      align: "center",
+    },
+  },
+  {
+    element: resolveGuideElement("#guide-nav-red-profesional"),
+    onHighlightStarted: openSidebarStep,
+    onHighlighted: refreshHighlightedStep,
+    popover: {
+      title: "Red profesional",
+      description: "Agrega tus enlaces profesionales para que puedan contactarte y revisar tu trabajo.",
+      side: "right",
+      align: "center",
     },
   },
   {
     element: resolveGuideElement("#guide-nav-proyectos"),
     onHighlightStarted: openSidebarStep,
+    onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Proyectos",
       description: "Registra trabajos importantes para mostrar evidencia de tus capacidades.",
       side: "right",
-      align: "start",
+      align: "center",
     },
   },
   {
     element: resolveGuideElement("#guide-nav-habilidades"),
     onHighlightStarted: openSidebarStep,
+    onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Habilidades",
       description: "Agrega habilidades tecnicas y blandas para fortalecer tu perfil.",
       side: "right",
-      align: "start",
+      align: "center",
     },
   },
   {
     element: resolveGuideElement("#guide-nav-experiencia"),
     onHighlightStarted: openSidebarStep,
+    onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Experiencia",
       description: "Incluye tus cargos, empresas y fechas para construir tu trayectoria.",
       side: "right",
-      align: "start",
+      align: "center",
+    },
+  },
+  {
+    element: resolveGuideElement("#guide-nav-formacion-academica"),
+    onHighlightStarted: openSidebarStep,
+    onHighlighted: refreshHighlightedStep,
+    popover: {
+      title: "Formacion academica",
+      description: "Registra tus estudios, instituciones y fechas para completar tu trayectoria academica.",
+      side: "right",
+      align: "center",
+    },
+  },
+  {
+    element: resolveGuideElement("#guide-nav-certificados"),
+    onHighlightStarted: openSidebarStep,
+    onHighlighted: refreshHighlightedStep,
+    popover: {
+      title: "Certificados",
+      description: "Agrega certificados o constancias que respalden tus conocimientos y logros.",
+      side: "right",
+      align: "center",
     },
   },
   {
     element: resolveGuideElement("#guide-nav-plantillas"),
     onHighlightStarted: openSidebarStep,
+    onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Plantillas",
       description: "Elige el estilo visual que mejor represente tu portafolio.",
       side: "right",
-      align: "start",
+      align: "center",
     },
   },
   {
     element: resolveGuideElement("#guide-nav-configuracion-visibilidad"),
     onHighlightStarted: openSidebarStep,
+    onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Visibilidad",
       description: "Decide que secciones se mostraran antes de publicar.",
       side: "right",
-      align: "start",
+      align: "center",
     },
   },
   {
     element: resolveGuideElement("#guide-nav-publicar"),
     onHighlightStarted: openSidebarStep,
+    onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Publicar",
       description: "Cuando todo este listo, publica y comparte tu enlace profesional.",
       side: "right",
-      align: "start",
+      align: "center",
+      onNextClick: moveNextWithSidebarRestored,
+    },
+  },
+  {
+    element: resolveGuideElement("#btn-notifications"),
+    popover: {
+      title: "Notificaciones",
+      description: "Consulta avisos importantes y novedades relacionadas con tu portafolio.",
+      side: "bottom",
+      align: "end",
     },
   },
   {
     element: resolveGuideElement("#btn-user-menu"),
     popover: {
       title: "Cuenta",
-      description: "Desde aqui puedes entrar a tu perfil, revisar visualizaciones o cerrar sesion.",
+      description: "Desde aqui puedes abrir las opciones de tu cuenta.",
       side: "bottom",
       align: "end",
+      onNextClick: moveNextWithUserMenuReady,
+    },
+  },
+  {
+    element: resolveGuideElement("#user-menu-profile", { keepWhenMissing: true }),
+    onHighlightStarted: openUserMenuStep,
+    onHighlighted: refreshHighlightedStep,
+    popover: {
+      title: "Mi perfil",
+      description: "Entra a tu perfil para revisar o actualizar la informacion de tu cuenta.",
+      side: "left",
+      align: "center",
+    },
+  },
+  {
+    element: resolveGuideElement("#user-menu-visualizations", { keepWhenMissing: true }),
+    onHighlightStarted: openUserMenuStep,
+    onHighlighted: refreshHighlightedStep,
+    popover: {
+      title: "Visualizaciones",
+      description: "Consulta los reportes de vistas y actividad de tu portafolio.",
+      side: "left",
+      align: "center",
+    },
+  },
+  {
+    element: resolveGuideElement("#user-menu-reports", { keepWhenMissing: true }),
+    onHighlightStarted: openUserMenuStep,
+    onHighlighted: refreshHighlightedStep,
+    popover: {
+      title: "Reportes",
+      description: "Accede a reportes generales y tendencias disponibles para tu usuario.",
+      side: "left",
+      align: "center",
+    },
+  },
+  {
+    element: resolveGuideElement("#user-menu-logout", { keepWhenMissing: true }),
+    onHighlightStarted: openUserMenuStep,
+    onHighlighted: refreshHighlightedStep,
+    popover: {
+      title: "Cerrar sesion",
+      description: "Usa esta opcion para salir de tu cuenta de forma segura.",
+      side: "left",
+      align: "center",
     },
   },
 ]
 
 const driverConfig: Config = {
-  animate: true,
+  animate: false,
   allowClose: true,
   showButtons: ["next", "previous", "close"],
   showProgress: true,
@@ -154,7 +315,13 @@ function getAvailableSteps() {
   return guideSteps.filter((step) => {
     if (typeof step.element !== "function") return true
     const selector = (step.element as GuideElementResolver).selector
-    return selector ? Boolean(findVisibleElement(selector) ?? document.querySelector(selector)) : true
+    const keepWhenMissing = (step.element as GuideElementResolver).keepWhenMissing
+
+    if (selector === "#user-menu-visualizations" && getAuthSession()?.user.role_id !== 1) {
+      return false
+    }
+
+    return selector ? keepWhenMissing || Boolean(findVisibleElement(selector) ?? document.querySelector(selector)) : true
   })
 }
 
@@ -163,7 +330,7 @@ export function UserGuide() {
   const config = useMemo(() => driverConfig, [])
 
   function startGuide() {
-    openSidebarForGuide()
+    scrollToTopForGuide()
 
     window.setTimeout(() => {
       const steps = getAvailableSteps()
@@ -175,6 +342,8 @@ export function UserGuide() {
         ...config,
         steps,
         onDestroyed: () => {
+          restoreUserMenuAfterGuide()
+          restoreSidebarAfterGuide()
           window.localStorage.setItem(USER_GUIDE_SEEN_KEY, "1")
         },
       })
