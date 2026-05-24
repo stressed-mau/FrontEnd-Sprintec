@@ -35,6 +35,36 @@ const CertificateReports = () => {
   const handlePrint = useReactToPrint({
     contentRef: reportRef,
     documentTitle: 'Reporte-Certificados',
+    pageStyle: `
+    @page {
+      size: auto;
+      margin: 15mm 12mm 15mm 12mm;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      table {
+        page-break-inside: auto;
+      }
+
+      tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+      }
+
+      thead {
+        display: table-header-group;
+      }
+
+      tfoot {
+        display: table-footer-group;
+      }
+    }
+  `,
 
     onBeforePrint: async () => {
       await new Promise((resolve) => setTimeout(resolve, 700));
@@ -184,38 +214,59 @@ const CertificateReports = () => {
               <StatCard title="Certificados con link y archivo" value={stats.conAmbos} subtext="Ambos respaldos" Icon={CheckCircle} />
             </div>
 
-            {/* Gráfica de Top Emisores (Imagen 2) */}
-            <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid">
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-[#003A6C]">Top 10 Emisores</h2>
-                <p className="text-sm text-[#4B778D]">Organizaciones con más certificados emitidos</p>
-              </div>
-              <div
-                className="w-full"
-                style={{
-                  height: `${Math.max(issuersData.length * 60, 250)}px`,
-                }}
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={issuersData} layout="vertical" margin={{ left: 40, right: 40, bottom: 30  }}>
+            {/* Gráfica de Top Emisores */}
+              <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid">
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-[#003A6C]">Top 10 Emisores</h2>
+                  <p className="text-sm text-[#4B778D]">Organizaciones con más certificados emitidos</p>
+                </div>
+                
+                {/* 1. ESTE BLOQUE SE MUESTRA EN PANTALLA Y SE OCULTA AL IMPRIMIR (print:hidden) */}
+                <div
+                  className="w-full print:hidden"
+                  style={{
+                    height: `${Math.max(issuersData.length * 60, 250)}px`,
+                  }}
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={issuersData} layout="vertical" margin={{ left: 20, right: 20, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
+                      <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#4B778D'}} />
+                      <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} width={110} tick={{fill: '#003A6C', fontSize: 12, fontWeight: 500}} />
+                      <Tooltip cursor={{fill: '#F8FAFC'}} />
+                      <Bar dataKey="cantidad" fill="#4A6CF7" radius={[0, 4, 4, 0]} barSize={25} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* 2. ESTE BLOQUE SE OCULTA EN PANTALLA (hidden) Y SÓLO APARECE AL IMPRIMIR (print:block) */}
+                {/* Forzamos un ancho fijo de 650px para que quepa perfectamente en la hoja sin desbordarse */}
+                <div
+                  className="hidden print:block mx-auto"
+                  style={{
+                    height: `${Math.max(issuersData.length * 50, 250)}px`,
+                    width: '1000px' 
+                  }}
+                >
+                  <BarChart data={issuersData} layout="vertical" width={900} height={Math.max(issuersData.length * 50, 250)} margin={{ left: 20, right: 30, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
-                    <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#4B778D'}} label={{
-                      value: 'Cantidad de certificados emitidos',
-                      position: 'insideBottom',
-                      offset: -15,
-                      style: {
-                        fill: '#70A1B9',
-                        fontSize: 12,
-                        fontWeight: 500,
-                      },
-                    }}/>
-                    <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} width={120} tick={{fill: '#003A6C', fontSize: 13, fontWeight: 500}} />
-                    <Tooltip cursor={{fill: '#F8FAFC'}} />
-                    <Bar dataKey="cantidad" fill="#4A6CF7" radius={[0, 4, 4, 0]} barSize={25} />
+                    <XAxis 
+                      type="number" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{fill: '#4B778D'}} 
+                      label={{
+                        value: 'Cantidad de certificados emitidos',
+                        position: 'insideBottom',
+                        offset: -10,
+                        style: { fill: '#70A1B9', fontSize: 11, fontWeight: 500 },
+                      }}
+                    />
+                    <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} width={140} tick={{fill: '#003A6C', fontSize: 10, fontWeight: 500}} />
+                    <Bar dataKey="cantidad" fill="#4A6CF7" radius={[0, 4, 4, 0]} barSize={20} isAnimationActive={false} />
                   </BarChart>
-                </ResponsiveContainer>
+                </div>
               </div>
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-2">
               {/* Pastel: Distribución por Formato */}

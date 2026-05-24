@@ -6,7 +6,7 @@ import logo from "@/assets/logo.png"
 import { NotificationBell } from "@/components/NotificationBell"
 import { USER_GUIDE_OPEN_USER_MENU_EVENT, USER_GUIDE_RESTORE_USER_MENU_EVENT } from "@/components/UserGuide"
 import { useLogout } from "@/hooks/useLogout"
-import { TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+import { REPORTES_INDEX_ROUTE, USER_HOME_ROUTE, ADMIN_DASHBOARD_ROUTE } from "@/routes/route-paths"
 import { getAuthSession } from "@/services/auth"
 
 const ROLE_LABELS: Record<number, string> = {
@@ -26,10 +26,13 @@ const HeaderUser = () => {
   const displayName = user?.username || "Usuario"
   const displayEmail = user?.email || "Sin correo"
   const displayRole = user?.role_id ? ROLE_LABELS[user.role_id] || `Rol ${user.role_id}` : "Usuario"
-  const isDashboard = useMemo(
-    () => location.pathname === USER_HOME_ROUTE || location.pathname === "/dashboard",
-    [location.pathname],
-  )
+  const isDashboard = useMemo(() => {
+    return (
+      location.pathname === USER_HOME_ROUTE ||
+      location.pathname === ADMIN_DASHBOARD_ROUTE ||
+      location.pathname === "/dashboard"
+    )
+  }, [location.pathname])
 
   const isExplore = useMemo(
     () => location.pathname === "/explore",
@@ -40,6 +43,9 @@ const HeaderUser = () => {
     setIsMenuOpen(false)
     navigate(path)
   }
+  const homeRoute = user?.role_id === 2 
+  ? ADMIN_DASHBOARD_ROUTE 
+  : USER_HOME_ROUTE
 
   useEffect(() => {
     const openUserMenuForGuide = () => {
@@ -77,7 +83,7 @@ const HeaderUser = () => {
         <button
           type="button"
           id="btn-go-dashboard"
-          onClick={() => navigateTo(USER_HOME_ROUTE)}
+          onClick={() => navigateTo(homeRoute)}
           className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium transition-colors ${
             isDashboard
               ? "bg-[#77b6e6] text-[#003A6C] md:bg-transparent md:text-[#77b6e6]"
@@ -144,7 +150,7 @@ const HeaderUser = () => {
                 <button
                   type="button"
                   id="user-menu-reports"
-                  onClick={() => navigateTo(TEMPLATE_TRENDS_ROUTE)}
+                  onClick={() => navigateTo(REPORTES_INDEX_ROUTE)}
                   className="mt-2 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"
                 >
                   <FileText size={16} className="text-gray-500" /> Reportes
