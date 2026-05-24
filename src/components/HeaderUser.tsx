@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import logo from "@/assets/logo.png"
 import { NotificationBell } from "@/components/NotificationBell"
 import { useLogout } from "@/hooks/useLogout"
-import { REPORTES_INDEX_ROUTE, TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+import { REPORTES_INDEX_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 import { getAuthSession } from "@/services/auth"
 
 const ROLE_LABELS: Record<number, string> = {
