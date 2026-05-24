@@ -347,7 +347,7 @@ export default function RegisterProfilePage() {
                 </div>
 
                 {/* Botón de Enviar - Estilo CrearCuenta */}
-                <div className="flex flex-col gap-3 pt-1 sm:flex-row lg:col-span-2">
+                <div className="flex flex-col items-center justify-center gap-3 pt-1 sm:flex-row lg:col-span-2">
                     {errors.server && (
                       <p className="text-sm font-medium text-red-600 sm:flex-1">
                         {errors.server}
@@ -358,16 +358,16 @@ export default function RegisterProfilePage() {
                         disabled={isSubmitting}
                         className="h-10 w-full bg-[#003A6C] hover:bg-[#002d54] text-white font-bold rounded-lg shadow-md transition-all sm:w-32"
                     >
-                        {isSubmitting ? "Guardando..." : isInitialRegisterFlow ? "Registrar datos personales" : "Registrar"}
+                        {isSubmitting ? "Guardando..." : "Registrar"}
                     </Button>
                     <Button
                         type="button"
                         variant="outline"
                         disabled={isSubmitting}
                         onClick={() => navigate(USER_HOME_ROUTE, { replace: true })}
-                        className="h-10 w-full border-[#4982AD] bg-white text-[#003A6C] font-bold rounded-lg hover:bg-[#E2EEF6] sm:w-32"
+                        className="h-10 w-full border-[#4982AD] bg-[#F7F0E1] text-[#003A6C] font-bold rounded-lg hover:bg-[#F7F0E1]/80 sm:w-32"
                     >
-                        {isInitialRegisterFlow ? "Dejar para despues y entrar al Home" : "Cancelar"}
+                        Cancelar
                     </Button>
                     </div>
               </form>
