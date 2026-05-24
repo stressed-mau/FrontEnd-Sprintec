@@ -82,20 +82,26 @@ export const usePortfolio = (externalSlug?: string) => {
               descripcion: p.description, 
             })),
             skills: d.skills,
-            experiences: (d.work_experiences || []).map((exp: any) => ({
-              ...exp,
-              label:
-                exp.rol ||
-                exp.position ||
-                exp.title ||
-                "Rol no especificado",
-
-              sublabel:
-                exp.company_name ||
-                exp.company ||
-                exp.enterprise ||
-                "Empresa no especificada",
-            })),
+            experiences: (d.work_experiences || []).map((exp: any, index: number) => {
+              // El backend ahora envía 'rol' (gracias al Resource) y 'company_name'
+              const position = exp.rol || exp.role || "Rol no especificado";
+              const company = exp.company_name || "Empresa no especificada";
+              
+              return {
+                ...exp,
+                id: String(exp.id ?? exp.experience_id ?? `exp-${index}`),
+                // Propiedades unificadas en inglés para la interfaz estándar 'Experience'
+                position: position,
+                company: company,
+                description: exp.description || "",
+                startDate: exp.start_date ?? exp.startDate ?? "",
+                endDate: exp.end_date ?? exp.endDate ?? "",
+                current: !!(exp.current ?? exp.is_current),
+                // Espejos en español / formato visibilidad por si tu UI los usa
+                label: position,
+                sublabel: company,
+              };
+            }),
             educations: d.educations ?? [],
             socialNetworks: d.social_networks,
             certificates: d.certificates ?? [],

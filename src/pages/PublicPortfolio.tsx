@@ -103,7 +103,7 @@ const PublicPortfolio = () => {
     <main className="flex-1 p-4 md:p-10">
       {isModern && <ModernTemplate 
       //data={visibilityData} 
-      profile={profile} />}
+      profile={profile} portfolio={portfolio} />}
 
       {isMinimalist && <MinimalistTemplate 
       //data={visibilityData} 
@@ -111,7 +111,7 @@ const PublicPortfolio = () => {
 
       {isCorporate && <CorporatePortfolioTemplate 
       //data={visibilityData} 
-      profile={profile} />}
+      profile={profile} portfolio={portfolio} />}
 
       {!isModern && !isMinimalist && !isCorporate && (
         <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">

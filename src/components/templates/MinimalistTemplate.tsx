@@ -13,6 +13,7 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   portfolio,
   isPreview = false,
 }) => {
+  //const { data } = usePortfolioVisibility();
   console.log("PORTFOLIO TEMPLATE", portfolio);
   const [page, setPage] = useState(0);
   // 1. Perfil del Usuario (Real o Mock)
@@ -150,26 +151,21 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
           {/* PÁGINA 3: EXPERIENCIA (Filtrado) */}
           {page === 3 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Experiencias</h2>
-              
+              <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Experiencias</h2>              
               <div className="space-y-6 pt-2">
                 {experiences.length > 0 ? experiences.map((exp: any, index: number) => (
                 <div key={index} className="flex gap-6 items-start">
-                  
                   <div className="text-[10px] font-black text-stone-300 pt-1 uppercase tracking-tighter w-24">
-                    {exp.company_name || "Empresa"}
+                    {exp.company || "Empresa"}
                   </div>
-
                   <div>
                     <h4 className="font-bold text-sm text-zinc-900 uppercase">
-                      {exp.rol || "Sin cargo"}
+                      {exp.position|| "Sin cargo"}
                     </h4>
-
                     <p className="text-xs text-stone-400 italic">
-                      {exp.description || exp.company_email || "Sin descripción"}
+                      {exp.description|| "Sin descripción"}
                     </p>
                   </div>
-
                 </div>
               )) : (
                   <p className="text-sm text-stone-400 italic">No hay experiencia marcada como visible.</p>
