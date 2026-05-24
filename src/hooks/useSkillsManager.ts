@@ -1,6 +1,7 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { createSkill, getSkills, removeSkill, updateSkill, type Skill,  type SkillType, } from '../services/skillsService';
+import { AUTH_SESSION_CHANGED_EVENT, getAuthToken } from '@/services/auth/auth-storage';
 
 export type { Skill };
 
@@ -150,6 +151,13 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loadSkills = useCallback(async () => {
+    if (!getAuthToken()) {
+      setSkills([]);
+      setPageError('');
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setPageError('');
 
@@ -164,15 +172,24 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     }
   }, [normalizeErrorMessage]);
 
-useEffect(() => {
-  const initialize = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 150));
+  useEffect(() => {
+    const handleAuthSessionChanged = () => {
+      if (getAuthToken()) {
+        void loadSkills();
+        return;
+      }
 
-    await loadSkills();
-  };
+      setSkills([]);
+      setPageError('');
+      setIsLoading(false);
+    };
 
-  void initialize();
-}, [loadSkills]);
+    handleAuthSessionChanged();
+
+    window.addEventListener(AUTH_SESSION_CHANGED_EVENT, handleAuthSessionChanged);
+
+    return () => window.removeEventListener(AUTH_SESSION_CHANGED_EVENT, handleAuthSessionChanged);
+  }, [loadSkills]);
 
   useEffect(() => {
     if (!pageError) return;

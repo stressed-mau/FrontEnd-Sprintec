@@ -50,6 +50,7 @@ export function NotificationBell({ initialNotifications = EMPTY_NOTIFICATIONS }:
     <div className="relative" ref={dropdownRef}>
       <button
         type="button"
+        id="btn-notifications"
         onClick={() => setIsOpen((current) => !current)}
         aria-label="Abrir notificaciones"
         className="relative flex items-center justify-center rounded-lg p-2 transition-colors hover:bg-[#4982AD]"

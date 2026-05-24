@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Eye, Search, SlidersHorizontal } from "lucide-react"; 
 import { Header } from "@/components/Header"; 
@@ -8,21 +8,113 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useExplorePortfolioFilters, type PortfolioCard } from "@/hooks/useExplorePortfolioFilters";
+import { getLanguages, getWorkOptions } from "@/services/ProjectService";
 import { isAuthenticated } from "@/services/auth";
 import { getExplorePortfolios, type ExplorePortfoliosMeta } from "@/services/explorePortfoliosService";
+<<<<<<< HEAD
 import AdminSidebar from "../components/Admin/AdminSidebar";
 import { getAuthSession } from "@/services/auth";
+=======
+
+type FilterDropdownProps = {
+  value: string
+  options: string[]
+  placeholder?: string
+  onChange: (value: string) => void
+}
+
+function FilterDropdown({ value, options, placeholder, onChange }: FilterDropdownProps) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (!ref.current) return
+      if (e.target instanceof Node && !ref.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+
+    window.addEventListener('click', handleClick)
+    return () => window.removeEventListener('click', handleClick)
+  }, [])
+
+  const selectedLabel = value === 'all' ? placeholder ?? 'Todos' : value
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((s) => !s)}
+        className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] flex items-center justify-between outline-none"
+      >
+        <span className="truncate">{selectedLabel}</span>
+        <svg className={`ml-2 h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+      </button>
+
+      {open && (
+        <ul className="absolute left-0 right-0 mt-1 z-50 max-h-48 overflow-auto rounded-md border border-[#E6EDF2] bg-white shadow-lg">
+          <li
+            key="all"
+            onClick={() => { onChange('all'); setOpen(false) }}
+            className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === 'all' ? 'font-semibold' : ''}`}
+          >
+            {placeholder ?? 'Todos'}
+          </li>
+          {options.map((opt) => (
+            <li
+              key={opt}
+              onClick={() => { onChange(opt); setOpen(false) }}
+              className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === opt ? 'font-semibold' : ''}`}
+            >
+              {opt}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function OccupationDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
+  return <FilterDropdown {...props} placeholder="Todos" />
+}
+
+function TechnologyDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
+  return <FilterDropdown {...props} placeholder="Todas" />
+}
+
+function ProjectsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
+  return <FilterDropdown {...props} placeholder="Cualquiera" />
+}
+
+function SkillsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
+  return <FilterDropdown {...props} placeholder="Cualquiera" />
+}
+
+>>>>>>> 3eb00305dacf0737a0d553fcc0a3214d2a91159c
 export default function ExplorePortfolios() {
   const navigate = useNavigate();
+  const occupationContainerRef = useRef<HTMLDivElement | null>(null)
+  const technologyContainerRef = useRef<HTMLDivElement | null>(null)
   const [portfolios, setPortfolios] = useState<PortfolioCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [meta, setMeta] = useState<ExplorePortfoliosMeta>({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 });
   const isUserAuthenticated = isAuthenticated();
+<<<<<<< HEAD
   const session = getAuthSession();
   const roleId = session?.user?.role_id;
   const isAdmin = roleId === 2;
+=======
+
+  // 1. Declaramos primero los estados que necesita el hook customizado
+  const [serverOccupationOptions, setServerOccupationOptions] = useState<string[] | null>(null)
+  const [serverTechnologyOptions, setServerTechnologyOptions] = useState<string[] | null>(null)
+
+  // 2. Desestructuramos el hook UNA SOLA VEZ correctamente
+>>>>>>> 3eb00305dacf0737a0d553fcc0a3214d2a91159c
   const {
     searchTerm,
     setSearchTerm,
@@ -40,7 +132,29 @@ export default function ExplorePortfolios() {
     technologyOptions,
     hasActiveFilters,
     clearFilters,
-  } = useExplorePortfolioFilters(portfolios)
+  } = useExplorePortfolioFilters(portfolios, serverOccupationOptions ?? undefined, serverTechnologyOptions ?? undefined)
+
+  useEffect(() => {
+    let mounted = true
+
+    const loadOptions = async () => {
+      try {
+        const [langs, work] = await Promise.all([getLanguages(), getWorkOptions()])
+        if (!mounted) return
+        const techs = Array.isArray(langs) ? langs.map((t: any) => (typeof t.name === "string" ? t.name : String(t))) : []
+        setServerTechnologyOptions(techs)
+        setServerOccupationOptions(Array.isArray(work?.roles) ? work.roles : [])
+      } catch (err) {
+        console.error("Error cargando opciones de filtros:", err)
+      }
+    }
+
+    loadOptions()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   useEffect(() => {
     let isMounted = true;
@@ -119,14 +233,15 @@ export default function ExplorePortfolios() {
     setCurrentPage(1)
   }
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(word => word[0].toUpperCase())
-    .join("");
-}
+  function getInitials(name: string): string {
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(word => word[0].toUpperCase())
+      .join("");
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-[#FDF8F0]">
       {isUserAuthenticated ? <HeaderUser /> : <Header />}
@@ -163,94 +278,103 @@ function getInitials(name: string): string {
                 className={`h-11 shrink-0 rounded-2xl border-[#6DACBF]/40 bg-white px-3 text-[#003A6C] shadow-sm hover:bg-[#F7F0E1] sm:h-12 sm:px-4 ${hasActiveFilters ? "border-[#4982AD] bg-[#F7F0E1]" : ""}`}
               >
                 <SlidersHorizontal className="size-4" />
-                      </Button>
+              </Button>
             </div>
 
             {isFiltersOpen && (
-              <div className="mb-3 rounded-xl border border-[#6DACBF]/30 bg-white p-3 shadow-sm sm:p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xs font-bold uppercase tracking-wide text-[#003A6C]">Filtros</h2>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="h-7 rounded-lg px-2 text-[11px] text-xs font-semibold text-[#003A6C] hover:bg-[#F7F0E1] sm:h-9"
-                    onClick={handleClearFilters}
-                  >
-                    Limpiar
-                  </Button>
-                </div>
+  <div className="mb-3 rounded-xl border border-[#6DACBF]/30 bg-white p-3 shadow-sm sm:p-3">
+    
+    <div className="mb-2 flex items-center justify-between">
+      <div>
+        <h2 className="text-xs font-bold uppercase tracking-wide text-[#003A6C]">
+          Filtros
+        </h2>
+      </div>
 
-                <div className="grid gap-2 md:grid-cols-4">
-                  <label className="space-y-2">
-                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">Cargo</span>
-                    <select
-                      value={selectedOccupation}
-                      onChange={(event) => handleOccupationChange(event.target.value)}
-                      className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-1 focus:ring-[#4982AD]/20"
-                    >
-                      <option value="all">Todos</option>
-                      {occupationOptions.map((occupation) => (
-                        <option key={occupation} value={occupation}>
-                          {occupation}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+      <Button
+        type="button"
+        variant="ghost"
+        className="h-7 rounded-lg px-2 text-[11px] font-semibold text-[#003A6C] hover:bg-[#F7F0E1]"
+        onClick={handleClearFilters}
+      >
+        Limpiar
+      </Button>
+    </div>
 
-                  <label className="space-y-2">
-                 <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">
-    Tecnologías
+    <div className="grid gap-2 md:grid-cols-4">
+
+      {/* CARGO */}
+      <label className="space-y-1 relative">
+        <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
+          Cargo
+        </span>
+
+        <div ref={occupationContainerRef} className="relative">
+          <OccupationDropdown
+            value={selectedOccupation}
+            options={occupationOptions}
+            onChange={(v) => handleOccupationChange(v)}
+          />
+        </div>
+      </label>
+
+      {/* TECNOLOGIAS */}
+      <label className="space-y-1 relative">
+        <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
+          Tecnologías
+        </span>
+
+        <div ref={technologyContainerRef} className="relative">
+          <TechnologyDropdown
+            value={selectedTechnology}
+            options={technologyOptions}
+            onChange={(v) => handleTechnologyChange(v)}
+          />
+        </div>
+      </label>
+
+      {/* PROYECTOS */}
+      <label className="space-y-1 relative">
+  <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
+    Proyectos mínimos
   </span>
 
-  <select
-    value={selectedTechnology}
-    onChange={(event) => handleTechnologyChange(event.target.value)}
-    className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-1 focus:ring-[#4982AD]/20"
-  >
-    <option value="all">Todas</option>
+  <div className="relative">
+    <ProjectsDropdown
+      value={minProjects}
+      options={[
+        "1 o más",
+        "3 o más",
+        "5 o más",
+        "10 o más",
+      ]}
+      onChange={(v) => handleProjectsChange(v)}
+    />
+  </div>
+</label>
+      {/* SKILLS */}
+     <label className="space-y-1 relative">
+  <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
+    Skills mínimas
+  </span>
 
-    {technologyOptions.map((technology) => (
-      <option key={technology} value={technology}>
-        {technology}
-      </option>
-    ))}
-  </select>
+  <div className="relative">
+    <SkillsDropdown
+      value={minSkills}
+      options={[
+        "1 o más",
+        "3 o más",
+        "5 o más",
+        "8 o más",
+      ]}
+      onChange={(v) => handleSkillsChange(v)}
+    />
+  </div>
 </label>
 
-                  <label className="space-y-2">
-                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">Proyectos mínimos</span>
-                    <select
-                      value={minProjects}
-                      onChange={(event) => handleProjectsChange(event.target.value)}
-                      className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-1 focus:ring-[#4982AD]/20"
-                    >
-                      <option value="all">Cualquiera</option>
-                      <option value="1">1 o más</option>
-                      <option value="3">3 o más</option>
-                      <option value="5">5 o más</option>
-                      <option value="10">10 o más</option>
-                    </select>
-                  </label>
-
-                  <label className="space-y-2">
-                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9] ">Skills mínimas</span>
-                    <select
-                      value={minSkills}
-                      onChange={(event) => handleSkillsChange(event.target.value)}
-                      className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] outline-none transition focus:border-[#4982AD] focus:ring-1 focus:ring-[#4982AD]/20"
-                    >
-                      <option value="all">Cualquiera</option>
-                      <option value="1">1 o más</option>
-                      <option value="3">3 o más</option>
-                      <option value="5">5 o más</option>
-                      <option value="8">8 o más</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
-            )}
+    </div>
+  </div>
+)}
 
             {pageError ? (
               <div className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">

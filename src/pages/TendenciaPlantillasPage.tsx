@@ -7,12 +7,22 @@ import { useTemplateTrends } from "@/hooks/useTemplateTrends"
 import { formatTemplateTime, formatTemplateVariation, type TrendStats } from "@/services/templateTrendsService"
 import { Button } from "@/components/ui/button"
 import { useCurrentWeekRange } from "@/hooks/useCurrentWeekRange"
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useReactToPrint } from "react-to-print"
+import { useSearchParams } from "react-router-dom"
 import logo from "@/assets/logo/LogoPG.png"
 
 const TendenciaPlantillasPage = () => {
-  const [weekOffset, setWeekOffset] = useState(0)
+  const [searchParams, setSearchParams] = useSearchParams()
+  
+  const [weekOffset, setWeekOffset] = useState(() => {
+    return parseInt(searchParams.get("offset") || "0", 10)
+  })
+
+  useEffect(() => {
+    setSearchParams({ offset: weekOffset.toString() }, { replace: true })
+  }, [weekOffset, setSearchParams])
+
   const { loading, stats, chartData, report, pageError } = useTemplateTrends(weekOffset)
   const reportRef = useRef<HTMLDivElement>(null)
   const currentWeekRange = useCurrentWeekRange(weekOffset)
@@ -62,7 +72,7 @@ const TendenciaPlantillasPage = () => {
 
               <div>
                 <h1 className="mb-2 text-3xl sm:text-3xl font-bold text-[#003A6C]">Tendencia de Plantillas</h1>
-                <p className="text-sm sm:text-base text-[#4B778D]">Resumen del reporte semanal del portafolio autenticado</p>
+                <p className="text-sm sm:text-base text-[#4B778D]">Resumen global del rendimiento de las plantillas en la plataforma</p>
               </div>
 
               <div className="flex flex-col items-start gap-3 md:items-end">

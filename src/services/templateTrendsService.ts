@@ -49,7 +49,8 @@ export interface TemplateTrendsResponse {
   chartData: TrendChartPoint[]
 }
 
-const DAY_KEYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+const DAY_KEYS_ES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+const DAY_KEYS_EN = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 const TEMPLATE_COLORS = ["bg-[#003A6C]", "bg-[#4D88B3]", "bg-[#0E7D96]"]
 
@@ -97,14 +98,8 @@ function normalizeReportPayload(payload: unknown): TrackingReportData | null {
   }
 
   const candidate = payload as Partial<TrackingReportData>
-  if (
-    typeof candidate.id !== "number" ||
-    typeof candidate.period_start !== "string" ||
-    typeof candidate.period_end !== "string" ||
-    typeof candidate.total_portfolios !== "number" ||
-    typeof candidate.templates_data !== "object" ||
-    typeof candidate.daily_visits !== "object"
-  ) {
+  // Validación más flexible: solo exigimos que existan los objetos principales para que la gráfica no se rompa
+  if (!candidate.templates_data || !candidate.daily_visits) {
     return null
   }
 
@@ -120,10 +115,25 @@ function buildErrorMessage(error: unknown) {
 }
 
 export async function getTemplateTrends(weekOffset = 0): Promise<TemplateTrendsResponse> {
-  const response = await api.get("/tracking/report", {
-    params: weekOffset !== 0 ? { week_offset: weekOffset } : undefined,
-  })
-  const payload = normalizeReportPayload(response.data?.data ?? response.data)
+  let payload: TrackingReportData | null = null;
+
+  try {
+    if (weekOffset === 0) {
+      const response = await api.get("/tracking/global-reports/latest")
+      payload = normalizeReportPayload(response.data?.data ?? response.data)
+    } else {
+      const response = await api.get("/tracking/global-reports")
+      const arrayData = response.data?.data ?? response.data;
+      if (Array.isArray(arrayData)) {
+        const targetIndex = Math.abs(weekOffset);
+        if (arrayData[targetIndex]) {
+          payload = normalizeReportPayload(arrayData[targetIndex]);
+        }
+      }
+    }
+  } catch (error) {
+    throw error;
+  }
 
   if (!payload) {
     return {
@@ -158,12 +168,14 @@ export async function getTemplateTrends(weekOffset = 0): Promise<TemplateTrendsR
       isCurrent: index === 0,
     }))
 
-  const chartData = DAY_KEYS.map((day) => ({
-    day,
-    moderna: Number(payload.daily_visits?.moderna?.[day] ?? 0),
-    minimalista: Number(payload.daily_visits?.minimalista?.[day] ?? 0),
-    corporativa: Number(payload.daily_visits?.corporativa?.[day] ?? 0),
-  }))
+  const chartData = DAY_KEYS_EN.map((dayEn, index) => {
+    return {
+      day: DAY_KEYS_ES[index], // Mostrar el día en español en la gráfica
+      moderna: Number(payload?.daily_visits?.moderna?.[dayEn] ?? 0),
+      minimalista: Number(payload?.daily_visits?.minimalista?.[dayEn] ?? 0),
+      corporativa: Number(payload?.daily_visits?.corporativa?.[dayEn] ?? 0),
+    };
+  })
 
   return {
     report: {

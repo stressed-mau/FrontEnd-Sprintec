@@ -1,6 +1,7 @@
 import type { AuthResponse, AuthSession, AuthUser } from "@/services/auth/auth-types"
 
 export const AUTH_SESSION_STORAGE_KEY = "portfolio_auth_session"
+export const AUTH_SESSION_CHANGED_EVENT = "portfolio-auth-session-changed"
 const AUTH_SESSION_DURATION_MS = 8 * 60 * 60 * 1000
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -45,6 +46,7 @@ export function saveAuthSession(response: AuthResponse) {
   }
 
   window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session))
+  window.dispatchEvent(new Event(AUTH_SESSION_CHANGED_EVENT))
 }
 
 export function updateAuthSession(userUpdates: Partial<AuthUser>) {
@@ -66,6 +68,7 @@ export function updateAuthSession(userUpdates: Partial<AuthUser>) {
   }
 
   window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(updatedSession))
+  window.dispatchEvent(new Event(AUTH_SESSION_CHANGED_EVENT))
 }
 
 export function getAuthSession() {
@@ -108,4 +111,5 @@ export function clearAuthSession() {
   }
 
   window.localStorage.removeItem(AUTH_SESSION_STORAGE_KEY)
+  window.dispatchEvent(new Event(AUTH_SESSION_CHANGED_EVENT))
 }

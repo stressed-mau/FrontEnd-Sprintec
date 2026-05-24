@@ -1,11 +1,16 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { BarChart3, FileText, Home, LogOut, Search, User } from "lucide-react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 import logo from "@/assets/logo.png"
 import { NotificationBell } from "@/components/NotificationBell"
+import { USER_GUIDE_OPEN_USER_MENU_EVENT, USER_GUIDE_RESTORE_USER_MENU_EVENT } from "@/components/UserGuide"
 import { useLogout } from "@/hooks/useLogout"
+<<<<<<< HEAD
 import { TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE, ADMIN_DASHBOARD_ROUTE } from "@/routes/route-paths"
+=======
+import { REPORTES_INDEX_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+>>>>>>> 3eb00305dacf0737a0d553fcc0a3214d2a91159c
 import { getAuthSession } from "@/services/auth"
 
 const ROLE_LABELS: Record<number, string> = {
@@ -18,6 +23,7 @@ const HeaderUser = () => {
   const location = useLocation()
   const logout = useLogout()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const guidePreviousMenuStateRef = useRef<boolean | null>(null)
 
   const session = getAuthSession()
   const user = session?.user
@@ -44,6 +50,31 @@ const HeaderUser = () => {
   const homeRoute = user?.role_id === 2 
   ? ADMIN_DASHBOARD_ROUTE 
   : USER_HOME_ROUTE
+
+  useEffect(() => {
+    const openUserMenuForGuide = () => {
+      if (guidePreviousMenuStateRef.current === null) {
+        guidePreviousMenuStateRef.current = isMenuOpen
+      }
+
+      setIsMenuOpen(true)
+    }
+
+    const restoreUserMenuAfterGuide = () => {
+      if (guidePreviousMenuStateRef.current === null) return
+
+      setIsMenuOpen(guidePreviousMenuStateRef.current)
+      guidePreviousMenuStateRef.current = null
+    }
+
+    window.addEventListener(USER_GUIDE_OPEN_USER_MENU_EVENT, openUserMenuForGuide)
+    window.addEventListener(USER_GUIDE_RESTORE_USER_MENU_EVENT, restoreUserMenuAfterGuide)
+
+    return () => {
+      window.removeEventListener(USER_GUIDE_OPEN_USER_MENU_EVENT, openUserMenuForGuide)
+      window.removeEventListener(USER_GUIDE_RESTORE_USER_MENU_EVENT, restoreUserMenuAfterGuide)
+    }
+  }, [isMenuOpen])
 
   return (
     <header className="sticky top-0 z-50 flex min-h-16 h-auto flex-wrap items-center justify-between border-b border-[#4982ad] bg-[#003A6C] px-4 py-3 md:flex-nowrap md:px-8 md:py-0">
@@ -106,6 +137,7 @@ const HeaderUser = () => {
               <div className="px-3 py-2">
                 <button
                   type="button"
+                  id="user-menu-profile"
                   onClick={() => navigateTo("/perfil")}
                   className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"
                 >
@@ -113,6 +145,7 @@ const HeaderUser = () => {
                 </button>
                 {user?.role_id === 1 && (
                   <button
+                    id="user-menu-visualizations"
                     onClick={() => navigateTo("/visualizaciones")}
                     className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]" >
                     <BarChart3 size={16} className="text-gray-500" />  Visualizaciones
@@ -120,7 +153,8 @@ const HeaderUser = () => {
                 )}
                 <button
                   type="button"
-                  onClick={() => navigateTo(TEMPLATE_TRENDS_ROUTE)}
+                  id="user-menu-reports"
+                  onClick={() => navigateTo(REPORTES_INDEX_ROUTE)}
                   className="mt-2 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-[#C4A57C]"
                 >
                   <FileText size={16} className="text-gray-500" /> Reportes
@@ -129,6 +163,7 @@ const HeaderUser = () => {
               <div className="border-t border-[#0E7D96] px-3 py-2">
                 <button
                   type="button"
+                  id="user-menu-logout"
                   onClick={logout}
                   className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-red-500 transition-colors hover:bg-[#C4A57C]"
                 >
