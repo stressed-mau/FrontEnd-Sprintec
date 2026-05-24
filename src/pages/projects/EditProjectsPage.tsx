@@ -118,6 +118,7 @@ export default function EditProjectsPage() {
             readOnlyFields
             canEditGithub
             canEditDemo
+            canEditEndDate={manager.editingProject.is_current}
           />
         </ProjectFormModal>
       ) : null}

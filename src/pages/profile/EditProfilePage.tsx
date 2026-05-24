@@ -283,7 +283,7 @@ const EditProfilePage = () => {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex justify-center gap-3 pt-4">
                 <button
                   type="submit"
                   disabled={isSubmitting || !canSavePersonalData}
@@ -298,8 +298,8 @@ const EditProfilePage = () => {
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => setShowCancelConfirmModal(true)}
-                  className={`bg-[#C2DBED] text-[#003A6C] px-4 py-2 text-sm rounded-lg border border-[#4982AD] font-medium transition-colors ${
-                    isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#C4A57C]'
+                  className={`bg-[#F7F0E1] text-[#003A6C] px-4 py-2 text-sm rounded-lg border border-[#4982AD] font-medium transition-colors ${
+                    isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#F7F0E1]/80'
                   }`}
                 >
                   Cancelar
