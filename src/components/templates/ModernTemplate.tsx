@@ -1,8 +1,9 @@
 import React from 'react';
 import { MapPin, Mail, Phone, Heart, Globe, GraduationCap, Award } from 'lucide-react';
-import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
+//import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
 interface ModernTemplateProps {
   profile?: ModernTemplateProfile | null;
+  portfolio?: any;
   isPreview?: boolean;
 }
 
@@ -16,18 +17,7 @@ export interface ModernTemplateProfile {
   biography: string;
 }
 
-const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = false }) => {
-  const { data } = usePortfolioVisibility();
-  const safeData = data ?? {
-    projects: [],
-    skills: [],
-    experience: [],
-    education: [],
-    certificates: [],
-    networks: [],
-  };
-  console.log("EXPERIENCE:", data.experience);
-  console.log("NETWORKS:", data.networks);
+const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isPreview = false }) => {
   const userProfile = profile ?? {
     fullname: '',
     occupation: '',
@@ -37,6 +27,16 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
     phone: '',
     biography: '',
   };
+  //const { data } = usePortfolioVisibility();
+
+  //const safeData = data ?? {
+    //projects: [],
+    //skills: [],
+    //experience: [],
+    //education: [],
+    //certificates: [],
+    //networks: [],
+  //};
 
   const displayName = userProfile.fullname.trim() || 'Sin nombre disponible';
   const displayOccupation = userProfile.occupation.trim() || 'Sin ocupación disponible';
@@ -46,13 +46,13 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
   const displayPhone = userProfile.phone.trim() || 'Sin teléfono disponible';
   const userInitial = displayName.slice(0, 1).toUpperCase() || '?';
 
-  const visibleProjects = safeData.projects.filter(p => p.checked);
-  const visibleSkills = safeData.skills.filter(s => s.checked);
-  const visibleExperience = safeData.experience.filter(e => e.checked);
-  const visibleNetworks = safeData.networks.filter(n => n.checked);
+  const visibleProjects = portfolio?.projects ?? [];
+  const visibleSkills = portfolio?.skills ?? [];
+  const visibleNetworks = portfolio?.socialNetworks ?? [];
+  //const visibleCertificates = portfolio?.certificates ?? [];
+  const workExperience = portfolio?.experiences ?? [];
+  const academicExperience = portfolio?.educations ?? [];
 
-  const workExperience = visibleExperience.filter((exp) => exp.sourceTable === 'work_experiences');
-  const academicExperience = visibleExperience.filter((exp) => exp.sourceTable === 'educations');
   const hasSkillsSection = visibleSkills.length > 0;
   const hasProjectsSection = visibleProjects.length > 0;
   const hasWorkSection = workExperience.length > 0;
@@ -60,7 +60,7 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
   const hasNetworksSection = visibleNetworks.length > 0;
 
   const highlightedSkills = visibleSkills.slice(0, 4);
-  const visibleCertificates = safeData.certificates.filter(c => c.checked);
+  const visibleCertificates = portfolio?.certificates ?? [];
   const hasCertificatesSection = visibleCertificates.length > 0;
   return (
     <div className={`w-full min-h-screen font-sans bg-[#fcecd4] ${isPreview ? 'scale-[0.8] origin-top-left border-8 border-[#173b61] rounded-[40px] shadow-2xl overflow-hidden' : ''} text-[#173b61]`}>
@@ -141,12 +141,12 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
                 <div className="bg-[#173b61] text-[#fcecd4] p-8 rounded-[2rem] shadow-xl">
                   <h3 className="text-3xl font-black mb-8 border-b border-[#fcecd4]/20 pb-4">Habilidades</h3>
                   <div className="grid grid-cols-2 gap-6">
-                    {highlightedSkills.map((skill) => (
+                    {highlightedSkills.map((skill: any) => (
                       <div key={`${skill.sourceTable ?? 'skills'}-${skill.id}`} className="flex flex-col items-center text-center gap-3">
                         <div className="w-14 h-14 rounded-2xl bg-[#2f606b] flex items-center justify-center text-[#ee8e3b] text-lg font-black">
-                          {skill.label.slice(0, 1).toUpperCase()}
+                          {skill.name.slice(0, 1).toUpperCase()}
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-tighter">{skill.label}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter">{skill.name}</span>
                       </div>
 
                     ))}
@@ -158,13 +158,13 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
             {/* Technical Skills */}
             <div className="flex-1">
               <div className="-mt-10 space-y-4">
-                {visibleSkills.map((skill) => (
+                {visibleSkills.map((skill: any) => (
                   <div key={`${skill.sourceTable ?? 'skills'}-${skill.id}`} className="group flex items-center justify-between p-5 bg-white rounded-2xl shadow-sm border-l-8 border-[#ee8e3b] hover:shadow-md transition-all">
                     <div className="flex items-center gap-4">
                       <div className="w-8 h-8 rounded-full bg-[#fcecd4] flex items-center justify-center text-[#173b61] font-bold">✓</div>
-                      <p className="text-xl font-bold">{skill.label}</p>
+                      <p className="text-xl font-bold">{skill.name}</p>
                     </div>
-                    {skill.sublabel && <span className="text-xs font-bold text-[#7d959e] uppercase tracking-widest">{skill.sublabel}</span>}
+                    {skill.level && <span className="text-xs font-bold text-[#7d959e] uppercase tracking-widest">{skill.sublabel}</span>}
                   </div>
                 ))}
               </div>
@@ -189,11 +189,11 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {visibleProjects.map((project) => (
+            {visibleProjects.map((project: any) => (
               <div key={`${project.sourceTable ?? 'projects'}-${project.id}`} className="group relative h-48 rounded-[2rem] overflow-hidden bg-[#2f606b]">
                 <div className="absolute inset-0 bg-linear-to-t from-[#173b61] via-transparent to-transparent opacity-100 p-8 flex flex-col justify-end">
-                  <h4 className="text-[#fcecd4] text-2xl font-black">{project.label}</h4>
-                  <p className="text-[#ee8e3b] font-bold text-sm mt-1">{project.sublabel}</p>
+                  <h4 className="text-[#fcecd4] text-2xl font-black">{project.nombre || project.title}</h4>
+                  <p className="text-[#ee8e3b] font-bold text-sm mt-1">{project.descripcion || project.description}</p>
                 </div>
               </div>
             ))}
@@ -216,11 +216,11 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
               <h3 className="text-4xl font-black uppercase tracking-tighter">Experiencias</h3>
             </div>
             <div className="space-y-8">
-              {workExperience.map((exp) => (
+              {workExperience.map((exp: any) => (
                 <div key={`${exp.sourceTable ?? 'work'}-${exp.id}`} className="relative pl-10 border-l-2 border-[#7d959e]/30 pb-4">
                   <div className="absolute -left-2.25 top-0 w-4 h-4 rounded-full bg-[#ee8e3b] shadow-[0_0_10px_#ee8e3b]"></div>
-                  <h4 className="text-2xl font-bold leading-tight">{exp.label}</h4>
-                  <p className="text-[#2f606b] font-semibold mt-1">{exp.sublabel}</p>
+                  <h4 className="text-2xl font-bold leading-tight">{exp.company}</h4>
+                  <p className="text-[#2f606b] font-semibold mt-1">{exp.position}</p>
                 </div>
               ))}
             </div>
@@ -237,11 +237,11 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
                 <h3 className="text-2xl font-black uppercase">Formación</h3>
               </div>
               <div className="space-y-8">
-                {academicExperience.map((acad) => (
+                {academicExperience.map((acad: any) => (
                   <div key={`${acad.sourceTable ?? 'education'}-${acad.id}`} className="group">
                     <span className="text-[#ee8e3b] font-black text-lg">/ Formación</span>
-                    <h4 className="text-xl font-bold group-hover:text-[#2f606b] transition-colors">{acad.label}</h4>
-                    <p className="text-sm text-[#7d959e] font-medium">{acad.sublabel}</p>
+                    <h4 className="text-xl font-bold group-hover:text-[#2f606b] transition-colors">{acad.title}</h4>
+                    <p className="text-sm text-[#7d959e] font-medium">{acad.institution}</p>
                   </div>
                 ))}
               </div>
@@ -254,14 +254,14 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
                   <h3 className="text-2xl font-black uppercase">Certificaciones</h3>
                 </div>
                 <div className="grid grid-cols-1 gap-6">
-                  {visibleCertificates.map((cert) => (
+                  {visibleCertificates.map((cert: any) => (
                     <div key={`cert-${cert.id}`} className="flex items-start gap-4 p-4 rounded-2xl bg-[#fcecd4]/30">
                       <div className="mt-1">
                         <Award size={20} className="text-[#2f606b]" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-[#173b61]">{cert.label}</h4>
-                        <p className="text-sm text-[#7d959e]">{cert.sublabel}</p>
+                        <h4 className="font-bold text-[#173b61]">{cert.name}</h4>
+                        <p className="text-sm text-[#7d959e]">{cert.issuer}</p>
                       </div>
                     </div>
                   ))}
@@ -272,8 +272,8 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, isPreview = fa
             <div className="text-center bg-[#2f606b] p-10 rounded-[2.5rem]">
               <h3 className="text-[#fcecd4] text-xl font-black mb-8 uppercase tracking-widest">Conectemos</h3>
               <div className="flex justify-center gap-6">
-                {visibleNetworks.map((net) => (
-                  <a key={`${net.sourceTable ?? 'network'}-${net.id}`} href={net.sublabel || '#'} target="_blank" rel="noreferrer" className="w-14 h-14 bg-[#fcecd4] rounded-2xl flex items-center justify-center text-[#173b61] hover:bg-[#ee8e3b] hover:text-white transition-all transform hover:-translate-y-2 shadow-lg" title={net.label}>
+                {visibleNetworks.map((net: any) => (
+                  <a key={`${net.sourceTable ?? 'network'}-${net.id}`} href={net.url || '#'} target="_blank" rel="noreferrer" className="w-14 h-14 bg-[#fcecd4] rounded-2xl flex items-center justify-center text-[#173b61] hover:bg-[#ee8e3b] hover:text-white transition-all transform hover:-translate-y-2 shadow-lg" title={net.name}>
                     <Globe size={24} />
                   </a>
                 ))}

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { USER_GUIDE_OPEN_SIDEBAR_EVENT } from "@/components/UserGuide";
 
 type NavChild = {
   id: string;
@@ -155,6 +156,19 @@ const Sidebar = () => {
     }
   }, [location.pathname]);
 
+  useEffect(() => {
+    const openSidebarForGuide = () => {
+      setIsMobileOpen(true);
+      setIsDesktopCollapsed(false);
+    };
+
+    window.addEventListener(USER_GUIDE_OPEN_SIDEBAR_EVENT, openSidebarForGuide);
+
+    return () => {
+      window.removeEventListener(USER_GUIDE_OPEN_SIDEBAR_EVENT, openSidebarForGuide);
+    };
+  }, []);
+
   const toggleSection = (id: string) => {
     setExpandedSectionId((current) => (current === id ? null : id));
   };
@@ -227,6 +241,7 @@ const Sidebar = () => {
             <div key={item.id} className="space-y-1">
               {hasChildren ? (
                 <button
+                  id={`guide-nav-${item.id}`}
                   onClick={() => toggleSection(item.id)}
                   className={`flex w-full items-center justify-between rounded-xl px-3 py-3 transition-all ${
                     isParentActive ? "bg-[#003A6C] text-white" : "text-[#4982ad] hover:bg-[#77b6e6]/10"
@@ -240,6 +255,7 @@ const Sidebar = () => {
                 </button>
               ) : (
                 <Link
+                  id={`guide-nav-${item.id}`}
                   to={item.path}
                   className={`flex w-full items-center gap-2 rounded-xl px-3 py-3 transition-all ${
                     location.pathname === item.path ? "bg-[#003A6C] text-white" : "text-[#4982ad] hover:bg-[#77b6e6]/10"

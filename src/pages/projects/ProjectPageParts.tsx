@@ -1,4 +1,4 @@
-import { Edit3, ExternalLink, FolderGit2, GitBranch, Plus, Search, X } from "lucide-react";
+import { Edit3, ExternalLink, FolderGit2, GitBranch, Search, X } from "lucide-react";
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -474,6 +474,7 @@ export function ProjectForm({
   readOnlyFields = false,
   canEditGithub = true,
   canEditDemo = true,
+  canEditEndDate = false,
 }: {
   formData: ProjectFormValues;
   errors: ProjectFormErrors;
@@ -495,8 +496,10 @@ export function ProjectForm({
   readOnlyFields?: boolean;
   canEditGithub?: boolean;
   canEditDemo?: boolean;
+  canEditEndDate?: boolean;
 }) {
   const isModalTone = tone === "modal";
+  const isRegisterSubmit = submitLabel.toLowerCase().startsWith("registrar");
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [activeRoleIndex, setActiveRoleIndex] = useState(0);
   const [technologySearch, setTechnologySearch] = useState("");
@@ -518,6 +521,10 @@ export function ProjectForm({
       !selectedTechs.some((selected) => selected.id === technology.id)
     );
   });
+  const isEndDateDisabled = formData.is_current
+    ? !(readOnlyFields && isModalTone && canEditEndDate)
+    : readOnlyFields && !isModalTone;
+  const isCurrentDisabled = isSaving || readOnlyFields || Boolean(formData.fechaFin);
 
   function handleTechnologySelect(technologyId: number) {
     onTechnologyAdd(String(technologyId));
@@ -773,17 +780,23 @@ export function ProjectForm({
           <Input
             type="date"
             value={formData.fechaFin}
-            disabled={formData.is_current || (readOnlyFields && !isModalTone)}
+            disabled={isEndDateDisabled}
             max={today}
             onChange={(event) => onFieldChange("fechaFin", event.target.value)}
-            className={formData.is_current || (readOnlyFields && !isModalTone) ? disabledInputClassName : fieldInputClassName(Boolean(errors.fechaFin))}
+            className={isEndDateDisabled ? disabledInputClassName : fieldInputClassName(Boolean(errors.fechaFin))}
             aria-invalid={Boolean(errors.fechaFin)}
           />
         </Field>
       </div>
 
       <label className={`flex items-center gap-2 text-sm font-medium ${isModalTone ? "text-gray-700" : "text-[#003A6C]"}`}>
-        <input type="checkbox" checked={formData.is_current} onChange={(event) => onFieldChange("is_current", event.target.checked)} className={`size-4 rounded ${isModalTone ? "border-gray-300 accent-[#003A6C]" : "border-[#A5D7E8]"}`} />
+        <input
+          type="checkbox"
+          checked={formData.is_current}
+          disabled={isCurrentDisabled}
+          onChange={(event) => onFieldChange("is_current", event.target.checked)}
+          className={`size-4 rounded disabled:cursor-not-allowed disabled:opacity-60 ${isModalTone ? "border-gray-300 accent-[#003A6C]" : "border-[#A5D7E8]"}`}
+        />
         Proyecto en curso
       </label>
 
@@ -837,12 +850,23 @@ export function ProjectForm({
         </div>
       </Field>
 
-      <div className="flex flex-wrap gap-3 pt-2">
+      <div className={`flex flex-wrap gap-3 pt-2 ${isRegisterSubmit ? "justify-center" : ""}`}>
         <Button type="submit" disabled={isSaving || !canSave} className="bg-[#003A6C] text-white shadow-sm hover:bg-[#4982AD]">
-          {!isSaving ? <Plus className="size-4" /> : null}
-          {isSaving ? "Guardando..." : submitLabel}
+          {isSaving ? "Guardando..." : isRegisterSubmit ? "Registrar" : submitLabel}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving} className={isModalTone ? "border-gray-300 bg-white text-gray-700 hover:bg-gray-50" : "border-[#A5D7E8] bg-white text-[#003A6C]"}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSaving}
+          className={
+            isRegisterSubmit
+              ? "border-[#A5D7E8] bg-[#F7F0E1] text-[#003A6C] hover:bg-[#F7F0E1]/80"
+              : isModalTone
+                ? "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                : "border-[#A5D7E8] bg-white text-[#003A6C]"
+          }
+        >
           Cancelar
         </Button>
       </div>

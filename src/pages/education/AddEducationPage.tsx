@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 
-import { ExperienceInlineForm } from "@/pages/experience/ExperienceInlineForm"
+import { EducationInlineForm } from "@/pages/education/EducationInlineForm"
 import { ExperienceManagerModals, ExperiencePageShell, FeedbackMessage } from "@/pages/experience/ExperiencePageParts"
 import { useExperienceManager } from "@/hooks/useExperienceManager"
 
@@ -22,22 +22,17 @@ export default function AddEducationPage() {
     >
       <FeedbackMessage message={manager.feedbackMessage || manager.pageError} type={manager.feedbackType || "error"} />
 
-      <ExperienceInlineForm
-        mode="education"
+      <EducationInlineForm
         formData={manager.formData}
         errors={manager.errors}
         isSaving={manager.isSaving}
-        canRemoveImage={manager.canRemoveImage}
         canRemoveCertificate={manager.canRemoveCertificate}
         educationTitleOptions={manager.educationOptions.titles}
         educationFieldOptions={manager.educationOptions.fields}
-        fileInputRef={manager.fileInputRef}
         certificateInputRef={manager.certificateInputRef}
         onFieldChange={manager.updateField}
         onBlur={manager.handleBlur}
-        onImageChange={manager.handleImageChange}
         onCertificateChange={manager.handleCertificateChange}
-        onRemoveImage={manager.removeImage}
         onRemoveCertificate={manager.removeCertificate}
         onSubmit={manager.handleSubmit}
         onCancel={() => navigate("/formacion-academica/ver")}

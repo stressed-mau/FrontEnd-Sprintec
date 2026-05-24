@@ -39,13 +39,12 @@ import ViewProjectsPage from "@/pages/projects/ViewProjectsPage"
 import RegisterProfilePage from '@/pages/profile/RegisterProfilePage';
 import EditProfilePage from '@/pages/profile/EditProfilePage';
 import ViewProfilePage from '@/pages/profile/ViewProfilePage';
-import AdminDashboard from "@/pages/admin/AdminDashboard"
 import UserReports from "@/pages/admin/UserReports"
 import CertificateReports from "@/pages/admin/CertificateReports"
 import TendenciaPlantillasPage from "@/pages/TendenciaPlantillasPage"
 import ReportsIndexPage from "@/pages/ReportsIndexPage"
 import { NotificationsPage } from "@/pages/NotificationsPage"
-import { CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, NOTIFICATIONS_ROUTE, REGISTER_PROFILE_ROUTE, REGISTER_ROUTE, REPORTES_INDEX_ROUTE, TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+import { ADMIN_DASHBOARD_ROUTE, CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, NOTIFICATIONS_ROUTE, REGISTER_PROFILE_ROUTE, REGISTER_ROUTE, TEMPLATE_TRENDS_ROUTE, REPORTES_INDEX_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 
 function AppRoutes() {
   return (
@@ -103,9 +102,14 @@ function AppRoutes() {
         <Route path="/portafolio" element={<MyPortfolio />} />
       </Route> 
       <Route path="/p/:slug" element={<PublicPortfolio />} />
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      <Route path="/admin/usuarios" element={<UserReports />} />
+      <Route element={<ProtectedRoute requireAdmin />}>
+        <Route path="/admin" element={<Navigate to={ADMIN_DASHBOARD_ROUTE} replace />} />
+        <Route path={ADMIN_DASHBOARD_ROUTE} element={<UserReports />} />
+
+        
+      </Route>
       <Route path="/admin/certificados" element={<CertificateReports />} />
+      <Route path="/admin/usuarios" element={<UserReports />} />
     </Routes>
   )
 }

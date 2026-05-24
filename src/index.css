@@ -134,6 +134,109 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.portfolio-user-guide-popover {
+  max-width: min(320px, calc(100vw - 32px));
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid #c2dbed;
+  box-shadow: 0 22px 60px rgb(15 23 42 / 24%);
+}
+
+.portfolio-user-guide-popover .driver-popover-title {
+  color: #003a6c;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.portfolio-user-guide-popover .driver-popover-description {
+  color: #4b778d;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.portfolio-user-guide-popover .driver-popover-progress-text {
+  color: #4b778d;
+  font-weight: 700;
+}
+
+.portfolio-user-guide-popover .driver-popover-next-btn,
+.portfolio-user-guide-popover .driver-popover-prev-btn,
+.portfolio-user-guide-popover .driver-popover-close-btn {
+  border-radius: 10px;
+  font-weight: 800;
+  min-height: 36px;
+  white-space: normal;
+}
+
+.portfolio-user-guide-popover .driver-popover-next-btn {
+  background: #003a6c;
+  border-color: #003a6c;
+  color: white;
+  text-shadow: none;
+}
+
+.portfolio-user-guide-popover .driver-popover-prev-btn {
+  background: white;
+  border-color: #c2dbed;
+  color: #003a6c;
+  text-shadow: none;
+}
+
+.portfolio-user-guide-popover .driver-popover-footer {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.portfolio-user-guide-popover .driver-popover-navigation-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .portfolio-user-guide-popover {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .portfolio-user-guide-popover .driver-popover-title {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .portfolio-user-guide-popover .driver-popover-description {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .portfolio-user-guide-popover .driver-popover-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .portfolio-user-guide-popover .driver-popover-progress-text {
+    width: 100%;
+    text-align: left;
+  }
+
+  .portfolio-user-guide-popover .driver-popover-navigation-btns {
+    width: 100%;
+  }
+
+  .portfolio-user-guide-popover .driver-popover-next-btn,
+  .portfolio-user-guide-popover .driver-popover-prev-btn,
+  .portfolio-user-guide-popover .driver-popover-close-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: 10px;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

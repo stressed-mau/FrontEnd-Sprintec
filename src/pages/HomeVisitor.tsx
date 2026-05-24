@@ -9,10 +9,28 @@ import FotoP from "@/assets/images/fotoPorque.jpeg"
 import PortadaModern from "@/assets/images/PortadaModern1.png"
 import PortadaMin from "@/assets/images/PortadaMin.png"
 import PortadaCorp from "@/assets/images/PortadaCorp.png"
+import { useEffect, useRef } from "react"
+import { api } from "@/services/api";
 
 export default function Home() {
+  const hasSent = useRef(false)
   const navigate = useNavigate()
 
+  useEffect(() => {
+    if (hasSent.current) return
+
+    hasSent.current = true
+
+    const registerVisit = async () => {
+      try {
+        await api.post('/visitor')
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    registerVisit()
+  }, [])
   return (
     <div className="min-h-screen bg-linear-to-b from-[#F7F0E1] to-[#C2DBED] flex flex-col">
       <Header />

@@ -6,7 +6,7 @@ import {
   MapPin,
 } from "lucide-react"
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
-import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
+//import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
 type CorporatePortfolioLink = {
   id: string
   label: string
@@ -92,9 +92,9 @@ function getInitials(name: string) {
     .join("")
 }
 
-function cleanVisibilitySublabel(value: string, prefix: string) {
-  return value.startsWith(prefix) ? value.slice(prefix.length).trim() : value
-}
+//function cleanVisibilitySublabel(value: string, prefix: string) {
+  //return value.startsWith(prefix) ? value.slice(prefix.length).trim() : value
+//}
 
 function CorporateProfileImage({
   alt,
@@ -131,18 +131,20 @@ function CorporateProfileImage({
 }
 type Props = {
   profile?: CorporatePortfolioProfile | null
+  portfolio?: any
 }
 
-export function CorporatePortfolioTemplate({ profile }: Props) {
-  const { data} = usePortfolioVisibility()
-  const safeData = data ?? {
-    projects: [],
-    skills: [],
-    experience: [],
-    education: [],
-    certificates: [],
-    networks: [],
-  }
+export function CorporatePortfolioTemplate({ profile, portfolio }: Props) {
+  //const { data} = usePortfolioVisibility()
+  console.log("CORPORATE PORTFOLIO", portfolio)
+  //const safeData = data ?? {
+    //projects: [],
+    //skills: [],
+    //experience: [],
+    //education: [],
+    //certificates: [],
+    //networks: [],
+  //}
   const userProfile = profile ?? {
   fullname: "",
   occupation: "",
@@ -160,77 +162,72 @@ export function CorporatePortfolioTemplate({ profile }: Props) {
   const displayProfileImage = userProfile.image_url.trim()
   const initials = getInitials(displayName)
 
-  const visibleProjects = useMemo(() => safeData.projects.filter((item) => item.checked), [safeData.projects])
-  const visibleSkills = useMemo(() => safeData.skills.filter((item) => item.checked), [safeData.skills])
-  const visibleExperience = useMemo(
-    () => safeData.experience.filter((item) => item.checked),
-    [safeData.experience]
-  )
-  const visibleEducation = useMemo(() => safeData.education.filter((item) => item.checked), [safeData.education])
-  const visibleCertificates = useMemo(() => safeData.certificates.filter((item) => item.checked), [safeData.certificates])
-  const visibleNetworks = useMemo(() => safeData.networks.filter((item) => item.checked), [safeData.networks])
+  const visibleProjects = portfolio?.projects ?? []
+  const visibleSkills = portfolio?.skills ?? []
+  const visibleExperience = portfolio?.experiences ?? []
+  const visibleCertificates = portfolio?.certificates ?? []
+  const visibleNetworks = portfolio?.socialNetworks ?? []
 
   const socialLinks = useMemo<CorporatePortfolioLink[]>(
     () =>
       visibleNetworks
-        .filter((link) => link.label.trim() && link.sublabel.trim())
-        .map((link) => ({
+        .filter(
+          (link: any) =>
+            link.label?.trim() &&
+            link.sublabel?.trim()
+        )
+        .map((link: any) => ({
           id: String(link.id),
-          label: link.label,
-          url: link.sublabel,
+          label: link.platform ?? "Red social",
+          url: link.url ?? "#",
         })),
     [visibleNetworks],
   )
 
-  const skills = useMemo(() => {
-  return visibleSkills.map((skill) => skill.label).filter(Boolean)
+  const skills = useMemo<string[]>(() => {
+    return visibleSkills
+      .map((skill: any) => skill.name)
+      .filter((label: any): label is string => Boolean(label))
   }, [visibleSkills])
 
-  
   const experience = useMemo(() => {
-  return visibleExperience.map((item) => ({
-    id: String(item.id),
-    title: item.label,
-    organization: cleanVisibilitySublabel(
-      item.sublabel,
-      "Experiencia Laboral -"
-    ),
-    period: "",
-    description: "",
-  }))
-}, [visibleExperience])
+    return visibleExperience.map((item: any) => ({
+      id: String(item.id),
+      title: item.position ?? "Sin cargo",
+      organization: item.company ?? "Sin empresa",
+      period: "",
+      description: item.description ?? "",
+    }))
+  }, [visibleExperience])
 
-  const educationItems = useMemo(() => {
-    const educationFromExperience = visibleExperience.filter((item) => item.sourceTable === "educations")
-    return [...educationFromExperience, ...visibleEducation]
-  }, [visibleExperience, visibleEducation])
-
+  const visibleEducation = portfolio?.educations ?? []
 
   const education = useMemo(() => {
-  return educationItems.map((item) => ({
-    id: String(item.id),
-    title: item.label,
-    institution: cleanVisibilitySublabel(item.sublabel, "Educación -"),
-    period: "",
-  }))
-}, [educationItems])
+    return visibleEducation.map((item: any) => ({
+      id: String(item.id),
+      title: item.title ?? "Sin título",
+      institution: item.institution ?? "Sin institución",
+      period: "",
+    }))
+  }, [visibleEducation])
 
-const certificates = useMemo(() => {
-  return visibleCertificates.map((item) => ({
-    id: String(item.id),
-    title: item.label,
-    institution: item.sublabel,
-    period: "",
-  }))
-}, [visibleCertificates])
+  const certificates = useMemo(() => {
+    return visibleCertificates.map((item: any) => ({
+      id: String(item.id),
+      title: item.name ?? "Sin certificado",
+      institution: item.issuer ?? "Sin institución",
+      period: "",
+    }))
+  }, [visibleCertificates])
+
   const projects = useMemo(() => {
-  return visibleProjects.map((project) => ({
-    id: String(project.id),
-    name: project.label,
-    description: project.sublabel,
-    stack: [] as string[],
-  }))
-}, [visibleProjects])
+    return visibleProjects.map((project: any) => ({
+      id: String(project.id),
+      name: project.name ?? "Proyecto",
+      description: project.description ?? "Sin descripción",
+      stack: [] as string[],
+    }))
+  }, [visibleProjects])
 
   const resolvedEducation = education
   const resolvedProjects = projects
@@ -334,7 +331,7 @@ const certificates = useMemo(() => {
 
           {experience.length ? (
             <div className="mt-6 space-y-4">
-              {experience.map((item, index) => (
+              {experience.map((item: any, index: number) => (
                 <article
                   key={item.id}
                   className="rounded-[1.6rem] border border-black/10 bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-[#111111] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]"
@@ -387,7 +384,7 @@ const certificates = useMemo(() => {
 
       {certificates.length ? (
         <div className="mt-6 grid gap-4">
-          {certificates.map((item) => (
+          {certificates.map((item: any) => (
             <article
               key={item.id}
               className="rounded-[1.6rem] border border-black/10 bg-white p-5"
@@ -415,7 +412,7 @@ const certificates = useMemo(() => {
 
           {education.length ? (
             <div className="mt-6 grid gap-4">
-              {education.map((item) => (
+              {education.map((item: any) => (
                 <article
                   key={item.id}
                   className="rounded-[1.6rem] border border-white/10 bg-white/3 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-white/[0.07]"
@@ -456,7 +453,7 @@ const certificates = useMemo(() => {
 
           {projects.length ? (
             <div className="mt-8 grid gap-4 lg:grid-cols-2">
-              {projects.map((project, index) => (
+              {projects.map((project: any, index: number) => (
                 <article
                   key={project.id}
                   className="rounded-[1.8rem] border border-black/10 bg-white p-6 transition duration-300 hover:-translate-y-2 hover:border-[#111111] hover:shadow-[0_24px_50px_rgba(0,0,0,0.12)]"
@@ -473,7 +470,7 @@ const certificates = useMemo(() => {
 
                   {project.stack.length ? (
                     <div className="mt-5 flex flex-wrap gap-2">
-                      {project.stack.map((item) => (
+                      {project.stack.map((item: any) => (
                         <span
                           key={item}
                           className="rounded-full border border-black/10 bg-[#F7F1E8] px-3 py-1.5 text-xs font-semibold text-[#3D4348]"
@@ -832,7 +829,7 @@ const certificates = useMemo(() => {
 
                   {resolvedEducation.length ? (
                     <div className="mt-6 grid gap-4">
-                      {resolvedEducation.map((item) => (
+                      {resolvedEducation.map((item: any) => (
                         <article
                           key={item.id}
                           className="rounded-[1.4rem] border border-white/10 bg-white/3 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-[#1B1815]"
@@ -862,7 +859,7 @@ const certificates = useMemo(() => {
 
                 {certificates.length ? (
                   <div className="mt-6 grid gap-4">
-                    {certificates.map((item) => (
+                    {certificates.map((item: any) => (
                       <article
                         key={item.id}
                         className="rounded-[1.4rem] border border-white/10 bg-white/5 p-5"
@@ -890,7 +887,7 @@ const certificates = useMemo(() => {
 
                 {experience.length ? (
                   <div className="mt-6 grid gap-4">
-                    {experience.map((item, index) => (
+                    {experience.map((item: any, index: number) => (
                       <article
                         key={item.id}
                         className="rounded-[1.6rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-5 transition duration-300 hover:-translate-y-1 hover:border-[#8C6E46] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]"
@@ -972,7 +969,7 @@ const certificates = useMemo(() => {
 
                 <div className="mt-8 grid gap-4">
                   {resolvedProjects.length ? (
-                    resolvedProjects.map((project, index) => (
+                    resolvedProjects.map((project: any, index: number) => (
                       <article
                         key={project.id}
                         className="rounded-[1.8rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-6 transition duration-300 hover:-translate-y-2 hover:border-[#8C6E46] hover:shadow-[0_24px_50px_rgba(0,0,0,0.12)]"
@@ -989,7 +986,7 @@ const certificates = useMemo(() => {
 
                         {project.stack.length ? (
                           <div className="mt-5 flex flex-wrap gap-2">
-                            {project.stack.map((item) => (
+                            {project.stack.map((item: any) => (
                               <span
                                 key={item}
                                 className="rounded-full border border-black/10 bg-[#F2E7D7] px-3 py-1.5 text-xs font-semibold text-[#3D4348]"

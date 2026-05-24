@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 //import type { Portfolio } from "@/types/portfolio"
 import { usePortfolio } from "@/hooks/usePortfolio"
 //import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
@@ -8,10 +8,12 @@ import ModernTemplate from "@/components/templates/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
 import { useParams } from "react-router-dom"
 import { api } from "@/services/api"
+import { recordPortfolioView } from "@/services/portfolioAnalyticsService"
 
 const PublicPortfolio = () => {
   const { slug } = useParams()
   const { portfolio, loading, visitId } = usePortfolio(slug) as { portfolio: any, loading: boolean, visitId: string | null };
+  const recordedViewRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!visitId) return;
@@ -32,7 +34,19 @@ const PublicPortfolio = () => {
     return () => clearInterval(pulseInterval);
   }, [visitId]);
 
-  const handleProjectClick = async (projectId: string) => {
+  useEffect(() => {
+    const portfolioId = portfolio?.id ?? portfolio?.config?.id ?? portfolio?.config?.portfolio_id
+
+    if (loading || !portfolioId || recordedViewRef.current === String(portfolioId)) {
+      return
+    }
+
+    recordedViewRef.current = String(portfolioId)
+    recordPortfolioView(portfolioId)
+  }, [loading, portfolio])
+
+  const handleProjectClick = async (projectId?: string | number) => {
+    if (!projectId) return;
     if (!visitId) return; // Si no hay visita registrada, ignoramos silenciosamente
     try {
       await api.post('/tracking/project-click', {
@@ -45,7 +59,6 @@ const PublicPortfolio = () => {
     }
     // Continuar con la navegación normal independientemente del tracking
   };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center font-bold text-[#003A6C]">
@@ -90,15 +103,15 @@ const PublicPortfolio = () => {
     <main className="flex-1 p-4 md:p-10">
       {isModern && <ModernTemplate 
       //data={visibilityData} 
-      profile={profile} />}
+      profile={profile} portfolio={portfolio} />}
 
       {isMinimalist && <MinimalistTemplate 
       //data={visibilityData} 
-      profile={profile} isPreview={false} />}
+      profile={profile} portfolio={portfolio} isPreview={false} />}
 
       {isCorporate && <CorporatePortfolioTemplate 
       //data={visibilityData} 
-      profile={profile} />}
+      profile={profile} portfolio={portfolio} />}
 
       {!isModern && !isMinimalist && !isCorporate && (
         <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">

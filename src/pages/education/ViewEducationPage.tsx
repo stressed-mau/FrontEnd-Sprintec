@@ -1,11 +1,10 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
+import { EducationDetailsModal, EducationTable } from "@/pages/education/EducationPageParts"
 import {
-  ExperienceDetailsModal,
   ExperiencePageShell,
   ExperiencePagination,
   ExperienceSearch,
-  ExperienceTable,
   FeedbackMessage,
 } from "@/pages/experience/ExperiencePageParts"
 import { filterExperiences, paginateExperiences } from "@/pages/experience/ExperiencePageUtils"
@@ -21,6 +20,12 @@ export default function ViewEducationPage() {
   const filteredEducation = useMemo(() => filterExperiences(education, searchTerm), [education, searchTerm])
   const pagination = paginateExperiences(filteredEducation, currentPage)
 
+  useEffect(() => {
+    void manager.reloadExperiences()
+    // Force a fresh backend read every time this view is opened.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   function handleSearchChange(value: string) {
     setSearchTerm(value)
     setCurrentPage(1)
@@ -28,8 +33,8 @@ export default function ViewEducationPage() {
 
   return (
     <ExperiencePageShell
-      title="Ver Formación Académica"
-      description="Consulta tu Formación Académica registrada."
+      title="Ver Formacion Academica"
+      description="Consulta tu Formacion Academica registrada."
     >
       <FeedbackMessage message={manager.pageError} type="error" />
 
@@ -37,12 +42,12 @@ export default function ViewEducationPage() {
 
       {manager.isLoading ? (
         <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
-          Cargando Formación Académica...
+          Cargando Formacion Academica...
         </div>
       ) : (
-        <ExperienceTable
-          experiences={pagination.items}
-          emptyMessage={searchTerm ? "No se encontró Formación Académica con ese criterio." : "No hay Formación Académica registrada."}
+        <EducationTable
+          education={pagination.items}
+          emptyMessage={searchTerm ? "No se encontro Formacion Academica con ese criterio." : "No hay Formacion Academica registrada."}
           searchTerm={searchTerm}
           onRowClick={setSelectedEducation}
         />
@@ -57,7 +62,7 @@ export default function ViewEducationPage() {
         onPageChange={setCurrentPage}
       />
 
-      <ExperienceDetailsModal experience={selectedEducation} onClose={() => setSelectedEducation(null)} />
+      <EducationDetailsModal education={selectedEducation} onClose={() => setSelectedEducation(null)} />
     </ExperiencePageShell>
   )
 }

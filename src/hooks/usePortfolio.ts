@@ -35,6 +35,9 @@ const trackVisit = async (portfolioData: any) => {
   }
 };
 
+const getPortfolioId = (d: any) =>
+  d.id ?? d.portfolio_id ?? d.config?.id ?? d.config?.portfolio_id ?? d.profile?.portfolio_id ?? null;
+
 export const usePortfolio = (externalSlug?: string) => {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +61,11 @@ export const usePortfolio = (externalSlug?: string) => {
         
         if (res.data.success) {
           const d = res.data.data;
+          console.log("PORTAFOLIO PUBLICO:", d)
+          console.log("PUBLIC RESPONSE", d);
+          console.log("WORK EXPERIENCES", d.work_experiences);
           setPortfolio({
+            id: getPortfolioId(d) ? String(getPortfolioId(d)) : undefined,
             user: {
               id: String(d.profile.id),
               fullname: d.profile.name,
@@ -75,7 +82,26 @@ export const usePortfolio = (externalSlug?: string) => {
               descripcion: p.description, 
             })),
             skills: d.skills,
-            experiences: d.work_experiences,
+            experiences: (d.work_experiences || []).map((exp: any, index: number) => {
+              // El backend ahora envía 'rol' (gracias al Resource) y 'company_name'
+              const position = exp.rol || exp.role || "Rol no especificado";
+              const company = exp.company_name || "Empresa no especificada";
+              
+              return {
+                ...exp,
+                id: String(exp.id ?? exp.experience_id ?? `exp-${index}`),
+                // Propiedades unificadas en inglés para la interfaz estándar 'Experience'
+                position: position,
+                company: company,
+                description: exp.description || "",
+                startDate: exp.start_date ?? exp.startDate ?? "",
+                endDate: exp.end_date ?? exp.endDate ?? "",
+                current: !!(exp.current ?? exp.is_current),
+                // Espejos en español / formato visibilidad por si tu UI los usa
+                label: position,
+                sublabel: company,
+              };
+            }),
             educations: d.educations ?? [],
             socialNetworks: d.social_networks,
             certificates: d.certificates ?? [],
@@ -106,7 +132,7 @@ export const usePortfolio = (externalSlug?: string) => {
 
       // --- PASO 2: CARGA DE EMERGENCIA (DATOS INDIVIDUALES) ---
       // Si no hay portafolio publicado pero tenemos sesión, traemos sus datos base
-      if (session?.user?.id) {
+      if (!externalSlug && session?.user?.id) {
         const [userData, skills, experiences, education, projects, social] = await Promise.all([
           getUserInformation(String(session.user.id)),
           getSkills(),
@@ -117,6 +143,7 @@ export const usePortfolio = (externalSlug?: string) => {
         ]);
 
         setPortfolio({
+          id: undefined,
           user: {
             id: String(userData.id),
             fullname: (userData as any).name || (userData as any).fullname || (userData as any).full_name || session.user.username,

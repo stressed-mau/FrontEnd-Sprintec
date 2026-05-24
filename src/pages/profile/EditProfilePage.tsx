@@ -159,7 +159,7 @@ const EditProfilePage = () => {
                   onClick={handleClick}
                   className="flex items-center gap-2 px-6 py-2 border border-[#4982AD] rounded-lg text-[#003A6C] text-sm bg-[#E2EEF6] hover:bg-white transition-all shadow-sm mb-2 font-medium"
                 >
-                  <Upload size={16} /> Cambiar foto *
+                  <Upload size={16} /> Cambiar foto
                 </button>
                 <p className="text-gray-500 text-[11px]">JPG, PNG, JPEG (max. 2MB)</p>
                 {errors.image ? <p className="text-red-500 text-xs mt-1">{errors.image}</p> : null}
@@ -283,7 +283,7 @@ const EditProfilePage = () => {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex justify-center gap-3 pt-4">
                 <button
                   type="submit"
                   disabled={isSubmitting || !canSavePersonalData}
@@ -298,8 +298,8 @@ const EditProfilePage = () => {
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => setShowCancelConfirmModal(true)}
-                  className={`bg-[#C2DBED] text-[#003A6C] px-4 py-2 text-sm rounded-lg border border-[#4982AD] font-medium transition-colors ${
-                    isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#C4A57C]'
+                  className={`bg-[#F7F0E1] text-[#003A6C] px-4 py-2 text-sm rounded-lg border border-[#4982AD] font-medium transition-colors ${
+                    isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#F7F0E1]/80'
                   }`}
                 >
                   Cancelar
