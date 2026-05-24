@@ -37,6 +37,8 @@ type EducationDto = {
   current?: boolean | number | string | null
   is_current?: boolean | number | string | null
   isCurrent?: boolean | number | string | null
+  status?: string | null
+  estado?: string | null
   company_email?: string | null
   email?: string | null
   certificate?: string | null
@@ -158,18 +160,6 @@ function asString(value: unknown): string {
   return ""
 }
 
-function asBoolean(value: unknown): boolean | null {
-  if (typeof value === "boolean") return value
-  if (typeof value === "number") return value === 1
-  if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase()
-    if (["1", "true", "yes", "si", "sÃ­"].includes(normalized)) return true
-    if (["0", "false", "no"].includes(normalized)) return false
-  }
-
-  return null
-}
-
 function normalizeDateValue(value: unknown): string {
   const rawValue = asString(value)
 
@@ -194,7 +184,16 @@ function normalizeDateValue(value: unknown): string {
 
 function normalizeEducation(dto: EducationDto, index: number): ExperienceItem {
   const endDate = normalizeDateValue(dto.end_date ?? dto.final_date ?? dto.endDate)
-  const explicitCurrent = asBoolean(dto.current ?? dto.is_current ?? dto.isCurrent)
+  const startDate = normalizeDateValue(
+    dto.end_date ??
+    dto.final_date ??
+    dto.endDate ??
+    dto.issue_date ??
+    dto.issued_at ??
+    dto.date_issued ??
+    dto.emission_date ??
+    dto.fecha_emision
+  )
 
   return {
     id: asString(dto.id ?? dto.education_id) || `education-${index + 1}`,
@@ -205,18 +204,9 @@ function normalizeEducation(dto: EducationDto, index: number): ExperienceItem {
     location: "",
     fieldOfStudy: asString(dto.field_to_study ?? dto.field_of_study ?? dto.field),
     description: asString(dto.description ?? dto.descripcion),
-    startDate: normalizeDateValue(
-      dto.issue_date ??
-      dto.issued_at ??
-      dto.date_issued ??
-      dto.emission_date ??
-      dto.fecha_emision ??
-      dto.start_date ??
-      dto.initial_date ??
-      dto.startDate,
-    ),
+    startDate,
     endDate,
-    current: explicitCurrent ?? !endDate,
+    current: !endDate,
     image: "",
     certificate: toAbsoluteAssetUrl(
       dto.certification_url ??
@@ -253,16 +243,24 @@ function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "
 
   const description = payload.description.trim()
   const issueDate = payload.startDate.trim()
+  const institution = payload.company.trim()
+  const title = payload.position.trim()
+  const fieldOfStudy = payload.fieldOfStudy.trim()
 
   if (options?.mode !== "update") {
-    formData.append("institution", payload.company.trim())
-    formData.append("title", payload.position.trim())
-    formData.append("field_to_study", payload.fieldOfStudy.trim())
+    formData.append("institution", institution)
+    formData.append("institution_name", institution)
+    formData.append("title", title)
+    formData.append("degree", title)
+    formData.append("field_to_study", fieldOfStudy)
+    formData.append("field_of_study", fieldOfStudy)
 
     if (issueDate) {
       formData.append("start_date", issueDate)
+      formData.append("end_date", issueDate)
       formData.append("issue_date", issueDate)
       formData.append("date_issued", issueDate)
+      formData.append("fecha_emision", issueDate)
     }
 
     if (payload.certificateFile) {
@@ -276,17 +274,15 @@ function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "
 
   formData.append("is_current", payload.current ? "1" : "0")
   formData.append("current", payload.current ? "1" : "0")
+  formData.append("status", payload.current ? "cursando" : "concluido")
 
   return formData
 }
 
 function buildEducationUpdateBody(payload: ExperiencePayload) {
-  const body: { description: string; end_date?: string | null } = {
+  const body: { description: string; end_date: string | null } = {
     description: payload.description.trim(),
-  }
-
-  if (payload.endDate.trim()) {
-    body.end_date = payload.endDate.trim()
+    end_date: payload.current ? null : payload.startDate.trim() || null,
   }
 
   return body

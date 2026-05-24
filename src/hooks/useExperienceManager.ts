@@ -46,7 +46,7 @@ const EMPTY_FORM: ExperienceFormValues = {
 const DATE_PATTERN = /^(\d{2})\/(\d{2})\/(\d{4})$/
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024
-const MAX_CERTIFICATE_SIZE_BYTES = 2 * 1024 * 1024
+const MAX_CERTIFICATE_SIZE_BYTES = 5 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 const ALLOWED_CERTIFICATE_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
@@ -250,7 +250,7 @@ function validateCertificateFile(file: File | null): string {
   }
 
   if (file.size > MAX_CERTIFICATE_SIZE_BYTES) {
-    return "El tamaño máximo permitido para el archivo de certificación es de 2 MB."
+    return "El tamaño máximo permitido para el archivo de certificación es de 5 MB."
   }
 
   return ""
@@ -350,14 +350,14 @@ function validateExperienceField(
     return "La descripción no puede exceder los 300 caracteres."
   }
 
-  if (field === "startDate") {
+    if (field === "startDate") {
     if (values.type === "academica" && !startDate && values.current) {
       return ""
     }
 
     if (!startDate) {
       return values.type === "academica"
-        ? "Ingresa una fecha de emisión o marca Aún sigo estudiando."
+        ? "El campo Fecha de emisión es obligatorio."
         : "El campo Fecha de inicio es obligatorio."
     }
 
@@ -542,14 +542,22 @@ export function useExperienceManager() {
     setPageError("")
 
     try {
-      const [remoteExperiences, remoteEducation] = await Promise.all([
+      const [experienceResult, educationResult] = await Promise.allSettled([
         getExperiences(),
         getEducation(),
       ])
+
+      const remoteExperiences = experienceResult.status === "fulfilled" ? experienceResult.value : []
+      const remoteEducation = educationResult.status === "fulfilled" ? educationResult.value : []
+
       setExperiences([...remoteExperiences, ...remoteEducation])
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "No se pudieron cargar las experiencias."
-      setPageError(message)
+
+      if (experienceResult.status === "rejected" && educationResult.status === "rejected") {
+        const message = educationResult.reason instanceof Error
+          ? educationResult.reason.message
+          : "No se pudieron cargar las experiencias."
+        setPageError(message)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -793,7 +801,15 @@ export function useExperienceManager() {
     }
 
     if (field === "current" && value === true) {
-      nextValues.endDate = ""
+      if (nextValues.type === "academica") {
+        nextValues.startDate = ""
+      } else {
+        nextValues.endDate = ""
+      }
+    }
+
+    if (field === "startDate" && nextValues.type === "academica" && typeof normalizedValue === "string" && normalizedValue.trim()) {
+      nextValues.current = false
     }
 
     if (field === "endDate" && typeof normalizedValue === "string" && normalizedValue.trim()) {
@@ -968,8 +984,16 @@ export function useExperienceManager() {
           const remoteEducation = await getEducation()
           const persistedEducation = remoteEducation.find((education) => education.id === editingExperience.id)
 
-          if (!persistedEducation || persistedEducation.description.trim() !== payload.description.trim()) {
-            throw new Error("El backend no confirmó la actualización de la descripción. Intenta nuevamente.")
+          if (!persistedEducation) {
+            throw new Error("El backend no confirmó la actualización de la formación académica. Intenta nuevamente.")
+          }
+
+          const persistedDescriptionMatches = persistedEducation.description.trim() === payload.description.trim()
+          const persistedStatusMatches = payload.current ? persistedEducation.current : !persistedEducation.current
+          const persistedDateMatches = payload.current || persistedEducation.startDate === payload.startDate.trim()
+
+          if (!persistedDescriptionMatches || !persistedStatusMatches || !persistedDateMatches) {
+            throw new Error("El backend no confirmó la actualización de la formación académica. Intenta nuevamente.")
           }
         } else {
           await updateExperience(editingExperience.id, payload)

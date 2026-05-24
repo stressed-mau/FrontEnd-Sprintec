@@ -95,7 +95,7 @@ export function ExperienceSearch({ value, onChange }: ExperienceSearchProps) {
 export function ExperienceStatusBadge({ experience }: { experience: ExperienceItem }) {
   if (experience.type === "academica") {
     return experience.current ? (
-      <Badge className="bg-[#D9EAF4] text-[#003A6C]">Estudiando</Badge>
+      <Badge className="bg-[#D9EAF4] text-[#003A6C]">Cursando actualmente</Badge>
     ) : (
       <Badge className="bg-slate-100 text-slate-700">Concluido</Badge>
     )
@@ -110,7 +110,7 @@ export function ExperienceStatusBadge({ experience }: { experience: ExperienceIt
 
 function formatExperiencePeriod(experience: ExperienceItem) {
   if (experience.type === "academica") {
-    return formatExperienceDate(experience.startDate)
+    return experience.current ? "Cursando actualmente" : formatExperienceDate(experience.startDate)
   }
 
   return `${formatExperienceDate(experience.startDate)} - ${experience.current ? "Actual" : formatExperienceDate(experience.endDate)}`
@@ -340,11 +340,20 @@ export function ExperienceDetailsModal({ experience, onClose }: ExperienceDetail
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <DetailItem label={experience.type === "academica" ? "Fecha de emisión" : "Inicio"} value={formatExperienceDate(experience.startDate)} />
             {experience.type === "academica" ? (
-              <DetailItem label="Estado" value={experience.current ? "Aún sigo estudiando" : "Concluido"} />
+              experience.current ? (
+                <DetailItem label="Estado" value="Cursando actualmente" />
+              ) : (
+                <>
+                  <DetailItem label="Fecha de emisión" value={formatExperienceDate(experience.startDate)} />
+                  <DetailItem label="Estado" value="Concluido" />
+                </>
+              )
             ) : (
-              <DetailItem label="Fin" value={experience.current ? "Actual" : formatExperienceDate(experience.endDate)} />
+              <>
+                <DetailItem label="Inicio" value={formatExperienceDate(experience.startDate)} />
+                <DetailItem label="Fin" value={experience.current ? "Actual" : formatExperienceDate(experience.endDate)} />
+              </>
             )}
             <DetailItem label="Correo" value={experience.email || "No especificado"} />
             <DetailItem

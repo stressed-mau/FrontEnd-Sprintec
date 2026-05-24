@@ -4,11 +4,11 @@ import { Trash2 } from "lucide-react"
 import ConfirmationModal from "@/components/ConfirmationModal"
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal"
 import { Button } from "@/components/ui/button"
+import { EducationTable } from "@/pages/education/EducationPageParts"
 import {
   ExperiencePageShell,
   ExperiencePagination,
   ExperienceSearch,
-  ExperienceTable,
   FeedbackMessage,
 } from "@/pages/experience/ExperiencePageParts"
 import { filterExperiences, paginateExperiences } from "@/pages/experience/ExperiencePageUtils"
@@ -65,7 +65,7 @@ export default function DeleteEducationPage() {
       const deleted = await manager.handleDelete(selectedId)
 
       if (!deleted) {
-        setFeedbackMessage(manager.pageError || "No se pudo eliminar la Formación Académica.")
+        setFeedbackMessage(manager.pageError || "No se pudo eliminar la Formacion Academica.")
         setFeedbackType("error")
         return
       }
@@ -76,7 +76,7 @@ export default function DeleteEducationPage() {
       setShowSuccessModal(true)
       await manager.reloadExperiences()
     } catch (error) {
-      setFeedbackMessage(error instanceof Error ? error.message : "No se pudo eliminar la Formación Académica.")
+      setFeedbackMessage(error instanceof Error ? error.message : "No se pudo eliminar la Formacion Academica.")
       setFeedbackType("error")
     } finally {
       setIsDeleting(false)
@@ -85,11 +85,11 @@ export default function DeleteEducationPage() {
 
   return (
     <ExperiencePageShell
-      title="Eliminar Formación Académica"
+      title="Eliminar Formacion Academica"
       description={
         selectedId == null
-          ? "Selecciona una Formación Académica para eliminarla."
-          : "1 Formación Académica seleccionada."
+          ? "Selecciona una Formacion Academica para eliminarla."
+          : "1 Formacion Academica seleccionada."
       }
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -112,12 +112,12 @@ export default function DeleteEducationPage() {
 
       {manager.isLoading ? (
         <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
-          Cargando Formación Académica...
+          Cargando Formacion Academica...
         </div>
       ) : (
-        <ExperienceTable
-          experiences={pagination.items}
-          emptyMessage={searchTerm ? "No se encontró Formación Académica con ese criterio." : "No hay Formación Académica para eliminar."}
+        <EducationTable
+          education={pagination.items}
+          emptyMessage={searchTerm ? "No se encontro Formacion Academica con ese criterio." : "No hay Formacion Academica para eliminar."}
           searchTerm={searchTerm}
           selectedIds={selectedIds}
           onSelect={handleSelect}
@@ -135,7 +135,7 @@ export default function DeleteEducationPage() {
 
       <DeleteConfirmationModal
         isOpen={showConfirmDelete}
-        title="¿Está seguro de que desea eliminar esta formación académica?"
+        title="Esta seguro de que desea eliminar esta formacion academica?"
         isLoading={isDeleting}
         onConfirm={() => void handleDeleteSelected()}
         onCancel={() => setShowConfirmDelete(false)}
@@ -143,8 +143,8 @@ export default function DeleteEducationPage() {
 
       <ConfirmationModal
         isOpen={showSuccessModal}
-        title="Éxito"
-        message={`Formación Académica${deletedEducationName ? ` "${deletedEducationName}"` : ""} eliminada correctamente.`}
+        title="Exito"
+        message={`Formacion Academica${deletedEducationName ? ` "${deletedEducationName}"` : ""} eliminada correctamente.`}
         onClose={() => setShowSuccessModal(false)}
       />
     </ExperiencePageShell>

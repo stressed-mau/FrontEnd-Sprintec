@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react"
 
+import { EducationTable } from "@/pages/education/EducationPageParts"
 import {
   ExperienceManagerModals,
   ExperiencePageShell,
   ExperiencePagination,
   ExperienceSearch,
-  ExperienceTable,
   FeedbackMessage,
 } from "@/pages/experience/ExperiencePageParts"
 import { filterExperiences, paginateExperiences } from "@/pages/experience/ExperiencePageUtils"
@@ -27,8 +27,8 @@ export default function EditEducationPage() {
 
   return (
     <ExperiencePageShell
-      title="Editar Formación Académica"
-      description="Selecciona una Formación Académica de la tabla para actualizarla."
+      title="Editar Formacion Academica"
+      description="Selecciona una Formacion Academica de la tabla para actualizarla."
     >
       <FeedbackMessage message={manager.feedbackMessage || manager.pageError} type={manager.feedbackType || "error"} />
 
@@ -36,12 +36,12 @@ export default function EditEducationPage() {
 
       {manager.isLoading ? (
         <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
-          Cargando formación académica...
+          Cargando Formacion Academica...
         </div>
       ) : (
-        <ExperienceTable
-          experiences={pagination.items}
-          emptyMessage={searchTerm ? "No se encontró Formación Académica con ese criterio." : "No hay Formación Académica para editar."}
+        <EducationTable
+          education={pagination.items}
+          emptyMessage={searchTerm ? "No se encontro Formacion Academica con ese criterio." : "No hay Formacion Academica para editar."}
           searchTerm={searchTerm}
           onRowClick={manager.openEditModal}
         />

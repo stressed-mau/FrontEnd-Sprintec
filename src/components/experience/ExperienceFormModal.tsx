@@ -89,6 +89,10 @@ const FIELD_OPTIONS = [
   "Otro",
 ]
 
+function getTodayInputValue() {
+  return new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
+}
+
 type ExperienceFormModalProps = {
   formData: ExperienceFormValues
   errors: ExperienceFormErrors
@@ -164,12 +168,16 @@ export function ExperienceFormModal({
       : fieldOptions
   const isLocationDisabled = isSaving
   const isDescriptionDisabled = isSaving
-  const isStartDateDisabled = isSaving || isLaboralUpdate || (isAcademicUpdate && !originalEditingValues?.current)
+  const isStartDateDisabled =
+    isSaving ||
+    isLaboralUpdate ||
+    (!isLaboralExperience && isCurrentActive && !isAcademicUpdate) ||
+    (isAcademicUpdate && !originalEditingValues?.current)
   const isEndDateDisabled = isSaving || isCurrentActive
-  const isCurrentDisabled = isSaving || isEditing
+  const isCurrentDisabled = isSaving || isEditing || (!isLaboralExperience && Boolean(formData.startDate))
   const isImageDisabled = isSaving || isLaboralUpdate
   const isCertificateDisabled = isSaving || isAcademicUpdate
-  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
+  const [today] = useState(getTodayInputValue)
 
   return (
     <div
@@ -419,7 +427,7 @@ export function ExperienceFormModal({
               className={`size-4 rounded border-[#A5D7E8] text-[#003A6C] focus:ring-[#A5D7E8] ${disabledControlClassName}`}
             />
             <Label id="experience-current-label" htmlFor="experience-current" className="cursor-pointer text-[#003A6C]">
-              {isLaboralExperience ? "Trabajo actual" : "Aún sigo estudiando"}
+              {isLaboralExperience ? "Trabajo actual" : "Cursando actualmente"}
             </Label>
           </div>
 
@@ -508,8 +516,8 @@ export function ExperienceFormModal({
               </div>
 
               {formData.certificate ? (
-                <div className="flex w-fit max-w-full flex-wrap items-center gap-3 rounded-lg border border-[#D7E6F2] bg-[#EEF5F9] px-3 py-2">
-                  <span className="max-w-xs truncate text-xs text-[#4B778D]">Documento seleccionado o ya adjunto.</span>
+                <div className="flex w-full max-w-xl items-center gap-3 rounded-lg border border-[#D7E6F2] bg-[#EEF5F9] px-3 py-2 sm:w-fit">
+                  <DocumentPreview source={formData.certificate} />
                   {canRemoveCertificate ? (
                     <Button
                       id="boton-eliminar-certificado"
@@ -517,17 +525,17 @@ export function ExperienceFormModal({
                       variant="outline"
                       disabled={isCertificateDisabled}
                       onClick={onRemoveCertificate}
-                      className="h-9 border-[#F2C6C6] bg-white text-[#B42318] hover:bg-[#FFF1F1]"
+                      className="h-8 shrink-0 rounded-full border-[#F2C6C6] bg-white px-3 text-xs text-[#B42318] hover:bg-[#FFF1F1]"
                     >
-                      <X className="mr-2 size-4" />
-                      Eliminar
+                      <X className="mr-1 size-3" />
+                      Quitar
                     </Button>
                   ) : null}
                 </div>
               ) : null}
 
               {errors.certificate ? <p className="text-sm text-red-600">{errors.certificate}</p> : null}
-              <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG, PNG y PDF. Tamaño máximo: 2 MB.</p>
+              <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG, PNG y PDF. Tamaño máximo: 5 MB.</p>
             </div>
           )}
 
@@ -550,6 +558,33 @@ export function ExperienceFormModal({
       </div>
     </div>
   )
+}
+
+function DocumentPreview({ source }: { source: string }) {
+  const isPdf = /^data:application\/pdf/i.test(source) || /\.pdf(?:[?#].*)?$/i.test(source)
+  const isImage = /^data:image\//i.test(source) || /\.(?:jpe?g|png|webp|gif)(?:[?#].*)?$/i.test(source)
+
+  if (isImage) {
+    return (
+      <img
+        src={source}
+        alt="Vista previa del documento de formacion"
+        className="h-32 w-44 rounded-md border border-[#D7E6F2] bg-white object-contain"
+      />
+    )
+  }
+
+  if (isPdf) {
+    return (
+      <iframe
+        src={source}
+        title="Vista previa del documento de formacion"
+        className="h-40 w-56 rounded-md border border-[#D7E6F2] bg-white"
+      />
+    )
+  }
+
+  return <span className="max-w-xs truncate text-xs text-[#4B778D]">Documento seleccionado o ya adjunto.</span>
 }
 
 function SearchableSelect({

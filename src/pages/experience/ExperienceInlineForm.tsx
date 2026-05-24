@@ -89,6 +89,10 @@ const FIELD_OPTIONS = [
   "Otro",
 ]
 
+function getTodayInputValue() {
+  return new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
+}
+
 type ExperienceInlineFormProps = {
   mode: "experience" | "education"
   formData: ExperienceFormValues
@@ -135,7 +139,7 @@ export function ExperienceInlineForm({
   const isEducation = mode === "education"
   const companyLabel = isEducation ? "Institución académica" : "Empresa"
   const positionLabel = isEducation ? "Nivel de formación" : "Cargo"
-  const currentLabel = isEducation ? "Aún sigo estudiando" : "Trabajo actual"
+  const currentLabel = isEducation ? "Cursando actualmente" : "Trabajo actual"
   const submitLabel = isEducation ? "Registrar Formación Académica" : "Registrar Experiencia Laboral"
   const descriptionPlaceholder = isEducation
     ? "Describe tu Formación Académica, logros, especializaciones..."
@@ -143,7 +147,7 @@ export function ExperienceInlineForm({
   const degreeOptions = educationTitleOptions.length ? educationTitleOptions : DEGREE_OPTIONS
   const fieldOptions = educationFieldOptions.length ? educationFieldOptions : FIELD_OPTIONS
   const positionOptions = workRoleOptions.length ? workRoleOptions : POSITION_OPTIONS
-  const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
+  const [today] = useState(getTodayInputValue)
   const fileButtonClassName =
     "inline-flex cursor-pointer items-center rounded-lg bg-[#C2DBED] px-4 py-2 text-sm font-medium text-[#003A6C] transition hover:bg-[#A5D7E8] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
 
@@ -274,7 +278,7 @@ export function ExperienceInlineForm({
                 id="startDate"
                 type="date"
                 value={formData.startDate}
-                disabled={isSaving}
+                disabled={isSaving || (isEducation && formData.current)}
                 max={today}
                 onBlur={() => onBlur("startDate")}
                 onChange={(event) => onFieldChange("startDate", event.target.value)}
@@ -305,7 +309,7 @@ export function ExperienceInlineForm({
               id="current"
               type="checkbox"
               checked={formData.current}
-              disabled={isSaving}
+              disabled={isSaving || (isEducation && Boolean(formData.startDate))}
               onChange={(event) => onFieldChange("current", event.target.checked)}
               className="h-4 w-4 rounded border-gray-300 text-[#003A6C] focus:ring-[#003A6C]"
             />
@@ -362,19 +366,18 @@ export function ExperienceInlineForm({
               </Label>
               <div className="space-y-3">
                 {formData.certificate ? (
-                  <div className="flex w-fit max-w-full items-center gap-3 rounded-lg border border-[#D7E6F2] bg-[#EEF5F9] px-3 py-2">
-                    <span className="max-w-xs truncate text-sm text-gray-700">
-                      {formData.certificate.includes("application/pdf") ? "Certificado PDF seleccionado" : "Certificado seleccionado"}
-                    </span>
+                  <div className="flex w-full max-w-xl items-center gap-3 rounded-lg border border-[#D7E6F2] bg-[#EEF5F9] px-3 py-2 sm:w-fit">
+                    <DocumentPreview source={formData.certificate} />
                     {canRemoveCertificate ? (
                       <button
                         type="button"
                         onClick={onRemoveCertificate}
                         disabled={isSaving}
-                        className="rounded-full bg-red-600 p-1 text-white transition hover:bg-red-700 disabled:opacity-50"
+                        className="inline-flex h-8 shrink-0 items-center rounded-full bg-red-600 px-3 text-xs font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
                         aria-label="Eliminar certificado"
                       >
-                        <X className="h-3 w-3" />
+                        <X className="mr-1 h-3 w-3" />
+                        Quitar
                       </button>
                     ) : null}
                   </div>
@@ -393,7 +396,7 @@ export function ExperienceInlineForm({
                     className="hidden"
                   />
                 </label>
-                <p className="text-xs text-gray-500">Formatos: JPG, JPEG, PNG y PDF. Tamaño máximo: 2 MB.</p>
+                <p className="text-xs text-gray-500">Formatos: JPG, JPEG, PNG y PDF. Tamaño máximo: 5 MB.</p>
                 {errors.certificate ? <p className="text-sm text-red-600">{errors.certificate}</p> : null}
               </div>
             </div>
@@ -440,6 +443,33 @@ function FieldError({
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
     </div>
   )
+}
+
+function DocumentPreview({ source }: { source: string }) {
+  const isPdf = /^data:application\/pdf/i.test(source) || /\.pdf(?:[?#].*)?$/i.test(source)
+  const isImage = /^data:image\//i.test(source) || /\.(?:jpe?g|png|webp|gif)(?:[?#].*)?$/i.test(source)
+
+  if (isImage) {
+    return (
+      <img
+        src={source}
+        alt="Vista previa del documento de formacion"
+        className="h-32 w-44 rounded-md border border-[#D7E6F2] bg-white object-contain"
+      />
+    )
+  }
+
+  if (isPdf) {
+    return (
+      <iframe
+        src={source}
+        title="Vista previa del documento de formacion"
+        className="h-40 w-56 rounded-md border border-[#D7E6F2] bg-white"
+      />
+    )
+  }
+
+  return <span className="max-w-xs truncate text-sm text-gray-700">Documento seleccionado o ya adjunto.</span>
 }
 
 function SearchableSelect({
