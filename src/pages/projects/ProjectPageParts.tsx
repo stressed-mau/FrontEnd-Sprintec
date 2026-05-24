@@ -474,6 +474,7 @@ export function ProjectForm({
   readOnlyFields = false,
   canEditGithub = true,
   canEditDemo = true,
+  canEditEndDate = false,
 }: {
   formData: ProjectFormValues;
   errors: ProjectFormErrors;
@@ -495,6 +496,7 @@ export function ProjectForm({
   readOnlyFields?: boolean;
   canEditGithub?: boolean;
   canEditDemo?: boolean;
+  canEditEndDate?: boolean;
 }) {
   const isModalTone = tone === "modal";
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
@@ -518,6 +520,10 @@ export function ProjectForm({
       !selectedTechs.some((selected) => selected.id === technology.id)
     );
   });
+  const isEndDateDisabled = formData.is_current
+    ? !(readOnlyFields && isModalTone && canEditEndDate)
+    : readOnlyFields && !isModalTone;
+  const isCurrentDisabled = isSaving || readOnlyFields || Boolean(formData.fechaFin);
 
   function handleTechnologySelect(technologyId: number) {
     onTechnologyAdd(String(technologyId));
@@ -773,17 +779,23 @@ export function ProjectForm({
           <Input
             type="date"
             value={formData.fechaFin}
-            disabled={formData.is_current || (readOnlyFields && !isModalTone)}
+            disabled={isEndDateDisabled}
             max={today}
             onChange={(event) => onFieldChange("fechaFin", event.target.value)}
-            className={formData.is_current || (readOnlyFields && !isModalTone) ? disabledInputClassName : fieldInputClassName(Boolean(errors.fechaFin))}
+            className={isEndDateDisabled ? disabledInputClassName : fieldInputClassName(Boolean(errors.fechaFin))}
             aria-invalid={Boolean(errors.fechaFin)}
           />
         </Field>
       </div>
 
       <label className={`flex items-center gap-2 text-sm font-medium ${isModalTone ? "text-gray-700" : "text-[#003A6C]"}`}>
-        <input type="checkbox" checked={formData.is_current} onChange={(event) => onFieldChange("is_current", event.target.checked)} className={`size-4 rounded ${isModalTone ? "border-gray-300 accent-[#003A6C]" : "border-[#A5D7E8]"}`} />
+        <input
+          type="checkbox"
+          checked={formData.is_current}
+          disabled={isCurrentDisabled}
+          onChange={(event) => onFieldChange("is_current", event.target.checked)}
+          className={`size-4 rounded disabled:cursor-not-allowed disabled:opacity-60 ${isModalTone ? "border-gray-300 accent-[#003A6C]" : "border-[#A5D7E8]"}`}
+        />
         Proyecto en curso
       </label>
 

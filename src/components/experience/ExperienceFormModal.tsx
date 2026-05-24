@@ -173,8 +173,16 @@ export function ExperienceFormModal({
     isLaboralUpdate ||
     (!isLaboralExperience && isCurrentActive && !isAcademicUpdate) ||
     (isAcademicUpdate && !originalEditingValues?.current)
-  const isEndDateDisabled = isSaving || isCurrentActive
-  const isCurrentDisabled = isSaving || isEditing || (!isLaboralExperience && Boolean(formData.startDate))
+  const canCloseCurrentLaboralExperience = isLaboralUpdate && Boolean(originalEditingValues?.current)
+  const isEndDateDisabled =
+    isSaving ||
+    (isLaboralUpdate && !canCloseCurrentLaboralExperience) ||
+    (isCurrentActive && !canCloseCurrentLaboralExperience)
+  const isCurrentDisabled =
+    isSaving ||
+    isEditing ||
+    (isLaboralExperience && Boolean(formData.endDate)) ||
+    (!isLaboralExperience && Boolean(formData.startDate))
   const isImageDisabled = isSaving || isLaboralUpdate
   const isCertificateDisabled = isSaving || isAcademicUpdate
   const [today] = useState(getTodayInputValue)

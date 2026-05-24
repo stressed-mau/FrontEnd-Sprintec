@@ -309,7 +309,7 @@ export function ExperienceInlineForm({
               id="current"
               type="checkbox"
               checked={formData.current}
-              disabled={isSaving || (isEducation && Boolean(formData.startDate))}
+              disabled={isSaving || (!isEducation && Boolean(formData.endDate)) || (isEducation && Boolean(formData.startDate))}
               onChange={(event) => onFieldChange("current", event.target.checked)}
               className="h-4 w-4 rounded border-gray-300 text-[#003A6C] focus:ring-[#003A6C]"
             />
