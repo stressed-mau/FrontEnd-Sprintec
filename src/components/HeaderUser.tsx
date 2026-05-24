@@ -6,11 +6,7 @@ import logo from "@/assets/logo.png"
 import { NotificationBell } from "@/components/NotificationBell"
 import { USER_GUIDE_OPEN_USER_MENU_EVENT, USER_GUIDE_RESTORE_USER_MENU_EVENT } from "@/components/UserGuide"
 import { useLogout } from "@/hooks/useLogout"
-<<<<<<< HEAD
-import { TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE, ADMIN_DASHBOARD_ROUTE } from "@/routes/route-paths"
-=======
-import { REPORTES_INDEX_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
->>>>>>> 3eb00305dacf0737a0d553fcc0a3214d2a91159c
+import { REPORTES_INDEX_ROUTE, USER_HOME_ROUTE, ADMIN_DASHBOARD_ROUTE } from "@/routes/route-paths"
 import { getAuthSession } from "@/services/auth"
 
 const ROLE_LABELS: Record<number, string> = {

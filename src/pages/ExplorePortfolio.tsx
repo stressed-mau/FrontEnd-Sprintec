@@ -11,10 +11,8 @@ import { useExplorePortfolioFilters, type PortfolioCard } from "@/hooks/useExplo
 import { getLanguages, getWorkOptions } from "@/services/ProjectService";
 import { isAuthenticated } from "@/services/auth";
 import { getExplorePortfolios, type ExplorePortfoliosMeta } from "@/services/explorePortfoliosService";
-<<<<<<< HEAD
 import AdminSidebar from "../components/Admin/AdminSidebar";
 import { getAuthSession } from "@/services/auth";
-=======
 
 type FilterDropdownProps = {
   value: string
@@ -92,7 +90,6 @@ function SkillsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
   return <FilterDropdown {...props} placeholder="Cualquiera" />
 }
 
->>>>>>> 3eb00305dacf0737a0d553fcc0a3214d2a91159c
 export default function ExplorePortfolios() {
   const navigate = useNavigate();
   const occupationContainerRef = useRef<HTMLDivElement | null>(null)
@@ -103,18 +100,15 @@ export default function ExplorePortfolios() {
   const [currentPage, setCurrentPage] = useState(1);
   const [meta, setMeta] = useState<ExplorePortfoliosMeta>({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 });
   const isUserAuthenticated = isAuthenticated();
-<<<<<<< HEAD
   const session = getAuthSession();
   const roleId = session?.user?.role_id;
   const isAdmin = roleId === 2;
-=======
 
   // 1. Declaramos primero los estados que necesita el hook customizado
   const [serverOccupationOptions, setServerOccupationOptions] = useState<string[] | null>(null)
   const [serverTechnologyOptions, setServerTechnologyOptions] = useState<string[] | null>(null)
 
   // 2. Desestructuramos el hook UNA SOLA VEZ correctamente
->>>>>>> 3eb00305dacf0737a0d553fcc0a3214d2a91159c
   const {
     searchTerm,
     setSearchTerm,

@@ -44,12 +44,8 @@ import CertificateReports from "@/pages/admin/CertificateReports"
 import TendenciaPlantillasPage from "@/pages/TendenciaPlantillasPage"
 import ReportsIndexPage from "@/pages/ReportsIndexPage"
 import { NotificationsPage } from "@/pages/NotificationsPage"
-<<<<<<< HEAD
 import AdminHome from "@/pages/AdminHome"
-import { ADMIN_DASHBOARD_ROUTE, CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, NOTIFICATIONS_ROUTE, REGISTER_PROFILE_ROUTE, REGISTER_ROUTE, TEMPLATE_TRENDS_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
-=======
 import { ADMIN_DASHBOARD_ROUTE, CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, NOTIFICATIONS_ROUTE, REGISTER_PROFILE_ROUTE, REGISTER_ROUTE, TEMPLATE_TRENDS_ROUTE, REPORTES_INDEX_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
->>>>>>> 3eb00305dacf0737a0d553fcc0a3214d2a91159c
 
 function AppRoutes() {
   return (
