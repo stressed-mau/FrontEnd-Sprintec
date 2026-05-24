@@ -166,6 +166,9 @@ body {
   border-radius: 10px;
   font-weight: 800;
   min-height: 36px;
+  min-width: 0;
+  padding: 8px 14px;
+  width: auto;
   white-space: normal;
 }
 
@@ -177,22 +180,36 @@ body {
 }
 
 .portfolio-user-guide-popover .driver-popover-prev-btn {
-  background: white;
+  background: #f7f0e1;
   border-color: #c2dbed;
   color: #003a6c;
   text-shadow: none;
+}
+
+.portfolio-user-guide-popover .driver-popover-next-btn:hover,
+.portfolio-user-guide-popover .driver-popover-next-btn:focus,
+.portfolio-user-guide-popover .driver-popover-prev-btn:hover,
+.portfolio-user-guide-popover .driver-popover-prev-btn:focus,
+.portfolio-user-guide-popover .driver-popover-close-btn:hover,
+.portfolio-user-guide-popover .driver-popover-close-btn:focus {
+  background: #f7f0e1;
+  border-color: #c2dbed;
+  color: #003a6c;
 }
 
 .portfolio-user-guide-popover .driver-popover-footer {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: space-between;
 }
 
 .portfolio-user-guide-popover .driver-popover-navigation-btns {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  flex-grow: 0;
+  justify-content: flex-end;
 }
 
 @media (max-width: 640px) {
@@ -215,8 +232,7 @@ body {
 
   .portfolio-user-guide-popover .driver-popover-footer {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    align-items: center;
   }
 
   .portfolio-user-guide-popover .driver-popover-progress-text {
@@ -225,15 +241,16 @@ body {
   }
 
   .portfolio-user-guide-popover .driver-popover-navigation-btns {
-    width: 100%;
+    width: auto;
+    justify-content: flex-end;
   }
 
   .portfolio-user-guide-popover .driver-popover-next-btn,
   .portfolio-user-guide-popover .driver-popover-prev-btn,
   .portfolio-user-guide-popover .driver-popover-close-btn {
-    flex: 1 1 0;
+    flex: 0 0 auto;
     min-width: 0;
-    padding-inline: 10px;
+    padding: 8px 12px;
   }
 }
 
