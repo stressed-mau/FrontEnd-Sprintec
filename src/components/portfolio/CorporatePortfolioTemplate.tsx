@@ -220,13 +220,24 @@ export function CorporatePortfolioTemplate({ profile, portfolio }: Props) {
     }))
   }, [visibleCertificates])
 
+  const getProjectTechnologies = (project: any): string[] => {
+    const source = project.technologies?.length ? project.technologies : project.languages ?? project.tecnologias ?? []
+
+    return source
+      .map((technology: any) => {
+        if (typeof technology === "string") return technology.trim()
+        return String(technology?.name ?? technology?.nombre ?? technology?.title ?? "").trim()
+      })
+      .filter(Boolean)
+  }
+
   const projects = useMemo(() => {
     return visibleProjects.map((project: any) => ({
       id: String(project.id),
-      name: project.name ?? "Proyecto",
+      name: project.nombre ?? project.name ?? project.title ?? "Proyecto",
       role: project.project_rol ?? project.role ?? project.rol ?? "Rol no especificado",
       description: project.description ?? "Sin descripción",
-      stack: project.technologies ?? project.languages?.map((language: any) => language.name ?? language).filter(Boolean) ?? project.tecnologias?.map((technology: any) => technology.name ?? technology).filter(Boolean) ?? [] as string[],
+      stack: getProjectTechnologies(project),
     }))
   }, [visibleProjects])
 

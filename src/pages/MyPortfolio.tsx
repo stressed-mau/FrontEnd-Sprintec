@@ -121,8 +121,8 @@ const MyPortfolio = () => {
     biography: form.bio || "",
   }
   const visibleSkills = visibilityData.skills.filter(s => s.checked)
-  const visibleExperience = visibilityData.experience.filter(e => e.checked)
-  const visibleProjects = visibilityData.projects.filter(p => p.checked)
+  const visibleExperience = portfolio.experiences.filter((item: any) => item.type !== "academica" && asBoolean(item.is_public))
+  const visibleProjects = portfolio.projects.filter((item: any) => asBoolean(item.is_public))
   const visibleEducation = visibilityData.education.filter(e => e.checked)
   const visibleCertificates = visibilityData.certificates.filter(c => c.checked)
   const visibleNetworks = visibilityData.networks.filter(n => n.checked)
@@ -236,10 +236,10 @@ const MyPortfolio = () => {
 
                     <div className="mt-6 space-y-6">
                       {visibleExperience.length > 0 ? (
-                        visibleExperience.map((exp) => (
+                        visibleExperience.map((exp: any) => (
                           <div key={exp.id} className="border-l-2 pl-4">
-                            <p className="font-bold">{exp.label}</p>
-                            <p className="text-[#003A6C] text-sm">{exp.sublabel}</p>
+                            <p className="font-bold">{exp.company || exp.company_name || "Empresa no especificada"}</p>
+                            <p className="text-[#003A6C] text-sm">{exp.position || exp.role || exp.rol || "Rol no especificado"}</p>
                           </div>
                         ))
                       ) : (
@@ -254,25 +254,23 @@ const MyPortfolio = () => {
 
                     <div className="mt-6 grid gap-4">
                       {visibleProjects.length > 0 ? (
-                        visibleProjects.map((project) => (
+                        visibleProjects.map((project: any) => {
+                          const technologies =
+                            project.technologies ??
+                            project.tecnologias?.map((technology: any) => technology.name ?? technology) ??
+                            []
+
+                          return (
                           <div key={project.id} className="bg-gray-50 border-l-4 border-[#003A6C] p-4">
                             <h4 className="font-bold text-sm uppercase">
-                              {project.label || "Proyecto sin titulo"}
+                              {project.nombre || project.name || project.title || "Proyecto sin titulo"}
                             </h4>
                             <p className="text-sm text-gray-600 mt-1">
-                              {project.sublabel || "Rol no especificado"}
+                              {project.project_rol || project.role || project.rol || "Rol no especificado"}
                             </p>
-                            {(
-                              visiblePortfolio.projects.find((item: any) => Number(item.id) === project.id)?.technologies ??
-                              visiblePortfolio.projects.find((item: any) => Number(item.id) === project.id)?.tecnologias?.map((technology: any) => technology.name ?? technology) ??
-                              []
-                            ).length ? (
+                            {technologies.length ? (
                               <div className="mt-3 flex flex-wrap gap-2">
-                                {(
-                                  visiblePortfolio.projects.find((item: any) => Number(item.id) === project.id)?.technologies ??
-                                  visiblePortfolio.projects.find((item: any) => Number(item.id) === project.id)?.tecnologias?.map((technology: any) => technology.name ?? technology) ??
-                                  []
-                                ).map((technology: string) => (
+                                {technologies.map((technology: string) => (
                                     <span key={technology} className="rounded-full bg-[#EEF5F9] px-2.5 py-1 text-xs font-semibold text-[#003A6C]">
                                       {technology}
                                     </span>
@@ -280,7 +278,8 @@ const MyPortfolio = () => {
                               </div>
                             ) : null}
                           </div>
-                        ))
+                          )
+                        })
                       ) : (
                         <p className="text-sm text-gray-400 italic">Sin proyectos visibles</p>
                       )}

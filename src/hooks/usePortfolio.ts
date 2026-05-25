@@ -42,7 +42,19 @@ const asText = (value: any): string => {
   if (typeof value === "string") return value.trim();
   if (typeof value === "number") return String(value);
   if (value && typeof value === "object") {
-    return asText(value.name ?? value.title ?? value.label ?? value.value ?? value.role ?? value.company_name);
+    return asText(
+      value.name ??
+      value.nombre ??
+      value.title ??
+      value.label ??
+      value.value ??
+      value.role ??
+      value.rol ??
+      value.position ??
+      value.cargo ??
+      value.company_name ??
+      value.company
+    );
   }
   return "";
 };
@@ -57,21 +69,85 @@ const firstText = (...values: any[]): string => {
 };
 
 const normalizeTechnologyNames = (...sources: any[]): string[] => {
-  const source = sources.find((item) => Array.isArray(item));
-
-  if (!source) return [];
-
-  return source
+  return sources
+    .flatMap((source) => Array.isArray(source) ? source : [])
     .map((item: any) => asText(item))
     .filter(Boolean);
 };
 
+const normalizeProjectKey = (value: any) => asText(value).toLowerCase();
+
+const mergeProjectDetails = (baseProjects: any[], detailProjects: any[]) => {
+  const detailsById = new Map(detailProjects.map((project: any) => [String(project.id), project]));
+  const detailsByName = new Map(detailProjects.map((project: any) => [normalizeProjectKey(project.nombre ?? project.name ?? project.title), project]));
+
+  return baseProjects.map((project: any, index: number) => {
+    const detail =
+      detailsById.get(String(project.id)) ??
+      detailsByName.get(normalizeProjectKey(project.nombre ?? project.name ?? project.title ?? project.label));
+
+    return normalizePortfolioProject(detail ? { ...project, ...detail } : project, index);
+  });
+};
+
 const normalizePortfolioProject = (project: any, index: number) => {
-  const source = project?.project && typeof project.project === "object" ? { ...project.project, ...project } : project ?? {};
-  const name = firstText(source.title, source.name, source.nombre, source.project_name, source.projectTitle) || `Proyecto ${index + 1}`;
-  const description = firstText(source.description, source.descripcion, source.summary);
-  const role = firstText(source.project_rol, source.project_role, source.role, source.rol, source.projectRole);
-  const technologies = normalizeTechnologyNames(source.languages, source.technologies, source.tecnologias, source.language);
+  const direct = project ?? {};
+  const nestedProject = direct.project && typeof direct.project === "object" ? direct.project : {};
+  const source = { ...nestedProject, ...direct };
+  const name = firstText(
+    direct.title,
+    direct.name,
+    direct.nombre,
+    direct.label,
+    direct.project_name,
+    direct.projectTitle,
+    nestedProject.title,
+    nestedProject.name,
+    nestedProject.nombre,
+    nestedProject.label,
+    nestedProject.project_name,
+    nestedProject.projectTitle,
+  ) || `Proyecto ${index + 1}`;
+  const description = firstText(
+    direct.description,
+    direct.descripcion,
+    direct.summary,
+    nestedProject.description,
+    nestedProject.descripcion,
+    nestedProject.summary,
+  );
+  const role = firstText(
+    direct.project_rol,
+    direct.project_role,
+    direct.role,
+    direct.rol,
+    direct.sublabel,
+    direct.projectRole,
+    nestedProject.project_rol,
+    nestedProject.project_role,
+    nestedProject.role,
+    nestedProject.rol,
+    nestedProject.sublabel,
+    nestedProject.projectRole,
+  );
+  const technologies = normalizeTechnologyNames(
+    direct.languages,
+    direct.technologies,
+    direct.tecnologias,
+    direct.techs,
+    direct.stack,
+    direct.project_technologies,
+    direct.project_languages,
+    direct.language,
+    nestedProject.languages,
+    nestedProject.technologies,
+    nestedProject.tecnologias,
+    nestedProject.techs,
+    nestedProject.stack,
+    nestedProject.project_technologies,
+    nestedProject.project_languages,
+    nestedProject.language,
+  );
 
   return {
     ...source,
@@ -100,26 +176,49 @@ const normalizePortfolioProject = (project: any, index: number) => {
 };
 
 const normalizePortfolioExperience = (experience: any, index: number) => {
-  const source = experience?.experience && typeof experience.experience === "object"
-    ? { ...experience.experience, ...experience }
-    : experience?.work_experience && typeof experience.work_experience === "object"
-      ? { ...experience.work_experience, ...experience }
-      : experience ?? {};
+  const direct = experience ?? {};
+  const nestedExperience = direct.experience && typeof direct.experience === "object" ? direct.experience : {};
+  const nestedWorkExperience = direct.work_experience && typeof direct.work_experience === "object" ? direct.work_experience : {};
+  const source = { ...nestedExperience, ...nestedWorkExperience, ...direct };
   const company = firstText(
-    source.company_name,
-    source.company,
-    source.empresa,
-    source.organization,
-    source.institution,
-    source.name,
+    direct.company_name,
+    direct.company,
+    direct.empresa,
+    direct.organization,
+    direct.institution,
+    direct.name,
+    nestedExperience.company_name,
+    nestedExperience.company,
+    nestedExperience.empresa,
+    nestedExperience.organization,
+    nestedExperience.institution,
+    nestedExperience.name,
+    nestedWorkExperience.company_name,
+    nestedWorkExperience.company,
+    nestedWorkExperience.empresa,
+    nestedWorkExperience.organization,
+    nestedWorkExperience.institution,
+    nestedWorkExperience.name,
   ) || "Empresa no especificada";
   const position = firstText(
-    source.role,
-    source.rol,
-    source.position,
-    source.cargo,
-    source.job_title,
-    source.title,
+    direct.role,
+    direct.rol,
+    direct.position,
+    direct.cargo,
+    direct.job_title,
+    direct.title,
+    nestedExperience.role,
+    nestedExperience.rol,
+    nestedExperience.position,
+    nestedExperience.cargo,
+    nestedExperience.job_title,
+    nestedExperience.title,
+    nestedWorkExperience.role,
+    nestedWorkExperience.rol,
+    nestedWorkExperience.position,
+    nestedWorkExperience.cargo,
+    nestedWorkExperience.job_title,
+    nestedWorkExperience.title,
   ) || "Rol no especificado";
 
   return {
@@ -167,6 +266,13 @@ export const usePortfolio = (externalSlug?: string) => {
           console.log("PORTAFOLIO PUBLICO:", d)
           console.log("PUBLIC RESPONSE", d);
           console.log("WORK EXPERIENCES", d.work_experiences);
+          const normalizedProjects = (d.projects || []).map(normalizePortfolioProject);
+          const projectsWithDetails = !externalSlug && session?.user?.id
+            ? await getProjects()
+                .then((projects) => mergeProjectDetails(normalizedProjects, projects))
+                .catch(() => normalizedProjects)
+            : normalizedProjects;
+
           setPortfolio({
             id: getPortfolioId(d) ? String(getPortfolioId(d)) : undefined,
             user: {
@@ -179,7 +285,7 @@ export const usePortfolio = (externalSlug?: string) => {
               phone_number: d.profile.phone || "",
               image_url: d.profile.image || "",
             },
-            projects: (d.projects || []).map(normalizePortfolioProject),
+            projects: projectsWithDetails,
             skills: d.skills,
             experiences: (d.work_experiences || d.experiences || []).map((exp: any, index: number) => {
               const normalizedExperience = normalizePortfolioExperience(exp, index)
@@ -297,17 +403,9 @@ export const usePortfolio = (externalSlug?: string) => {
           },
           
           skills: skills as Skill[],
-          experiences: [...experiences, ...education] as unknown as Experience[],
+          experiences: experiences.map(normalizePortfolioExperience) as unknown as Experience[],
           educations: education as unknown as Experience[],
-          projects: projects.map((project: any) => ({
-            ...project,
-            name: project.name ?? project.title ?? project.nombre ?? "Proyecto",
-            title: project.title ?? project.name ?? project.nombre ?? "Proyecto",
-            nombre: project.nombre ?? project.title ?? project.name ?? "Proyecto",
-            project_rol: project.project_rol ?? project.role ?? project.rol ?? "",
-            role: project.role ?? project.project_rol ?? project.rol ?? "",
-            technologies: project.technologies ?? project.languages?.map((language: any) => language.name ?? language).filter(Boolean) ?? project.tecnologias?.map((technology: any) => technology.name ?? technology).filter(Boolean) ?? [],
-          })) as unknown as Project[],
+          projects: projects.map(normalizePortfolioProject) as unknown as Project[],
           socialNetworks: social as SocialNetwork[],
           certificates: [],
           template: 0, // Template 0 indica que no ha elegido uno aún
