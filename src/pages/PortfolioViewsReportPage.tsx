@@ -91,6 +91,19 @@ const PortfolioViewsReportPage = () => {
   const handleExportPDF = useReactToPrint({
     contentRef: reportRef,
     documentTitle: `Reporte-Visualizaciones-${reportDate}`,
+    pageStyle: `
+      @page {
+        size: letter;
+        margin: 12mm;
+      }
+
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    `,
   })
 
   useEffect(() => {
