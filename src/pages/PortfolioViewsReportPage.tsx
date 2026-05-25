@@ -83,6 +83,7 @@ const PortfolioViewsReportPage = () => {
   const reportRef = useRef<HTMLDivElement>(null)
   const monthRows = getMonthRows(analytics?.viewsByMonth ?? {})
   const maxMonthViews = Math.max(...monthRows.map((row) => row.views), 1)
+  const topProjectRows = [...(analytics?.projectViews ?? [])].sort((a, b) => b.value - a.value).slice(0, 3)
   const socialNetworkRows = getSocialNetworkRows(analytics?.socialClicks ?? [], registeredNetworks)
   const reportDate = new Date().toLocaleDateString()
   const reportPeriod = analytics?.period?.from && analytics?.period?.to
@@ -270,16 +271,16 @@ const PortfolioViewsReportPage = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FolderGit2 className="h-5 w-5 text-blue-600" />
-                    Vistas de proyectos
+                    Top 3 proyectos vistos
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {analytics?.projectViews?.length ? (
+                  {topProjectRows.length ? (
                     <div className="space-y-3">
-                      {analytics.projectViews.map((project) => (
-                        <div key={project.id} className="flex items-center justify-between gap-4 rounded-lg border border-[#D9EAF4] bg-[#F8FBFD] px-4 py-3">
-                          <span className="text-sm font-semibold text-[#003A6C]">{project.label}</span>
-                          <span className="rounded-full bg-[#D9EAF4] px-3 py-1 text-sm font-bold text-[#003A6C]">{project.value}</span>
+                      {topProjectRows.map((project) => (
+                        <div key={project.id} className="flex flex-col gap-2 rounded-lg border border-[#D9EAF4] bg-[#F8FBFD] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                          <span className="min-w-0 break-words text-sm font-semibold text-[#003A6C]">{project.label}</span>
+                          <span className="w-fit rounded-full bg-[#D9EAF4] px-3 py-1 text-sm font-bold text-[#003A6C] sm:shrink-0">{project.value}</span>
                         </div>
                       ))}
                     </div>
