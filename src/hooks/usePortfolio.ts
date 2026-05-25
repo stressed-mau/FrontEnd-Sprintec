@@ -69,10 +69,20 @@ const firstText = (...values: any[]): string => {
 };
 
 const normalizeTechnologyNames = (...sources: any[]): string[] => {
+  const seen = new Set<string>();
+
   return sources
     .flatMap((source) => Array.isArray(source) ? source : [])
     .map((item: any) => asText(item))
-    .filter(Boolean);
+    .filter((technology) => {
+      if (!technology) return false;
+
+      const key = technology.toLowerCase();
+      if (seen.has(key)) return false;
+
+      seen.add(key);
+      return true;
+    });
 };
 
 const normalizeProjectKey = (value: any) => asText(value).toLowerCase();
