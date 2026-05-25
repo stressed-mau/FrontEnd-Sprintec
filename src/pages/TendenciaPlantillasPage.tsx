@@ -47,7 +47,8 @@ const TendenciaPlantillasPage = () => {
         <Sidebar />
 
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
-          <div ref={reportRef} className="mx-auto max-w-6xl print:max-w-full print:px-6 print:pt-4 print:scale-[0.82] print:origin-top print:max-h-screen" >
+          {/* Se optimizó el escalado para ocupar el espacio ideal de la página impresa y expandirse al 100% de ancho */}
+          <div ref={reportRef} className="mx-auto max-w-6xl print:max-w-full print:w-full print:px-8 print:pt-6 print:scale-[0.96] print:origin-top transition-all" >
 
             {/* Encabezado de impresión */}
             <div className="hidden print:flex items-center justify-between mb-6 border-b border-gray-300 pb-3">
@@ -113,8 +114,8 @@ const TendenciaPlantillasPage = () => {
               <span className="text-[#0369A1] font-bold text-sm italic">Periodo actual: {reportPeriod}</span>
             </div>
 
-            {/* KPIs: Justificado al centro en móvil para acompañar el ancho reducido de las sub-cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-y-3 gap-x-0.5 sm:gap-3 mb-6 justify-items-center md:justify-items-stretch print:grid-cols-4 print:gap-4 print:mb-6">
+            {/* KPIs: print:gap-4 mantiene la estructura impecable en el PDF sin encimarse */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-y-3 gap-x-1 sm:gap-3 mb-6 justify-items-center md:justify-items-stretch print:grid-cols-4 print:gap-4 print:mb-8">
               <KPICard label="Plantilla líder" value={leadStat?.template_name ?? "Pendiente"} change={formatTemplateVariation(leadVariation)} helper="Mayor retención" icon={<Crown size={16} />} isNegative={leadVariation < 0} />
               <KPICard label="Retención" value={leadStat ? `${leadStat.retention}%` : "Pendiente"} change={leadStat ? formatTemplateVariation(leadStat.variation) : "Sin dato"} helper="Promedio líder" icon={<MousePointer2 size={16} />} isNegative={leadVariation < 0} />
               <KPICard label="Tiempo prom." value={leadStat ? formatTemplateTime(leadStat.avg_time) : "Pendiente"} change="Semana actual" helper="Tiempo medio" icon={<Clock size={16} />} />
@@ -135,7 +136,7 @@ const TendenciaPlantillasPage = () => {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-3 gap-2 md:gap-4 mb-8 print:grid-cols-3 print:gap-4 print:mb-6">
+                <div className="grid grid-cols-3 gap-2 md:gap-4 mb-8 print:grid-cols-3 print:gap-4 print:mb-8">
                   {visibleStats.length > 0 ? (
                     visibleStats.map((item, idx) => <TrendCard key={idx} {...item} />)
                   ) : (
@@ -145,11 +146,11 @@ const TendenciaPlantillasPage = () => {
                   )}
                 </div>
 
-                {/* Contenedor del gráfico optimizado: print:overflow-visible quita el scrollbar en el PDF */}
-                <div className="bg-white rounded-3xl border border-[#C9E1F0] p-4 md:p-6 shadow-sm print:p-4 print:break-inside-avoid">
+                {/* Gráfico ampliado para la hoja impresa */}
+                <div className="bg-white rounded-3xl border border-[#C9E1F0] p-4 md:p-6 shadow-sm print:p-6 print:break-inside-avoid">
                   <h3 className="mb-3 text-xl font-semibold text-[#003A6C] print:mb-4">Evolución semanal de visitas</h3>
 
-                  <div className="h-64 sm:h-80 lg:h-80 rounded-2xl bg-[#F5F5F5] p-3 sm:p-6 overflow-x-auto print:overflow-visible print:h-52 print:w-full">
+                  <div className="h-64 sm:h-80 lg:h-80 rounded-2xl bg-[#F5F5F5] p-3 sm:p-6 overflow-x-auto print:overflow-visible print:h-64 print:w-full">
                     {visibleChartData.length > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={visibleChartData} barGap={6}>
@@ -183,21 +184,21 @@ const TendenciaPlantillasPage = () => {
   )
 }
 
-{/* KPICard: Añadido max-w-[160px] en móvil para reducir su tamaño horizontal, restableciéndose en md:max-w-none */}
+{/* KPICard: Se eliminaron las restricciones de ancho máximo durante la impresión para mitigar cortes de texto */}
 const KPICard = ({ label, value, change, helper, icon, isNegative }: any) => (
-  <div className="bg-white p-3 sm:p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between w-full max-w-37.5 md:max-w-none">
-    <div className="flex items-center gap-1.5 text-gray-400 mb-2">
+  <div className="bg-white p-3 sm:p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between w-full max-w-37.5 md:max-w-none print:max-w-none print:p-4">
+    <div className="flex items-center gap-1.5 text-gray-400 mb-2 print:mb-1">
       {icon}
-      <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">{label}</span>
+      <span className="text-[10px] sm:text-xs print:text-xs font-bold uppercase tracking-wider truncate">{label}</span>
     </div>
 
     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-1">
-      <div>
-        <span className="text-base sm:text-2xl md:text-xl lg:text-2xl font-bold text-[#003A6C] block truncate">{value}</span>
-        {helper ? <p className="text-[10px] sm:text-xs font-medium text-gray-400 truncate">{helper}</p> : null}
+      <div className="min-w-0 flex-1">
+        <span className="text-base sm:text-2xl md:text-xl lg:text-2xl print:text-xl font-semibold text-[#003A6C] block truncate">{value}</span>
+        {helper ? <p className="text-[10px] sm:text-xs print:text-[11px] font-medium text-gray-400 truncate">{helper}</p> : null}
       </div>
       {change ? (
-        <span className={`flex items-center text-[10px] sm:text-xs font-bold ${isNegative ? "text-red-500" : "text-green-500"}`}>
+        <span className={`flex items-center text-[10px] sm:text-xs print:text-xs font-bold shrink-0 ${isNegative ? "text-red-500" : "text-green-500"}`}>
           {isNegative ? <TrendingDown className="w-3 h-3 mr-0.5" /> : <TrendingUp className="w-3 h-3 mr-0.5" />}
           <span className="truncate">{change}</span>
         </span>
@@ -206,16 +207,16 @@ const KPICard = ({ label, value, change, helper, icon, isNegative }: any) => (
   </div>
 )
 
-{/* TrendCard: En desktop y print mantiene los textos limpios (sm:text-lg y sm:text-xs) */}
+{/* TrendCard */}
 const TrendCard = ({ template_name, retention, avg_time, variation, footerBadge, footerColor, isCurrent }: TrendStats) => (
   <div className="bg-white rounded-2xl border border-[#C9E1F0] overflow-hidden flex flex-col shadow-sm justify-between">
-    <div className="p-3 sm:p-5 flex-1">
+    <div className="p-3 sm:p-5 flex-1 print:p-4">
       <div className="flex justify-between items-center mb-3 sm:mb-4 gap-1">
-        <h3 className="text-xs sm:text-xl font-bold text-[#003A6C] truncate">{template_name}</h3>
+        <h3 className="text-xs sm:text-xl print:text-base font-bold text-[#003A6C] truncate">{template_name}</h3>
         {isCurrent ? <span className="bg-slate-900 text-white text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">LÍDER</span> : null}
       </div>
 
-      <div className="space-y-1.5 text-[11px] sm:text-sm">
+      <div className="space-y-1.5 text-[11px] sm:text-sm print:text-xs">
         <div className="flex justify-between border-b pb-1">
           <span className="text-gray-400 truncate mr-1">Retención</span>
           <span className="font-bold text-[#003A6C] shrink-0">{retention}%</span>
