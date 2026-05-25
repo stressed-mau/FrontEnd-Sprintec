@@ -7,6 +7,7 @@ interface MinimalistTemplateProps {
   portfolio?: any | null;
   isPreview?: boolean;
   onProjectClick?: (projectId?: string | number) => void;
+  onSocialClick?: (network: any) => void;
 }
 
 const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
@@ -14,6 +15,7 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   portfolio,
   isPreview = false,
   onProjectClick,
+  onSocialClick,
 }) => {
   //const { data } = usePortfolioVisibility();
   console.log("PORTFOLIO TEMPLATE", portfolio);
@@ -270,6 +272,7 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
                 href={sn.url || "#"}
                 target="_blank" 
                 rel="noopener noreferrer" 
+                onClick={() => onSocialClick?.(sn)}
                 className="hover:text-zinc-900 transition-colors"
                 title={sn.name}
               >

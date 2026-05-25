@@ -11,6 +11,7 @@ type CorporatePortfolioLink = {
   id: string
   label: string
   url: string
+  source?: any
 }
 
 type CorporatePortfolioProfile = {
@@ -133,9 +134,10 @@ type Props = {
   profile?: CorporatePortfolioProfile | null
   portfolio?: any
   onProjectClick?: (projectId?: string | number) => void
+  onSocialClick?: (network: any) => void
 }
 
-export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick }: Props) {
+export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick, onSocialClick }: Props) {
   //const { data} = usePortfolioVisibility()
   console.log("CORPORATE PORTFOLIO", portfolio)
   //const safeData = data ?? {
@@ -179,8 +181,9 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick 
         )
         .map((link: any) => ({
           id: String(link.id),
-          label: link.platform ?? "Red social",
+          label: link.name ?? link.platform ?? link.label ?? "Red social",
           url: link.url ?? "#",
+          source: link,
         })),
     [visibleNetworks],
   )
@@ -314,6 +317,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick 
                           href={link.url}
                           target="_blank"
                           rel="noreferrer"
+                          onClick={() => onSocialClick?.(link.source ?? link)}
                           className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-2 text-xs font-semibold text-[#3D4348] transition hover:border-[#8C6E46] hover:text-[#8C6E46]"
                         >
                           <LinkIcon className="h-3.5 w-3.5" />
@@ -813,6 +817,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick 
                     href={link.url}
                     target="_blank"
                     rel="noreferrer"
+                    onClick={() => onSocialClick?.(link.source ?? link)}
                     className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#3D4348] transition hover:-translate-y-0.5 hover:border-[#8C6E46] hover:bg-white hover:text-[#8C6E46]"
                   >
                     <LinkIcon className="h-3.5 w-3.5" />

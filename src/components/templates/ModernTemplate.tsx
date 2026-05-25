@@ -6,6 +6,7 @@ interface ModernTemplateProps {
   portfolio?: any;
   isPreview?: boolean;
   onProjectClick?: (projectId?: string | number) => void;
+  onSocialClick?: (network: any) => void;
 }
 
 export interface ModernTemplateProfile {
@@ -18,7 +19,7 @@ export interface ModernTemplateProfile {
   biography: string;
 }
 
-const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isPreview = false, onProjectClick }) => {
+const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isPreview = false, onProjectClick, onSocialClick }) => {
   const userProfile = profile ?? {
     fullname: '',
     occupation: '',
@@ -290,7 +291,15 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
               <h3 className="text-[#fcecd4] text-xl font-black mb-8 uppercase tracking-widest">Conectemos</h3>
               <div className="flex justify-center gap-6">
                 {visibleNetworks.map((net: any) => (
-                  <a key={`${net.sourceTable ?? 'network'}-${net.id}`} href={net.url || '#'} target="_blank" rel="noreferrer" className="w-14 h-14 bg-[#fcecd4] rounded-2xl flex items-center justify-center text-[#173b61] hover:bg-[#ee8e3b] hover:text-white transition-all transform hover:-translate-y-2 shadow-lg" title={net.name}>
+                  <a
+                    key={`${net.sourceTable ?? 'network'}-${net.id}`}
+                    href={net.url || '#'}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => onSocialClick?.(net)}
+                    className="w-14 h-14 bg-[#fcecd4] rounded-2xl flex items-center justify-center text-[#173b61] hover:bg-[#ee8e3b] hover:text-white transition-all transform hover:-translate-y-2 shadow-lg"
+                    title={net.name}
+                  >
                     <Globe size={24} />
                   </a>
                 ))}

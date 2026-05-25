@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { usePortfolioAnalytics } from "@/hooks/usePortfolioAnalytics"
 import { getAuthSession } from "@/services/auth"
-import { useRef } from "react"
+import { getUserSocialNetworks, type SocialNetwork } from "@/services/socialNetworksService"
+import { useEffect, useRef, useState } from "react"
 import { useReactToPrint } from "react-to-print"
 import logo from "@/assets/logo/LogoPG.png"
 import {
@@ -42,12 +43,47 @@ function getMonthRows(viewsByMonth: Record<string, number>) {
   }))
 }
 
+const PROFESSIONAL_NETWORKS = [
+  { key: "github", label: "GitHub", matchKeys: ["github"] },
+  { key: "gitlab", label: "GitLab", matchKeys: ["gitlab"] },
+  { key: "youtube", label: "YouTube", matchKeys: ["youtube", "google"] },
+]
+
+function normalizeNetworkName(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "")
+}
+
+function networkMatches(value: string, matchKeys: string[]) {
+  const normalizedValue = normalizeNetworkName(value)
+  return matchKeys.some((key) => normalizedValue.includes(normalizeNetworkName(key)))
+}
+
+function getSocialNetworkRows(
+  socialClicks: Array<{ label: string; value: number }>,
+  registeredNetworks: SocialNetwork[],
+) {
+  return PROFESSIONAL_NETWORKS.map((network) => {
+    const registeredNetwork = registeredNetworks.find((item) =>
+      networkMatches(`${item.name} ${item.url}`, network.matchKeys)
+    )
+    const clickData = socialClicks.find((item) => networkMatches(item.label, network.matchKeys))
+
+    return {
+      ...network,
+      value: clickData?.value ?? 0,
+      available: Boolean(registeredNetwork),
+    }
+  })
+}
+
 const PortfolioViewsReportPage = () => {
   const session = getAuthSession()
   const { analytics, loading, error } = usePortfolioAnalytics()
+  const [registeredNetworks, setRegisteredNetworks] = useState<SocialNetwork[]>([])
   const reportRef = useRef<HTMLDivElement>(null)
   const monthRows = getMonthRows(analytics?.viewsByMonth ?? {})
   const maxMonthViews = Math.max(...monthRows.map((row) => row.views), 1)
+  const socialNetworkRows = getSocialNetworkRows(analytics?.socialClicks ?? [], registeredNetworks)
   const reportDate = new Date().toLocaleDateString()
   const reportPeriod = analytics?.period?.from && analytics?.period?.to
     ? `${analytics.period.from} - ${analytics.period.to}`
@@ -56,6 +92,26 @@ const PortfolioViewsReportPage = () => {
     contentRef: reportRef,
     documentTitle: `Reporte-Visualizaciones-${reportDate}`,
   })
+
+  useEffect(() => {
+    let isMounted = true
+
+    getUserSocialNetworks()
+      .then((networks) => {
+        if (isMounted) {
+          setRegisteredNetworks(networks)
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setRegisteredNetworks([])
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   if (!session?.user) return null
 
@@ -231,21 +287,18 @@ const PortfolioViewsReportPage = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {analytics?.socialClicks?.length ? (
-                    <div className="space-y-3">
-                      {analytics.socialClicks.map((network) => (
-                        <div key={network.id} className="flex items-center justify-between gap-4 rounded-lg border border-[#D9EAF4] bg-[#F8FBFD] px-4 py-3">
-                          <span className="text-sm font-semibold text-[#003A6C]">{network.label}</span>
+                  <div className="space-y-3">
+                    {socialNetworkRows.map((network) => (
+                      <div key={network.key} className="flex items-center justify-between gap-4 rounded-lg border border-[#D9EAF4] bg-[#F8FBFD] px-4 py-3">
+                        <span className="text-sm font-semibold text-[#003A6C]">{network.label}</span>
+                        {network.available ? (
                           <span className="rounded-full bg-[#D9EAF4] px-3 py-1 text-sm font-bold text-[#003A6C]">{network.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="py-8 text-center">
-                      <ExternalLink className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-                      <p className="text-sm text-gray-600">Aun no hay informacion detallada sobre los clics en tus redes sociales.</p>
-                    </div>
-                  )}
+                        ) : (
+                          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500">No disponible</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </div>

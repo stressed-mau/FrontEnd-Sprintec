@@ -176,6 +176,18 @@ export async function recordProjectClick(params: { visitId: string | number; pro
   }
 }
 
+export async function recordSocialClick(params: { visitId: string | number; networkName: string }) {
+  try {
+    await publicApi.post("/tracking/social-click", {
+      visit_id: params.visitId,
+      network_name: params.networkName.toLowerCase(),
+      clicked_at: new Date().toISOString(),
+    })
+  } catch (error) {
+    console.warn("Click de red social no registrado.", axios.isAxiosError(error) ? error.response?.data ?? error.message : error)
+  }
+}
+
 export async function getPortfolioAnalytics(): Promise<PortfolioAnalytics> {
   try {
     const response = await api.get<PortfolioAnalyticsDto>("/user/portfolio/analytics")

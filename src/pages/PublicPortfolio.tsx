@@ -10,6 +10,7 @@ import { useParams } from "react-router-dom"
 import { api } from "@/services/api"
 import {
   recordPortfolioView,
+  recordSocialClick,
   sendPortfolioTrackingPulse,
 } from "@/services/portfolioAnalyticsService"
 
@@ -26,6 +27,11 @@ const getProjectTechnologies = (project: any): string[] => (
   project.tecnologias?.map((technology: any) => technology.name ?? technology) ??
   []
 ).filter(Boolean)
+
+const getNetworkName = (network: any): string => {
+  const rawName = String(network?.name ?? network?.platform ?? network?.label ?? network?.social_network ?? "")
+  return rawName.trim().toLowerCase().replace(/[^a-z0-9]/g, "")
+}
 
 const PublicPortfolio = () => {
   const { slug } = useParams()
@@ -72,6 +78,12 @@ const PublicPortfolio = () => {
     }
     // Continuar con la navegación normal independientemente del tracking
   };
+
+  const handleSocialClick = async (network: any) => {
+    const networkName = getNetworkName(network)
+    if (!networkName || !visitId) return
+    await recordSocialClick({ visitId, networkName })
+  }
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center font-bold text-[#003A6C]">
@@ -125,15 +137,15 @@ const PublicPortfolio = () => {
     <main className="flex-1 p-4 md:p-10">
       {isModern && <ModernTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} />}
+      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onSocialClick={handleSocialClick} />}
 
       {isMinimalist && <MinimalistTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={visiblePortfolio} isPreview={false} onProjectClick={handleProjectClick} />}
+      profile={profile} portfolio={visiblePortfolio} isPreview={false} onProjectClick={handleProjectClick} onSocialClick={handleSocialClick} />}
 
       {isCorporate && <CorporatePortfolioTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} />}
+      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onSocialClick={handleSocialClick} />}
 
       {!isModern && !isMinimalist && !isCorporate && (
         <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">
