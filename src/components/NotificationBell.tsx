@@ -1,38 +1,22 @@
-import { useState, useRef, useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Bell, TrendingUp } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 import { NOTIFICATIONS_ROUTE } from "@/routes/route-paths"
+import { useNotifications } from "@/hooks/useNotifications"
 
-interface Notification {
-  id: string
-  title: string
-  description: string
-  time: string
-  read: boolean
-  link: string
-}
-
-interface NotificationBellProps {
-  initialNotifications?: Notification[]
-}
-
-const EMPTY_NOTIFICATIONS: Notification[] = []
-
-export function NotificationBell({ initialNotifications = EMPTY_NOTIFICATIONS }: NotificationBellProps) {
+export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
+  const { notifications, unreadCount, markAllAsRead } = useNotifications()
 
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications)
+  const visibleNotifications = notifications.slice(0, 3)
 
-  useEffect(() => {
-    setNotifications(initialNotifications)
-  }, [initialNotifications])
-
-  const unreadCount = notifications.filter((notification) => !notification.read).length
-
-  const markAllAsRead = () => {
-    setNotifications((previous) => previous.map((notification) => ({ ...notification, read: true })))
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead()
+    setIsOpen(false)
+    navigate(NOTIFICATIONS_ROUTE)
   }
 
   useEffect(() => {
@@ -71,17 +55,17 @@ export function NotificationBell({ initialNotifications = EMPTY_NOTIFICATIONS }:
             {unreadCount > 0 && (
               <button
                 type="button"
-                onClick={markAllAsRead}
+                onClick={() => void handleMarkAllAsRead()}
                 className="text-xs text-[#003A6C] transition-colors hover:underline"
               >
-                Marcar todas como leídas
+                Marcar como leídas
               </button>
             )}
           </div>
 
           <div className="max-h-[60vh] overflow-y-auto">
-            {notifications.length > 0 ? (
-              notifications.map((notification) => (
+            {visibleNotifications.length > 0 ? (
+              visibleNotifications.map((notification) => (
                 <Link
                   key={notification.id}
                   to={notification.link}

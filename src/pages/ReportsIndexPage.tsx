@@ -184,7 +184,7 @@ const ReportsIndexPage = () => {
             {!loading && (
               <div className="flex flex-wrap items-center gap-2.5 mb-4">
                 {/* Buscador */}
-                <div className="relative flex-1 min-w-[200px]">
+                <div className="relative flex-1 min-w-50">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B778D]" />
                   <input
                     type="text"

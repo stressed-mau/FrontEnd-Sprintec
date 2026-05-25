@@ -1,15 +1,35 @@
+import { useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
-import { Plus } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/useSkillsManager';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import { VIEW_SKILLS_ROUTE } from '@/routes/route-paths';
 
 const AddSkillsPage = () => {
+  const navigate = useNavigate();
   const { skillType,setSkillType,skillName,handleSkillNameChange,skillLevel,setSkillLevel,handleSave,
           isSaving,errorMessage,showSuccessModal,closeSuccessModal,successMessage, } = useSkillsManager();
 
   const hasNameError = Boolean(errorMessage);
+
+  const handleSuccessClose = useCallback(() => {
+    closeSuccessModal();
+    navigate(VIEW_SKILLS_ROUTE);
+  }, [closeSuccessModal, navigate]);
+
+  useEffect(() => {
+    if (!showSuccessModal) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      handleSuccessClose();
+    }, 1800);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [handleSuccessClose, showSuccessModal]);
 
   const handleCancel = () => {
     window.history.back();
@@ -101,22 +121,21 @@ const AddSkillsPage = () => {
                   </div>
                 )}
 
-                <div className="flex justify-center items-center gap-4 pt-2">
-                  <button
-                    type="submit"
-                    disabled={isSaving}
-                    className="flex items-center justify-center gap-1 w-48 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60" >
-                    <Plus className="size-4" />
-                    {isSaving ? 'Guardando...' : 'Registrar habilidad'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCancel}
-                    disabled={isSaving}
-                    className="w-35 justify-center border-[#A5D7E8] bg-white text-[#003A6C] py-3 rounded-xl font-bold border hover:bg-[#F7F0E1] transition-all disabled:opacity-60" >
-                    Cancelar 
-                  </button>
-                </div>
+                  <div className="flex flex-wrap gap-4 pt-2 justify-center">
+                    <button
+                        type="submit"
+                        disabled={isSaving}
+                        className="w-auto px-3 py-2 bg-[#003A6C] text-white text-sm mb-1.5 shadow-sm  rounded-sm font-bold hover:bg-[#4982AD] transition-all disabled:cursor-not-allowed disabled:opacity-60">
+                        {isSaving ? "Guardando..." : "Registrar"}
+                        </button>
+                     <button
+                        type="button"
+                        onClick={handleCancel}
+                        disabled={isSaving}
+                        className="w-auto px-2 py-2 border-[#A5D7E8] bg-[#F7F0E1] text-[#003A6C] text-sm mb-1.5 rounded-sm font-bold border shadow-sm hover:bg-[#F7F0E1]/80 transition-all disabled:opacity-60" >
+                        Cancelar
+                      </button>
+                  </div>
               </form>
             </div>
 
@@ -124,12 +143,12 @@ const AddSkillsPage = () => {
         </main>
       </div>
 
-      {/* Modal de éxito — Criterio 10 */}
+      {/* Modal de éxito*/}
       <ConfirmationModal
         isOpen={showSuccessModal}
         title="Éxito"
         message={successMessage}
-        onClose={closeSuccessModal}
+        onClose={handleSuccessClose}
       />
 
       <Footer />
