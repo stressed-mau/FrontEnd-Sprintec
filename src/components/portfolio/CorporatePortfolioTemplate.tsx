@@ -220,12 +220,24 @@ export function CorporatePortfolioTemplate({ profile, portfolio }: Props) {
     }))
   }, [visibleCertificates])
 
+  const getProjectTechnologies = (project: any): string[] => {
+    const source = project.technologies?.length ? project.technologies : project.languages ?? project.tecnologias ?? []
+
+    return source
+      .map((technology: any) => {
+        if (typeof technology === "string") return technology.trim()
+        return String(technology?.name ?? technology?.nombre ?? technology?.title ?? "").trim()
+      })
+      .filter(Boolean)
+  }
+
   const projects = useMemo(() => {
     return visibleProjects.map((project: any) => ({
       id: String(project.id),
-      name: project.name ?? "Proyecto",
+      name: project.nombre ?? project.name ?? project.title ?? "Proyecto",
+      role: project.project_rol ?? project.role ?? project.rol ?? "Rol no especificado",
       description: project.description ?? "Sin descripción",
-      stack: [] as string[],
+      stack: getProjectTechnologies(project),
     }))
   }, [visibleProjects])
 
@@ -464,9 +476,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio }: Props) {
 
                   <h4 className="mt-2 text-2xl font-bold">{project.name}</h4>
 
-                  <p className="mt-4 text-sm leading-7 text-[#4B545D]">
-                    {project.description}
-                  </p>
+                  <p className="mt-3 text-sm font-semibold text-[#8C6E46]">{project.role}</p>
 
                   {project.stack.length ? (
                     <div className="mt-5 flex flex-wrap gap-2">
@@ -980,9 +990,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio }: Props) {
 
                         <h4 className="mt-2 text-2xl font-bold">{project.name}</h4>
 
-                        <p className="mt-4 text-sm leading-7 text-[#4B545D]">
-                          {project.description}
-                        </p>
+                        <p className="mt-3 text-sm font-semibold text-[#8C6E46]">{project.role}</p>
 
                         {project.stack.length ? (
                           <div className="mt-5 flex flex-wrap gap-2">

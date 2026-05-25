@@ -213,11 +213,22 @@ function extractProjectList(body: unknown): unknown[] | null {
   return rawList;
 }
 
-function normalizeTechnology(value: unknown): ProjectTechnology | null {
+function normalizeTechnology(value: unknown, index = 0): ProjectTechnology | null {
+  if (typeof value === "string") {
+    const name = value.trim();
+    return name ? { id: index, name } : null;
+  }
+
   if (!value || typeof value !== "object") return null;
   const record = value as Record<string, unknown>;
-  const id = Number(record.id);
-  const name = typeof record.name === "string" ? record.name : "";
+  const id = Number(record.id ?? index);
+  const name = typeof record.name === "string"
+    ? record.name
+    : typeof record.nombre === "string"
+      ? record.nombre
+      : typeof record.title === "string"
+        ? record.title
+        : "";
 
   if (!Number.isFinite(id) || !name) return null;
   return { id, name };
@@ -269,7 +280,7 @@ export function normalizeProject(value: unknown): ProjectItem {
     nombre: String(record.title ?? record.nombre ?? "Proyecto sin titulo"),
     descripcion: String(record.description ?? record.descripcion ?? ""),
     tecnologias: technologies,
-    rol: String(record.project_rol ?? record.rol ?? ""),
+    rol: String(record.project_rol ?? record.project_role ?? record.role ?? record.rol ?? record.projectRole ?? ""),
     fechaInicio: normalizeDate(record.initial_date ?? record.start_date ?? record.fechaInicio),
     fechaFin: finalDate || undefined,
     is_current: normalizeBoolean(record.is_current ?? record.current),

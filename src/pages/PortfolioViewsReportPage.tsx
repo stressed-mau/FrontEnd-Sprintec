@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { usePortfolioAnalytics } from "@/hooks/usePortfolioAnalytics"
 import { getAuthSession } from "@/services/auth"
+import { useRef } from "react"
+import { useReactToPrint } from "react-to-print"
+import logo from "@/assets/logo/LogoPG.png"
 import {
   AlertCircle,
   Calendar,
@@ -42,8 +45,15 @@ function getMonthRows(viewsByMonth: Record<string, number>) {
 const PortfolioViewsReportPage = () => {
   const session = getAuthSession()
   const { analytics, loading, error } = usePortfolioAnalytics()
+  const reportRef = useRef<HTMLDivElement>(null)
   const monthRows = getMonthRows(analytics?.viewsByMonth ?? {})
   const maxMonthViews = Math.max(...monthRows.map((row) => row.views), 1)
+  const reportDate = new Date().toLocaleDateString()
+  const reportPeriod = "Reporte general"
+  const handleExportPDF = useReactToPrint({
+    contentRef: reportRef,
+    documentTitle: `Reporte-Visualizaciones-${reportDate}`,
+  })
 
   if (!session?.user) return null
 
@@ -55,23 +65,43 @@ const PortfolioViewsReportPage = () => {
         <Sidebar />
 
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
-          <div className="mx-auto max-w-7xl space-y-6">
+          <div ref={reportRef} className="mx-auto max-w-7xl space-y-6 print:max-w-full print:px-2 print:pt-6 print:scale-[0.92] print:origin-top">
+            <div className="hidden print:flex items-center justify-between mb-4 border-b border-gray-300 pb-3">
+              <div className="w-1/3 flex justify-start">
+                <img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
+              </div>
+              <div className="w-1/3 text-center">
+                <h1 className="text-2xl font-bold text-[#003A6C] leading-tight">Reporte de Visualizaciones</h1>
+                <p className="text-sm text-gray-500">{reportPeriod}</p>
+              </div>
+              <div className="w-1/3 flex justify-end">
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-[#003A6C]">{reportDate}</p>
+                </div>
+              </div>
+            </div>
+
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h1 className="mb-2 text-3xl font-bold text-[#003A6C]">Visualizaciones</h1>
-                <p className="text-[#4B778D]">Metricas reales registradas por el backend para tu portafolio publicado.</p>
+                <p className="text-[#4B778D]">Consulta el rendimiento de tu portafolio publicado y revisa cuantas personas lo han visitado.</p>
               </div>
 
               <div className="flex flex-col items-start gap-2 sm:items-end">
-                <Button
-                  type="button"
-                  disabled
-                  className="bg-[#003A6C] text-white shadow-sm transition-colors hover:bg-[#4982AD]"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Exportar a PDF
-                </Button>
-                <p className="text-sm font-medium text-[#4B778D]">Backend aun no entrega datos para exportacion.</p>
+                <div className="print:hidden">
+                  <Button
+                    type="button"
+                    onClick={handleExportPDF}
+                    disabled={loading}
+                    className="bg-[#003A6C] text-white shadow-sm transition-colors hover:bg-[#4982AD]"
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Generar PDF
+                  </Button>
+                </div>
+                <p className="print:hidden text-sm font-medium text-[#4B778D]">
+                  {loading ? "Cargando reporte..." : "Descarga una copia del reporte actual."}
+                </p>
               </div>
             </div>
 
@@ -84,7 +114,7 @@ const PortfolioViewsReportPage = () => {
               </Card>
             ) : null}
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 print:grid-cols-3 print:gap-3">
               <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
@@ -96,7 +126,7 @@ const PortfolioViewsReportPage = () => {
                       <Eye className="h-6 w-6" />
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-blue-100">Total registrado por visitas al portafolio publico</p>
+                  <p className="mt-3 text-sm text-blue-100">Cantidad total de veces que se ha abierto tu portafolio publicado.</p>
                 </CardContent>
               </Card>
 
@@ -111,7 +141,7 @@ const PortfolioViewsReportPage = () => {
                       <Calendar className="h-6 w-6" />
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-purple-100">Dato recibido desde /user/portfolio/analytics</p>
+                  <p className="mt-3 text-sm text-purple-100">Visitas recibidas durante el mes actual.</p>
                 </CardContent>
               </Card>
 
@@ -126,12 +156,12 @@ const PortfolioViewsReportPage = () => {
                       <ExternalLink className="h-6 w-6 text-gray-400" />
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-[#4B778D]">Backend todavia no envia esta metrica.</p>
+                  <p className="mt-3 text-sm text-[#4B778D]">Esta informacion estara disponible cuando se active el seguimiento de enlaces.</p>
                 </CardContent>
               </Card>
             </div>
 
-            <Card>
+            <Card className="print:break-inside-avoid">
               <CardHeader>
                 <CardTitle>Vistas por mes</CardTitle>
               </CardHeader>
@@ -164,8 +194,8 @@ const PortfolioViewsReportPage = () => {
               </CardContent>
             </Card>
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <Card>
+            <div className="grid gap-6 md:grid-cols-2 print:gap-3">
+              <Card className="print:break-inside-avoid">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FolderGit2 className="h-5 w-5 text-blue-600" />
@@ -175,12 +205,12 @@ const PortfolioViewsReportPage = () => {
                 <CardContent>
                   <div className="py-8 text-center">
                     <FolderGit2 className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-                    <p className="text-sm text-gray-600">Backend todavia no entrega vistas por proyecto.</p>
+                    <p className="text-sm text-gray-600">Aun no hay informacion detallada sobre las vistas de cada proyecto.</p>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="print:break-inside-avoid">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ExternalLink className="h-5 w-5 text-purple-600" />
@@ -190,7 +220,7 @@ const PortfolioViewsReportPage = () => {
                 <CardContent>
                   <div className="py-8 text-center">
                     <ExternalLink className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-                    <p className="text-sm text-gray-600">Backend todavia no entrega clics por red social.</p>
+                    <p className="text-sm text-gray-600">Aun no hay informacion detallada sobre los clics en tus redes sociales.</p>
                   </div>
                 </CardContent>
               </Card>

@@ -10,6 +10,20 @@ import { useParams } from "react-router-dom"
 import { api } from "@/services/api"
 import { recordPortfolioView } from "@/services/portfolioAnalyticsService"
 
+const asBoolean = (value: unknown): boolean => {
+  if (typeof value === "boolean") return value
+  if (typeof value === "number") return value === 1
+  if (typeof value === "string") return ["1", "true", "si", "sí", "yes"].includes(value.trim().toLowerCase())
+  return true
+}
+
+const getProjectTechnologies = (project: any): string[] => (
+  project.technologies ??
+  project.languages?.map((technology: any) => technology.name ?? technology) ??
+  project.tecnologias?.map((technology: any) => technology.name ?? technology) ??
+  []
+).filter(Boolean)
+
 const PublicPortfolio = () => {
   const { slug } = useParams()
   const { portfolio, loading, visitId } = usePortfolio(slug) as { portfolio: any, loading: boolean, visitId: string | null };
@@ -88,6 +102,15 @@ const PublicPortfolio = () => {
   const isModern = template === 1
   const isMinimalist = template === 2
   const isCorporate = template === 3
+  const visiblePortfolio = {
+    ...portfolio,
+    projects: (portfolio.projects ?? []).filter((item: any) => asBoolean(item.is_public)),
+    skills: (portfolio.skills ?? []).filter((item: any) => asBoolean(item.is_public)),
+    experiences: (portfolio.experiences ?? []).filter((item: any) => item.type !== "academica" && asBoolean(item.is_public)),
+    educations: (portfolio.educations ?? []).filter((item: any) => asBoolean(item.is_public)),
+    certificates: (portfolio.certificates ?? []).filter((item: any) => asBoolean(item.is_public)),
+    socialNetworks: (portfolio.socialNetworks ?? []).filter((item: any) => asBoolean(item.is_public)),
+  }
   //const visibilityData = mapToVisibilityData(portfolio)
   const profile = {
     fullname: portfolio.profile?.name || portfolio.user?.fullname || "",
@@ -103,15 +126,15 @@ const PublicPortfolio = () => {
     <main className="flex-1 p-4 md:p-10">
       {isModern && <ModernTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={portfolio} />}
+      profile={profile} portfolio={visiblePortfolio} />}
 
       {isMinimalist && <MinimalistTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={portfolio} isPreview={false} />}
+      profile={profile} portfolio={visiblePortfolio} isPreview={false} />}
 
       {isCorporate && <CorporatePortfolioTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={portfolio} />}
+      profile={profile} portfolio={visiblePortfolio} />}
 
       {!isModern && !isMinimalist && !isCorporate && (
         <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">
@@ -145,7 +168,7 @@ const PublicPortfolio = () => {
                 <MapPin size={16} /> {portfolio.user.nationality}
               </span>
 
-              {portfolio.socialNetworks?.map((sn: any, index: number) => (
+              {visiblePortfolio.socialNetworks?.map((sn: any, index: number) => (
                 <span key={index} className="flex items-center gap-1">
                   <Globe size={16} /> {sn.name}
                 </span>
@@ -164,8 +187,8 @@ const PublicPortfolio = () => {
                 <h3 className="font-bold uppercase border-b pb-2">Habilidades</h3>
 
                 <div className="mt-3 flex flex-col gap-2">
-                  {portfolio.skills.length > 0 ? (
-                    portfolio.skills.map((skill: any, index:number) => (
+                  {visiblePortfolio.skills.length > 0 ? (
+                    visiblePortfolio.skills.map((skill: any, index:number) => (
                       <div key={index} className="text-sm text-gray-700 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-[#003A6C] rounded-full" />
                         <span className="font-medium">{skill.name}</span>
@@ -188,16 +211,11 @@ const PublicPortfolio = () => {
                 </h3>
 
                 <div className="mt-6 space-y-6">
-                  {portfolio.experiences.length > 0 ? (
-                    portfolio.experiences.map((exp: any, index: number) => (
+                  {visiblePortfolio.experiences.length > 0 ? (
+                    visiblePortfolio.experiences.map((exp: any, index: number) => (
                       <div key={index} className="border-l-2 pl-4">
-                        <p className="font-bold">{exp.position}</p>
-                        <p className="text-[#003A6C] text-sm">{exp.company}</p>
-                        {"startDate" in exp && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            {exp.startDate} - {exp.current ? "Actualidad" : exp.endDate}
-                          </p>
-                        )}
+                        <p className="font-bold">{exp.company || exp.company_name || "Empresa no especificada"}</p>
+                        <p className="text-[#003A6C] text-sm">{exp.position || exp.role || "Cargo no especificado"}</p>
                       </div>
                     ))
                   ) : (
@@ -212,32 +230,28 @@ const PublicPortfolio = () => {
                 </h3>
 
                 <div className="mt-6 grid gap-4">
-                  {portfolio.projects.map((project: any, index: number) => (
+                  {visiblePortfolio.projects.map((project: any, index: number) => (
                     <div 
                       key={index} 
                       className="bg-gray-50 border-l-4 border-[#003A6C] p-4"
                       onClick={() => handleProjectClick(project.id)}
                     >
                       <h4 className="font-bold text-sm uppercase">
-                        {project.nombre || "Proyecto sin título"}
+                        {project.name || project.title || project.nombre || "Proyecto sin titulo"}
                       </h4>
 
                       <p className="text-sm text-gray-600 mt-1">
-                        {project.descripcion || "Sin descripción disponible"}
+                        {project.project_rol || project.role || project.rol || "Rol no especificado"}
                       </p>
 
-                      {"tecnologias" in project && project.tecnologias?.length > 0 && (
+                      {getProjectTechnologies(project).length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {project.tecnologias.map((t: any) => (
-                            <span key={t.id} className="text-xs bg-gray-200 px-2 py-1 rounded">
-                              {t.name}
+                          {getProjectTechnologies(project).map((technology) => (
+                            <span key={technology} className="text-xs bg-gray-200 px-2 py-1 rounded">
+                              {technology}
                             </span>
                           ))}
                         </div>
-                      )}
-
-                      {"rol" in project && (
-                        <p className="text-xs text-gray-500 mt-2">Rol: {project.rol}</p>
                       )}
                     </div>
                   ))}

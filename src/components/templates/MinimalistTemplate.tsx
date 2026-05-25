@@ -47,6 +47,16 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   const projects = isPreview && visibleProjects.length === 0 ? [] : visibleProjects;
   const skills = isPreview && visibleSkills.length === 0 ? [] : visibleSkills;
   const experiences = isPreview && visibleExperience.length === 0 ? [] : visibleExperience;
+  const getProjectTechnologies = (project: any): string[] => {
+    const source = project.technologies?.length ? project.technologies : project.tecnologias ?? project.languages ?? [];
+
+    return source
+      .map((technology: any) => {
+        if (typeof technology === "string") return technology.trim();
+        return String(technology?.name ?? technology?.nombre ?? technology?.title ?? "").trim();
+      })
+      .filter(Boolean);
+  };
 
   // Navegación
   const totalPages = 6;
@@ -136,12 +146,25 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
               <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Proyectos</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 overflow-y-auto max-h-[350px] pr-2">
-                {projects.length > 0 ? projects.map((p: any) => (
+                {projects.length > 0 ? projects.map((p: any) => {
+                  const technologies = getProjectTechnologies(p);
+
+                  return (
                   <div key={p.id} className="bg-stone-50/50 border border-stone-100 rounded-2xl p-4 transition-all hover:bg-white hover:shadow-xl hover:shadow-stone-200/50 group">
-                    <h3 className="font-bold text-sm text-zinc-900 uppercase mb-1">{p.label || p.title}</h3>
-                    <p className="text-[10px] text-stone-400 leading-relaxed line-clamp-2 italic">{p.sublabel || p.description}</p>
+                    <h3 className="font-bold text-sm text-zinc-900 uppercase mb-1">{p.label || p.nombre || p.name || p.title || "Proyecto sin titulo"}</h3>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500">{p.project_rol || p.role || p.rol || "Rol no especificado"}</p>
+                    {technologies.length ? (
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {technologies.map((technology) => (
+                          <span key={technology} className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-stone-600 ring-1 ring-stone-200">
+                            {technology}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
-                )) : (
+                  );
+                }) : (
                   <p className="text-sm text-stone-400 italic">No hay proyectos marcados como visibles.</p>
                 )}
               </div>

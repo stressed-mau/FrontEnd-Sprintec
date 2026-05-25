@@ -190,10 +190,22 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {visibleProjects.map((project: any) => (
-              <div key={`${project.sourceTable ?? 'projects'}-${project.id}`} className="group relative h-48 rounded-[2rem] overflow-hidden bg-[#2f606b]">
+              <div key={`${project.sourceTable ?? 'projects'}-${project.id}`} className="group relative min-h-56 rounded-[2rem] overflow-hidden bg-[#2f606b]">
                 <div className="absolute inset-0 bg-linear-to-t from-[#173b61] via-transparent to-transparent opacity-100 p-8 flex flex-col justify-end">
-                  <h4 className="text-[#fcecd4] text-2xl font-black">{project.nombre || project.title}</h4>
-                  <p className="text-[#ee8e3b] font-bold text-sm mt-1">{project.descripcion || project.description}</p>
+                  <h4 className="text-[#fcecd4] text-2xl font-black">{project.nombre || project.name || project.title || "Proyecto sin titulo"}</h4>
+                  <p className="text-[#ee8e3b] font-bold text-sm mt-2">{project.project_rol || project.role || project.rol || "Rol no especificado"}</p>
+                  {(project.technologies?.length || project.tecnologias?.length || project.languages?.length) ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {(project.technologies ?? project.tecnologias ?? project.languages ?? [])
+                        .map((technology: any) => typeof technology === "string" ? technology : technology.name ?? technology.nombre ?? technology.title ?? "")
+                        .filter(Boolean)
+                        .map((technology: string) => (
+                          <span key={technology} className="rounded-full bg-[#EEF5F9] px-2.5 py-1 text-xs font-semibold text-[#003A6C]">
+                            {technology}
+                          </span>
+                        ))}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ))}
