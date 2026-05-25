@@ -132,9 +132,10 @@ function CorporateProfileImage({
 type Props = {
   profile?: CorporatePortfolioProfile | null
   portfolio?: any
+  onProjectClick?: (projectId?: string | number) => void
 }
 
-export function CorporatePortfolioTemplate({ profile, portfolio }: Props) {
+export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick }: Props) {
   //const { data} = usePortfolioVisibility()
   console.log("CORPORATE PORTFOLIO", portfolio)
   //const safeData = data ?? {
@@ -982,6 +983,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio }: Props) {
                     resolvedProjects.map((project: any, index: number) => (
                       <article
                         key={project.id}
+                        onClick={() => onProjectClick?.(project.id)}
                         className="rounded-[1.8rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-6 transition duration-300 hover:-translate-y-2 hover:border-[#8C6E46] hover:shadow-[0_24px_50px_rgba(0,0,0,0.12)]"
                       >
                         <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#8C6E46]">

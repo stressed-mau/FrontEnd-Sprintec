@@ -8,7 +8,10 @@ import ModernTemplate from "@/components/templates/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
 import { useParams } from "react-router-dom"
 import { api } from "@/services/api"
-import { recordPortfolioView } from "@/services/portfolioAnalyticsService"
+import {
+  recordPortfolioView,
+  sendPortfolioTrackingPulse,
+} from "@/services/portfolioAnalyticsService"
 
 const asBoolean = (value: unknown): boolean => {
   if (typeof value === "boolean") return value
@@ -28,36 +31,32 @@ const PublicPortfolio = () => {
   const { slug } = useParams()
   const { portfolio, loading, visitId } = usePortfolio(slug) as { portfolio: any, loading: boolean, visitId: string | null };
   const recordedViewRef = useRef<string | null>(null)
+  const trackingStartRef = useRef<number>(Date.now())
 
   useEffect(() => {
     if (!visitId) return;
+    trackingStartRef.current = Date.now()
 
     // Enviar pulso de permanencia cada 30 segundos
     const pulseInterval = setInterval(async () => {
-      try {
-        await api.post('/tracking/pulse', {
-          visit_id: visitId,
-          seconds_elapsed: 30, // Incremento fijo por cada pulso
-        });
-      } catch (error) {
-        console.warn('Pulso de tracking fallido:', error);
-      }
-    }, 30000); // 30,000ms = 30 segundos
+      const secondsElapsed = Math.max(1, Math.round((Date.now() - trackingStartRef.current) / 1000))
+      await sendPortfolioTrackingPulse(visitId, secondsElapsed)
+    }, 30000);
 
     // Limpiar el intervalo cuando el usuario cambia de página
     return () => clearInterval(pulseInterval);
   }, [visitId]);
 
   useEffect(() => {
-    const portfolioId = portfolio?.id ?? portfolio?.config?.id ?? portfolio?.config?.portfolio_id
+    const publicSlug = portfolio?.config?.slug ?? slug
 
-    if (loading || !portfolioId || recordedViewRef.current === String(portfolioId)) {
+    if (loading || !publicSlug || recordedViewRef.current === String(publicSlug)) {
       return
     }
 
-    recordedViewRef.current = String(portfolioId)
-    recordPortfolioView(portfolioId)
-  }, [loading, portfolio])
+    recordedViewRef.current = String(publicSlug)
+    recordPortfolioView(String(publicSlug))
+  }, [loading, portfolio, slug])
 
   const handleProjectClick = async (projectId?: string | number) => {
     if (!projectId) return;
@@ -126,15 +125,15 @@ const PublicPortfolio = () => {
     <main className="flex-1 p-4 md:p-10">
       {isModern && <ModernTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={visiblePortfolio} />}
+      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} />}
 
       {isMinimalist && <MinimalistTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={visiblePortfolio} isPreview={false} />}
+      profile={profile} portfolio={visiblePortfolio} isPreview={false} onProjectClick={handleProjectClick} />}
 
       {isCorporate && <CorporatePortfolioTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={visiblePortfolio} />}
+      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} />}
 
       {!isModern && !isMinimalist && !isCorporate && (
         <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">

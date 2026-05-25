@@ -5,6 +5,7 @@ interface ModernTemplateProps {
   profile?: ModernTemplateProfile | null;
   portfolio?: any;
   isPreview?: boolean;
+  onProjectClick?: (projectId?: string | number) => void;
 }
 
 export interface ModernTemplateProfile {
@@ -17,7 +18,7 @@ export interface ModernTemplateProfile {
   biography: string;
 }
 
-const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isPreview = false }) => {
+const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isPreview = false, onProjectClick }) => {
   const userProfile = profile ?? {
     fullname: '',
     occupation: '',
@@ -190,7 +191,11 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {visibleProjects.map((project: any) => (
-              <div key={`${project.sourceTable ?? 'projects'}-${project.id}`} className="group relative min-h-56 rounded-[2rem] overflow-hidden bg-[#2f606b]">
+              <div
+                key={`${project.sourceTable ?? 'projects'}-${project.id}`}
+                onClick={() => onProjectClick?.(project.id)}
+                className="group relative min-h-56 rounded-[2rem] overflow-hidden bg-[#2f606b]"
+              >
                 <div className="absolute inset-0 bg-linear-to-t from-[#173b61] via-transparent to-transparent opacity-100 p-8 flex flex-col justify-end">
                   <h4 className="text-[#fcecd4] text-2xl font-black">{project.nombre || project.name || project.title || "Proyecto sin titulo"}</h4>
                   <p className="text-[#ee8e3b] font-bold text-sm mt-2">{project.project_rol || project.role || project.rol || "Rol no especificado"}</p>

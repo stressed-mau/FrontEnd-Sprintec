@@ -369,15 +369,9 @@ export const usePortfolio = (externalSlug?: string) => {
             profile: normalizeProfile(d)
           });
 
-          const templateMap: Record<number, string> = {
-            1: 'moderna',
-            2: 'minimalista',
-            3: 'corporativa'
-          };
-
           trackVisit({
-            slug: slugToFetch,
-            template_type: templateMap[Number(d.config.template)] || 'moderna'
+            slug: d.config?.slug ?? slugToFetch,
+            template_type: String(d.config?.template ?? "0"),
           }).then(vId => {
             if (vId) setVisitId(vId);
           });

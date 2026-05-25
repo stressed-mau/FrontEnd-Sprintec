@@ -6,12 +6,14 @@ interface MinimalistTemplateProps {
   profile?: any | null;
   portfolio?: any | null;
   isPreview?: boolean;
+  onProjectClick?: (projectId?: string | number) => void;
 }
 
 const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   profile,
   portfolio,
   isPreview = false,
+  onProjectClick,
 }) => {
   //const { data } = usePortfolioVisibility();
   console.log("PORTFOLIO TEMPLATE", portfolio);
@@ -150,7 +152,11 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
                   const technologies = getProjectTechnologies(p);
 
                   return (
-                  <div key={p.id} className="bg-stone-50/50 border border-stone-100 rounded-2xl p-4 transition-all hover:bg-white hover:shadow-xl hover:shadow-stone-200/50 group">
+                   <div
+                    key={p.id}
+                    onClick={() => onProjectClick?.(p.id)}
+                    className="bg-stone-50/50 border border-stone-100 rounded-2xl p-4 transition-all hover:bg-white hover:shadow-xl hover:shadow-stone-200/50 group"
+                   >
                     <h3 className="font-bold text-sm text-zinc-900 uppercase mb-1">{p.label || p.nombre || p.name || p.title || "Proyecto sin titulo"}</h3>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500">{p.project_rol || p.role || p.rol || "Rol no especificado"}</p>
                     {technologies.length ? (

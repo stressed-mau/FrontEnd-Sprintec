@@ -49,7 +49,9 @@ const PortfolioViewsReportPage = () => {
   const monthRows = getMonthRows(analytics?.viewsByMonth ?? {})
   const maxMonthViews = Math.max(...monthRows.map((row) => row.views), 1)
   const reportDate = new Date().toLocaleDateString()
-  const reportPeriod = "Reporte general"
+  const reportPeriod = analytics?.period?.from && analytics?.period?.to
+    ? `${analytics.period.from} - ${analytics.period.to}`
+    : "Reporte general"
   const handleExportPDF = useReactToPrint({
     contentRef: reportRef,
     documentTitle: `Reporte-Visualizaciones-${reportDate}`,
@@ -150,13 +152,13 @@ const PortfolioViewsReportPage = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="mb-1 text-sm text-[#4B778D]">Clics en enlaces</p>
-                      <p className="text-3xl font-bold text-gray-400">No disponible</p>
+                      <p className="text-3xl font-bold">{loading ? "..." : analytics?.totalLinkClicks ?? 0}</p>
                     </div>
                     <div className="rounded-lg bg-[#F1F5F9] p-3">
                       <ExternalLink className="h-6 w-6 text-gray-400" />
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-[#4B778D]">Esta informacion estara disponible cuando se active el seguimiento de enlaces.</p>
+                  <p className="mt-3 text-sm text-[#4B778D]">Interacciones registradas en proyectos y enlaces del portafolio.</p>
                 </CardContent>
               </Card>
             </div>
@@ -203,10 +205,21 @@ const PortfolioViewsReportPage = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="py-8 text-center">
-                    <FolderGit2 className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-                    <p className="text-sm text-gray-600">Aun no hay informacion detallada sobre las vistas de cada proyecto.</p>
-                  </div>
+                  {analytics?.projectViews?.length ? (
+                    <div className="space-y-3">
+                      {analytics.projectViews.map((project) => (
+                        <div key={project.id} className="flex items-center justify-between gap-4 rounded-lg border border-[#D9EAF4] bg-[#F8FBFD] px-4 py-3">
+                          <span className="text-sm font-semibold text-[#003A6C]">{project.label}</span>
+                          <span className="rounded-full bg-[#D9EAF4] px-3 py-1 text-sm font-bold text-[#003A6C]">{project.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center">
+                      <FolderGit2 className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+                      <p className="text-sm text-gray-600">Aun no hay informacion detallada sobre las vistas de cada proyecto.</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -218,10 +231,21 @@ const PortfolioViewsReportPage = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="py-8 text-center">
-                    <ExternalLink className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-                    <p className="text-sm text-gray-600">Aun no hay informacion detallada sobre los clics en tus redes sociales.</p>
-                  </div>
+                  {analytics?.socialClicks?.length ? (
+                    <div className="space-y-3">
+                      {analytics.socialClicks.map((network) => (
+                        <div key={network.id} className="flex items-center justify-between gap-4 rounded-lg border border-[#D9EAF4] bg-[#F8FBFD] px-4 py-3">
+                          <span className="text-sm font-semibold text-[#003A6C]">{network.label}</span>
+                          <span className="rounded-full bg-[#D9EAF4] px-3 py-1 text-sm font-bold text-[#003A6C]">{network.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center">
+                      <ExternalLink className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+                      <p className="text-sm text-gray-600">Aun no hay informacion detallada sobre los clics en tus redes sociales.</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
