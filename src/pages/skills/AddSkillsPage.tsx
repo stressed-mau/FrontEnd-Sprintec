@@ -1,5 +1,6 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AlertCircle, X } from 'lucide-react';
 import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
@@ -7,17 +8,35 @@ import { useSkillsManager } from '@/hooks/useSkillsManager';
 import ConfirmationModal from '../../components/ConfirmationModal';
 import { VIEW_SKILLS_ROUTE } from '@/routes/route-paths';
 
+const DUPLICATE_SKILL_MESSAGE = 'Ya existe una habilidad registrada con ese nombre. Ingresa un nombre diferente.';
+
 const AddSkillsPage = () => {
   const navigate = useNavigate();
   const { skillType,setSkillType,skillName,handleSkillNameChange,skillLevel,setSkillLevel,handleSave,
           isSaving,errorMessage,showSuccessModal,closeSuccessModal,successMessage, } = useSkillsManager();
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [saveAttempt, setSaveAttempt] = useState(0);
 
   const hasNameError = Boolean(errorMessage);
+
+  useEffect(() => {
+    if (saveAttempt === 0 || errorMessage !== DUPLICATE_SKILL_MESSAGE) {
+      return;
+    }
+
+    setShowDuplicateModal(true);
+  }, [errorMessage, saveAttempt]);
 
   const handleSuccessClose = useCallback(() => {
     closeSuccessModal();
     navigate(VIEW_SKILLS_ROUTE);
   }, [closeSuccessModal, navigate]);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    setSaveAttempt((current) => current + 1);
+    e.preventDefault();
+    await handleSave(e);
+  };
 
   useEffect(() => {
     if (!showSuccessModal) {
@@ -52,10 +71,7 @@ const AddSkillsPage = () => {
 
             <div className="bg-white rounded-2xl p-5 shadow-sm sm:p-6 border border-[#a5d7e8]">
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void handleSave(e as any);
-                }}
+                onSubmit={handleSubmit}
                 className="space-y-6">
               
                 <div>
@@ -150,6 +166,33 @@ const AddSkillsPage = () => {
         message={successMessage}
         onClose={handleSuccessClose}
       />
+
+      {showDuplicateModal ? (
+        <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-lg rounded-[32px] bg-white p-10 shadow-2xl animate-in zoom-in-95 duration-200">
+            <button
+              type="button"
+              onClick={() => setShowDuplicateModal(false)}
+              className="absolute right-5 top-5 text-gray-400 transition-colors hover:text-gray-600" 
+              aria-label="Cerrar alerta de habilidad duplicada"          >
+              <X className="size-7" />
+            </button>
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+                <AlertCircle className="size-10 text-red-600" />
+              </div>
+              <h3 className="mb-3 text-3xl font-bold text-[#003A6C]">Habilidad duplicada</h3>
+              <p className="mb-8 text-center text-lg leading-relaxed text-[#6B7280]">{errorMessage}</p>
+              <button
+                type="button"
+                onClick={() => setShowDuplicateModal(false)}
+                className="w-full rounded-xl bg-[#003A6C] py-4 text-xl font-bold text-white shadow-lg transition-all hover:bg-[#002a50] active:scale-[0.98]"     >
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <Footer />
     </div>
