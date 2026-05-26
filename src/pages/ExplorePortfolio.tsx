@@ -8,7 +8,6 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useExplorePortfolioFilters, type PortfolioCard } from "@/hooks/useExplorePortfolioFilters";
-import { getLanguages, getWorkOptions } from "@/services/ProjectService";
 import { isAuthenticated } from "@/services/auth";
 import { getExplorePortfolios } from "@/services/explorePortfoliosService";
 import { usePagination } from "@/hooks/usePagination";
@@ -82,9 +81,6 @@ function FilterDropdown({ value, options, placeholder, onChange }: FilterDropdow
 //function OccupationDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
  // return <FilterDropdown {...props} placeholder="Todos" />}
 
-function TechnologyDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
-  return <FilterDropdown {...props} placeholder="Todas" />}
-
 function ProjectsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
   return <FilterDropdown {...props} placeholder="Cualquiera" />}
 
@@ -94,7 +90,6 @@ function SkillsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
 export default function ExplorePortfolios() {
   const navigate = useNavigate();
  // const occupationContainerRef = useRef<HTMLDivElement | null>(null)
-  const technologyContainerRef = useRef<HTMLDivElement | null>(null)
   const [portfolios, setPortfolios] = useState<PortfolioCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
@@ -103,13 +98,21 @@ export default function ExplorePortfolios() {
   const session = getAuthSession();
   const roleId = session?.user?.role_id;
   const isAdmin = roleId === 2;
-  const [serverOccupationOptions, setServerOccupationOptions] = useState<string[] | null>(null)
-  const [serverTechnologyOptions, setServerTechnologyOptions] = useState<string[] | null>(null)
-  const {    searchTerm, setSearchTerm, isFiltersOpen, setIsFiltersOpen, selectedOccupation,
-    //setSelectedOccupation,
-    selectedTechnology, setSelectedTechnology, minProjects, setMinProjects, minSkills,  setMinSkills,
-    //occupationOptions,
-    technologyOptions, hasActiveFilters, clearFilters,  } = useExplorePortfolioFilters(portfolios, serverOccupationOptions ?? undefined, serverTechnologyOptions ?? undefined)
+  const {
+    searchTerm,
+    setSearchTerm,
+    isFiltersOpen,
+    setIsFiltersOpen,
+    selectedOccupation,
+    setSelectedOccupation,
+    minProjects,
+    setMinProjects,
+    minSkills,
+    setMinSkills,
+    hasActiveFilters,
+    clearFilters,
+    filteredPortfolios,
+  } = useExplorePortfolioFilters(portfolios)
 
   const {
     currentData,
@@ -119,7 +122,7 @@ export default function ExplorePortfolios() {
     next,
     prev,
     setCurrentPage,
-  } = usePagination({ items: portfolios, itemsPerPage: perPage })
+  } = usePagination({ items: filteredPortfolios, itemsPerPage: perPage })
 
   useEffect(() => {
     const updatePerPage = () => {
@@ -139,42 +142,13 @@ export default function ExplorePortfolios() {
   }, [perPage])
 
   useEffect(() => {
-    let mounted = true
-
-    const loadOptions = async () => {
-      try {
-        const [langs, work] = await Promise.all([getLanguages(), getWorkOptions()])
-        if (!mounted) return
-        const techs = Array.isArray(langs) ? langs.map((t: any) => (typeof t.name === "string" ? t.name : String(t))) : []
-        setServerTechnologyOptions(techs)
-        setServerOccupationOptions(Array.isArray(work?.roles) ? work.roles : [])
-      } catch (err) {
-        console.error("Error cargando opciones de filtros:", err)
-      }
-    }
-
-    loadOptions()
-
-    return () => {
-      mounted = false
-    }
-  }, [])
-
-  useEffect(() => {
     let isMounted = true;
 
     const fetchPortfolios = async () => {
       setLoading(true)
 
       try {
-        const result = await getExplorePortfolios({
-          search: searchTerm,
-          roles: selectedOccupation === "all" ? [] : [selectedOccupation],
-          technologies: selectedTechnology === "all" ? [] : [selectedTechnology],
-          minProjects: minProjects === "all" ? undefined : Number(minProjects),
-          minSkills: minSkills === "all" ? undefined : Number(minSkills),
-          perPage: 1000,
-        })
+        const result = await getExplorePortfolios()
 
         if (!isMounted) return;
 
@@ -197,21 +171,18 @@ export default function ExplorePortfolios() {
     return () => {
       isMounted = false;
     };
-  }, [searchTerm, selectedOccupation, selectedTechnology, minProjects, minSkills, perPage, setCurrentPage])
+  }, [])
 
   const handleSearchChange = (value: string) => {
     setCurrentPage(1)
     setSearchTerm(value)
   }
 
-  //const handleOccupationChange = (value: string) => {
-    //setCurrentPage(1)
-    //setSelectedOccupation(value)
- // }
-
-  const handleTechnologyChange = (value: string) => {
+  const handleOccupationChange = (value: string) => {
     setCurrentPage(1)
-    setSelectedTechnology(value) }
+    const trimmed = value.trim()
+    setSelectedOccupation(trimmed.length ? trimmed : "all")
+  }
 
   const handleProjectsChange = (value: string) => {
     setCurrentPage(1)
@@ -302,19 +273,6 @@ export default function ExplorePortfolios() {
         </div>
       </label>
       */}
-      {/* TECNOLOGIAS *
-      <label className="space-y-1 relative">
-        <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
-          Tecnologías
-        </span>
-
-        <div ref={technologyContainerRef} className="relative">
-          <TechnologyDropdown
-            value={selectedTechnology}
-            options={technologyOptions}
-            onChange={(v) => handleTechnologyChange(v)}    />
-        </div>
-      </label>/}
 
        {/* OCUPACIÓN */}
       <label className="space-y-1 relative">
@@ -322,11 +280,14 @@ export default function ExplorePortfolios() {
           Ocupación
         </span>
 
-        <div ref={technologyContainerRef} className="relative">
-          <TechnologyDropdown
-            value={selectedTechnology}
-            options={technologyOptions}
-            onChange={(v) => handleTechnologyChange(v)}    />
+        <div className="relative">
+          <input
+            type="search"
+            value={selectedOccupation === "all" ? "" : selectedOccupation}
+            onChange={(event) => handleOccupationChange(event.target.value)}
+            placeholder="Buscar por ocupación"
+            className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] shadow-sm outline-none transition focus:border-[#4982AD] focus:ring-2 focus:ring-[#4982AD]/20"
+          />
         </div>
       </label>
 
@@ -405,15 +366,22 @@ export default function ExplorePortfolios() {
                       />
                     ) : (
                       <div className="size-16 md:size-18 rounded-full bg-[#003A6C] text-white flex items-center justify-center font-bold text-lg">
-                        {getInitials(portfolio.fullName)}
+                        {getInitials(portfolio.fullName || portfolio.username)}
                       </div>
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col">
-                      <h3 className="truncate text-base font-bold text-[#003A6C]"> {portfolio.fullName} </h3>
-                      <p className="truncate text-[11px] font-semibold text-[#a08057] uppercase tracking-wider"> {portfolio.occupation} </p>
+                      <h3 className="truncate text-base font-bold text-[#003A6C]">
+                        {portfolio.fullName || "Sin nombre"}
+                      </h3>
+                      <p className="truncate text-xs font-normal text-gray-400">
+                        @{portfolio.username}
+                      </p>
+                      <p className="truncate text-[11px] font-semibold text-[#a08057] uppercase tracking-wider">
+                        {portfolio.occupation}
+                      </p>
                     </div>
                 
                     <div className="my-1 flex gap-2 text-[9px] font-bold text-gray-400">
