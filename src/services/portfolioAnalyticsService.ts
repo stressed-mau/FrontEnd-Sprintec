@@ -180,15 +180,13 @@ export async function recordProjectClick(params: { visitId: string | number; pro
 export async function recordProjectLinkClick(params: {
   visitId: string | number
   projectId: string | number
-  linkType: "github" | "demo"
-  url: string
+  linkType: "repository" | "demo"
 }) {
   try {
     await publicApi.post("/tracking/project-link-click", {
       visit_id: params.visitId,
       project_id: params.projectId,
       link_type: params.linkType,
-      url: params.url,
       clicked_at: new Date().toISOString(),
     })
   } catch (error) {

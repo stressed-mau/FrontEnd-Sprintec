@@ -49,8 +49,12 @@ export type WorkOptions = {
   roles: string[];
 };
 
-export type ProjectUpdatePayload = Partial<Omit<ProjectPayload, "final_date">> & {
+export type ProjectUpdatePayload = {
+  description?: string;
   final_date?: string | null;
+  url_to_project?: string | null;
+  url_to_deploy?: string | null;
+  is_current?: boolean;
 };
 
 function formatProjectError(error: unknown, fallback: string): Error {

@@ -228,7 +228,7 @@ const PortfolioViewsReportPage = () => {
                       <ExternalLink className="h-6 w-6 text-gray-400" />
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-[#4B778D]">Clicks registrados en enlaces reales del portafolio, como repositorios, demos y redes.</p>
+                  <p className="mt-3 text-sm text-[#4B778D]">Clicks registrados en enlaces de proyectos publicos, como repositorios, demos.</p>
                 </CardContent>
               </Card>
             </div>

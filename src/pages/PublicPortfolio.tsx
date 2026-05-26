@@ -53,10 +53,10 @@ const getProjectImage = (project: any): string =>
   project?.image || project?.image_url || project?.photograph || ""
 
 const getProjectGithubUrl = (project: any): string =>
-  project?.github || project?.github_url || project?.repository_url || ""
+  project?.url_to_project || project?.github || project?.github_url || project?.repository_url || ""
 
 const getProjectDemoUrl = (project: any): string =>
-  project?.demo || project?.demo_url || project?.project_url || project?.url || ""
+  project?.url_to_deploy || project?.demo || project?.demo_url || project?.project_url || project?.url || ""
 
 const isProjectCurrent = (project: any): boolean => {
   const value = project?.is_current ?? project?.current
@@ -199,14 +199,13 @@ const PublicPortfolio = () => {
     await recordSocialClick({ visitId, networkName })
   }
 
-  const handleProjectLinkClick = (linkType: "github" | "demo", url: string) => {
+  const handleProjectLinkClick = (linkType: "repository" | "demo", url: string) => {
     if (!selectedProject?.id || !visitId || !url) return
 
     void recordProjectLinkClick({
       visitId,
       projectId: selectedProject.id,
       linkType,
-      url,
     })
   }
   if (loading) {
@@ -502,7 +501,7 @@ const PublicPortfolio = () => {
                       href={selectedProjectGithubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => handleProjectLinkClick("github", selectedProjectGithubUrl)}
+                      onClick={() => handleProjectLinkClick("repository", selectedProjectGithubUrl)}
                       className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition sm:w-auto ${modalTheme.primaryLink}`}
                     >
                       <GitBranch className="h-4 w-4" />

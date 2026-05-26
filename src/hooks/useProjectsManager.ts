@@ -58,7 +58,7 @@ const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"];
 const MAX_PROJECT_NAME_LENGTH = 60;
 const MAX_PROJECT_DESCRIPTION_LENGTH = 250;
-const MAX_PROJECT_URL_LENGTH = 50;
+const MAX_PROJECT_URL_LENGTH = 255;
 
 function normalizeProjectName(value: string) {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
@@ -81,11 +81,13 @@ function validateForm(
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const normalizedProjectName = normalizeProjectName(form.nombre);
+  const isEditing = Boolean(originalProject);
 
-  if (!form.nombre.trim()) errors.nombre = "El campo Nombre del proyecto es obligatorio.";
+  if (!isEditing && !form.nombre.trim()) errors.nombre = "El campo Nombre del proyecto es obligatorio.";
   else if (form.nombre.trim().length > MAX_PROJECT_NAME_LENGTH) {
     errors.nombre = `El campo Nombre del proyecto permite ingresar un máximo de ${MAX_PROJECT_NAME_LENGTH} caracteres.`;
   } else if (
+    !isEditing &&
     projects.some((project) => project.id !== originalProject?.id && normalizeProjectName(project.nombre) === normalizedProjectName)
   ) {
     errors.nombre = "Ya existe un proyecto registrado con ese nombre.";
@@ -93,6 +95,35 @@ function validateForm(
   if (form.descripcion.length > MAX_PROJECT_DESCRIPTION_LENGTH) {
     errors.descripcion = `El campo Descripción permite un máximo de ${MAX_PROJECT_DESCRIPTION_LENGTH} caracteres.`;
   }
+  if (isEditing) {
+    if (form.fechaFin && form.fechaInicio && new Date(form.fechaInicio) > new Date(form.fechaFin)) {
+      errors.fechaFin = "La fecha de finalizaciÃ³n no puede ser anterior a la fecha de inicio.";
+    }
+
+    if (form.github.trim()) {
+      if (form.github.length > MAX_PROJECT_URL_LENGTH) {
+        errors.github = `El campo Enlace de GitHub permite un mÃ¡ximo de ${MAX_PROJECT_URL_LENGTH} caracteres.`;
+      } else if (!validateUrl(form.github)) {
+        errors.github = "El enlace de GitHub debe ser una URL vÃ¡lida.";
+      } else {
+        const hostname = new URL(form.github).hostname.toLowerCase();
+        if (hostname !== "github.com" && !hostname.endsWith(".github.com")) {
+          errors.github = "El enlace debe pertenecer al dominio github.com.";
+        }
+      }
+    }
+
+    if (form.demo.trim()) {
+      if (form.demo.length > MAX_PROJECT_URL_LENGTH) {
+        errors.demo = `El campo Enlace de la demo permite un mÃ¡ximo de ${MAX_PROJECT_URL_LENGTH} caracteres.`;
+      } else if (!validateUrl(form.demo)) {
+        errors.demo = "El enlace de la demo debe ser una URL vÃ¡lida.";
+      }
+    }
+
+    return errors;
+  }
+
   if (!form.rol.trim()) errors.rol = "Debes seleccionar al menos un rol.";
   else if (form.rol.trim().length > 255) errors.rol = "El rol no debe exceder 255 caracteres.";
   else if (enforceRoleOption && roleOptions.length > 0 && !roleOptions.some((role) => role.toLowerCase() === form.rol.trim().toLowerCase())) {
@@ -371,15 +402,35 @@ export function useProjectsManager() {
       };
 
       if (editingProject) {
-        const updatePayload: ProjectUpdatePayload = {
-          description: createPayload.description,
-          is_current: createPayload.is_current,
-          ...(createPayload.url_to_project ? { url_to_project: createPayload.url_to_project } : {}),
-          ...(createPayload.url_to_deploy ? { url_to_deploy: createPayload.url_to_deploy } : {}),
-          final_date: createPayload.final_date,
-        };
+        const updatePayload: ProjectUpdatePayload = {};
+        const currentGithub = editingProject.github?.trim() || null;
+        const currentDemo = editingProject.demo?.trim() || null;
+        const currentFinalDate = editingProject.fechaFin || null;
+        const nextDescription = createPayload.description.trim();
 
-        await updateProject(editingProject.id, updatePayload);
+        if (nextDescription && nextDescription !== editingProject.descripcion.trim()) {
+          updatePayload.description = createPayload.description;
+        }
+
+        if (createPayload.is_current !== editingProject.is_current) {
+          updatePayload.is_current = createPayload.is_current;
+        }
+
+        if (createPayload.url_to_project !== currentGithub) {
+          updatePayload.url_to_project = createPayload.url_to_project;
+        }
+
+        if (createPayload.url_to_deploy !== currentDemo) {
+          updatePayload.url_to_deploy = createPayload.url_to_deploy;
+        }
+
+        if (createPayload.is_current || createPayload.final_date !== currentFinalDate) {
+          updatePayload.final_date = createPayload.is_current ? null : createPayload.final_date;
+        }
+
+        if (Object.keys(updatePayload).length > 0) {
+          await updateProject(editingProject.id, updatePayload);
+        }
         setSuccessMessage("Proyecto actualizado correctamente.");
       } else {
         await createProject(createPayload);
