@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Eye, Search, SlidersHorizontal } from "lucide-react"; 
 import { Header } from "@/components/Header"; 
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useExplorePortfolioFilters, type PortfolioCard } from "@/hooks/useExplorePortfolioFilters";
 import { getLanguages, getWorkOptions } from "@/services/ProjectService";
 import { isAuthenticated } from "@/services/auth";
-import { getExplorePortfolios, type ExplorePortfoliosMeta } from "@/services/explorePortfoliosService";
+import { getExplorePortfolios } from "@/services/explorePortfoliosService";
 import { usePagination } from "@/hooks/usePagination";
 
 const getExplorePortfoliosPerPage = () => {
@@ -97,7 +97,6 @@ export default function ExplorePortfolios() {
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
   const [perPage, setPerPage] = useState(() => getExplorePortfoliosPerPage());
-  const [meta, setMeta] = useState<ExplorePortfoliosMeta>({ currentPage: 1, perPage: getExplorePortfoliosPerPage(), total: 0, totalPages: 1 });
   const isUserAuthenticated = isAuthenticated();
   const [serverOccupationOptions, setServerOccupationOptions] = useState<string[] | null>(null)
   const [serverTechnologyOptions, setServerTechnologyOptions] = useState<string[] | null>(null)
@@ -175,17 +174,11 @@ export default function ExplorePortfolios() {
         if (!isMounted) return;
 
         setPortfolios(result.portfolios)
-        setMeta({
-          ...result.meta,
-          perPage,
-          totalPages: perPage > 0 ? Math.max(1, Math.ceil(result.meta.total / perPage)) : 1,
-        })
         setPageError("")
       } catch (error) {
         console.error("Error cargando portafolios:", error)
         if (!isMounted) return;
         setPortfolios([])
-        setMeta({ currentPage: 1, perPage, total: 0, totalPages: 1 })
         setPageError(error instanceof Error ? error.message : "No se pudieron cargar los portafolios.")
       } finally {
         if (isMounted) {
@@ -316,10 +309,10 @@ export default function ExplorePortfolios() {
         </div>
       </label>/}
 
-       {/* HABILIDADES */}
+       {/* OCUPACIÓN */}
       <label className="space-y-1 relative">
         <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
-          Habilidades
+          Ocupación
         </span>
 
         <div ref={technologyContainerRef} className="relative">

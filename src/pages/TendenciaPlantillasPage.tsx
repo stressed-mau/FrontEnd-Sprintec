@@ -82,7 +82,6 @@ const TendenciaPlantillasPage = () => {
                       Generar PDF
                     </Button>
                   </div>
-                  <p className="print:hidden text-sm font-medium text-[#4B778D]">{report ? reportPeriod : "Cargando reporte semanal..."}</p>
                 </div>
 
                 <div className="print:hidden flex flex-wrap items-center justify-center bg-white border border-[#0E7D96]/20 rounded-xl px-3 sm:px-4 py-2 gap-2 sm:gap-4 shadow-sm mx-auto md:mr-0">
@@ -94,9 +93,7 @@ const TendenciaPlantillasPage = () => {
                   >
                     <ChevronLeft size={20} />
                   </button>
-                  <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
-                  <span className="text-sm font-semibold text-[#4B778D]">{totalPortfolios} portafolios analizados</span>
-                  <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
+                  <span className="text-sm font-bold text-[#003A6C]">{reportPeriod}</span>
                   <button
                     className="rounded-lg p-1 text-[#003A6C] transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
                     type="button"
