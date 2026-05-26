@@ -30,7 +30,6 @@ import EditSkillsPage from "@/pages/skills/EditSkillsPage"
 import DeleteSkillsPage from "@/pages/skills/DeleteSkillsPage"
 import ViewCertificatesPage from "@/pages/certificates/ViewCertificatesPage"
 import AddCertificatesPage from "@/pages/certificates/AddCertificatesPage"
-import EditCertificatesPage from "@/pages/certificates/EditCertificatesPage"
 import DeleteCertificatesPage from "@/pages/certificates/DeleteCertificatesPage"
 import AddProjectsPage from "@/pages/projects/AddProjectsPage"
 import DeleteProjectsPage from "@/pages/projects/DeleteProjectsPage"
@@ -90,7 +89,7 @@ function AppRoutes() {
         <Route path={CERTIFICATES_ROUTE} element={<Navigate to="/certificados/ver" replace />} />
         <Route path="/certificados/ver" element={<ViewCertificatesPage />} />
         <Route path="/certificados/añadir" element={<AddCertificatesPage />} />
-        <Route path="/certificados/editar" element={<EditCertificatesPage />} />
+        <Route path="/certificados/editar" element={<Navigate to="/certificados/ver" replace />} />
         <Route path="/certificados/eliminar" element={<DeleteCertificatesPage />} />
         
         <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
