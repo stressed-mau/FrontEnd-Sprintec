@@ -5,6 +5,8 @@ interface ModernTemplateProps {
   profile?: ModernTemplateProfile | null;
   portfolio?: any;
   isPreview?: boolean;
+  onProjectClick?: (projectId?: string | number) => void;
+  onSocialClick?: (network: any) => void;
 }
 
 export interface ModernTemplateProfile {
@@ -17,7 +19,7 @@ export interface ModernTemplateProfile {
   biography: string;
 }
 
-const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isPreview = false }) => {
+const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isPreview = false, onProjectClick, onSocialClick }) => {
   const userProfile = profile ?? {
     fullname: '',
     occupation: '',
@@ -138,7 +140,7 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
             {/* Soft Skills */}
             <div className="lg:w-1/3">
               <div className="sticky top-10">
-                <div className="bg-[#173b61] text-[#fcecd4] p-8 rounded-[2rem] shadow-xl">
+                <div className="bg-[#173b61] text-[#fcecd4] p-6 rounded-[1.5rem] shadow-xl md:p-8 md:rounded-[2rem]">
                   <h3 className="text-3xl font-black mb-8 border-b border-[#fcecd4]/20 pb-4">Habilidades</h3>
                   <div className="grid grid-cols-2 gap-6">
                     {highlightedSkills.map((skill: any) => (
@@ -178,7 +180,7 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
       {hasProjectsSection && (
       <section className="py-24 px-6 md:px-20 bg-[#173b61]">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6 md:mb-16">
             <div>
               <h2 className="text-6xl font-black text-[#fcecd4]">PROYECTOS</h2>
               <p className="text-[#ee8e3b] font-bold mt-2 uppercase tracking-[0.3em]">Muestra de trabajo</p>
@@ -188,12 +190,36 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="flex flex-wrap gap-5 lg:gap-8">
             {visibleProjects.map((project: any) => (
-              <div key={`${project.sourceTable ?? 'projects'}-${project.id}`} className="group relative h-48 rounded-[2rem] overflow-hidden bg-[#2f606b]">
-                <div className="absolute inset-0 bg-linear-to-t from-[#173b61] via-transparent to-transparent opacity-100 p-8 flex flex-col justify-end">
-                  <h4 className="text-[#fcecd4] text-2xl font-black">{project.nombre || project.title}</h4>
-                  <p className="text-[#ee8e3b] font-bold text-sm mt-1">{project.descripcion || project.description}</p>
+              <div
+                key={`${project.sourceTable ?? 'projects'}-${project.id}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => onProjectClick?.(project.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault()
+                    onProjectClick?.(project.id)
+                  }
+                }}
+                className="group relative min-h-40 w-full cursor-pointer overflow-hidden rounded-[1.5rem] bg-[#2f606b] focus:outline-none focus:ring-2 focus:ring-[#ee8e3b] sm:min-h-48 sm:w-80 sm:max-w-full sm:rounded-[2rem]"
+              >
+                <div className="absolute inset-0 bg-linear-to-t from-[#173b61] via-transparent to-transparent opacity-100 p-5 flex flex-col justify-end sm:p-8">
+                  <h4 className="text-[#fcecd4] text-2xl font-black">{project.nombre || project.name || project.title || "Proyecto sin titulo"}</h4>
+                  <p className="text-[#ee8e3b] font-bold text-sm mt-2">{project.project_rol || project.role || project.rol || "Rol no especificado"}</p>
+                  {(project.technologies?.length || project.tecnologias?.length || project.languages?.length) ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {(project.technologies ?? project.tecnologias ?? project.languages ?? [])
+                        .map((technology: any) => typeof technology === "string" ? technology : technology.name ?? technology.nombre ?? technology.title ?? "")
+                        .filter(Boolean)
+                        .map((technology: string) => (
+                          <span key={technology} className="rounded-full bg-[#EEF5F9] px-2.5 py-1 text-xs font-semibold text-[#003A6C]">
+                            {technology}
+                          </span>
+                        ))}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ))}
@@ -231,7 +257,7 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
           {/* Academia y Redes */}
           <div className="space-y-16">
             {hasAcademicSection && (
-            <div className="bg-white p-10 rounded-[2.5rem] shadow-xl border border-[#7d959e]/10">
+            <div className="bg-white p-6 rounded-[1.75rem] shadow-xl border border-[#7d959e]/10 md:p-10 md:rounded-[2.5rem]">
               <div className="flex items-center gap-3 mb-8">
                 <GraduationCap className="text-[#ee8e3b]" size={32} />
                 <h3 className="text-2xl font-black uppercase">Formación</h3>
@@ -248,12 +274,12 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
             </div>
             )}
             {hasCertificatesSection && (
-              <div className="bg-white p-10 rounded-[2.5rem] shadow-xl border border-[#7d959e]/10">
+              <div className="bg-white p-6 rounded-[1.75rem] shadow-xl border border-[#7d959e]/10 md:p-10 md:rounded-[2.5rem]">
                 <div className="flex items-center gap-3 mb-8">
                   <Award className="text-[#ee8e3b]" size={32} />
                   <h3 className="text-2xl font-black uppercase">Certificaciones</h3>
                 </div>
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-4 md:gap-6">
                   {visibleCertificates.map((cert: any) => (
                     <div key={`cert-${cert.id}`} className="flex items-start gap-4 p-4 rounded-2xl bg-[#fcecd4]/30">
                       <div className="mt-1">
@@ -269,11 +295,19 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
               </div>
             )}
             {hasNetworksSection && (
-            <div className="text-center bg-[#2f606b] p-10 rounded-[2.5rem]">
+            <div className="text-center bg-[#2f606b] p-6 rounded-[1.75rem] md:p-10 md:rounded-[2.5rem]">
               <h3 className="text-[#fcecd4] text-xl font-black mb-8 uppercase tracking-widest">Conectemos</h3>
               <div className="flex justify-center gap-6">
                 {visibleNetworks.map((net: any) => (
-                  <a key={`${net.sourceTable ?? 'network'}-${net.id}`} href={net.url || '#'} target="_blank" rel="noreferrer" className="w-14 h-14 bg-[#fcecd4] rounded-2xl flex items-center justify-center text-[#173b61] hover:bg-[#ee8e3b] hover:text-white transition-all transform hover:-translate-y-2 shadow-lg" title={net.name}>
+                  <a
+                    key={`${net.sourceTable ?? 'network'}-${net.id}`}
+                    href={net.url || '#'}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => onSocialClick?.(net)}
+                    className="w-14 h-14 bg-[#fcecd4] rounded-2xl flex items-center justify-center text-[#173b61] hover:bg-[#ee8e3b] hover:text-white transition-all transform hover:-translate-y-2 shadow-lg"
+                    title={net.name}
+                  >
                     <Globe size={24} />
                   </a>
                 ))}

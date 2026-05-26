@@ -78,8 +78,8 @@ const normalizeWorkExperience = (data: any) =>
 const normalizeEducation = (data: any) =>
   (data?.educations || []).map((item: any) => ({
     id: item.id,
-    label: item.title,
-    sublabel: item.institution,
+    label: item.title || item.position || item.degree || item.name || item.label || 'Sin titulo',
+    sublabel: item.institution || item.company || item.company_name || item.institution_name || item.organization || item.sublabel || 'Sin institucion',
     checked: asBoolean(item.is_public),
     sourceTable: 'educations',
   }));

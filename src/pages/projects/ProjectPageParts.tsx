@@ -190,6 +190,7 @@ export function ProjectTable({
   selectable,
   selectedIds,
   onToggleSelect,
+  onSelectAll,
   onRowClick,
   onEdit,
   variant = "default",
@@ -199,11 +200,14 @@ export function ProjectTable({
   selectable?: boolean;
   selectedIds?: Set<number>;
   onToggleSelect?: (id: number, selected: boolean) => void;
+  onSelectAll?: (selected: boolean) => void;
   onRowClick?: (project: ProjectItem) => void;
   onEdit?: (project: ProjectItem) => void;
   variant?: "default" | "edit";
 }) {
   const isEditVariant = variant === "edit";
+  const canSelectAll = Boolean(onSelectAll);
+  const allSelected = canSelectAll && projects.length > 0 && projects.every((project) => selectedIds?.has(project.id));
 
   if (projects.length === 0) {
     return (
@@ -238,7 +242,21 @@ export function ProjectTable({
         <table className="w-full min-w-190 border-collapse text-left text-sm">
           <thead className={isEditVariant ? "border-b border-gray-200 bg-gray-50/50 text-xs uppercase tracking-wide text-gray-700" : "bg-[#EEF5F9] text-xs uppercase text-[#003A6C]"}>
           <tr>
-            {selectable ? <th className="w-12 px-4 py-3">Sel.</th> : null}
+            {selectable ? (
+              <th className="w-12 px-4 py-3">
+                {canSelectAll ? (
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={(event) => onSelectAll?.(event.target.checked)}
+                    className={isEditVariant ? "size-4 rounded-none border-gray-300" : "size-4 rounded-none border-[#A5D7E8]"}
+                    aria-label="Seleccionar todos los proyectos visibles"
+                  />
+                ) : (
+                  <span>Sel.</span>
+                )}
+              </th>
+            ) : null}
             <th className="px-4 py-3">Nombre</th>
             <th className="px-4 py-3">Rol</th>
             <th className="px-4 py-3">Tecnologías</th>

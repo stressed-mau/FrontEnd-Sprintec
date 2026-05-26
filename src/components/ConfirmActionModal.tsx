@@ -56,12 +56,20 @@ const ConfirmActionModal = ({
             >
               {confirmText}
             </button>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7c924ad9d13b64d037c5c79e9529781cc3c783eb
             <button
               onClick={onCancel}
               className="w-full border-2 border-[#003A6C] text-[#003A6C] py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all active:scale-[0.98]"
             >
               {cancelText}
+<<<<<<< HEAD
             </button>          
+=======
+            </button>
+>>>>>>> 7c924ad9d13b64d037c5c79e9529781cc3c783eb
           </div>
         </div>
       </div>

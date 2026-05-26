@@ -1,64 +1,213 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 //import type { Portfolio } from "@/types/portfolio"
 import { usePortfolio } from "@/hooks/usePortfolio"
 //import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
-import { Mail, Globe, MapPin, Briefcase, Code } from "lucide-react"
+import { Calendar, Code, ExternalLink, GitBranch, Globe, Mail, MapPin, Briefcase, X } from "lucide-react"
 import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
 import { useParams } from "react-router-dom"
-import { api } from "@/services/api"
-import { recordPortfolioView } from "@/services/portfolioAnalyticsService"
+import {
+  recordPortfolioView,
+  recordProjectClick,
+  recordProjectLinkClick,
+  recordSocialClick,
+  sendPortfolioTrackingPulse,
+} from "@/services/portfolioAnalyticsService"
+
+const asBoolean = (value: unknown): boolean => {
+  if (typeof value === "boolean") return value
+  if (typeof value === "number") return value === 1
+  if (typeof value === "string") return ["1", "true", "si", "sí", "yes"].includes(value.trim().toLowerCase())
+  return true
+}
+
+const getProjectTechnologies = (project: any): string[] => (
+  project.technologies ??
+  project.languages?.map((technology: any) => technology.name ?? technology) ??
+  project.tecnologias?.map((technology: any) => technology.name ?? technology) ??
+  []
+).filter(Boolean)
+
+const getNetworkName = (network: any): string => {
+  const rawName = String(network?.name ?? network?.platform ?? network?.label ?? network?.social_network ?? "")
+  return rawName.trim().toLowerCase().replace(/[^a-z0-9]/g, "")
+}
+
+const getProjectTitle = (project: any): string =>
+  project?.nombre || project?.name || project?.title || "Proyecto sin titulo"
+
+const getProjectRole = (project: any): string =>
+  project?.project_rol || project?.role || project?.rol || ""
+
+const getProjectDescription = (project: any): string =>
+  project?.descripcion || project?.description || project?.summary || ""
+
+const getProjectStartDate = (project: any): string =>
+  project?.fechaInicio || project?.start_date || project?.startDate || ""
+
+const getProjectEndDate = (project: any): string =>
+  project?.fechaFin || project?.end_date || project?.endDate || ""
+
+const getProjectImage = (project: any): string =>
+  project?.image || project?.image_url || project?.photograph || ""
+
+const getProjectGithubUrl = (project: any): string =>
+  project?.url_to_project || project?.github || project?.github_url || project?.repository_url || ""
+
+const getProjectDemoUrl = (project: any): string =>
+  project?.url_to_deploy || project?.demo || project?.demo_url || project?.project_url || project?.url || ""
+
+const isProjectCurrent = (project: any): boolean => {
+  const value = project?.is_current ?? project?.current
+  if (typeof value === "boolean") return value
+  if (typeof value === "number") return value === 1
+  if (typeof value === "string") return ["1", "true", "si", "sí", "yes"].includes(value.trim().toLowerCase())
+  return false
+}
+
+const sameProjectId = (project: any, projectId?: string | number) =>
+  projectId != null && String(project?.id) === String(projectId)
+
+type ProjectModalTheme = {
+  panel: string
+  header: string
+  eyebrow: string
+  title: string
+  role: string
+  closeButton: string
+  sectionTitle: string
+  text: string
+  infoCard: string
+  iconText: string
+  tag: string
+  primaryLink: string
+  secondaryLink: string
+}
+
+const PROJECT_MODAL_THEMES: Record<"modern" | "minimalist" | "corporate" | "default", ProjectModalTheme> = {
+  modern: {
+    panel: "bg-[#173b61] text-[#fcecd4]",
+    header: "border-[#ee8e3b]/35 bg-[#173b61]",
+    eyebrow: "text-[#ee8e3b]",
+    title: "text-[#fcecd4]",
+    role: "text-[#ee8e3b]",
+    closeButton: "text-[#fcecd4]/75 hover:bg-[#2f606b] hover:text-[#fcecd4]",
+    sectionTitle: "text-[#ee8e3b]",
+    text: "text-[#fcecd4]/82",
+    infoCard: "border-[#ee8e3b]/25 bg-[#2f606b]/55",
+    iconText: "text-[#fcecd4]",
+    tag: "bg-[#fcecd4] text-[#173b61]",
+    primaryLink: "bg-[#ee8e3b] text-[#173b61] hover:bg-[#f6a762]",
+    secondaryLink: "border border-[#ee8e3b] text-[#fcecd4] hover:bg-[#ee8e3b]/15",
+  },
+  minimalist: {
+    panel: "bg-white text-zinc-900",
+    header: "border-stone-200 bg-white",
+    eyebrow: "text-stone-500",
+    title: "text-zinc-900",
+    role: "text-stone-500",
+    closeButton: "text-stone-500 hover:bg-stone-100 hover:text-zinc-900",
+    sectionTitle: "text-zinc-900",
+    text: "text-stone-700",
+    infoCard: "border-stone-200 bg-stone-50",
+    iconText: "text-zinc-900",
+    tag: "bg-white text-stone-700 ring-1 ring-stone-200",
+    primaryLink: "bg-zinc-900 text-white hover:bg-zinc-700",
+    secondaryLink: "border border-zinc-900 text-zinc-900 hover:bg-stone-100",
+  },
+  corporate: {
+    panel: "bg-[#FBF8F2] text-[#1F2933]",
+    header: "border-[#D7C3A4] bg-[#FBF8F2]",
+    eyebrow: "text-[#8C6E46]",
+    title: "text-[#1F2933]",
+    role: "text-[#8C6E46]",
+    closeButton: "text-[#6F7782] hover:bg-[#F2E7D7] hover:text-[#1F2933]",
+    sectionTitle: "text-[#8C6E46]",
+    text: "text-[#3D4348]",
+    infoCard: "border-[#D7C3A4] bg-[#F2E7D7]/70",
+    iconText: "text-[#1F2933]",
+    tag: "border border-black/10 bg-[#F2E7D7] text-[#3D4348]",
+    primaryLink: "bg-[#1F2933] text-[#F4D8AE] hover:bg-[#2F3A45]",
+    secondaryLink: "border border-[#8C6E46] text-[#8C6E46] hover:bg-[#F2E7D7]",
+  },
+  default: {
+    panel: "bg-white text-gray-900",
+    header: "border-[#D9EAF4] bg-white",
+    eyebrow: "text-[#4982AD]",
+    title: "text-[#003A6C]",
+    role: "text-[#8C6E46]",
+    closeButton: "text-gray-500 hover:bg-[#EEF5F9] hover:text-[#003A6C]",
+    sectionTitle: "text-[#003A6C]",
+    text: "text-gray-700",
+    infoCard: "border-[#D9EAF4] bg-[#F8FBFD]",
+    iconText: "text-[#003A6C]",
+    tag: "bg-[#D9EAF4] text-[#003A6C]",
+    primaryLink: "bg-[#003A6C] text-white hover:bg-[#002A4D]",
+    secondaryLink: "border border-[#003A6C] text-[#003A6C] hover:bg-[#EEF5F9]",
+  },
+}
 
 const PublicPortfolio = () => {
   const { slug } = useParams()
   const { portfolio, loading, visitId } = usePortfolio(slug) as { portfolio: any, loading: boolean, visitId: string | null };
   const recordedViewRef = useRef<string | null>(null)
+  const trackingStartRef = useRef<number>(Date.now())
+  const [selectedProject, setSelectedProject] = useState<any | null>(null)
 
   useEffect(() => {
     if (!visitId) return;
+    trackingStartRef.current = Date.now()
 
     // Enviar pulso de permanencia cada 30 segundos
     const pulseInterval = setInterval(async () => {
-      try {
-        await api.post('/tracking/pulse', {
-          visit_id: visitId,
-          seconds_elapsed: 30, // Incremento fijo por cada pulso
-        });
-      } catch (error) {
-        console.warn('Pulso de tracking fallido:', error);
-      }
-    }, 30000); // 30,000ms = 30 segundos
+      const secondsElapsed = Math.max(1, Math.round((Date.now() - trackingStartRef.current) / 1000))
+      await sendPortfolioTrackingPulse(visitId, secondsElapsed)
+    }, 30000);
 
     // Limpiar el intervalo cuando el usuario cambia de página
     return () => clearInterval(pulseInterval);
   }, [visitId]);
 
   useEffect(() => {
-    const portfolioId = portfolio?.id ?? portfolio?.config?.id ?? portfolio?.config?.portfolio_id
+    const publicSlug = portfolio?.config?.slug ?? slug
 
-    if (loading || !portfolioId || recordedViewRef.current === String(portfolioId)) {
+    if (loading || !publicSlug || recordedViewRef.current === String(publicSlug)) {
       return
     }
 
-    recordedViewRef.current = String(portfolioId)
-    recordPortfolioView(portfolioId)
-  }, [loading, portfolio])
+    recordedViewRef.current = String(publicSlug)
+    recordPortfolioView(String(publicSlug))
+  }, [loading, portfolio, slug])
 
   const handleProjectClick = async (projectId?: string | number) => {
-    if (!projectId) return;
-    if (!visitId) return; // Si no hay visita registrada, ignoramos silenciosamente
-    try {
-      await api.post('/tracking/project-click', {
-        visit_id: visitId,           // ID de la visita activa
-        project_id: projectId,        // ID del proyecto clickeado
-        clicked_at: new Date().toISOString(),
-      });
-    } catch (error) {
-      console.warn('Click tracking fallido:', error);
+    if (!projectId) return
+
+    const clickedProject = (portfolio?.projects ?? []).find((project: any) => sameProjectId(project, projectId))
+
+    if (clickedProject) {
+      setSelectedProject(clickedProject)
     }
-    // Continuar con la navegación normal independientemente del tracking
+
+    if (!visitId) return
+    await recordProjectClick({ visitId, projectId })
   };
+
+  const handleSocialClick = async (network: any) => {
+    const networkName = getNetworkName(network)
+    if (!networkName || !visitId) return
+    await recordSocialClick({ visitId, networkName })
+  }
+
+  const handleProjectLinkClick = (linkType: "repository" | "demo", url: string) => {
+    if (!selectedProject?.id || !visitId || !url) return
+
+    void recordProjectLinkClick({
+      visitId,
+      projectId: selectedProject.id,
+      linkType,
+    })
+  }
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center font-bold text-[#003A6C]">
@@ -88,6 +237,22 @@ const PublicPortfolio = () => {
   const isModern = template === 1
   const isMinimalist = template === 2
   const isCorporate = template === 3
+  const modalTheme = isModern
+    ? PROJECT_MODAL_THEMES.modern
+    : isMinimalist
+      ? PROJECT_MODAL_THEMES.minimalist
+      : isCorporate
+        ? PROJECT_MODAL_THEMES.corporate
+        : PROJECT_MODAL_THEMES.default
+  const visiblePortfolio = {
+    ...portfolio,
+    projects: (portfolio.projects ?? []).filter((item: any) => asBoolean(item.is_public)),
+    skills: (portfolio.skills ?? []).filter((item: any) => asBoolean(item.is_public)),
+    experiences: (portfolio.experiences ?? []).filter((item: any) => item.type !== "academica" && asBoolean(item.is_public)),
+    educations: (portfolio.educations ?? []).filter((item: any) => asBoolean(item.is_public)),
+    certificates: (portfolio.certificates ?? []).filter((item: any) => asBoolean(item.is_public)),
+    socialNetworks: (portfolio.socialNetworks ?? []).filter((item: any) => asBoolean(item.is_public)),
+  }
   //const visibilityData = mapToVisibilityData(portfolio)
   const profile = {
     fullname: portfolio.profile?.name || portfolio.user?.fullname || "",
@@ -98,20 +263,32 @@ const PublicPortfolio = () => {
     phone: portfolio.profile?.phone || "",
     biography: portfolio.profile?.bio || portfolio.user?.biography || "",
   };
+  const selectedProjectDescription = selectedProject ? getProjectDescription(selectedProject) : ""
+  const selectedProjectRole = selectedProject ? getProjectRole(selectedProject) : ""
+  const selectedProjectStartDate = selectedProject ? getProjectStartDate(selectedProject) : ""
+  const selectedProjectEndDate = selectedProject ? getProjectEndDate(selectedProject) : ""
+  const selectedProjectTechnologies = selectedProject ? getProjectTechnologies(selectedProject) : []
+  const selectedProjectGithubUrl = selectedProject ? getProjectGithubUrl(selectedProject) : ""
+  const selectedProjectDemoUrl = selectedProject ? getProjectDemoUrl(selectedProject) : ""
+  const selectedProjectHasDates = Boolean(
+    selectedProjectStartDate ||
+    selectedProjectEndDate ||
+    (selectedProject && isProjectCurrent(selectedProject)),
+  )
 
   return (
     <main className="flex-1 p-4 md:p-10">
       {isModern && <ModernTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={portfolio} />}
+      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onSocialClick={handleSocialClick} />}
 
       {isMinimalist && <MinimalistTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={portfolio} isPreview={false} />}
+      profile={profile} portfolio={visiblePortfolio} isPreview={false} onProjectClick={handleProjectClick} onSocialClick={handleSocialClick} />}
 
       {isCorporate && <CorporatePortfolioTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={portfolio} />}
+      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onSocialClick={handleSocialClick} />}
 
       {!isModern && !isMinimalist && !isCorporate && (
         <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">
@@ -145,7 +322,7 @@ const PublicPortfolio = () => {
                 <MapPin size={16} /> {portfolio.user.nationality}
               </span>
 
-              {portfolio.socialNetworks?.map((sn: any, index: number) => (
+              {visiblePortfolio.socialNetworks?.map((sn: any, index: number) => (
                 <span key={index} className="flex items-center gap-1">
                   <Globe size={16} /> {sn.name}
                 </span>
@@ -160,12 +337,12 @@ const PublicPortfolio = () => {
                 <p className="text-sm text-gray-600 mt-3">{portfolio.user.biography}</p>
               </div>
 
+              {visiblePortfolio.skills.length > 0 ? (
               <div>
                 <h3 className="font-bold uppercase border-b pb-2">Habilidades</h3>
 
                 <div className="mt-3 flex flex-col gap-2">
-                  {portfolio.skills.length > 0 ? (
-                    portfolio.skills.map((skill: any, index:number) => (
+                  {visiblePortfolio.skills.map((skill: any, index:number) => (
                       <div key={index} className="text-sm text-gray-700 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-[#003A6C] rounded-full" />
                         <span className="font-medium">{skill.name}</span>
@@ -173,80 +350,183 @@ const PublicPortfolio = () => {
                           <span className="text-xs text-gray-400">({skill.level})</span>
                         )}
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-xs text-gray-400 italic">No hay habilidades registradas</p>
-                  )}
+                    ))}
                 </div>
               </div>
+              ) : null}
             </aside>
 
             <section className="md:col-span-2 space-y-10">
+              {visiblePortfolio.experiences.length > 0 ? (
               <div>
                 <h3 className="flex items-center gap-2 text-xl font-bold uppercase">
                   <Briefcase size={18} /> Experiencia
                 </h3>
 
                 <div className="mt-6 space-y-6">
-                  {portfolio.experiences.length > 0 ? (
-                    portfolio.experiences.map((exp: any, index: number) => (
+                  {visiblePortfolio.experiences.map((exp: any, index: number) => (
                       <div key={index} className="border-l-2 pl-4">
-                        <p className="font-bold">{exp.position}</p>
-                        <p className="text-[#003A6C] text-sm">{exp.company}</p>
-                        {"startDate" in exp && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            {exp.startDate} - {exp.current ? "Actualidad" : exp.endDate}
-                          </p>
-                        )}
+                        <p className="font-bold">{exp.company || exp.company_name || "Empresa no especificada"}</p>
+                        <p className="text-[#003A6C] text-sm">{exp.position || exp.role || "Cargo no especificado"}</p>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-400 italic">Sin experiencia registrada</p>
-                  )}
+                    ))}
                 </div>
               </div>
+              ) : null}
 
+              {visiblePortfolio.projects.length > 0 ? (
               <div>
                 <h3 className="flex items-center gap-2 text-xl font-bold uppercase">
                   <Code size={18} /> Proyectos
                 </h3>
 
-                <div className="mt-6 grid gap-4">
-                  {portfolio.projects.map((project: any, index: number) => (
+                <div className="mt-6 flex flex-wrap gap-4">
+                  {visiblePortfolio.projects.map((project: any, index: number) => (
                     <div 
                       key={index} 
-                      className="bg-gray-50 border-l-4 border-[#003A6C] p-4"
+                      role="button"
+                      tabIndex={0}
+                      className="w-full cursor-pointer bg-gray-50 border-l-4 border-[#003A6C] p-4 transition hover:bg-[#EEF5F9] focus:outline-none focus:ring-2 focus:ring-[#003A6C] sm:w-auto sm:min-w-64 sm:max-w-sm"
                       onClick={() => handleProjectClick(project.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault()
+                          void handleProjectClick(project.id)
+                        }
+                      }}
                     >
                       <h4 className="font-bold text-sm uppercase">
-                        {project.nombre || "Proyecto sin título"}
+                        {project.name || project.title || project.nombre || "Proyecto sin titulo"}
                       </h4>
 
                       <p className="text-sm text-gray-600 mt-1">
-                        {project.descripcion || "Sin descripción disponible"}
+                        {project.project_rol || project.role || project.rol || "Rol no especificado"}
                       </p>
 
-                      {"tecnologias" in project && project.tecnologias?.length > 0 && (
+                      {getProjectTechnologies(project).length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {project.tecnologias.map((t: any) => (
-                            <span key={t.id} className="text-xs bg-gray-200 px-2 py-1 rounded">
-                              {t.name}
+                          {getProjectTechnologies(project).map((technology) => (
+                            <span key={technology} className="text-xs bg-gray-200 px-2 py-1 rounded">
+                              {technology}
                             </span>
                           ))}
                         </div>
-                      )}
-
-                      {"rol" in project && (
-                        <p className="text-xs text-gray-500 mt-2">Rol: {project.rol}</p>
                       )}
                     </div>
                   ))}
                 </div>
               </div>
+              ) : null}
             </section>
           </div>
         </div>
       )}
+
+      {selectedProject ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true">
+          <div className={`max-h-[92vh] w-full overflow-y-auto rounded-t-2xl shadow-2xl sm:max-h-[88vh] sm:w-[min(92vw,40rem)] sm:rounded-2xl ${modalTheme.panel}`}>
+            <div className={`sticky top-0 z-10 flex items-start justify-between gap-3 border-b px-4 py-4 sm:gap-4 sm:px-5 ${modalTheme.header}`}>
+              <div className="min-w-0">
+                <p className={`text-xs font-bold uppercase tracking-[0.24em] ${modalTheme.eyebrow}`}>Detalle de proyecto</p>
+                <h2 className={`mt-1 break-words text-xl font-bold leading-tight sm:text-2xl ${modalTheme.title}`}>{getProjectTitle(selectedProject)}</h2>
+                {selectedProjectRole ? (
+                  <p className={`mt-1 text-sm font-semibold ${modalTheme.role}`}>{selectedProjectRole}</p>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedProject(null)}
+                className={`shrink-0 rounded-full p-2 transition ${modalTheme.closeButton}`}
+                aria-label="Cerrar detalle de proyecto"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {getProjectImage(selectedProject) ? (
+              <img
+                src={getProjectImage(selectedProject)}
+                alt={getProjectTitle(selectedProject)}
+                className="h-44 w-full object-cover sm:h-64"
+              />
+            ) : null}
+
+            <div className="space-y-4 px-4 py-4 sm:px-5 sm:py-5">
+              {selectedProjectDescription ? (
+                <section>
+                  <h3 className={`text-sm font-bold uppercase tracking-[0.16em] ${modalTheme.sectionTitle}`}>Descripcion</h3>
+                  <p className={`mt-2 whitespace-pre-line text-sm leading-6 ${modalTheme.text}`}>{selectedProjectDescription}</p>
+                </section>
+              ) : null}
+
+              {(selectedProjectHasDates || selectedProjectTechnologies.length > 0) ? (
+                <div className="flex flex-wrap gap-3">
+                  {selectedProjectHasDates ? (
+                    <div className={`w-full min-w-0 rounded-xl border p-4 sm:w-auto sm:min-w-52 sm:max-w-full sm:p-5 ${modalTheme.infoCard}`}>
+                      <div className={`flex items-center gap-2 text-sm font-bold ${modalTheme.iconText}`}>
+                        <Calendar className="h-4 w-4" />
+                        Fechas
+                      </div>
+                      <p className={`mt-2 text-sm ${modalTheme.text}`}>
+                        {[
+                          selectedProjectStartDate,
+                          selectedProject && isProjectCurrent(selectedProject) ? "En curso" : selectedProjectEndDate,
+                        ].filter(Boolean).join(" - ")}
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {selectedProjectTechnologies.length > 0 ? (
+                    <div className={`w-full min-w-0 rounded-xl border p-4 sm:w-auto sm:min-w-56 sm:max-w-full sm:p-5 ${modalTheme.infoCard}`}>
+                      <div className={`flex items-center gap-2 text-sm font-bold ${modalTheme.iconText}`}>
+                        <Code className="h-4 w-4" />
+                        Tecnologias
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {selectedProjectTechnologies.map((technology) => (
+                          <span key={technology} className={`rounded-full px-3 py-1 text-xs font-semibold ${modalTheme.tag}`}>
+                            {technology}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {(selectedProjectGithubUrl || selectedProjectDemoUrl) ? (
+                <div className="grid gap-3 sm:flex sm:flex-wrap">
+                  {selectedProjectGithubUrl ? (
+                    <a
+                      href={selectedProjectGithubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => handleProjectLinkClick("repository", selectedProjectGithubUrl)}
+                      className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition sm:w-auto ${modalTheme.primaryLink}`}
+                    >
+                      <GitBranch className="h-4 w-4" />
+                      Repositorio
+                    </a>
+                  ) : null}
+
+                  {selectedProjectDemoUrl ? (
+                    <a
+                      href={selectedProjectDemoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => handleProjectLinkClick("demo", selectedProjectDemoUrl)}
+                      className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition sm:w-auto ${modalTheme.secondaryLink}`}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Demo
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   )
 }
