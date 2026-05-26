@@ -19,6 +19,8 @@ const getExplorePortfoliosPerPage = () => {
   if (window.innerWidth >= 640) return 8;
   return 4;
 };
+import AdminSidebar from "../components/Admin/AdminSidebar";
+import { getAuthSession } from "@/services/auth";
 
 type FilterDropdownProps = {
   value: string
@@ -98,6 +100,9 @@ export default function ExplorePortfolios() {
   const [pageError, setPageError] = useState("");
   const [perPage, setPerPage] = useState(() => getExplorePortfoliosPerPage());
   const isUserAuthenticated = isAuthenticated();
+  const session = getAuthSession();
+  const roleId = session?.user?.role_id;
+  const isAdmin = roleId === 2;
   const [serverOccupationOptions, setServerOccupationOptions] = useState<string[] | null>(null)
   const [serverTechnologyOptions, setServerTechnologyOptions] = useState<string[] | null>(null)
   const {    searchTerm, setSearchTerm, isFiltersOpen, setIsFiltersOpen, selectedOccupation,
@@ -234,7 +239,9 @@ export default function ExplorePortfolios() {
       {isUserAuthenticated ? <HeaderUser /> : <Header />}
 
       <div className="flex flex-1">
-        {isUserAuthenticated && <Sidebar />}
+        {isUserAuthenticated && (
+          isAdmin ? <AdminSidebar /> : <Sidebar />
+        )}
 
         <main className="flex-1 px-4 py-4 md:px-8 md:py-6">
           <div className="mx-auto max-w-7xl">
