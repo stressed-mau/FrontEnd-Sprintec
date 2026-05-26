@@ -1,5 +1,6 @@
 import { Check, ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import type { NotificationItem } from '@/services/notificationsService'
 
 import { Footer } from '@/components/Footer'
 import Header from '@/components/HeaderUser'
@@ -7,9 +8,38 @@ import Sidebar from '@/components/Sidebar'
 import { useNotifications } from '@/hooks/useNotifications'
 
 export function NotificationsPage() {
+  const navigate = useNavigate()
   const { notifications, unreadCount, loading, pageError, markAsRead, markAllAsRead, page, setPage, meta } = useNotifications()
   const hasPreviousPage = page > 1
   const hasNextPage = page < meta.totalPages
+
+  const handleNotificationClick = async (notification: NotificationItem) => {
+    if (!notification.read) {
+      await markAsRead(notification.id)
+    }
+
+    if (!notification.data) {
+      navigate(notification.link || '/notificaciones')
+      return
+    }
+
+    const data = notification.data
+
+    switch (notification.dataType) {
+      case 'weekly_global_report':
+        navigate('/tendencia-plantillas')
+        break
+      case 'new_message':
+        navigate(data.sender_id ? `/messages/${data.sender_id}` : '/red-profesional')
+        break
+      case 'portfolio_view':
+        navigate('/visualizaciones')
+        break
+      default:
+        navigate(notification.link || '/notificaciones')
+        break
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
@@ -74,7 +104,8 @@ export function NotificationsPage() {
                 notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`p-4 hover:bg-[#F7F0E1] transition-colors ${!notification.read ? "bg-[#C2DBED]/20" : ""}`}
+                    onClick={() => void handleNotificationClick(notification)}
+                    className={`p-4 hover:bg-[#F7F0E1] transition-colors cursor-pointer ${!notification.read ? "bg-[#C2DBED]/20" : ""}`}
                   >
                     <div className="flex gap-4">
                       <div className="shrink-0 mt-1">
@@ -91,14 +122,9 @@ export function NotificationsPage() {
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-xs text-[#5B8FB9]">{notification.time}</span>
                           <div className="flex items-center gap-3">
-                            {!notification.read && (
-                              <button type="button" onClick={() => void markAsRead(notification.id)} className="text-xs text-[#003A6C] hover:underline">
-                                Marcar como leída
-                              </button>
-                            )}
-                            <Link to={notification.link} className="text-sm text-[#003A6C] hover:underline font-medium">
-                              Ver reporte
-                            </Link>
+                            <span className="text-sm text-[#003A6C] font-medium hover:underline">
+                              {notification.dataType === 'weekly_global_report' ? 'Ver reporte' : 'Ver detalles'}
+                            </span>
                           </div>
                         </div>
                       </div>

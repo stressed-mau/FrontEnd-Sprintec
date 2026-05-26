@@ -4,14 +4,45 @@ import { Link, useNavigate } from "react-router-dom"
 
 import { NOTIFICATIONS_ROUTE } from "@/routes/route-paths"
 import { useNotifications } from "@/hooks/useNotifications"
+import type { NotificationItem } from "@/services/notificationsService"
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
-  const { notifications, unreadCount, markAllAsRead } = useNotifications()
+  const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications()
 
   const visibleNotifications = notifications.slice(0, 3)
+
+  const handleNotificationClick = async (notification: NotificationItem) => {
+    if (!notification.read) {
+      await markAsRead(notification.id)
+    }
+
+    setIsOpen(false)
+
+    if (!notification.data) {
+      navigate(notification.link || '/notificaciones')
+      return
+    }
+
+    const data = notification.data
+
+    switch (notification.dataType) {
+      case 'weekly_global_report':
+        navigate('/tendencia-plantillas')
+        break
+      case 'new_message':
+        navigate(data.sender_id ? `/messages/${data.sender_id}` : '/red-profesional')
+        break
+      case 'portfolio_view':
+        navigate('/visualizaciones')
+        break
+      default:
+        navigate(notification.link || '/notificaciones')
+        break
+    }
+  }
 
   const handleMarkAllAsRead = async () => {
     await markAllAsRead()
@@ -66,11 +97,10 @@ export function NotificationBell() {
           <div className="max-h-[60vh] overflow-y-auto">
             {visibleNotifications.length > 0 ? (
               visibleNotifications.map((notification) => (
-                <Link
+                <div
                   key={notification.id}
-                  to={notification.link}
-                  onClick={() => setIsOpen(false)}
-                  className={`block border-b border-[#6DACBF]/10 px-3 py-3 transition-colors hover:bg-[#F7F0E1]/50 sm:px-4 sm:py-4 ${
+                  onClick={() => void handleNotificationClick(notification)}
+                  className={`block border-b border-[#6DACBF]/10 px-3 py-3 transition-colors hover:bg-[#F7F0E1]/50 sm:px-4 sm:py-4 cursor-pointer ${
                     !notification.read ? "bg-[#C2DBED]/10" : "bg-white"
                   }`}
                 >
@@ -85,11 +115,13 @@ export function NotificationBell() {
                       <p className="mt-1 text-xs leading-snug text-[#4982AD]">{notification.description}</p>
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <span className="text-[10px] font-medium text-[#5B8FB9]">{notification.time}</span>
-                        <span className="text-[10px] font-bold uppercase text-[#003A6C]">Ver reporte</span>
+                        <span className="text-[10px] font-bold uppercase text-[#003A6C]">
+                          {notification.dataType === 'weekly_global_report' ? 'Ver reporte' : 'Ver detalles'}
+                        </span>
                       </div>
                     </div>
                   </div>
-                </Link>
+                </div>
               ))
             ) : (
               <div className="p-6 text-center text-sm text-gray-400 sm:p-8">No tienes notificaciones</div>
