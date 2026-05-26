@@ -1,12 +1,5 @@
 import { useEffect, useState } from "react"
-
-import {
-  getNotifications,
-  markAllNotificationsAsRead,
-  markNotificationAsRead,
-  type NotificationItem,
-  type NotificationsPageMeta,
-} from "@/services/notificationsService"
+import {  getNotifications,markAllNotificationsAsRead,markNotificationAsRead,type NotificationItem, type NotificationsPageMeta,} from "@/services/notificationsService"
 
 export function useNotifications() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
@@ -77,15 +70,4 @@ export function useNotifications() {
 
   const unreadCount = notifications.filter((notification) => !notification.read).length
 
-  return {
-    notifications,
-    unreadCount,
-    loading,
-    pageError,
-    markAsRead,
-    markAllAsRead,
-    page,
-    setPage,
-    meta,
-  }
-}
+  return { notifications, unreadCount, loading, pageError, markAsRead, markAllAsRead, page, setPage,   meta,  }}
