@@ -458,7 +458,7 @@ export function useProjectsManager() {
 
     try {
       await Promise.all(ids.map((id) => deleteProject(id)));
-      setSuccessMessage("Proyecto eliminado correctamente.");
+      setSuccessMessage(ids.length > 1 ? "Proyectos eliminados correctamente." : "Proyecto eliminado correctamente.");
       await loadProjects();
       return true;
     } catch (error) {

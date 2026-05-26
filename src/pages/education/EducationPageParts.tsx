@@ -14,6 +14,7 @@ type EducationTableProps = {
   searchTerm?: string
   selectedIds?: Set<string>
   onSelect?: (id: string, checked: boolean) => void
+  onSelectAll?: (checked: boolean) => void
   onRowClick?: (education: ExperienceItem) => void
 }
 
@@ -36,10 +37,13 @@ export function EducationTable({
   searchTerm = "",
   selectedIds,
   onSelect,
+  onSelectAll,
   onRowClick,
 }: EducationTableProps) {
   const selectable = Boolean(selectedIds && onSelect)
   const currentSelectedIds = selectedIds ?? new Set<string>()
+  const canSelectAll = Boolean(onSelectAll)
+  const allSelected = canSelectAll && education.length > 0 && education.every((item) => currentSelectedIds.has(item.id))
 
   return (
     <Card className="rounded-2xl border border-[#A5D7E8] bg-white py-0 shadow-sm">
@@ -56,7 +60,21 @@ export function EducationTable({
             <table className="w-full min-w-[760px] border-collapse">
               <thead className="bg-[#EEF5F9] text-left text-xs uppercase text-[#003A6C]">
                 <tr>
-                  {selectable ? <th className="w-12 px-4 py-3 font-semibold">Sel.</th> : null}
+                  {selectable ? (
+                    <th className="w-12 px-4 py-3 font-semibold">
+                      {canSelectAll ? (
+                        <input
+                          type="checkbox"
+                          checked={allSelected}
+                          onChange={(event) => onSelectAll?.(event.target.checked)}
+                          className="size-4 rounded-none border-[#A5D7E8]"
+                          aria-label="Seleccionar toda la formacion academica visible"
+                        />
+                      ) : (
+                        <span>Sel.</span>
+                      )}
+                    </th>
+                  ) : null}
                   <th className="px-4 py-3 font-semibold">Institucion academica</th>
                   <th className="px-4 py-3 font-semibold">Nivel de formacion</th>
                   <th className="px-4 py-3 font-semibold">Area de estudio</th>

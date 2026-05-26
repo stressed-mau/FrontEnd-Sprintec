@@ -18,36 +18,57 @@ export default function DeleteProjectsPage() {
   const manager = useProjectsManager();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [deletedCount, setDeletedCount] = useState(0);
 
   const filteredProjects = useMemo(() => filterProjectsByTitle(manager.projects, searchTerm), [manager.projects, searchTerm]);
   const pagination = paginateProjects(filteredProjects, currentPage);
-  const selectedProject = useMemo(
-    () => manager.projects.find((project) => project.id === selectedId) ?? null,
-    [manager.projects, selectedId],
-  );
-  const selectedIds = useMemo(() => (selectedId == null ? new Set<number>() : new Set([selectedId])), [selectedId]);
+  const selectedCount = selectedIds.size;
 
   function handleSearchChange(value: string) {
     setSearchTerm(value);
     setCurrentPage(1);
-    setSelectedId(null);
+    setSelectedIds(new Set());
   }
 
   function handleToggleSelect(id: number, selected: boolean) {
-    setSelectedId(selected ? id : null);
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (selected) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  }
+
+  function handleSelectAllVisible(selected: boolean) {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      pagination.items.forEach((project) => {
+        if (selected) {
+          next.add(project.id);
+        } else {
+          next.delete(project.id);
+        }
+      });
+      return next;
+    });
   }
 
   async function handleConfirmDelete() {
-    if (selectedId == null) return;
+    const idsToDelete = Array.from(selectedIds);
+    if (idsToDelete.length === 0) return;
 
-    const deleted = await manager.removeProjects([selectedId]);
+    const deleted = await manager.removeProjects(idsToDelete);
     setShowConfirmDelete(false);
 
     if (deleted) {
-      setSelectedId(null);
+      setDeletedCount(idsToDelete.length);
+      setSelectedIds(new Set());
       setShowSuccessModal(true);
     }
   }
@@ -55,7 +76,11 @@ export default function DeleteProjectsPage() {
   return (
     <ProjectPageShell
       title="Eliminar proyectos"
-      description={selectedId == null ? "Selecciona un proyecto para eliminarlo." : "1 proyecto seleccionado."}
+      description={
+        selectedCount === 0
+          ? "Selecciona uno o varios proyectos para eliminarlos."
+          : `${selectedCount} proyecto${selectedCount > 1 ? "s" : ""} seleccionado${selectedCount > 1 ? "s" : ""}.`
+      }
     >
       <FeedbackMessage message={manager.pageError} type="error" />
 
@@ -63,12 +88,12 @@ export default function DeleteProjectsPage() {
         {manager.projects.length > 0 ? <ProjectSearch value={searchTerm} onChange={handleSearchChange} /> : <span />}
         <Button
           type="button"
-          disabled={selectedId == null || manager.isDeleting}
+          disabled={selectedCount === 0 || manager.isDeleting}
           onClick={() => setShowConfirmDelete(true)}
           className="bg-red-600 text-white hover:bg-red-700"
         >
           <Trash2 className="size-4" />
-          {manager.isDeleting ? "Eliminando..." : "Eliminar"}
+          {manager.isDeleting ? "Eliminando..." : `Eliminar${selectedCount > 0 ? ` (${selectedCount})` : ""}`}
         </Button>
       </div>
 
@@ -83,6 +108,7 @@ export default function DeleteProjectsPage() {
           selectable
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}
+          onSelectAll={handleSelectAllVisible}
         />
       )}
 
@@ -97,7 +123,8 @@ export default function DeleteProjectsPage() {
 
       <DeleteConfirmationModal
         isOpen={showConfirmDelete}
-        title="¿Está seguro de que desea eliminar este proyecto?"
+        title={`Esta seguro de que desea eliminar ${selectedCount > 1 ? "estos proyectos" : "este proyecto"}?`}
+        message="Esta accion no se puede deshacer."
         isLoading={manager.isDeleting}
         onConfirm={() => void handleConfirmDelete()}
         onCancel={() => setShowConfirmDelete(false)}
@@ -105,8 +132,8 @@ export default function DeleteProjectsPage() {
 
       <ConfirmationModal
         isOpen={showSuccessModal}
-        title="Éxito"
-        message={manager.successMessage || `Proyecto${selectedProject ? ` "${selectedProject.nombre}"` : ""} eliminado correctamente.`}
+        title="Exito"
+        message={manager.successMessage || `${deletedCount > 1 ? "Proyectos eliminados" : "Proyecto eliminado"} correctamente.`}
         onClose={() => setShowSuccessModal(false)}
       />
     </ProjectPageShell>
