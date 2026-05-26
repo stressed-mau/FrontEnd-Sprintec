@@ -250,6 +250,54 @@ const normalizePortfolioExperience = (experience: any, index: number) => {
   };
 };
 
+const normalizePortfolioEducation = (education: any, index: number) => {
+  const direct = education ?? {};
+  const nestedEducation = direct.education && typeof direct.education === "object" ? direct.education : {};
+  const source = { ...nestedEducation, ...direct };
+  const title = firstText(
+    direct.title,
+    direct.degree,
+    direct.name,
+    direct.position,
+    direct.label,
+    nestedEducation.title,
+    nestedEducation.degree,
+    nestedEducation.name,
+    nestedEducation.position,
+    nestedEducation.label,
+  ) || "Sin titulo";
+  const institution = firstText(
+    direct.institution,
+    direct.institution_name,
+    direct.organization,
+    direct.company,
+    direct.company_name,
+    direct.sublabel,
+    nestedEducation.institution,
+    nestedEducation.institution_name,
+    nestedEducation.organization,
+    nestedEducation.company,
+    nestedEducation.company_name,
+    nestedEducation.sublabel,
+  ) || "Sin institucion";
+
+  return {
+    ...source,
+    id: String(source.id ?? source.education_id ?? education?.id ?? `education-${index}`),
+    title,
+    institution,
+    position: title,
+    company: institution,
+    label: title,
+    sublabel: institution,
+    field_to_study: source.field_to_study ?? source.field_of_study ?? source.field ?? "",
+    description: asText(source.description ?? source.descripcion),
+    start_date: source.start_date ?? source.startDate ?? source.issue_date ?? source.date_issued ?? "",
+    end_date: source.end_date ?? source.endDate ?? null,
+    is_public: source.is_public ?? education?.is_public,
+  };
+};
+
 export const usePortfolio = (externalSlug?: string) => {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [loading, setLoading] = useState(true);
@@ -332,16 +380,7 @@ export const usePortfolio = (externalSlug?: string) => {
                 sublabel: company,
               };
             }),
-            educations: (d.educations || []).map((education: any, index: number) => ({
-              ...education,
-              id: String(education.id ?? education.education_id ?? `education-${index}`),
-              title: education.title ?? education.degree ?? education.name ?? "Sin titulo",
-              institution: education.institution ?? education.institution_name ?? education.organization ?? "Sin institucion",
-              field_to_study: education.field_to_study ?? education.field_of_study ?? education.field ?? "",
-              description: education.description ?? "",
-              start_date: education.start_date ?? education.startDate ?? "",
-              end_date: education.end_date ?? education.endDate ?? null,
-            })),
+            educations: (d.educations || []).map(normalizePortfolioEducation),
             socialNetworks: (d.social_networks || d.socialNetworks || []).map((network: any, index: number) => {
               const name = network.name ?? network.platform ?? network.social_network ?? "Red social";
               const url = network.url ?? network.link ?? network.sublabel ?? "";
@@ -408,7 +447,7 @@ export const usePortfolio = (externalSlug?: string) => {
           
           skills: skills as Skill[],
           experiences: experiences.map(normalizePortfolioExperience) as unknown as Experience[],
-          educations: education as unknown as Experience[],
+          educations: education.map(normalizePortfolioEducation) as unknown as Experience[],
           projects: projects.map(normalizePortfolioProject) as unknown as Project[],
           socialNetworks: social as SocialNetwork[],
           certificates: [],

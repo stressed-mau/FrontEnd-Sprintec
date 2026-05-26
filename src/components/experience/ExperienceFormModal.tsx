@@ -543,7 +543,7 @@ export function ExperienceFormModal({
               ) : null}
 
               {errors.certificate ? <p className="text-sm text-red-600">{errors.certificate}</p> : null}
-              <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG, PNG y PDF. Tamaño máximo: 5 MB.</p>
+              <p className="text-xs text-[#6B7E8E]">Formatos permitidos: JPG, JPEG, PNG y PDF. Tamaño máximo: 2 MB.</p>
             </div>
           )}
 

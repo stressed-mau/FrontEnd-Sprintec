@@ -123,7 +123,24 @@ const MyPortfolio = () => {
   const visibleSkills = visibilityData.skills.filter(s => s.checked)
   const visibleExperience = portfolio.experiences.filter((item: any) => item.type !== "academica" && asBoolean(item.is_public))
   const visibleProjects = portfolio.projects.filter((item: any) => asBoolean(item.is_public))
-  const visibleEducation = visibilityData.education.filter(e => e.checked)
+  const visibleEducation = visibilityData.education
+    .filter(e => e.checked)
+    .map((item) => {
+      const source = portfolio.educations?.find((education: any) => String(education.id) === String(item.id)) as any
+
+      return {
+        ...item,
+        label: source?.title || source?.position || source?.degree || source?.name || source?.label || item.label,
+        sublabel:
+          source?.institution ||
+          source?.company ||
+          source?.company_name ||
+          source?.institution_name ||
+          source?.organization ||
+          source?.sublabel ||
+          item.sublabel,
+      }
+    })
   const visibleCertificates = visibilityData.certificates.filter(c => c.checked)
   const visibleNetworks = visibilityData.networks.filter(n => n.checked)
   const visiblePortfolio = {

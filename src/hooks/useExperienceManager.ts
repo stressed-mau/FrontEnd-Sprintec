@@ -46,7 +46,7 @@ const EMPTY_FORM: ExperienceFormValues = {
 const DATE_PATTERN = /^(\d{2})\/(\d{2})\/(\d{4})$/
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024
-const MAX_CERTIFICATE_SIZE_BYTES = 5 * 1024 * 1024
+const MAX_CERTIFICATE_SIZE_BYTES = 2 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 const ALLOWED_CERTIFICATE_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
@@ -176,30 +176,31 @@ function findDuplicateExperience(
   editingExperienceId?: string,
 ) {
   const normalizedType = normalizeExperienceTypeValue(values.type)
-  const normalizedCompany = normalizeComparableText(values.company)
   const normalizedPosition = normalizeComparableText(values.position)
-  const normalizedFieldOfStudy = normalizeComparableText(values.fieldOfStudy)
 
   return experiences.find((experience) => {
     if (editingExperienceId && experience.id === editingExperienceId) {
       return false
     }
 
-    const isSameIdentity =
-      normalizeExperienceTypeValue(experience.type) === normalizedType &&
-      normalizeComparableText(experience.company) === normalizedCompany &&
-      normalizeComparableText(experience.position) === normalizedPosition
-
-    if (!isSameIdentity) {
+    if (normalizeExperienceTypeValue(experience.type) !== normalizedType) {
       return false
     }
 
     if (normalizedType === "academica") {
-      return normalizeComparableText(experience.fieldOfStudy) === normalizedFieldOfStudy
+      return normalizeComparableText(experience.position) === normalizedPosition
     }
 
-    return true
+    return normalizeComparableText(experience.position) === normalizedPosition
   })
+}
+
+function getDuplicateExperienceMessage(duplicateExperience: ExperienceItem) {
+  if (duplicateExperience.type === "academica") {
+    return "Ya existe una formación académica registrada con ese nombre. Ingrese un nombre diferente."
+  }
+
+  return "Ya existe una experiencia laboral registrada con ese nombre. Ingrese un nombre diferente."
 }
 
 function hasAllowedImageFormat(file: File) {
@@ -250,7 +251,7 @@ function validateCertificateFile(file: File | null): string {
   }
 
   if (file.size > MAX_CERTIFICATE_SIZE_BYTES) {
-    return "El tamaño máximo permitido para el archivo de certificación es de 5 MB."
+    return "El archivo no debe superar los 2 MB."
   }
 
   return ""
@@ -508,6 +509,21 @@ export function useExperienceManager() {
       certificate: validateCertificateFile(selectedCertificateFile),
     }
 
+    const duplicateExperience = findDuplicateExperience(
+      experiences,
+      formData,
+      editingExperience?.id,
+    )
+
+    if (duplicateExperience) {
+      const duplicateError = getDuplicateExperienceMessage(duplicateExperience)
+      if (normalizeExperienceTypeValue(formData.type) === "academica") {
+        nextErrors.position = nextErrors.position || duplicateError
+      } else {
+        nextErrors.position = nextErrors.position || duplicateError
+      }
+    }
+
     if (editingExperience && originalEditingValues) {
       const protectedFields: Array<keyof ExperienceFormValues> = [
         "company",
@@ -534,7 +550,7 @@ export function useExperienceManager() {
 
     return nextErrors
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingExperience, formData, originalEditingValues, selectedCertificateFile, selectedImageFile, educationOptions, workOptions])
+  }, [editingExperience, experiences, formData, originalEditingValues, selectedCertificateFile, selectedImageFile, educationOptions, workOptions])
   const canSaveExperience = !isSaving && !Object.values(currentValidationErrors).some(Boolean)
 
   const loadExperiences = useCallback(async () => {
@@ -645,7 +661,23 @@ export function useExperienceManager() {
     )
   }
 
-  function showSuccessModal(message: string, title = "Éxito") {
+  function validateDuplicateField(field: keyof ExperienceFormValues, values: ExperienceFormValues) {
+    const duplicateExperience = findDuplicateExperience(experiences, values, editingExperience?.id)
+
+    if (!duplicateExperience) {
+      return ""
+    }
+
+    const duplicateError = getDuplicateExperienceMessage(duplicateExperience)
+
+    if (normalizeExperienceTypeValue(values.type) === "academica") {
+      return field === "position" ? duplicateError : ""
+    }
+
+    return field === "position" ? duplicateError : ""
+  }
+
+  function showSuccessModal(message: string, title = "Exito") {
     setSuccessTitle(title)
     setSuccessMessage(message)
     setIsSuccessModalOpen(true)
@@ -665,11 +697,6 @@ export function useExperienceManager() {
     setIsSuccessModalOpen(false)
     setSuccessTitle("Éxito")
     setSuccessMessage("")
-  }
-
-  function showDuplicateModal(message: string) {
-    setDuplicateMessage(message)
-    setIsDuplicateModalOpen(true)
   }
 
   function closeDuplicateModal() {
@@ -830,12 +857,18 @@ export function useExperienceManager() {
 
     setErrors((currentErrors) => ({
       ...currentErrors,
-      [field]: validateManagedField(field, nextValues, normalizedValue),
+      [field]: validateManagedField(field, nextValues, normalizedValue) || validateDuplicateField(field, nextValues),
       ...(field === "type" && nextValues.type === "academica"
         ? { email: "" }
         : {}),
       ...(field === "startDate" || field === "endDate" || field === "type"
         ? { endDate: validateExperienceField("endDate", nextValues) }
+        : {}),
+      ...(field === "company" || field === "position" || field === "fieldOfStudy" || field === "type"
+        ? {
+            position: validateManagedField("position", nextValues) || validateDuplicateField("position", nextValues),
+            fieldOfStudy: validateManagedField("fieldOfStudy", nextValues),
+          }
         : {}),
     }))
   }
@@ -843,7 +876,7 @@ export function useExperienceManager() {
   function handleBlur(field: keyof ExperienceFormValues) {
     setErrors((currentErrors) => ({
       ...currentErrors,
-      [field]: validateManagedField(field, formData),
+      [field]: validateManagedField(field, formData) || validateDuplicateField(field, formData),
     }))
 
     if (field === "startDate" || field === "endDate") {
@@ -1066,6 +1099,8 @@ export function useExperienceManager() {
     nextErrors.position = nextErrors.position || validateEducationOptionField("position", formData)
     nextErrors.position = nextErrors.position || validateWorkOptionField("position", formData)
     nextErrors.fieldOfStudy = nextErrors.fieldOfStudy || validateEducationOptionField("fieldOfStudy", formData)
+    nextErrors.position = nextErrors.position || validateDuplicateField("position", formData)
+    nextErrors.fieldOfStudy = nextErrors.fieldOfStudy || validateDuplicateField("fieldOfStudy", formData)
 
     if (editingExperience && originalEditingValues) {
       const protectedFields: Array<keyof ExperienceFormValues> = [
@@ -1104,12 +1139,10 @@ export function useExperienceManager() {
     )
 
     if (duplicateExperience) {
-      const duplicatedTypeLabel =
-        duplicateExperience.type === "academica" ? "Formación Académica" : "Experiencia Laboral"
-
-      showDuplicateModal(
-        `Ya tienes una ${duplicatedTypeLabel} registrada en ${duplicateExperience.company} como ${duplicateExperience.position}. Revisa los datos o edita el registro existente.`,
-      )
+      setErrors((currentErrors) => ({
+        ...currentErrors,
+        position: getDuplicateExperienceMessage(duplicateExperience),
+      }))
       return
     }
 

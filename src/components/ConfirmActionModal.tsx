@@ -51,17 +51,17 @@ const ConfirmActionModal = ({
           {/* Botones - Ajustados para que se vean igual de robustos */}
           <div className="flex gap-4 w-full">
             <button
-              onClick={onCancel}
-              className="w-full border-2 border-[#003A6C] text-[#003A6C] py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all active:scale-[0.98]"
-            >
-              {cancelText}
-            </button>
-
-            <button
               onClick={onConfirm}
               className="w-full bg-[#003A6C] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#002a50] transition-all shadow-lg active:scale-[0.98]"
             >
               {confirmText}
+            </button>
+
+            <button
+              onClick={onCancel}
+              className="w-full border-2 border-[#003A6C] text-[#003A6C] py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all active:scale-[0.98]"
+            >
+              {cancelText}
             </button>
           </div>
         </div>
