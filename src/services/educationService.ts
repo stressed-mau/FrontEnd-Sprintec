@@ -256,7 +256,6 @@ function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "
     formData.append("field_of_study", fieldOfStudy)
 
     if (issueDate) {
-      formData.append("start_date", issueDate)
       formData.append("end_date", issueDate)
       formData.append("issue_date", issueDate)
       formData.append("date_issued", issueDate)
@@ -280,12 +279,10 @@ function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "
 }
 
 function buildEducationUpdateBody(payload: ExperiencePayload) {
-  const body: { description: string; end_date: string | null } = {
+  return {
     description: payload.description.trim(),
-    end_date: payload.current ? null : payload.startDate.trim() || null,
+    end_date: payload.startDate.trim() || null,
   }
-
-  return body
 }
 
 export async function getEducation(): Promise<ExperienceItem[]> {
