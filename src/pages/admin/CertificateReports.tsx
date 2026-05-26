@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, Legend 
@@ -67,7 +67,11 @@ const CertificateReports = () => {
   `,
 
     onBeforePrint: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 700));
+      setIsPrinting(true);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    },
+    onAfterPrint: () => {
+      setIsPrinting(false);
     },
   });
   // Colores para las gráficas de pastel 
@@ -103,6 +107,22 @@ const CertificateReports = () => {
       </text>
     );
   };
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 640 : false
+  );
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const isCompact = isMobile && !isPrinting;
 
   if (loading) {
     return (
@@ -125,14 +145,17 @@ const CertificateReports = () => {
 
       <div className="flex flex-col lg:flex-row flex-1">
         <AdminSidebar />
-        <main className="flex-1 p-4 sm:p-6 md:p-10">
+        <main className="flex-1 overflow-x-hidden p-3 sm:p-6 md:p-10">
           <div
             ref={reportRef}
             className="
               mx-auto
+              w-full
               max-w-6xl
-              space-y-8
-              p-4
+              space-y-6
+              p-2
+              sm:p-4
+              md:p-6
               print:max-w-full
               print:px-2
               print:pt-6
@@ -172,7 +195,7 @@ const CertificateReports = () => {
             {/* Header del Reporte */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">           
               <div className="text-left">
-                <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#003A6C] break-words">
                   Gestión de Certificados
                 </h1>
                 <p className="mt-1 text-sm text-[#4B778D] md:text-base">
@@ -183,6 +206,8 @@ const CertificateReports = () => {
                 onClick={handlePrint}
                 className="
                   print:hidden
+                  w-full
+                  sm:w-auto
                   h-11
                   flex
                   items-center
@@ -225,15 +250,22 @@ const CertificateReports = () => {
                 <div
                   className="w-full print:hidden"
                   style={{
-                    height: `${Math.max(issuersData.length * 60, 250)}px`,
+                    height: `${Math.max(issuersData.length * (isCompact ? 45 : 60), 250)}px`,
                   }}
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={issuersData} layout="vertical" margin={{ left: 20, right: 20, bottom: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
                       <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#4B778D'}} />
-                      <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} width={110} tick={{fill: '#003A6C', fontSize: 12, fontWeight: 500}} />
-                      <Tooltip cursor={{fill: '#F8FAFC'}} />
+                      <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} width={isCompact ? 70 : 110} tick={{fill: '#003A6C', fontSize: isMobile ? 9 : 12, fontWeight: 500}} />
+                      <Tooltip
+                        cursor={{ fill: '#F8FAFC' }}
+                        contentStyle={{
+                          padding: isCompact ? '4px 8px' : '8px 12px',
+                          fontSize: isCompact ? '11px' : '13px',
+                          borderRadius: '8px',
+                        }}
+                      />
                       <Bar dataKey="cantidad" fill="#4A6CF7" radius={[0, 4, 4, 0]} barSize={25} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -275,26 +307,79 @@ const CertificateReports = () => {
                   <h2 className="text-xl font-bold text-[#003A6C]">Distribución por formato</h2>
                   <p className="text-sm text-[#4B778D]">Tipos de archivo de respaldo</p>
                 </div>
-                <div className="h-64 flex items-center justify-center print:justify-center">
+                {/* Vista normal */}
+                <div
+                  className={`${isCompact ? 'h-52' : 'h-64'} flex items-center justify-center print:hidden`}
+                >
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={formatData}
                         cx="50%"
                         cy="50%"
-                        outerRadius={90}
+                        outerRadius={isCompact ? 65 : 90}
                         dataKey="value"
                         labelLine={false}
                         label={renderCustomizedLabel}
                       >
                         {formatData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS_FORMAT[index % COLORS_FORMAT.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS_FORMAT[index % COLORS_FORMAT.length]}
+                          />
                         ))}
                       </Pie>
+
                       <Tooltip />
-                      <Legend verticalAlign="bottom" height={36}/>
+
+                      <Legend
+                        verticalAlign="bottom"
+                        height={36}
+                        wrapperStyle={{
+                          fontSize: isCompact ? "10px" : "16px",
+                          paddingTop: "10px",
+                        }}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
+                </div>
+
+                {/* Vista PDF */}
+                <div
+                  className="hidden print:flex justify-center items-center mx-auto"
+                  style={{
+                    width: "450px",
+                    height: "320px",
+                  }}
+                >
+                  <PieChart width={450} height={320}>
+                    <Pie
+                      data={formatData}
+                      cx="50%"
+                      cy="45%"
+                      outerRadius={90}
+                      dataKey="value"
+                      labelLine={false}
+                      label={renderCustomizedLabel}
+                      isAnimationActive={false}
+                    >
+                      {formatData.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS_FORMAT[index % COLORS_FORMAT.length]}
+                        />
+                      ))}
+                    </Pie>
+
+                    <Legend
+                      verticalAlign="bottom"
+                      height={36}
+                      wrapperStyle={{
+                        fontSize: "16px",
+                        paddingTop: "10px",
+                      }}
+                    />
+                  </PieChart>
                 </div>
               </div>
 
@@ -304,27 +389,77 @@ const CertificateReports = () => {
                   <h2 className="text-xl font-bold text-[#003A6C]">Certificados con vencimiento</h2>
                   <p className="text-sm text-[#4B778D]">Estado de vigencia de certificados</p>
                 </div>
-                <div className="h-72 flex items-center justify-center print:h-60">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={expirationData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={90}
-                        dataKey="value"
-                        labelLine={false}
-                        label={renderCustomizedLabel}
-                      >
-                        {expirationData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS_EXPIRATION[index % COLORS_EXPIRATION.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend verticalAlign="bottom" height={36}/>
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
+              {/* Vista normal */}
+              <div className="h-72 flex items-center justify-center print:hidden">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={expirationData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={isCompact ? 65 : 90}
+                      dataKey="value"
+                      labelLine={false}
+                      label={renderCustomizedLabel}
+                    >
+                      {expirationData.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS_EXPIRATION[index % COLORS_EXPIRATION.length]}
+                        />
+                      ))}
+                    </Pie>
+
+                    <Tooltip />
+
+                    <Legend
+                      verticalAlign="bottom"
+                      height={36}
+                      wrapperStyle={{
+                        fontSize: isCompact ? '10px' : '16px',
+                        paddingTop: '3px',
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              {/* Vista PDF */}
+              <div
+                className="hidden print:flex justify-center items-center mx-auto"
+                style={{
+                  width: '450px',
+                  height: '320px',
+                }}
+              >
+                <PieChart width={450} height={320}>
+                  <Pie
+                    data={expirationData}
+                    cx="50%"
+                    cy="45%"
+                    outerRadius={90}
+                    dataKey="value"
+                    labelLine={false}
+                    label={renderCustomizedLabel}
+                    isAnimationActive={false}
+                  >
+                    {expirationData.map((_, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS_EXPIRATION[index % COLORS_EXPIRATION.length]}
+                      />
+                    ))}
+                  </Pie>
+
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    wrapperStyle={{
+                      fontSize: '16px',
+                      paddingTop: '3px',
+                    }}
+                  />
+                </PieChart>
+              </div>
               </div>
             </div>
 
@@ -350,16 +485,24 @@ const StatCard = ({
   subtext,
   Icon,
 }: StatCardProps) => (
-  <div className="bg-white p-5 sm:p-6 rounded-3xl border border-[#D6E6EE] shadow-sm transition-all hover:shadow-md hover:border-[#70A1B9]">
-
+  <div className="
+    bg-white
+    p-3 sm:p-5
+    rounded-2xl sm:rounded-3xl
+    border border-[#D6E6EE]
+    shadow-sm
+    transition-all
+    hover:shadow-md
+    hover:border-[#70A1B9]
+  ">
     <div className="flex items-start justify-between">
 
-      <div className="space-y-2">
+      <div className="space-y-1 sm:space-y-2">
         <p className="text-[#4B778D] font-semibold text-sm leading-tight">
           {title}
         </p>
 
-        <p className="text-4xl font-bold text-[#003A6C]">
+        <p className="text-2xl sm:text-4xl font-bold text-[#003A6C] leading-none">
           {value}
         </p>
 
@@ -368,9 +511,9 @@ const StatCard = ({
         </p>
       </div>
 
-      <div className="p-2 rounded-xl bg-[#F1F7F9]">
+      <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-[#F1F7F9]">
         <Icon
-          className="w-5 h-5 text-[#003A6C]"
+          className="w-4 h-4 sm:w-5 sm:h-5 text-[#003A6C]"
           strokeWidth={1.7}
         />
       </div>
