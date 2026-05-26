@@ -11,6 +11,14 @@ import { useExplorePortfolioFilters, type PortfolioCard } from "@/hooks/useExplo
 import { getLanguages, getWorkOptions } from "@/services/ProjectService";
 import { isAuthenticated } from "@/services/auth";
 import { getExplorePortfolios, type ExplorePortfoliosMeta } from "@/services/explorePortfoliosService";
+import { usePagination } from "@/hooks/usePagination";
+
+const getExplorePortfoliosPerPage = () => {
+  if (typeof window === "undefined") return 12;
+  if (window.innerWidth >= 1024) return 12;
+  if (window.innerWidth >= 640) return 8;
+  return 4;
+};
 
 type FilterDropdownProps = {
   value: string
@@ -88,8 +96,8 @@ export default function ExplorePortfolios() {
   const [portfolios, setPortfolios] = useState<PortfolioCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [meta, setMeta] = useState<ExplorePortfoliosMeta>({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 });
+  const [perPage, setPerPage] = useState(() => getExplorePortfoliosPerPage());
+  const [meta, setMeta] = useState<ExplorePortfoliosMeta>({ currentPage: 1, perPage: getExplorePortfoliosPerPage(), total: 0, totalPages: 1 });
   const isUserAuthenticated = isAuthenticated();
   const [serverOccupationOptions, setServerOccupationOptions] = useState<string[] | null>(null)
   const [serverTechnologyOptions, setServerTechnologyOptions] = useState<string[] | null>(null)
@@ -98,6 +106,33 @@ export default function ExplorePortfolios() {
     selectedTechnology, setSelectedTechnology, minProjects, setMinProjects, minSkills,  setMinSkills,
     //occupationOptions,
     technologyOptions, hasActiveFilters, clearFilters,  } = useExplorePortfolioFilters(portfolios, serverOccupationOptions ?? undefined, serverTechnologyOptions ?? undefined)
+
+  const {
+    currentData,
+    currentPage,
+    totalPages,
+    goToPage,
+    next,
+    prev,
+    setCurrentPage,
+  } = usePagination({ items: portfolios, itemsPerPage: perPage })
+
+  useEffect(() => {
+    const updatePerPage = () => {
+      setPerPage(getExplorePortfoliosPerPage())
+    }
+
+    updatePerPage()
+    window.addEventListener("resize", updatePerPage)
+
+    return () => {
+      window.removeEventListener("resize", updatePerPage)
+    }
+  }, [])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [perPage])
 
   useEffect(() => {
     let mounted = true
@@ -134,19 +169,23 @@ export default function ExplorePortfolios() {
           technologies: selectedTechnology === "all" ? [] : [selectedTechnology],
           minProjects: minProjects === "all" ? undefined : Number(minProjects),
           minSkills: minSkills === "all" ? undefined : Number(minSkills),
-          page: currentPage,
+          perPage: 1000,
         })
 
         if (!isMounted) return;
 
         setPortfolios(result.portfolios)
-        setMeta(result.meta)
+        setMeta({
+          ...result.meta,
+          perPage,
+          totalPages: perPage > 0 ? Math.max(1, Math.ceil(result.meta.total / perPage)) : 1,
+        })
         setPageError("")
       } catch (error) {
         console.error("Error cargando portafolios:", error)
         if (!isMounted) return;
         setPortfolios([])
-        setMeta({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 })
+        setMeta({ currentPage: 1, perPage, total: 0, totalPages: 1 })
         setPageError(error instanceof Error ? error.message : "No se pudieron cargar los portafolios.")
       } finally {
         if (isMounted) {
@@ -160,13 +199,7 @@ export default function ExplorePortfolios() {
     return () => {
       isMounted = false;
     };
-  }, [searchTerm, selectedOccupation, selectedTechnology, minProjects, minSkills, currentPage]);
-
-  const totalPages = useMemo(() => Math.max(1, meta.totalPages), [meta.totalPages])
-  const currentData = portfolios
-  const next = () => setCurrentPage((page) => Math.min(page + 1, totalPages))
-  const prev = () => setCurrentPage((page) => Math.max(1, page - 1))
-  const goToPage = (page: number) => setCurrentPage(Math.max(1, Math.min(page, totalPages)))
+  }, [searchTerm, selectedOccupation, selectedTechnology, minProjects, minSkills, perPage, setCurrentPage])
 
   const handleSearchChange = (value: string) => {
     setCurrentPage(1)

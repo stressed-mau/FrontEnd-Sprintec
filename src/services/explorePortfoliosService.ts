@@ -41,6 +41,8 @@ interface PortfoliosResponseDto {
   };
 }
 
+const DEFAULT_EXPLORE_PORTFOLIOS_PER_PAGE = 12;
+
 export interface ExplorePortfoliosFilters {
   search?: string;
   roles?: string[];
@@ -48,6 +50,7 @@ export interface ExplorePortfoliosFilters {
   minProjects?: number;
   minSkills?: number;
   page?: number;
+  perPage?: number;
 }
 
 export interface ExplorePortfoliosMeta {
@@ -134,6 +137,10 @@ function buildQueryString(filters: ExplorePortfoliosFilters = {}) {
     searchParams.set("page", String(filters.page));
   }
 
+  if (typeof filters.perPage === "number" && Number.isFinite(filters.perPage)) {
+    searchParams.set("per_page", String(filters.perPage));
+  }
+
   return searchParams.toString();
 }
 
@@ -145,7 +152,7 @@ function normalizeResponse(responseData: unknown, pageFallback = 1): ExplorePort
   const record = payload && typeof payload === "object" ? (payload as PortfoliosResponseDto["data"] & Record<string, unknown>) : {};
   const portfoliosSource = Array.isArray(record.portfolios) ? record.portfolios : [];
   const currentPage = Number(record.current_page ?? pageFallback);
-  const perPage = Number(record.per_page ?? 15);
+  const perPage = Number(record.per_page ?? DEFAULT_EXPLORE_PORTFOLIOS_PER_PAGE);
   const total = Number(record.count ?? portfoliosSource.length);
   const totalPages = perPage > 0 ? Math.max(1, Math.ceil(total / perPage)) : 1;
 
