@@ -37,7 +37,7 @@ export function CertificateDateInput({
   disabled,
   required,
   error,
-  placeholder = "DD/MM/AAAA",
+  placeholder = "dd/mm/aaaa",
   min,
   max,
   onChange,

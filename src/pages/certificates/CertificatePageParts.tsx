@@ -11,11 +11,28 @@ import { CertificateFilePreviewField } from "@/components/certificates/Certifica
 import type { Certificate, CertificateFormErrors, CertificateFormValues } from "@/hooks/useCertificatesManager"
 
 function formatCertificateDate(date: string) {
-  return new Date(date).toLocaleDateString("es-ES", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
+  if (!date) {
+    return "No especificada"
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(date)) {
+    return date
+  }
+
+  if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(date)) {
+    const [year, month, day] = date.split(/[-/]/)
+    return `${day}/${month}/${year}`
+  }
+
+  const parsedDate = new Date(date)
+  if (!Number.isNaN(parsedDate.getTime())) {
+    const day = String(parsedDate.getDate()).padStart(2, "0")
+    const month = String(parsedDate.getMonth() + 1).padStart(2, "0")
+    const year = parsedDate.getFullYear()
+    return `${day}/${month}/${year}`
+  }
+
+  return date
 }
 
 type CertificatesSearchProps = {
