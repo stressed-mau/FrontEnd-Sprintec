@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 //import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
 import { ArrowLeft, ArrowRight, Globe, Code2, Link, Mail, MapPin } from "lucide-react";
 
@@ -63,9 +63,24 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   };
 
   // Navegación
-  const totalPages = 6;
+  const pageIds = useMemo(() => [
+    "bio",
+    ...(skills.length ? ["skills"] : []),
+    ...(projects.length ? ["projects"] : []),
+    ...(experiences.length ? ["experience"] : []),
+    ...(visibleEducation.length ? ["education"] : []),
+    ...(visibleCertificates.length ? ["certificates"] : []),
+  ], [experiences.length, projects.length, skills.length, visibleCertificates.length, visibleEducation.length]);
+  const currentPageId = pageIds[page] ?? pageIds[0];
+  const totalPages = pageIds.length;
   const nextPage = () => setPage((prev) => (prev + 1) % totalPages);
   const prevPage = () => setPage((prev) => (prev - 1 + totalPages) % totalPages);
+
+  useEffect(() => {
+    if (page >= totalPages) {
+      setPage(0);
+    }
+  }, [page, totalPages]);
 
   const getSocialIcon = (name: string) => {
     const n = name.toLowerCase();
@@ -75,10 +90,10 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   };
 
   return (
-    <article className="w-full max-w-4xl mx-auto min-h-[550px] bg-white text-zinc-900 font-sans shadow-2xl flex flex-col md:flex-row overflow-hidden border border-stone-100">
+    <article className="w-full max-w-4xl mx-auto min-h-[420px] bg-white text-zinc-900 font-sans shadow-2xl flex flex-col md:flex-row overflow-hidden border border-stone-100 md:min-h-[520px]">
       
       {/* LATERAL IZQUIERDO - Identidad Fija */}
-      <div className="w-full md:w-1/3 bg-stone-50 p-8 flex flex-col items-center text-center border-r border-stone-100">
+      <div className="w-full md:w-1/3 bg-stone-50 p-6 md:p-8 flex flex-col items-center text-center border-r border-stone-100">
         <div className="mb-8 flex flex-col items-center"> 
           <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-2 border-white shadow-sm">
             <img 
@@ -108,11 +123,11 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
       </div>
 
       {/* ÁREA DE CONTENIDO VARIABLE */}
-      <div className="flex-1 p-10 flex flex-col bg-white ">
+      <div className="flex-1 p-6 md:p-10 flex flex-col bg-white ">
         
         <div className="flex-1">
           {/* PÁGINA 0: BIOGRAFÍA */}
-          {page === 0 && (
+          {currentPageId === "bio" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <h2 className="text-5xl font-black text-zinc-900 tracking-tighter uppercase leading-[0.9]">Biografía</h2>
               <div className="h-1 w-12 bg-zinc-900 my-6"></div>
@@ -125,39 +140,45 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
           )}
 
           {/* PÁGINA 1: SKILLS (Filtrado) */}
-          {page === 1 && (
+          {currentPageId === "skills" && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Habilidades</h2>
               
               <div className="grid grid-cols-2 gap-y-6 pt-4">
-                {skills.length > 0 ? skills.map((skill: any) => (
+                {skills.map((skill: any) => (
                   <div key={skill.id} className="group">
                     <p className="text-[10px] font-bold text-stone-300 uppercase tracking-widest group-hover:text-zinc-900 transition-colors">
                       {skill.level || "Sin nivel"}
                     </p>
                     <p className="text-base font-bold text-zinc-800">{skill.label || skill.name}</p>
                   </div>
-                )) : (
-                  <p className="text-sm text-stone-400 italic">No hay habilidades marcadas como visibles.</p>
-                )}
+                ))}
               </div>
             </div>
           )}
 
           {/* PÁGINA 2: PROYECTOS (Filtrado) */}
-          {page === 2 && (
+          {currentPageId === "projects" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Proyectos</h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 overflow-y-auto max-h-[350px] pr-2">
-                {projects.length > 0 ? projects.map((p: any) => {
+              <div className="flex flex-wrap gap-4 pt-2 overflow-y-auto max-h-[350px] pr-2">
+                {projects.map((p: any) => {
                   const technologies = getProjectTechnologies(p);
 
                   return (
                    <div
                     key={p.id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => onProjectClick?.(p.id)}
-                    className="bg-stone-50/50 border border-stone-100 rounded-2xl p-4 transition-all hover:bg-white hover:shadow-xl hover:shadow-stone-200/50 group"
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onProjectClick?.(p.id);
+                      }
+                    }}
+                    className="w-full cursor-pointer bg-stone-50/50 border border-stone-100 rounded-xl p-3 transition-all hover:bg-white hover:shadow-xl hover:shadow-stone-200/50 group focus:outline-none focus:ring-2 focus:ring-zinc-900 md:w-64 md:max-w-full md:rounded-2xl md:p-4"
                    >
                     <h3 className="font-bold text-sm text-zinc-900 uppercase mb-1">{p.label || p.nombre || p.name || p.title || "Proyecto sin titulo"}</h3>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500">{p.project_rol || p.role || p.rol || "Rol no especificado"}</p>
@@ -172,20 +193,18 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
                     ) : null}
                   </div>
                   );
-                }) : (
-                  <p className="text-sm text-stone-400 italic">No hay proyectos marcados como visibles.</p>
-                )}
+                })}
               </div>
             </div>
           )}
 
           {/* PÁGINA 3: EXPERIENCIA (Filtrado) */}
-          {page === 3 && (
+          {currentPageId === "experience" && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Experiencias</h2>              
               <div className="space-y-6 pt-2">
-                {experiences.length > 0 ? experiences.map((exp: any, index: number) => (
-                <div key={index} className="flex gap-6 items-start">
+                {experiences.map((exp: any, index: number) => (
+                <div key={index} className="flex gap-4 items-start md:gap-6">
                   <div className="text-[10px] font-black text-stone-300 pt-1 uppercase tracking-tighter w-24">
                     {exp.company || "Empresa"}
                   </div>
@@ -198,21 +217,19 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
                     </p>
                   </div>
                 </div>
-              )) : (
-                  <p className="text-sm text-stone-400 italic">No hay experiencia marcada como visible.</p>
-                )}
+              ))}
               </div>
             </div>
           )}
         
         {/* PÁGINA 4: EDUCACIÓN */}
-        {page === 4 && (
+        {currentPageId === "education" && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Educación</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-              {visibleEducation.length > 0 ? visibleEducation.map((edu: any) => (
-                <div key={edu.id } className="bg-stone-50 border border-stone-100 rounded-2xl p-4 hover:shadow-md transition-all">
+            <div className="flex flex-wrap gap-4 pt-2">
+              {visibleEducation.map((edu: any) => (
+                <div key={edu.id } className="w-full bg-stone-50 border border-stone-100 rounded-xl p-3 hover:shadow-md transition-all md:w-64 md:max-w-full md:rounded-2xl md:p-4">
                   <div className="text-[10px] font-black text-stone-300 pt-1 uppercase tracking-tighter w-16">
                     {edu.institution || "Institución"}
                   </div>
@@ -221,29 +238,25 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
                     <p className="text-xs text-stone-400 italic">{edu.institution}</p>
                   </div>
                 </div>
-              )) : (
-                <p className="text-sm text-stone-400 italic">No hay formación académica visible.</p>
-              )}
+              ))}
             </div>
           </div>
         )}
         {/* PÁGINA 5: CERTIFICADOS */}
-        {page === 5 && (
+        {currentPageId === "certificates" && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Certificados</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-              {visibleCertificates.length > 0 ? visibleCertificates.map((cert: any) => (
+            <div className="flex flex-wrap gap-4 pt-2">
+              {visibleCertificates.map((cert: any) => (
                 <div 
                   key={cert.id} 
-                  className="bg-stone-50 border border-stone-100 rounded-2xl p-4 hover:shadow-md transition-all"
+                  className="w-full bg-stone-50 border border-stone-100 rounded-xl p-3 hover:shadow-md transition-all md:w-64 md:max-w-full md:rounded-2xl md:p-4"
                 >
                   <h4 className="font-bold text-sm text-zinc-900 uppercase">{cert.name || "Certificado"}</h4>
                   <p className="text-xs text-stone-400 italic">{cert.issuer || "Institución"}</p>
                 </div>
-              )) : (
-                <p className="text-sm text-stone-400 italic">No hay certificados visibles.</p>
-              )}
+              ))}
             </div>
           </div>
         )}

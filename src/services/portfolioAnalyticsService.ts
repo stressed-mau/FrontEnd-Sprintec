@@ -29,6 +29,7 @@ type PortfolioAnalyticsDto = {
     templates?: Array<Record<string, unknown>>
     top_projects?: Array<Record<string, unknown>>
     project_views?: Array<Record<string, unknown>>
+    project_link_clicks?: Array<Record<string, unknown>>
     social_clicks?: Array<Record<string, unknown>>
     total_link_clicks?: number
     link_clicks?: number
@@ -176,6 +177,25 @@ export async function recordProjectClick(params: { visitId: string | number; pro
   }
 }
 
+export async function recordProjectLinkClick(params: {
+  visitId: string | number
+  projectId: string | number
+  linkType: "github" | "demo"
+  url: string
+}) {
+  try {
+    await publicApi.post("/tracking/project-link-click", {
+      visit_id: params.visitId,
+      project_id: params.projectId,
+      link_type: params.linkType,
+      url: params.url,
+      clicked_at: new Date().toISOString(),
+    })
+  } catch (error) {
+    console.warn("Click de enlace de proyecto no registrado.", axios.isAxiosError(error) ? error.response?.data ?? error.message : error)
+  }
+}
+
 export async function recordSocialClick(params: { visitId: string | number; networkName: string }) {
   try {
     await publicApi.post("/tracking/social-click", {
@@ -199,8 +219,9 @@ export async function getPortfolioAnalytics(): Promise<PortfolioAnalytics> {
     const data = response.data.data
     const projectViews = normalizeBreakdown(data.project_views?.length ? data.project_views : data.top_projects)
     const socialClicks = normalizeBreakdown(data.social_clicks)
+    const projectLinkClicks = normalizeBreakdown(data.project_link_clicks)
 
-    const totalTrackedClicks = [...projectViews, ...socialClicks].reduce((total, item) => total + item.value, 0)
+    const totalTrackedLinkClicks = [...projectLinkClicks, ...socialClicks].reduce((total, item) => total + item.value, 0)
 
     return {
       portfolioId: data.portfolio_id,
@@ -216,7 +237,7 @@ export async function getPortfolioAnalytics(): Promise<PortfolioAnalytics> {
       templates: normalizeBreakdown(data.templates),
       projectViews,
       socialClicks,
-      totalLinkClicks: asNumber(data.total_link_clicks ?? data.link_clicks) || totalTrackedClicks,
+      totalLinkClicks: asNumber(data.total_link_clicks ?? data.link_clicks) || totalTrackedLinkClicks,
     }
   } catch (error) {
     throw formatAnalyticsError(error)

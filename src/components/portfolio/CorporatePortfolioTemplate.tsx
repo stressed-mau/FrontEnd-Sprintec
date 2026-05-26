@@ -256,14 +256,14 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
         id: "corporate-intro",
         label: "Introduccion",
         content: (
-          <section className="grid gap-6 rounded-[2rem] border border-[#D7C3A4] bg-[#E7D3B3] p-6 text-[#111111] lg:grid-cols-[0.74fr_1.26fr] lg:items-stretch">
-            <div className="rounded-[1.75rem] border border-black/10 bg-white/35 p-6 lg:p-7">
+          <section className="grid gap-4 rounded-[1.5rem] border border-[#D7C3A4] bg-[#E7D3B3] p-4 text-[#111111] lg:grid-cols-[0.74fr_1.26fr] lg:items-stretch lg:p-6">
+            <div className="rounded-[1.35rem] border border-black/10 bg-white/35 p-4 lg:rounded-[1.75rem] lg:p-7">
               <div className="flex items-center justify-between text-xs uppercase tracking-[0.28em] text-[#6F6250]">
                 <span>Perfil</span>
                 <span>{initials}</span>
               </div>
 
-              <div className="flex min-h-55 items-center justify-center py-8 lg:min-h-85">
+              <div className="flex min-h-36 items-center justify-center py-5 lg:min-h-85 lg:py-8">
                 <CorporateProfileImage
                   alt={displayName}
                   className="h-40 w-36 rounded-[1.75rem] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.3)] lg:h-52 lg:w-44"
@@ -281,20 +281,20 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
               </div>
 
               {displayRole ? (
-                <div className="rounded-[1.5rem] border border-black/10 bg-white/40 p-5">
+                <div className="rounded-[1.25rem] border border-black/10 bg-white/40 p-4 lg:rounded-[1.5rem] lg:p-5">
                   <p className="text-xs uppercase tracking-[0.28em] text-[#7B6D5B]">Rol</p>
                   <p className="mt-3 text-xl font-bold text-[#111111]">{displayRole}</p>
                 </div>
               ) : null}
 
               {displaySummary ? (
-                <div className="rounded-[1.5rem] border border-black/10 bg-white/40 p-5">
+                <div className="rounded-[1.25rem] border border-black/10 bg-white/40 p-4 lg:rounded-[1.5rem] lg:p-5">
                   <p className="text-sm leading-7 text-[#4B545D]">{displaySummary}</p>
                 </div>
               ) : null}
 
               {hasContactInfo ? (
-                <div className="rounded-[1.5rem] border border-black/10 bg-white/40 p-5">
+                <div className="rounded-[1.25rem] border border-black/10 bg-white/40 p-4 lg:rounded-[1.5rem] lg:p-5">
                   <p className="text-xs uppercase tracking-[0.28em] text-[#7B6D5B]">Datos personales</p>
                   <div className="mt-4 grid gap-3 text-sm text-[#3D4348]">
                     {displayEmail ? (
@@ -325,11 +325,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                           </a>
                         ))}
                       </div>
-                    ) : (
-                    <p className="text-sm text-gray-500">
-                      No hay redes disponibles.
-                    </p>
-                  )}
+                    ) : null}
                   </div>
                 </div>
               ) : null}
@@ -339,6 +335,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
       },
     ]
 
+    if (experience.length) {
     nextSheets.push({
       id: "corporate-experience",
       label: "Experiencia",
@@ -347,11 +344,11 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
           <h3 className="text-3xl font-bold">Experiencia</h3>
 
           {experience.length ? (
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 flex flex-wrap gap-4">
               {experience.map((item: any, index: number) => (
                 <article
                   key={item.id}
-                  className="rounded-[1.6rem] border border-black/10 bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-[#111111] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]"
+                  className="w-full rounded-[1.35rem] border border-black/10 bg-white p-4 transition duration-300 hover:-translate-y-1 hover:border-[#111111] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] sm:w-80 sm:max-w-full sm:rounded-[1.6rem] sm:p-5"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -391,7 +388,9 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
         </section>
       ),
     })
+    }
 
+    if (certificates.length) {
     nextSheets.push({
   id: "corporate-certificates",
   label: "Certificados",
@@ -400,11 +399,11 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
       <h3 className="text-3xl font-bold">Certificados</h3>
 
       {certificates.length ? (
-        <div className="mt-6 grid gap-4">
+        <div className="mt-6 flex flex-wrap gap-4">
           {certificates.map((item: any) => (
             <article
               key={item.id}
-              className="rounded-[1.6rem] border border-black/10 bg-white p-5"
+              className="w-full rounded-[1.35rem] border border-black/10 bg-white p-4 sm:w-72 sm:max-w-full sm:rounded-[1.6rem] sm:p-5"
             >
               <p className="text-lg font-bold">{item.title}</p>
               <p className="text-sm text-gray-500">{item.institution}</p>
@@ -419,7 +418,9 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
     </section>
   ),
 })
+    }
 
+    if (education.length) {
     nextSheets.push({
       id: "corporate-education",
       label: "Formacion",
@@ -428,11 +429,11 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
           <h3 className="text-3xl font-bold text-white">Formacion</h3>
 
           {education.length ? (
-            <div className="mt-6 grid gap-4">
+            <div className="mt-6 flex flex-wrap gap-4">
               {education.map((item: any) => (
                 <article
                   key={item.id}
-                  className="rounded-[1.6rem] border border-white/10 bg-white/3 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-white/[0.07]"
+                  className="w-full rounded-[1.35rem] border border-white/10 bg-white/3 p-4 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-white/[0.07] sm:w-80 sm:max-w-full sm:rounded-[1.6rem] sm:p-5"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
                     <p className="text-lg font-bold text-white">
@@ -460,7 +461,9 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
         </section>
       ),
     })
+    }
 
+    if (projects.length) {
     nextSheets.push({
       id: "corporate-projects",
       label: "Proyectos",
@@ -469,11 +472,20 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
           <h3 className="text-3xl font-bold">Proyectos</h3>
 
           {projects.length ? (
-            <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            <div className="mt-8 flex flex-wrap gap-4">
               {projects.map((project: any, index: number) => (
                 <article
                   key={project.id}
-                  className="rounded-[1.8rem] border border-black/10 bg-white p-6 transition duration-300 hover:-translate-y-2 hover:border-[#111111] hover:shadow-[0_24px_50px_rgba(0,0,0,0.12)]"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onProjectClick?.(project.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault()
+                      onProjectClick?.(project.id)
+                    }
+                  }}
+                  className="w-full cursor-pointer rounded-[1.35rem] border border-black/10 bg-white p-4 transition duration-300 hover:-translate-y-1 hover:border-[#111111] hover:shadow-[0_18px_36px_rgba(0,0,0,0.10)] focus:outline-none focus:ring-2 focus:ring-[#8C6E46] sm:w-80 sm:max-w-full sm:rounded-[1.8rem] sm:p-5"
                 >
                   <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#8C6E46]">
                     Proyecto {String(index + 1).padStart(2, "0")}
@@ -484,7 +496,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                   <p className="mt-3 text-sm font-semibold text-[#8C6E46]">{project.role}</p>
 
                   {project.stack.length ? (
-                    <div className="mt-5 flex flex-wrap gap-2">
+                    <div className="mt-4 flex flex-wrap gap-2">
                       {project.stack.map((item: any) => (
                         <span
                           key={item}
@@ -506,8 +518,10 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
         </section>
       ),
     })
+    }
 
     
+      if (skills.length) {
       nextSheets.push({
         id: "corporate-skills",
         label: "Skills",
@@ -537,6 +551,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
           </section>
         ),
       })
+      }
     
 
     return nextSheets
@@ -706,7 +721,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                   ref={(element) => {
                     sheetRefs.current[index] = element
                   }}
-                  className={`min-h-155 w-full shrink-0 snap-start rounded-[2rem] border p-5 shadow-[0_24px_60px_rgba(0,0,0,0.18)] transition-colors duration-300 ${
+                  className={`w-full shrink-0 snap-start rounded-[1.5rem] border p-4 shadow-[0_18px_45px_rgba(0,0,0,0.16)] transition-colors duration-300 sm:rounded-[2rem] sm:p-5 ${
                     lightSheet
                       ? "border-white/10 bg-[#EFE8DE] text-[#111111]"
                       : "border-white/10 bg-[#1A1A1A] text-white"
@@ -834,21 +849,21 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
             <div className="bg-[#141414] px-8 py-10">
               <div
                 id="corporate-education"
-                className={`rounded-[2rem] p-1 transition-colors duration-300 ${
+                className={`${resolvedEducation.length ? "" : "hidden"} rounded-[1.5rem] p-1 transition-colors duration-300 lg:rounded-[2rem] ${
                   activeSectionId === "corporate-education" ? "bg-[#2F3E4C]" : ""
                 }`}
               >
-                <div className="rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.025))] p-6">
+                <div className="rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.025))] p-4 lg:rounded-[1.7rem] lg:p-6">
                   <h3 className="text-3xl font-black tracking-[-0.04em] text-white">
                     Formacion
                   </h3>
 
                   {resolvedEducation.length ? (
-                    <div className="mt-6 grid gap-4">
+                    <div className="mt-6 flex flex-wrap gap-4">
                       {resolvedEducation.map((item: any) => (
                         <article
                           key={item.id}
-                          className="rounded-[1.4rem] border border-white/10 bg-white/3 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-[#1B1815]"
+                          className="w-full rounded-[1.2rem] border border-white/10 bg-white/3 p-4 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-[#1B1815] sm:w-80 sm:max-w-full"
                         >
                           <div className="flex flex-col gap-2">
                             <p className="text-lg font-bold text-white">{item.title}</p>
@@ -863,29 +878,31 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                         </article>
                       ))}
                     </div>
-                  ) : (
+                  ) : null}
+                  {false && (
                     <div className="mt-6 text-sm text-gray-400">
                       No hay formación registrada.
                     </div>
                   )}
                 </div>
               </div>
-              <div className="mt-8">
+              <div className={`${certificates.length ? "" : "hidden"} mt-6 lg:mt-8`}>
                 <h3 className="text-3xl font-black text-white">Certificados</h3>
 
                 {certificates.length ? (
-                  <div className="mt-6 grid gap-4">
+                  <div className="mt-6 flex flex-wrap gap-4">
                     {certificates.map((item: any) => (
                       <article
                         key={item.id}
-                        className="rounded-[1.4rem] border border-white/10 bg-white/5 p-5"
+                        className="w-full rounded-[1.2rem] border border-white/10 bg-white/5 p-4 sm:w-72 sm:max-w-full"
                       >
                         <p className="text-lg font-bold text-white">{item.title}</p>
                         <p className="text-sm text-white/70">{item.institution}</p>
                       </article>
                     ))}
                   </div>
-                ) : (
+                ) : null}
+                {false && (
                   <p className="mt-4 text-sm text-gray-400">
                     No hay certificados registrados.
                   </p>
@@ -893,7 +910,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
               </div>
               <div
                 id="corporate-experience"
-                className={`mt-8 rounded-[2rem] border p-6 transition-colors duration-300 ${
+                className={`${experience.length ? "" : "hidden"} mt-6 rounded-[1.5rem] border p-4 transition-colors duration-300 lg:mt-8 lg:rounded-[2rem] lg:p-6 ${
                   activeSectionId === "corporate-experience"
                     ? "border-[#8FA4B7] bg-[#D6E0E9] text-[#111111]"
                     : "border-black/10 bg-[#EFE8DE] text-[#111111]"
@@ -902,11 +919,11 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                 <h3 className="text-4xl font-black tracking-[-0.05em]">Experiencia</h3>
 
                 {experience.length ? (
-                  <div className="mt-6 grid gap-4">
+                  <div className="mt-6 flex flex-wrap gap-4">
                     {experience.map((item: any, index: number) => (
                       <article
                         key={item.id}
-                        className="rounded-[1.6rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-5 transition duration-300 hover:-translate-y-1 hover:border-[#8C6E46] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)]"
+                        className="w-full rounded-[1.25rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-4 transition duration-300 hover:-translate-y-1 hover:border-[#8C6E46] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] sm:w-80 sm:max-w-full lg:rounded-[1.6rem] lg:p-5"
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div>
@@ -934,7 +951,8 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                       </article>
                     ))}
                   </div>
-                ) : (
+                ) : null}
+                {false && (
                   <div className="mt-6 text-sm text-gray-500">
                     No hay experiencia registrada.
                   </div>
@@ -945,37 +963,32 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
             <div className="px-8 py-10 transition-colors duration-300 bg-[#EFE8DE] text-[#111111]">
               <div
                 id="corporate-skills"
-                className={`rounded-[2rem] p-1 transition-colors duration-300 ${
+                className={`${skills.length ? "" : "hidden"} rounded-[1.5rem] p-1 transition-colors duration-300 lg:rounded-[2rem] ${
                   activeSectionId === "corporate-skills" ? "bg-[#8FA4B7]/35" : ""
                 }`}
               >
-                <div className="rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,#1F1F1F_0%,#171717_100%)] p-6 text-white">
+                <div className="rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,#1F1F1F_0%,#171717_100%)] p-4 text-white lg:rounded-[1.7rem] lg:p-6">
                   <div>
                     <h3 className="text-4xl font-black tracking-[-0.05em]">Skills</h3>
                   </div>
 
                   <div className="mt-6 flex flex-wrap gap-3">
-                    {skills.length ? (
-                      skills.map((skill) => (
+                    {skills.map((skill) => (
                         <span
                           key={skill}
                           className="rounded-full border border-white/12 bg-white/4 px-4 py-2 text-sm font-semibold text-white/86 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B] hover:bg-[#D6A96B]/12 hover:text-[#F4D8AE]"
                         >
                           {skill}
                         </span>
-                      ))
-                    ) : (
-                      <p className="text-sm text-white/60">
-                        No hay habilidades disponibles.
-                      </p>
-                    )}
+                    ))}
+                    {null}
                   </div>
                 </div>
               </div>
 
               <div
                 id="corporate-projects"
-                className={`mt-10 rounded-[2rem] border p-6 transition-colors duration-300 ${
+                className={`${resolvedProjects.length ? "" : "hidden"} mt-6 rounded-[1.5rem] border p-4 transition-colors duration-300 lg:mt-10 lg:rounded-[2rem] lg:p-6 ${
                   activeSectionId === "corporate-projects"
                     ? "border-[#8FA4B7] bg-[#D6E0E9]"
                     : "border-black/10 bg-white/45"
@@ -983,13 +996,20 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
               >
                 <h3 className="text-4xl font-black tracking-[-0.05em]">Proyectos</h3>
 
-                <div className="mt-8 grid gap-4">
-                  {resolvedProjects.length ? (
-                    resolvedProjects.map((project: any, index: number) => (
+                <div className="mt-5 flex flex-wrap gap-3 lg:mt-8 lg:gap-4">
+                  {resolvedProjects.map((project: any, index: number) => (
                       <article
                         key={project.id}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => onProjectClick?.(project.id)}
-                        className="rounded-[1.8rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-6 transition duration-300 hover:-translate-y-2 hover:border-[#8C6E46] hover:shadow-[0_24px_50px_rgba(0,0,0,0.12)]"
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault()
+                            onProjectClick?.(project.id)
+                          }
+                        }}
+                        className="w-full cursor-pointer rounded-[1.35rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-4 transition duration-300 hover:-translate-y-1 hover:border-[#8C6E46] hover:shadow-[0_18px_36px_rgba(0,0,0,0.10)] focus:outline-none focus:ring-2 focus:ring-[#8C6E46] sm:w-80 sm:max-w-full lg:rounded-[1.8rem] lg:p-5"
                       >
                         <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#8C6E46]">
                           Proyecto {String(index + 1).padStart(2, "0")}
@@ -1000,7 +1020,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                         <p className="mt-3 text-sm font-semibold text-[#8C6E46]">{project.role}</p>
 
                         {project.stack.length ? (
-                          <div className="mt-5 flex flex-wrap gap-2">
+                          <div className="mt-4 flex flex-wrap gap-2">
                             {project.stack.map((item: any) => (
                               <span
                                 key={item}
@@ -1012,12 +1032,8 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                           </div>
                         ) : null}
                       </article>
-                    ))
-                  ) : (
-                    <div className="text-sm text-gray-500">
-                      No hay proyectos disponibles.
-                    </div>
-                  )}
+                  ))}
+                  {null}
                 </div>
               </div>
             </div>
