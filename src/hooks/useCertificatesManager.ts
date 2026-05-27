@@ -540,8 +540,8 @@ export const useCertificatesManager = () => {
       await Promise.all(idsToDelete.map((id) => removeCertificate(id)));
       setSuccessMessage(
         idsToDelete.length > 1
-          ? 'Certificados eliminados exitosamente'
-          : 'Certificado eliminado exitosamente'
+          ? 'Certificados eliminados correctamente'
+          : 'Certificado eliminado correctamente'
       );
       setCertificates((prev) =>
         prev.filter((cert) => !idsToDelete.includes(cert.id))

@@ -87,10 +87,10 @@ export default function DeleteCertificatesPage() {
         isOpen={manager.showConfirmDelete}
         title={
           manager.certificateToDelete
-            ? "Esta seguro de que desea eliminar este certificado?"
-            : `Esta seguro de que desea eliminar ${selectedCount > 1 ? "estos certificados" : "este certificado"}?`
+            ? "¿Está seguro de que desea eliminar este certificado?"
+            : `¿Está seguro de que desea eliminar ${selectedCount > 1 ? "estos certificados" : "este certificado"}?`
         }
-        message="Esta accion no se puede deshacer."
+        message="Esta acción no se puede deshacer."
         isLoading={manager.isDeleting}
         onConfirm={() => void manager.confirmDelete()}
         onCancel={manager.cancelDelete}
