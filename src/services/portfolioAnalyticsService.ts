@@ -116,6 +116,33 @@ function normalizeBreakdown(value: unknown): AnalyticsBreakdownItem[] {
     .map(normalizeBreakdownItem)
 }
 
+function hasProjectName(item: Record<string, unknown>) {
+  return Boolean(asString(item.title ?? item.name ?? item.label))
+}
+
+function isDeletedProjectLabel(label: string) {
+  const normalizedLabel = label.trim().toLowerCase()
+
+  return [
+    "unknown project",
+    "unknown_project",
+    "proyecto desconocido",
+    "proyecto eliminado",
+    "deleted project",
+    "deleted_project",
+  ].includes(normalizedLabel)
+}
+
+function normalizeProjectBreakdown(value: unknown): AnalyticsBreakdownItem[] {
+  if (!Array.isArray(value)) return []
+
+  return value
+    .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+    .filter(hasProjectName)
+    .map(normalizeBreakdownItem)
+    .filter((item) => !isDeletedProjectLabel(item.label))
+}
+
 export async function recordPortfolioView(slug: string): Promise<PortfolioViewRecordResult | null> {
   try {
     const response = await publicApi.post(`/p/${encodeURIComponent(slug)}/view`)
@@ -215,7 +242,7 @@ export async function getPortfolioAnalytics(): Promise<PortfolioAnalytics> {
     }
 
     const data = response.data.data
-    const projectViews = normalizeBreakdown(data.project_views?.length ? data.project_views : data.top_projects)
+    const projectViews = normalizeProjectBreakdown(data.project_views?.length ? data.project_views : data.top_projects)
     const socialClicks = normalizeBreakdown(data.social_clicks)
     const projectLinkClicks = normalizeBreakdown(data.project_link_clicks)
 
