@@ -11,6 +11,7 @@ import { useExplorePortfolioFilters, type PortfolioCard } from "@/hooks/useExplo
 import { isAuthenticated } from "@/services/auth";
 import { getExplorePortfolios } from "@/services/explorePortfoliosService";
 import { usePagination } from "@/hooks/usePagination";
+import { useSortedPortfolios } from "@/hooks/useSortedPortfolios";
 
 const getExplorePortfoliosPerPage = () => {
   if (typeof window === "undefined") return 12;
@@ -100,7 +101,8 @@ export default function ExplorePortfolios() {
   const isAdmin = roleId === 2;
   const {  searchTerm,setSearchTerm,isFiltersOpen,setIsFiltersOpen,selectedOccupation,setSelectedOccupation, minProjects,setMinProjects,
     minSkills,setMinSkills,hasActiveFilters,clearFilters, filteredPortfolios, } = useExplorePortfolioFilters(portfolios)
-  const {  currentData, currentPage, totalPages, goToPage,  next, prev, setCurrentPage, } = usePagination({ items: filteredPortfolios, itemsPerPage: perPage })
+  const sortedPortfolios = useSortedPortfolios(filteredPortfolios)
+  const {  currentData, currentPage, totalPages, goToPage,  next, prev, setCurrentPage, } = usePagination({ items: sortedPortfolios, itemsPerPage: perPage })
 
   useEffect(() => {
     const updatePerPage = () => {

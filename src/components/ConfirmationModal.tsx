@@ -20,7 +20,7 @@ const ConfirmationModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-150 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl p-8 relative animate-in zoom-in-95 duration-200">
         <button
           onClick={onClose}
