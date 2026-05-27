@@ -128,7 +128,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Datos personales",
-      description: "Completa tu información personal para construir una presentación profesional más completa.",
+      description: "Completa tus datos personales para mejorar la presentación de tu perfil profesional.",
       side: "right",
       align: "center",
     },
