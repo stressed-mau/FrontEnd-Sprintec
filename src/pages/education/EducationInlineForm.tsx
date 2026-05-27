@@ -226,7 +226,7 @@ export function EducationInlineForm({
               className="hidden"
             />
           </label>
-          <p className="text-xs text-gray-500">Formatos: JPG, JPEG, PNG y PDF. Tamano maximo: 5 MB.</p>
+          <p className="text-xs text-gray-500">Formatos: JPG, JPEG, PNG y PDF. Tamano maximo: 2 MB.</p>
           {errors.certificate ? <p className="text-sm text-red-600">{errors.certificate}</p> : null}
         </div>
       </div>

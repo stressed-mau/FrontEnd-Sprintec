@@ -46,7 +46,7 @@ const EMPTY_FORM: ExperienceFormValues = {
 const DATE_PATTERN = /^(\d{2})\/(\d{2})\/(\d{4})$/
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024
-const MAX_CERTIFICATE_SIZE_BYTES = 5 * 1024 * 1024
+const MAX_CERTIFICATE_SIZE_BYTES = 2 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 const ALLOWED_CERTIFICATE_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
@@ -252,7 +252,7 @@ function validateCertificateFile(file: File | null): string {
   }
 
   if (file.size > MAX_CERTIFICATE_SIZE_BYTES) {
-    return "El archivo no debe superar los 5 MB."
+    return "El archivo no debe superar los 2 MB."
   }
 
   return ""

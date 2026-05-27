@@ -1,19 +1,42 @@
-import { useEffect } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { EducationInlineForm } from "@/pages/education/EducationInlineForm"
-import { ExperienceManagerModals, ExperiencePageShell, FeedbackMessage } from "@/pages/experience/ExperiencePageParts"
+import { DuplicateRegistrationModal, ExperienceManagerModals, ExperiencePageShell, FeedbackMessage } from "@/pages/experience/ExperiencePageParts"
 import { useExperienceManager } from "@/hooks/useExperienceManager"
+
+function normalizeDuplicateText(value: string) {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("es-BO")
+}
 
 export default function AddEducationPage() {
   const navigate = useNavigate()
   const manager = useExperienceManager()
+  const [duplicateMessage, setDuplicateMessage] = useState("")
 
   useEffect(() => {
     manager.prepareCreateForm("academica")
     // Prepare the inline form once for this page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setDuplicateMessage("")
+
+    const institution = normalizeDuplicateText(manager.formData.company)
+    const hasDuplicateEducation = Boolean(institution) && manager.academicExperiences.some((education) =>
+      normalizeDuplicateText(education.company) === institution
+    )
+
+    if (hasDuplicateEducation) {
+      manager.handleBlur("company")
+      setDuplicateMessage("Ya existe una formación académica registrada con esa institución. Ingresa una institución diferente.")
+      return
+    }
+
+    await manager.handleSubmit(event)
+  }
 
   return (
     <ExperiencePageShell
@@ -34,11 +57,16 @@ export default function AddEducationPage() {
         onBlur={manager.handleBlur}
         onCertificateChange={manager.handleCertificateChange}
         onRemoveCertificate={manager.removeCertificate}
-        onSubmit={manager.handleSubmit}
+        onSubmit={handleSubmit}
         onCancel={() => navigate("/formacion-academica/ver")}
       />
 
       <ExperienceManagerModals manager={manager} hideTypeField onSuccessClose={() => navigate("/formacion-academica/ver")} />
+      <DuplicateRegistrationModal
+        title="Formación duplicada"
+        message={duplicateMessage}
+        onClose={() => setDuplicateMessage("")}
+      />
     </ExperiencePageShell>
   )
 }

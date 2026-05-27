@@ -1,19 +1,42 @@
-import { useEffect } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { ExperienceInlineForm } from "@/pages/experience/ExperienceInlineForm"
-import { ExperienceManagerModals, ExperiencePageShell, FeedbackMessage } from "@/pages/experience/ExperiencePageParts"
+import { DuplicateRegistrationModal, ExperienceManagerModals, ExperiencePageShell, FeedbackMessage } from "@/pages/experience/ExperiencePageParts"
 import { useExperienceManager } from "@/hooks/useExperienceManager"
+
+function normalizeDuplicateText(value: string) {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("es-BO")
+}
 
 export default function AddExperiencePage() {
   const navigate = useNavigate()
   const manager = useExperienceManager()
+  const [duplicateMessage, setDuplicateMessage] = useState("")
 
   useEffect(() => {
     manager.prepareCreateForm("laboral")
     // Prepare the inline form once for this page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setDuplicateMessage("")
+
+    const position = normalizeDuplicateText(manager.formData.position)
+    const hasDuplicateExperience = Boolean(position) && manager.laboralExperiences.some((experience) =>
+      normalizeDuplicateText(experience.position) === position
+    )
+
+    if (hasDuplicateExperience) {
+      manager.handleBlur("position")
+      setDuplicateMessage("Ya existe una experiencia laboral registrada con ese cargo. Ingresa un cargo diferente.")
+      return
+    }
+
+    await manager.handleSubmit(event)
+  }
 
   return (
     <ExperiencePageShell
@@ -39,11 +62,16 @@ export default function AddExperiencePage() {
         onCertificateChange={manager.handleCertificateChange}
         onRemoveImage={manager.removeImage}
         onRemoveCertificate={manager.removeCertificate}
-        onSubmit={manager.handleSubmit}
+        onSubmit={handleSubmit}
         onCancel={() => navigate("/experiencia/ver")}
       />
 
       <ExperienceManagerModals manager={manager} hideTypeField onSuccessClose={() => navigate("/experiencia/ver")} />
+      <DuplicateRegistrationModal
+        title="Experiencia duplicada"
+        message={duplicateMessage}
+        onClose={() => setDuplicateMessage("")}
+      />
     </ExperiencePageShell>
   )
 }
