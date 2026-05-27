@@ -7,6 +7,8 @@ interface MinimalistTemplateProps {
   portfolio?: any | null;
   isPreview?: boolean;
   onProjectClick?: (projectId?: string | number) => void;
+  onExperienceClick?: (experienceId?: string | number) => void;
+  onEducationClick?: (educationId?: string | number) => void;
   onSocialClick?: (network: any) => void;
 }
 
@@ -15,6 +17,8 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
   portfolio,
   isPreview = false,
   onProjectClick,
+  onExperienceClick,
+  onEducationClick,
   onSocialClick,
 }) => {
   //const { data } = usePortfolioVisibility();
@@ -204,7 +208,19 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
               <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Experiencias</h2>              
               <div className="space-y-6 pt-2">
                 {experiences.map((exp: any, index: number) => (
-                <div key={index} className="flex gap-4 items-start md:gap-6">
+                <div
+                  key={exp.id ?? index}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onExperienceClick?.(exp.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onExperienceClick?.(exp.id);
+                    }
+                  }}
+                  className="flex cursor-pointer items-start gap-4 rounded-xl p-2 transition hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-zinc-900 md:gap-6"
+                >
                   <div className="text-[10px] font-black text-stone-300 pt-1 uppercase tracking-tighter w-24">
                     {exp.company || "Empresa"}
                   </div>
@@ -229,7 +245,19 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
 
             <div className="flex flex-wrap gap-4 pt-2">
               {visibleEducation.map((edu: any) => (
-                <div key={edu.id } className="w-full bg-stone-50 border border-stone-100 rounded-xl p-3 hover:shadow-md transition-all md:w-64 md:max-w-full md:rounded-2xl md:p-4">
+                <div
+                  key={edu.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onEducationClick?.(edu.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onEducationClick?.(edu.id);
+                    }
+                  }}
+                  className="w-full cursor-pointer rounded-xl border border-stone-100 bg-stone-50 p-3 transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-zinc-900 md:w-64 md:max-w-full md:rounded-2xl md:p-4"
+                >
                   <div className="text-[10px] font-black text-stone-300 pt-1 uppercase tracking-tighter w-16">
                     {edu.institution || "Institución"}
                   </div>

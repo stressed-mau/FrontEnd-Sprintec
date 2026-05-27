@@ -134,10 +134,12 @@ type Props = {
   profile?: CorporatePortfolioProfile | null
   portfolio?: any
   onProjectClick?: (projectId?: string | number) => void
+  onExperienceClick?: (experienceId?: string | number) => void
+  onEducationClick?: (educationId?: string | number) => void
   onSocialClick?: (network: any) => void
 }
 
-export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick, onSocialClick }: Props) {
+export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick, onExperienceClick, onEducationClick, onSocialClick }: Props) {
   //const { data} = usePortfolioVisibility()
   console.log("CORPORATE PORTFOLIO", portfolio)
   //const safeData = data ?? {
@@ -348,7 +350,16 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
               {experience.map((item: any, index: number) => (
                 <article
                   key={item.id}
-                  className="w-full rounded-[1.35rem] border border-black/10 bg-white p-4 transition duration-300 hover:-translate-y-1 hover:border-[#111111] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] sm:w-80 sm:max-w-full sm:rounded-[1.6rem] sm:p-5"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onExperienceClick?.(item.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault()
+                      onExperienceClick?.(item.id)
+                    }
+                  }}
+                  className="w-full cursor-pointer rounded-[1.35rem] border border-black/10 bg-white p-4 transition duration-300 hover:-translate-y-1 hover:border-[#111111] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-2 focus:ring-[#8C6E46] sm:w-80 sm:max-w-full sm:rounded-[1.6rem] sm:p-5"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -433,7 +444,16 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
               {education.map((item: any) => (
                 <article
                   key={item.id}
-                  className="w-full rounded-[1.35rem] border border-white/10 bg-white/3 p-4 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-white/[0.07] sm:w-80 sm:max-w-full sm:rounded-[1.6rem] sm:p-5"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onEducationClick?.(item.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault()
+                      onEducationClick?.(item.id)
+                    }
+                  }}
+                  className="w-full cursor-pointer rounded-[1.35rem] border border-white/10 bg-white/3 p-4 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-[#D6A96B] sm:w-80 sm:max-w-full sm:rounded-[1.6rem] sm:p-5"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
                     <p className="text-lg font-bold text-white">
@@ -863,7 +883,16 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                       {resolvedEducation.map((item: any) => (
                         <article
                           key={item.id}
-                          className="w-full rounded-[1.2rem] border border-white/10 bg-white/3 p-4 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-[#1B1815] sm:w-80 sm:max-w-full"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => onEducationClick?.(item.id)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault()
+                              onEducationClick?.(item.id)
+                            }
+                          }}
+                          className="w-full cursor-pointer rounded-[1.2rem] border border-white/10 bg-white/3 p-4 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-[#1B1815] focus:outline-none focus:ring-2 focus:ring-[#D6A96B] sm:w-80 sm:max-w-full"
                         >
                           <div className="flex flex-col gap-2">
                             <p className="text-lg font-bold text-white">{item.title}</p>
@@ -923,7 +952,16 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                     {experience.map((item: any, index: number) => (
                       <article
                         key={item.id}
-                        className="w-full rounded-[1.25rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-4 transition duration-300 hover:-translate-y-1 hover:border-[#8C6E46] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] sm:w-80 sm:max-w-full lg:rounded-[1.6rem] lg:p-5"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => onExperienceClick?.(item.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault()
+                            onExperienceClick?.(item.id)
+                          }
+                        }}
+                        className="w-full cursor-pointer rounded-[1.25rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-4 transition duration-300 hover:-translate-y-1 hover:border-[#8C6E46] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-2 focus:ring-[#8C6E46] sm:w-80 sm:max-w-full lg:rounded-[1.6rem] lg:p-5"
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div>

@@ -6,6 +6,8 @@ interface ModernTemplateProps {
   portfolio?: any;
   isPreview?: boolean;
   onProjectClick?: (projectId?: string | number) => void;
+  onExperienceClick?: (experienceId?: string | number) => void;
+  onEducationClick?: (educationId?: string | number) => void;
   onSocialClick?: (network: any) => void;
 }
 
@@ -19,7 +21,7 @@ export interface ModernTemplateProfile {
   biography: string;
 }
 
-const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isPreview = false, onProjectClick, onSocialClick }) => {
+const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isPreview = false, onProjectClick, onExperienceClick, onEducationClick, onSocialClick }) => {
   const userProfile = profile ?? {
     fullname: '',
     occupation: '',
@@ -243,7 +245,19 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
             </div>
             <div className="space-y-8">
               {workExperience.map((exp: any) => (
-                <div key={`${exp.sourceTable ?? 'work'}-${exp.id}`} className="relative pl-10 border-l-2 border-[#7d959e]/30 pb-4">
+                <div
+                  key={`${exp.sourceTable ?? 'work'}-${exp.id}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onExperienceClick?.(exp.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault()
+                      onExperienceClick?.(exp.id)
+                    }
+                  }}
+                  className="relative cursor-pointer border-l-2 border-[#7d959e]/30 pb-4 pl-10 outline-none transition hover:border-[#ee8e3b] focus:ring-2 focus:ring-[#ee8e3b]"
+                >
                   <div className="absolute -left-2.25 top-0 w-4 h-4 rounded-full bg-[#ee8e3b] shadow-[0_0_10px_#ee8e3b]"></div>
                   <h4 className="text-2xl font-bold leading-tight">{exp.company}</h4>
                   <p className="text-[#2f606b] font-semibold mt-1">{exp.position}</p>
@@ -264,7 +278,19 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
               </div>
               <div className="space-y-8">
                 {academicExperience.map((acad: any) => (
-                  <div key={`${acad.sourceTable ?? 'education'}-${acad.id}`} className="group">
+                  <div
+                    key={`${acad.sourceTable ?? 'education'}-${acad.id}`}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => onEducationClick?.(acad.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        onEducationClick?.(acad.id)
+                      }
+                    }}
+                    className="group cursor-pointer rounded-xl p-2 outline-none transition hover:bg-[#fcecd4]/45 focus:ring-2 focus:ring-[#ee8e3b]"
+                  >
                     <span className="text-[#ee8e3b] font-black text-lg">/ Formación</span>
                     <h4 className="text-xl font-bold group-hover:text-[#2f606b] transition-colors">{acad.title}</h4>
                     <p className="text-sm text-[#7d959e] font-medium">{acad.institution}</p>
