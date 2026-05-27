@@ -258,7 +258,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Mi perfil",
-      description: "Entra a tu perfil para revisar o actualizar la informacion de tu cuenta.",
+      description: "Entra a tu perfil para revisar o actualizar la información de tu cuenta.",
       side: "left",
       align: "center",
     },
@@ -290,7 +290,7 @@ const guideSteps: DriveStep[] = [
     onHighlightStarted: openUserMenuStep,
     onHighlighted: refreshHighlightedStep,
     popover: {
-      title: "Cerrar sesion",
+      title: "Cerrar sesión",
       description: "Finaliza tu sesión de manera segura cuando termines de usar la plataforma.",
       side: "left",
       align: "center",
