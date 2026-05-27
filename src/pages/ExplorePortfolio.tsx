@@ -209,7 +209,7 @@ export default function ExplorePortfolios() {
                   type="search"
                   value={searchTerm}
                   onChange={(event) => handleSearchChange(event.target.value)}
-                  placeholder="Buscar por nombre u ocupación..."
+                  placeholder="Buscar por nombre, ocupación o habilidades..."
                   className="h-11 w-full rounded-2xl border border-[#6DACBF]/40 bg-white pl-10 pr-3 text-sm text-[#003A6C] shadow-sm outline-none transition focus:border-[#4982AD] focus:ring-2 focus:ring-[#4982AD]/20 sm:h-12 sm:pl-12 sm:pr-4"   />
               </div>
 
