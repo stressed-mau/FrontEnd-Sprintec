@@ -82,7 +82,6 @@ const TendenciaPlantillasPage = () => {
                       Generar PDF
                     </Button>
                   </div>
-                  <p className="print:hidden text-sm font-medium text-[#4B778D]">{report ? reportPeriod : "Cargando reporte semanal..."}</p>
                 </div>
 
                 <div className="print:hidden flex flex-wrap items-center justify-center bg-white border border-[#0E7D96]/20 rounded-xl px-3 sm:px-4 py-2 gap-2 sm:gap-4 shadow-sm mx-auto md:mr-0">
@@ -94,9 +93,7 @@ const TendenciaPlantillasPage = () => {
                   >
                     <ChevronLeft size={20} />
                   </button>
-                  <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
-                  <span className="text-sm font-semibold text-[#4B778D]">{totalPortfolios} portafolios analizados</span>
-                  <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
+                  <span className="text-sm font-bold text-[#003A6C]">{reportPeriod}</span>
                   <button
                     className="rounded-lg p-1 text-[#003A6C] transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
                     type="button"
@@ -223,12 +220,12 @@ const TrendCard = ({ template_name, retention, avg_time, variation, footerBadge,
         </div>
 
         <div className="flex justify-between border-b pb-1">
-          <span className="text-gray-400 truncate mr-1">Tiempo prom.</span>
+          <span className="text-gray-400 truncate mr-1">Tiempo promedio de lectura</span>
           <span className="font-bold text-[#003A6C] shrink-0">{formatTemplateTime(avg_time)}</span>
         </div>
 
         <div className="flex justify-between">
-          <span className="text-gray-400 truncate mr-1">Variación</span>
+          <span className="text-gray-400 truncate mr-1">Variación Semanal</span>
           <span className={`font-bold shrink-0 ${variation < 0 ? "text-red-500" : "text-green-500"}`}>{formatTemplateVariation(variation)}</span>
         </div>
       </div>

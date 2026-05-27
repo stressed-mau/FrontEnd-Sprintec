@@ -9,38 +9,6 @@ const publicApi = axios.create({
   },
 });
 
-interface SkillApiDto {
-  id?: number | string;
-  name?: string;
-  level_of_domain?: string;
-  type?: string;
-  is_public?: boolean;
-}
-
-interface PortfolioApiDto {
-  id?: number | string;
-  user_id?: number | string;
-  slug?: string;
-  photo?: string;
-  name?: string;
-  occupation?: string;
-  location?: string;
-  description?: string;
-  projects_count?: number;
-  skills_count?: number;
-  skills?: SkillApiDto[];
-}
-
-interface PortfoliosResponseDto {
-  success?: boolean;
-  data?: {
-    count?: number;
-    current_page?: number;
-    per_page?: number;
-    portfolios?: PortfolioApiDto[];
-  };
-}
-
 export interface ExplorePortfoliosFilters {
   search?: string;
   roles?: string[];
@@ -48,6 +16,7 @@ export interface ExplorePortfoliosFilters {
   minProjects?: number;
   minSkills?: number;
   page?: number;
+  perPage?: number;
 }
 
 export interface ExplorePortfoliosMeta {
@@ -65,6 +34,7 @@ export interface ExplorePortfoliosResponse {
 export interface ExplorePortfolioCard {
   id: string;
   slug: string;
+  username: string;
   fullName: string;
   occupation: string;
   profileImage: string;
@@ -77,18 +47,35 @@ function toStringValue(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : value == null ? fallback : String(value);
 }
 
-function normalizePortfolio(dto: PortfolioApiDto, index: number): ExplorePortfolioCard {
+interface PortfolioCardApiDto {
+  username: string;
+  fullname: string | null;
+  occupation: string | null;
+  skills_count: number;
+  projects_count: number;
+  skills: string[];
+}
+
+interface CardsResponseDto {
+  success?: boolean;
+  data?: PortfolioCardApiDto[];
+}
+
+function normalizeCard(dto: PortfolioCardApiDto, index: number): ExplorePortfolioCard {
   const skills = Array.isArray(dto.skills) ? dto.skills : [];
   const topSkills = skills
-    .map((skill) => toStringValue(skill.name))
+    .map((s) => toStringValue(s))
+    .map((s) => s.trim())
     .filter(Boolean);
 
   return {
-    id: toStringValue(dto.user_id ?? dto.id ?? index),
-    slug: toStringValue(dto.slug),
-    fullName: toStringValue(dto.name, "Sin nombre"),
+    id: toStringValue(dto.username ?? index),
+    slug: toStringValue(dto.username ?? index),
+    username: toStringValue(dto.username ?? index),
+    fullName: toStringValue(dto.fullname, ""),
     occupation: toStringValue(dto.occupation, "Sin cargo"),
-    profileImage: toStringValue(dto.photo, ""),
+    // La API /api/cards no incluye foto; la UI maneja fallback con iniciales.
+    profileImage: "",
     projectsCount: Number(dto.projects_count ?? 0),
     skillsCount: Number(dto.skills_count ?? topSkills.length),
     topSkills: topSkills.length ? topSkills : ["Sin habilidades"],
@@ -107,64 +94,24 @@ function formatError(error: unknown): Error {
   return new Error("No se pudieron cargar los portafolios.");
 }
 
-function buildQueryString(filters: ExplorePortfoliosFilters = {}) {
-  const searchParams = new URLSearchParams();
-
-  if (filters.search?.trim()) {
-    searchParams.set("search", filters.search.trim());
-  }
-
-  filters.roles?.filter(Boolean).forEach((role) => {
-    searchParams.append("roles[]", role);
-  });
-
-  filters.technologies?.filter(Boolean).forEach((technology) => {
-    searchParams.append("technologies[]", technology);
-  });
-
-  if (typeof filters.minProjects === "number" && Number.isFinite(filters.minProjects)) {
-    searchParams.set("min_projects", String(filters.minProjects));
-  }
-
-  if (typeof filters.minSkills === "number" && Number.isFinite(filters.minSkills)) {
-    searchParams.set("min_skills", String(filters.minSkills));
-  }
-
-  if (typeof filters.page === "number" && filters.page > 1) {
-    searchParams.set("page", String(filters.page));
-  }
-
-  return searchParams.toString();
-}
-
-function normalizeResponse(responseData: unknown, pageFallback = 1): ExplorePortfoliosResponse {
-  const payload = (responseData && typeof responseData === "object"
-    ? (responseData as { data?: PortfoliosResponseDto["data"] })
-    : null)?.data ?? responseData;
-
-  const record = payload && typeof payload === "object" ? (payload as PortfoliosResponseDto["data"] & Record<string, unknown>) : {};
-  const portfoliosSource = Array.isArray(record.portfolios) ? record.portfolios : [];
-  const currentPage = Number(record.current_page ?? pageFallback);
-  const perPage = Number(record.per_page ?? 15);
-  const total = Number(record.count ?? portfoliosSource.length);
-  const totalPages = perPage > 0 ? Math.max(1, Math.ceil(total / perPage)) : 1;
-
-  return {
-    portfolios: portfoliosSource.map(normalizePortfolio),
-    meta: {
-      currentPage,
-      perPage,
-      total,
-      totalPages,
-    },
-  };
-}
-
 export async function getExplorePortfolios(filters: ExplorePortfoliosFilters = {}): Promise<ExplorePortfoliosResponse> {
   try {
-    const queryString = buildQueryString(filters);
-    const response = await publicApi.get<PortfoliosResponseDto>(queryString ? `/portfolios?${queryString}` : "/portfolios");
-    return normalizeResponse(response.data, filters.page ?? 1);
+    // Nota: el endpoint /api/cards no soporta paginación ni filtros del lado servidor.
+    // Ignoramos `filters` y devolvemos el listado completo para filtrado/paginación en cliente.
+    void filters;
+    const response = await publicApi.get<CardsResponseDto>("/cards");
+    const cards = Array.isArray(response.data?.data) ? response.data.data : [];
+
+    const portfolios = cards.map(normalizeCard);
+    return {
+      portfolios,
+      meta: {
+        currentPage: 1,
+        perPage: portfolios.length,
+        total: portfolios.length,
+        totalPages: portfolios.length > 0 ? 1 : 0,
+      },
+    };
   } catch (error) {
     throw formatError(error);
   }

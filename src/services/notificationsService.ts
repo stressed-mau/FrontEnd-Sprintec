@@ -10,6 +10,8 @@ export interface NotificationItem {
   read: boolean
   link: string
   type?: string
+  dataType?: string
+  data?: Record<string, any>
   createdAt?: string
 }
 
@@ -69,6 +71,8 @@ function normalizeNotification(notification: Record<string, unknown>): Notificat
     read: Boolean(notification.read_at ?? notification.read ?? null),
     link: String(payload.link ?? notification.link ?? "/notificaciones"),
     type: typeof notification.type === "string" ? notification.type : undefined,
+    dataType: typeof payload.type === "string" ? payload.type : undefined,
+    data: payload,
     createdAt: typeof notification.created_at === "string" ? notification.created_at : undefined,
   }
 }
@@ -144,7 +148,7 @@ export async function getNotifications(page = 1): Promise<NotificationsResponse>
 
 export async function markNotificationAsRead(id: string): Promise<void> {
   try {
-    await api.post(`${NOTIFICATIONS_ENDPOINT}/${id}/read`)
+    await api.put(`${NOTIFICATIONS_ENDPOINT}/${id}/read`)
   } catch (error) {
     throw new Error(buildErrorMessage(error))
   }
@@ -152,7 +156,7 @@ export async function markNotificationAsRead(id: string): Promise<void> {
 
 export async function markAllNotificationsAsRead(): Promise<void> {
   try {
-    await api.post(`${NOTIFICATIONS_ENDPOINT}/read-all`)
+    await api.put(`${NOTIFICATIONS_ENDPOINT}/read-all`)
   } catch (error) {
     throw new Error(buildErrorMessage(error))
   }

@@ -90,7 +90,7 @@ function ReportRowList({ report, index, onClick }: {
       style={{ gridTemplateColumns: "2fr 1fr 1fr 40px" }}
     >
       <div className="flex items-center gap-3">
-        <div className="bg-[#E0F2FE] p-2 rounded-lg flex-shrink-0">
+        <div className="bg-[#E0F2FE] p-2 rounded-lg shrink-0">
           <FileText className="text-[#0369A1] w-4 h-4" />
         </div>
         <span className="text-[13.5px] font-semibold text-[#003A6C]">

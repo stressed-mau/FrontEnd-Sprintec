@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Eye, Search, SlidersHorizontal } from "lucide-react"; 
 import { Header } from "@/components/Header"; 
@@ -8,9 +8,17 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useExplorePortfolioFilters, type PortfolioCard } from "@/hooks/useExplorePortfolioFilters";
-import { getLanguages, getWorkOptions } from "@/services/ProjectService";
 import { isAuthenticated } from "@/services/auth";
-import { getExplorePortfolios, type ExplorePortfoliosMeta } from "@/services/explorePortfoliosService";
+import { getExplorePortfolios } from "@/services/explorePortfoliosService";
+import { usePagination } from "@/hooks/usePagination";
+import { useSortedPortfolios } from "@/hooks/useSortedPortfolios";
+
+const getExplorePortfoliosPerPage = () => {
+  if (typeof window === "undefined") return 12;
+  if (window.innerWidth >= 1024) return 12;
+  if (window.innerWidth >= 640) return 8;
+  return 4;
+};
 import AdminSidebar from "../components/Admin/AdminSidebar";
 import { getAuthSession } from "@/services/auth";
 
@@ -44,8 +52,7 @@ function FilterDropdown({ value, options, placeholder, onChange }: FilterDropdow
       <button
         type="button"
         onClick={() => setOpen((s) => !s)}
-        className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] flex items-center justify-between outline-none"
-      >
+        className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] flex items-center justify-between outline-none" >
         <span className="truncate">{selectedLabel}</span>
         <svg className={`ml-2 h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
       </button>
@@ -55,16 +62,14 @@ function FilterDropdown({ value, options, placeholder, onChange }: FilterDropdow
           <li
             key="all"
             onClick={() => { onChange('all'); setOpen(false) }}
-            className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === 'all' ? 'font-semibold' : ''}`}
-          >
+            className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === 'all' ? 'font-semibold' : ''}`}    >
             {placeholder ?? 'Todos'}
           </li>
           {options.map((opt) => (
             <li
               key={opt}
               onClick={() => { onChange(opt); setOpen(false) }}
-              className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === opt ? 'font-semibold' : ''}`}
-            >
+              className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === opt ? 'font-semibold' : ''}`}    >
               {opt}
             </li>
           ))}
@@ -74,81 +79,47 @@ function FilterDropdown({ value, options, placeholder, onChange }: FilterDropdow
   )
 }
 
-function OccupationDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
-  return <FilterDropdown {...props} placeholder="Todos" />
-}
-
-function TechnologyDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
-  return <FilterDropdown {...props} placeholder="Todas" />
-}
+//function OccupationDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
+ // return <FilterDropdown {...props} placeholder="Todos" />}
 
 function ProjectsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
-  return <FilterDropdown {...props} placeholder="Cualquiera" />
-}
+  return <FilterDropdown {...props} placeholder="Cualquiera" />}
 
 function SkillsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
-  return <FilterDropdown {...props} placeholder="Cualquiera" />
-}
+  return <FilterDropdown {...props} placeholder="Cualquiera" />}
 
 export default function ExplorePortfolios() {
   const navigate = useNavigate();
-  const occupationContainerRef = useRef<HTMLDivElement | null>(null)
-  const technologyContainerRef = useRef<HTMLDivElement | null>(null)
+ // const occupationContainerRef = useRef<HTMLDivElement | null>(null)
   const [portfolios, setPortfolios] = useState<PortfolioCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [meta, setMeta] = useState<ExplorePortfoliosMeta>({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 });
+  const [perPage, setPerPage] = useState(() => getExplorePortfoliosPerPage());
   const isUserAuthenticated = isAuthenticated();
   const session = getAuthSession();
   const roleId = session?.user?.role_id;
   const isAdmin = roleId === 2;
-
-  // 1. Declaramos primero los estados que necesita el hook customizado
-  const [serverOccupationOptions, setServerOccupationOptions] = useState<string[] | null>(null)
-  const [serverTechnologyOptions, setServerTechnologyOptions] = useState<string[] | null>(null)
-
-  // 2. Desestructuramos el hook UNA SOLA VEZ correctamente
-  const {
-    searchTerm,
-    setSearchTerm,
-    isFiltersOpen,
-    setIsFiltersOpen,
-    selectedOccupation,
-    setSelectedOccupation,
-    selectedTechnology,
-    setSelectedTechnology,
-    minProjects,
-    setMinProjects,
-    minSkills,
-    setMinSkills,
-    occupationOptions,
-    technologyOptions,
-    hasActiveFilters,
-    clearFilters,
-  } = useExplorePortfolioFilters(portfolios, serverOccupationOptions ?? undefined, serverTechnologyOptions ?? undefined)
+  const {  searchTerm,setSearchTerm,isFiltersOpen,setIsFiltersOpen,selectedOccupation,setSelectedOccupation, minProjects,setMinProjects,
+    minSkills,setMinSkills,hasActiveFilters,clearFilters, filteredPortfolios, } = useExplorePortfolioFilters(portfolios)
+  const sortedPortfolios = useSortedPortfolios(filteredPortfolios)
+  const {  currentData, currentPage, totalPages, goToPage,  next, prev, setCurrentPage, } = usePagination({ items: sortedPortfolios, itemsPerPage: perPage })
 
   useEffect(() => {
-    let mounted = true
-
-    const loadOptions = async () => {
-      try {
-        const [langs, work] = await Promise.all([getLanguages(), getWorkOptions()])
-        if (!mounted) return
-        const techs = Array.isArray(langs) ? langs.map((t: any) => (typeof t.name === "string" ? t.name : String(t))) : []
-        setServerTechnologyOptions(techs)
-        setServerOccupationOptions(Array.isArray(work?.roles) ? work.roles : [])
-      } catch (err) {
-        console.error("Error cargando opciones de filtros:", err)
-      }
+    const updatePerPage = () => {
+      setPerPage(getExplorePortfoliosPerPage())
     }
 
-    loadOptions()
+    updatePerPage()
+    window.addEventListener("resize", updatePerPage)
 
     return () => {
-      mounted = false
+      window.removeEventListener("resize", updatePerPage)
     }
   }, [])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [perPage])
 
   useEffect(() => {
     let isMounted = true;
@@ -157,25 +128,16 @@ export default function ExplorePortfolios() {
       setLoading(true)
 
       try {
-        const result = await getExplorePortfolios({
-          search: searchTerm,
-          roles: selectedOccupation === "all" ? [] : [selectedOccupation],
-          technologies: selectedTechnology === "all" ? [] : [selectedTechnology],
-          minProjects: minProjects === "all" ? undefined : Number(minProjects),
-          minSkills: minSkills === "all" ? undefined : Number(minSkills),
-          page: currentPage,
-        })
+        const result = await getExplorePortfolios()
 
         if (!isMounted) return;
 
         setPortfolios(result.portfolios)
-        setMeta(result.meta)
         setPageError("")
       } catch (error) {
         console.error("Error cargando portafolios:", error)
         if (!isMounted) return;
         setPortfolios([])
-        setMeta({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 })
         setPageError(error instanceof Error ? error.message : "No se pudieron cargar los portafolios.")
       } finally {
         if (isMounted) {
@@ -189,13 +151,7 @@ export default function ExplorePortfolios() {
     return () => {
       isMounted = false;
     };
-  }, [searchTerm, selectedOccupation, selectedTechnology, minProjects, minSkills, currentPage]);
-
-  const totalPages = useMemo(() => Math.max(1, meta.totalPages), [meta.totalPages])
-  const currentData = portfolios
-  const next = () => setCurrentPage((page) => Math.min(page + 1, totalPages))
-  const prev = () => setCurrentPage((page) => Math.max(1, page - 1))
-  const goToPage = (page: number) => setCurrentPage(Math.max(1, Math.min(page, totalPages)))
+  }, [])
 
   const handleSearchChange = (value: string) => {
     setCurrentPage(1)
@@ -204,28 +160,21 @@ export default function ExplorePortfolios() {
 
   const handleOccupationChange = (value: string) => {
     setCurrentPage(1)
-    setSelectedOccupation(value)
-  }
-
-  const handleTechnologyChange = (value: string) => {
-    setCurrentPage(1)
-    setSelectedTechnology(value)
+    const trimmed = value.trim()
+    setSelectedOccupation(trimmed.length ? trimmed : "all")
   }
 
   const handleProjectsChange = (value: string) => {
     setCurrentPage(1)
-    setMinProjects(value)
-  }
+    setMinProjects(value) }
 
   const handleSkillsChange = (value: string) => {
     setCurrentPage(1)
-    setMinSkills(value)
-  }
+    setMinSkills(value) }
 
   const handleClearFilters = () => {
     clearFilters()
-    setCurrentPage(1)
-  }
+    setCurrentPage(1) }
 
   function getInitials(name: string): string {
     return name
@@ -260,44 +209,36 @@ export default function ExplorePortfolios() {
                   type="search"
                   value={searchTerm}
                   onChange={(event) => handleSearchChange(event.target.value)}
-                  placeholder="Buscar por nombre, cargo o habilidad"
-                  className="h-11 w-full rounded-2xl border border-[#6DACBF]/40 bg-white pl-10 pr-3 text-sm text-[#003A6C] shadow-sm outline-none transition focus:border-[#4982AD] focus:ring-2 focus:ring-[#4982AD]/20 sm:h-12 sm:pl-12 sm:pr-4"
-                />
+                  placeholder="Buscar por nombre, ocupación o habilidades..."
+                  className="h-11 w-full rounded-2xl border border-[#6DACBF]/40 bg-white pl-10 pr-3 text-sm text-[#003A6C] shadow-sm outline-none transition focus:border-[#4982AD] focus:ring-2 focus:ring-[#4982AD]/20 sm:h-12 sm:pl-12 sm:pr-4"   />
               </div>
 
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsFiltersOpen((current) => !current)}
-                className={`h-11 shrink-0 rounded-2xl border-[#6DACBF]/40 bg-white px-3 text-[#003A6C] shadow-sm hover:bg-[#F7F0E1] sm:h-12 sm:px-4 ${hasActiveFilters ? "border-[#4982AD] bg-[#F7F0E1]" : ""}`}
-              >
+                className={`h-11 shrink-0 rounded-2xl border-[#6DACBF]/40 bg-white px-3 text-[#003A6C] shadow-sm hover:bg-[#F7F0E1] sm:h-12 sm:px-4 ${hasActiveFilters ? "border-[#4982AD] bg-[#F7F0E1]" : ""}`}      >
                 <SlidersHorizontal className="size-4" />
               </Button>
             </div>
 
             {isFiltersOpen && (
-  <div className="mb-3 rounded-xl border border-[#6DACBF]/30 bg-white p-3 shadow-sm sm:p-3">
-    
-    <div className="mb-2 flex items-center justify-between">
-      <div>
-        <h2 className="text-xs font-bold uppercase tracking-wide text-[#003A6C]">
-          Filtros
-        </h2>
-      </div>
+                <div className="mb-3 rounded-xl border border-[#6DACBF]/30 bg-white p-3 shadow-sm sm:p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div> 
+                      <h2 className="text-xs font-bold uppercase tracking-wide text-[#003A6C]">   Filtros  </h2>
+                    </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-7 rounded-lg px-2 text-[11px] font-semibold text-[#003A6C] hover:bg-[#F7F0E1]"
+                        onClick={handleClearFilters}    >
+                         Limpiar
+                      </Button>
+                  </div>
 
-      <Button
-        type="button"
-        variant="ghost"
-        className="h-7 rounded-lg px-2 text-[11px] font-semibold text-[#003A6C] hover:bg-[#F7F0E1]"
-        onClick={handleClearFilters}
-      >
-        Limpiar
-      </Button>
-    </div>
-
-    <div className="grid gap-2 md:grid-cols-4">
-
-      {/* CARGO */}
+                <div className="grid gap-2 md:grid-cols-3">
+      {/* CARGO 
       <label className="space-y-1 relative">
         <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
           Cargo
@@ -311,18 +252,21 @@ export default function ExplorePortfolios() {
           />
         </div>
       </label>
+      */}
 
-      {/* TECNOLOGIAS */}
+       {/* OCUPACIÓN */}
       <label className="space-y-1 relative">
         <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
-          Tecnologías
+          Ocupación
         </span>
 
-        <div ref={technologyContainerRef} className="relative">
-          <TechnologyDropdown
-            value={selectedTechnology}
-            options={technologyOptions}
-            onChange={(v) => handleTechnologyChange(v)}
+        <div className="relative">
+          <input
+            type="search"
+            value={selectedOccupation === "all" ? "" : selectedOccupation}
+            onChange={(event) => handleOccupationChange(event.target.value)}
+            placeholder="Buscar por ocupación"
+            className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] shadow-sm outline-none transition focus:border-[#4982AD] focus:ring-2 focus:ring-[#4982AD]/20"
           />
         </div>
       </label>
@@ -349,7 +293,7 @@ export default function ExplorePortfolios() {
       {/* SKILLS */}
      <label className="space-y-1 relative">
   <span className="block text-[10px] font-semibold uppercase tracking-wider text-[#5B8FB9]">
-    Skills mínimas
+    Habilidades mínimas
   </span>
 
   <div className="relative">
@@ -384,7 +328,7 @@ export default function ExplorePortfolios() {
 
             {!loading && currentData.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[#6DACBF]/30 bg-white p-8 text-center text-sm text-[#5B8FB9] shadow-sm">
-                No se encontraron portafolios con esos criterios.
+                No hay portafolios disponibles en este momento.
               </div>
             ) : null}
 
@@ -402,21 +346,28 @@ export default function ExplorePortfolios() {
                       />
                     ) : (
                       <div className="size-16 md:size-18 rounded-full bg-[#003A6C] text-white flex items-center justify-center font-bold text-lg">
-                        {getInitials(portfolio.fullName)}
+                        {getInitials(portfolio.fullName || portfolio.username)}
                       </div>
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col">
-                      <h3 className="truncate text-base font-bold text-[#003A6C]"> {portfolio.fullName} </h3>
-                      <p className="truncate text-[11px] font-semibold text-[#a08057] uppercase tracking-wider"> {portfolio.occupation} </p>
+                      <h3 className="truncate text-base font-bold text-[#003A6C]">
+                        {portfolio.fullName || "Sin nombre"}
+                      </h3>
+                      <p className="truncate text-xs font-normal text-gray-400">
+                        @{portfolio.username}
+                      </p>
+                      <p className="truncate text-[11px] font-semibold text-[#a08057] uppercase tracking-wider">
+                        {portfolio.occupation}
+                      </p>
                     </div>
                 
                     <div className="my-1 flex gap-2 text-[9px] font-bold text-gray-400">
                       <span>{portfolio.projectsCount} PROYECTOS</span>
                       <span>•</span>
-                      <span>{portfolio.skillsCount} SKILLS</span>
+                      <span>{portfolio.skillsCount} HABILIDADES</span>
                     </div>
 
                     <div className="flex flex-wrap gap-1 mt-1">
@@ -469,8 +420,7 @@ export default function ExplorePortfolios() {
                         currentPage === pageNum 
                         ? "bg-[#003A6C] text-white shadow-lg shadow-[#003A6C]/30" 
                         : "bg-white text-gray-500 hover:bg-gray-100 border border-gray-100"
-                      }`}
-                    >
+                      }`}     >
                       {pageNum}
                     </button>
                   );
