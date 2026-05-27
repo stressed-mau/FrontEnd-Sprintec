@@ -6,7 +6,8 @@ import Sidebar from "@/components/Sidebar"
 import { Footer } from "@/components/Footer"
 import { api } from "@/services/api"
 import { TEMPLATE_TRENDS_ROUTE } from "@/routes/route-paths"
-
+import AdminSidebar from '../components/Admin/AdminSidebar';
+import { getAuthSession } from '@/services/auth';
 // ─── Utils ────────────────────────────────────────────────────────────────────
 
 function formatPeriodLabel(start: string, end: string) {
@@ -119,7 +120,9 @@ const ReportsIndexPage = () => {
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo]     = useState("")
   const [view, setView]         = useState<"grid" | "list">("grid")
-
+  const session = getAuthSession();
+  const roleId = session?.user?.role_id;
+  const isAdmin = roleId === 2;
   useEffect(() => {
     let mounted = true
     api.get("/tracking/global-reports")
@@ -159,7 +162,7 @@ const ReportsIndexPage = () => {
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
       <Header />
       <div className="flex flex-col lg:flex-row flex-1">
-        <Sidebar />
+        {isAdmin ? <AdminSidebar /> : <Sidebar />}
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-5xl">
 
