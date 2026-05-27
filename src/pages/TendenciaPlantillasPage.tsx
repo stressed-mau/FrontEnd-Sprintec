@@ -220,12 +220,12 @@ const TrendCard = ({ template_name, retention, avg_time, variation, footerBadge,
         </div>
 
         <div className="flex justify-between border-b pb-1">
-          <span className="text-gray-400 truncate mr-1">Tiempo prom.</span>
+          <span className="text-gray-400 truncate mr-1">Tiempo promedio de lectura</span>
           <span className="font-bold text-[#003A6C] shrink-0">{formatTemplateTime(avg_time)}</span>
         </div>
 
         <div className="flex justify-between">
-          <span className="text-gray-400 truncate mr-1">Variación</span>
+          <span className="text-gray-400 truncate mr-1">Variación Semanal</span>
           <span className={`font-bold shrink-0 ${variation < 0 ? "text-red-500" : "text-green-500"}`}>{formatTemplateVariation(variation)}</span>
         </div>
       </div>
