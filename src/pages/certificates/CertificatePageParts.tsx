@@ -330,16 +330,14 @@ export function CertificateFormCard({
             </Label>
             <div className="space-y-3">
               {(fileInput || formData.file_bonus_url) ? (
-                <div className="rounded-lg border border-[#D7E6F2] bg-[#EEF5F9] p-3">
-                  <CertificateFilePreviewField
-                    fileInput={fileInput}
-                    isSaving={isSaving}
-                    fileInputRef={fileInputRef}
-                    error={errors.file_bonus_url}
-                    onFileChange={onFileChange}
-                    onRemoveFile={onRemoveFile}
-                  />
-                </div>
+                <CertificateFilePreviewField
+                  fileInput={fileInput}
+                  isSaving={isSaving}
+                  fileInputRef={fileInputRef}
+                  error={errors.file_bonus_url}
+                  onFileChange={onFileChange}
+                  onRemoveFile={onRemoveFile}
+                />
               ) : null}
               <label className={`${fileButtonClassName} ${isSaving ? "pointer-events-none" : ""}`}>
                 Seleccionar archivo

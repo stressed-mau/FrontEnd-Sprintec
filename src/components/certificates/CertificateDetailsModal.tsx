@@ -1,5 +1,8 @@
 import { BadgeCheck, CalendarDays, FileText, Link2, ShieldCheck, X } from "lucide-react"
+import { useState } from "react"
 
+import { Button } from "@/components/ui/button"
+import { CertificateDocumentPreviewModal } from "@/components/certificates/CertificateDocumentPreview"
 import type { Certificate } from "@/hooks/useCertificatesManager"
 
 type CertificateDetailsModalProps = {
@@ -36,6 +39,8 @@ function DetailItem({ label, value }: { label: string; value: string }) {
 }
 
 export function CertificateDetailsModal({ certificate, onClose }: CertificateDetailsModalProps) {
+  const [documentPreviewUrl, setDocumentPreviewUrl] = useState<string | null>(null)
+
   if (!certificate) return null
 
   const hasExpiration = Boolean(certificate.date_expired)
@@ -105,19 +110,20 @@ export function CertificateDetailsModal({ certificate, onClose }: CertificateDet
             ) : null}
 
             {certificate.file_bonus_url ? (
-              <a
-                href={certificate.file_bonus_url}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-[#A5D7E8] bg-[#EEF5F9] px-4 py-2.5 text-sm font-medium text-[#003A6C] transition hover:bg-[#D9EAF4]"
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDocumentPreviewUrl(certificate.file_bonus_url ?? null)}
+                className="border-[#A5D7E8] bg-[#EEF5F9] text-[#003A6C] hover:bg-[#D9EAF4]"
               >
                 <FileText className="size-4" />
                 Archivo adicional
-              </a>
+              </Button>
             ) : null}
           </div>
         </div>
       </div>
+      <CertificateDocumentPreviewModal url={documentPreviewUrl} onClose={() => setDocumentPreviewUrl(null)} />
     </div>
   )
 }
