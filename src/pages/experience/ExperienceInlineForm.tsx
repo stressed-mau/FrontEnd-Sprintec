@@ -272,35 +272,35 @@ export function ExperienceInlineForm({
           ) : null}
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <FieldError label={isEducation ? "Fecha de emisión" : "Fecha de inicio"} id="startDate" error={errors.startDate} required={!isEducation || !formData.current}>
-              <Input
-                id="startDate"
-                type="date"
-                value={formData.startDate}
-                disabled={isSaving || (isEducation && formData.current)}
-                max={today}
-                onBlur={() => onBlur("startDate")}
-                onChange={(event) => onFieldChange("startDate", event.target.value)}
-                aria-invalid={Boolean(errors.startDate)}
-                className="h-10 border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
-              />
-            </FieldError>
-
             {!isEducation ? (
-              <FieldError label="Fecha de finalización" id="endDate" error={errors.endDate} required={!formData.current}>
+              <FieldError label="Fecha de inicio" id="startDate" error={errors.startDate} required>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={formData.startDate}
+                  disabled={isSaving}
+                  max={today}
+                  onBlur={() => onBlur("startDate")}
+                  onChange={(event) => onFieldChange("startDate", event.target.value)}
+                  aria-invalid={Boolean(errors.startDate)}
+                  className="h-10 border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
+                />
+              </FieldError>
+            ) : null}
+
+            <FieldError label={isEducation ? "Fecha de emisión" : "Fecha de finalización"} id="endDate" error={errors.endDate} required={!isEducation && !formData.current}>
                 <Input
                   id="endDate"
                   type="date"
                   value={formData.endDate}
                   disabled={formData.current || isSaving}
-                  max={today}
+                  max={isEducation ? undefined : today}
                   onBlur={() => onBlur("endDate")}
                   onChange={(event) => onFieldChange("endDate", event.target.value)}
                   aria-invalid={Boolean(errors.endDate)}
                   className="h-10 border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
                 />
               </FieldError>
-            ) : null}
           </div>
 
           <div className="flex items-center gap-2">
@@ -308,7 +308,7 @@ export function ExperienceInlineForm({
               id="current"
               type="checkbox"
               checked={formData.current}
-              disabled={isSaving || (!isEducation && Boolean(formData.endDate)) || (isEducation && Boolean(formData.startDate))}
+              disabled={isSaving || Boolean(formData.endDate)}
               onChange={(event) => onFieldChange("current", event.target.checked)}
               className="h-4 w-4 rounded border-gray-300 text-[#003A6C] focus:ring-[#003A6C]"
             />
@@ -395,7 +395,7 @@ export function ExperienceInlineForm({
                     className="hidden"
                   />
                 </label>
-                <p className="text-xs text-gray-500">Formatos: JPG, JPEG, PNG y PDF. Tamaño máximo: 2 MB.</p>
+                <p className="text-xs text-gray-500">Formatos: JPG, JPEG, PNG y PDF. Tamaño máximo: 5 MB.</p>
                 {errors.certificate ? <p className="text-sm text-red-600">{errors.certificate}</p> : null}
               </div>
             </div>

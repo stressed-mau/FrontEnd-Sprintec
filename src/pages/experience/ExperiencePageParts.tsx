@@ -110,7 +110,7 @@ export function ExperienceStatusBadge({ experience }: { experience: ExperienceIt
 
 function formatExperiencePeriod(experience: ExperienceItem) {
   if (experience.type === "academica") {
-    return experience.current ? "Cursando actualmente" : formatExperienceDate(experience.startDate)
+    return experience.endDate ? formatExperienceDate(experience.endDate) : "Actual"
   }
 
   return `${formatExperienceDate(experience.startDate)} - ${experience.current ? "Actual" : formatExperienceDate(experience.endDate)}`
@@ -341,14 +341,10 @@ export function ExperienceDetailsModal({ experience, onClose }: ExperienceDetail
 
           <div className="grid gap-4 sm:grid-cols-2">
             {experience.type === "academica" ? (
-              experience.current ? (
-                <DetailItem label="Estado" value="Cursando actualmente" />
-              ) : (
-                <>
-                  <DetailItem label="Fecha de emisión" value={formatExperienceDate(experience.startDate)} />
-                  <DetailItem label="Estado" value="Concluido" />
-                </>
-              )
+              <>
+                <DetailItem label="Fecha de emisión" value={experience.endDate ? formatExperienceDate(experience.endDate) : "Actual"} />
+                <DetailItem label="Estado" value={experience.current ? "Cursando actualmente" : "Concluido"} />
+              </>
             ) : (
               <>
                 <DetailItem label="Inicio" value={formatExperienceDate(experience.startDate)} />

@@ -46,7 +46,7 @@ const EMPTY_FORM: ExperienceFormValues = {
 const DATE_PATTERN = /^(\d{2})\/(\d{2})\/(\d{4})$/
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
 const MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024
-const MAX_CERTIFICATE_SIZE_BYTES = 2 * 1024 * 1024
+const MAX_CERTIFICATE_SIZE_BYTES = 5 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
 const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 const ALLOWED_CERTIFICATE_TYPES = ["image/jpeg", "image/png", "image/jpg", "application/pdf"]
@@ -176,6 +176,7 @@ function findDuplicateExperience(
   editingExperienceId?: string,
 ) {
   const normalizedType = normalizeExperienceTypeValue(values.type)
+  const normalizedCompany = normalizeComparableText(values.company)
   const normalizedPosition = normalizeComparableText(values.position)
 
   return experiences.find((experience) => {
@@ -188,7 +189,7 @@ function findDuplicateExperience(
     }
 
     if (normalizedType === "academica") {
-      return normalizeComparableText(experience.position) === normalizedPosition
+      return normalizeComparableText(experience.company) === normalizedCompany
     }
 
     return normalizeComparableText(experience.position) === normalizedPosition
@@ -251,7 +252,7 @@ function validateCertificateFile(file: File | null): string {
   }
 
   if (file.size > MAX_CERTIFICATE_SIZE_BYTES) {
-    return "El archivo no debe superar los 2 MB."
+    return "El archivo no debe superar los 5 MB."
   }
 
   return ""
@@ -352,27 +353,29 @@ function validateExperienceField(
   }
 
     if (field === "startDate") {
-    if (values.type === "academica" && !startDate && values.current) {
-      return ""
-    }
-
     if (!startDate) {
-      return values.type === "academica"
-        ? "El campo Fecha de emisión es obligatorio."
-        : "El campo Fecha de inicio es obligatorio."
+      return values.type === "academica" ? "" : "El campo Fecha de inicio es obligatorio."
     }
 
     if (!isIsoDate(startDate) || !parseDate(startDate)) {
       return "Seleccione una fecha válida."
     }
 
-    if (isFutureDate(startDate)) {
+    if (values.type !== "academica" && isFutureDate(startDate)) {
       return "La fecha no puede ser mayor a la fecha actual."
     }
   }
 
   if (field === "endDate") {
     if (values.type === "academica") {
+      if (!endDate) {
+        return ""
+      }
+
+      if (!isIsoDate(endDate) || !parseDate(endDate)) {
+        return "Seleccione una fecha válida."
+      }
+
       return ""
     }
 
@@ -461,7 +464,8 @@ function hasEditablePayloadChanges(
   if (payload.type === "academica") {
     return (
       payload.description !== originalValues.description.trim() ||
-      payload.startDate !== originalValues.startDate.trim()
+      payload.startDate !== originalValues.startDate.trim() ||
+      payload.endDate !== originalValues.endDate.trim()
     )
   }
 
@@ -484,7 +488,7 @@ function buildExperiencePayloadFromValues(
     fieldOfStudy: values.fieldOfStudy.trim(),
     description: values.description.trim(),
     startDate: values.startDate.trim(),
-    endDate: values.type === "academica" ? "" : values.endDate.trim(),
+    endDate: values.endDate.trim(),
     current: values.current,
     logoFile: selectedImageFile,
     certificateFile: selectedCertificateFile,
@@ -548,18 +552,22 @@ export function useExperienceManager() {
       fieldOfStudy: isEditingAcademicExperience ? "" : validateManagedField("fieldOfStudy", formData),
       description: validateManagedField("description", formData),
       startDate: validateManagedField("startDate", formData),
-      endDate: isEditingAcademicExperience ? "" : validateManagedField("endDate", formData),
+      endDate: validateManagedField("endDate", formData),
       image: isEditingAcademicExperience ? "" : validateImageFile(selectedImageFile),
       certificate: isEditingAcademicExperience ? "" : validateCertificateFile(selectedCertificateFile),
     }
 
     if (!isEditingAcademicExperience) {
-      nextErrors.position = nextErrors.position || validateDuplicateField("position", formData)
+      if (normalizeExperienceTypeValue(formData.type) === "academica") {
+        nextErrors.company = nextErrors.company || validateDuplicateField("company", formData)
+      } else {
+        nextErrors.position = nextErrors.position || validateDuplicateField("position", formData)
+      }
     }
 
     if (editingExperience && originalEditingValues) {
       const protectedFields: Array<keyof ExperienceFormValues> = isEditingAcademicExperience
-        ? ["description", "startDate"]
+        ? []
         : [
             "company",
             "email",
@@ -599,7 +607,21 @@ export function useExperienceManager() {
   )
   const canSaveExperience = !isSaving && hasCurrentFormChanges && !Object.values(currentValidationErrors).some(Boolean)
 
-  const loadExperiences = useCallback(async () => {
+  const mergeExperienceLists = useCallback((remoteItems: ExperienceItem[], localItems: ExperienceItem[]) => {
+    const itemsByKey = new Map<string, ExperienceItem>()
+
+    localItems.forEach((item) => {
+      itemsByKey.set(`${item.type}:${item.id}`, item)
+    })
+
+    remoteItems.forEach((item) => {
+      itemsByKey.set(`${item.type}:${item.id}`, item)
+    })
+
+    return Array.from(itemsByKey.values())
+  }, [])
+
+  const loadExperiences = useCallback(async (options?: { keepLocalItems?: boolean }) => {
     setIsLoading(true)
     setPageError("")
 
@@ -611,8 +633,13 @@ export function useExperienceManager() {
 
       const remoteExperiences = experienceResult.status === "fulfilled" ? experienceResult.value : []
       const remoteEducation = educationResult.status === "fulfilled" ? educationResult.value : []
+      const remoteItems = [...remoteExperiences, ...remoteEducation]
 
-      setExperiences([...remoteExperiences, ...remoteEducation])
+      if (options?.keepLocalItems) {
+        setExperiences((currentItems) => mergeExperienceLists(remoteItems, currentItems))
+      } else {
+        setExperiences(remoteItems)
+      }
 
       if (experienceResult.status === "rejected" && educationResult.status === "rejected") {
         const message = educationResult.reason instanceof Error
@@ -623,7 +650,7 @@ export function useExperienceManager() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [mergeExperienceLists])
 
   const loadEducationOptions = useCallback(async () => {
     try {
@@ -739,7 +766,7 @@ export function useExperienceManager() {
     const duplicateError = getDuplicateExperienceMessage(duplicateExperience)
 
     if (normalizeExperienceTypeValue(values.type) === "academica") {
-      return field === "position" ? duplicateError : ""
+      return field === "company" ? duplicateError : ""
     }
 
     return field === "position" ? duplicateError : ""
@@ -830,7 +857,7 @@ export function useExperienceManager() {
       fieldOfStudy: experience.fieldOfStudy,
       description: experience.description,
       startDate: normalizeFormDate(experience.startDate),
-      endDate: normalizeExperienceTypeValue(experience.type) === "academica" ? "" : normalizeFormDate(experience.endDate),
+      endDate: normalizeFormDate(experience.endDate),
       current: experience.current,
       image: experience.image,
       certificate: experience.certificate,
@@ -868,10 +895,7 @@ export function useExperienceManager() {
         return
       }
 
-      if (
-        field === "startDate" &&
-        (editingExperience.type === "laboral" || !originalEditingValues.current)
-      ) {
+      if (field === "startDate" && editingExperience.type === "laboral") {
         return
       }
 
@@ -896,15 +920,7 @@ export function useExperienceManager() {
     }
 
     if (field === "current" && value === true) {
-      if (nextValues.type === "academica") {
-        nextValues.startDate = ""
-      } else {
-        nextValues.endDate = ""
-      }
-    }
-
-    if (field === "startDate" && nextValues.type === "academica" && typeof normalizedValue === "string" && normalizedValue.trim()) {
-      nextValues.current = false
+      nextValues.endDate = ""
     }
 
     if (field === "endDate" && typeof normalizedValue === "string" && normalizedValue.trim()) {
@@ -934,6 +950,7 @@ export function useExperienceManager() {
         : {}),
       ...(field === "company" || field === "position" || field === "fieldOfStudy" || field === "type"
         ? {
+            company: validateManagedField("company", nextValues) || validateDuplicateField("company", nextValues),
             position: validateManagedField("position", nextValues) || validateDuplicateField("position", nextValues),
             fieldOfStudy: validateManagedField("fieldOfStudy", nextValues),
           }
@@ -1094,21 +1111,22 @@ export function useExperienceManager() {
             : "Experiencia actualizada correctamente.",
         )
       } else {
+        let createdExperience: ExperienceItem
+
         if (payload.type === "academica") {
-          await createEducation(payload)
+          createdExperience = await createEducation(payload)
         } else {
-          await createExperience(payload)
+          createdExperience = await createExperience(payload)
         }
+
+        setExperiences((currentItems) => mergeExperienceLists([createdExperience], currentItems))
         closeModal()
+        await loadExperiences({ keepLocalItems: true })
         showSuccessModal(
           payload.type === "academica"
             ? "La formación académica ha sido registrada correctamente."
             : "Experiencia registrada correctamente.",
         )
-      }
-
-      if (!editingExperience) {
-        await loadExperiences()
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "No se pudo guardar la experiencia."
@@ -1145,7 +1163,7 @@ export function useExperienceManager() {
       fieldOfStudy: isSubmittingAcademicUpdate ? "" : validateExperienceField("fieldOfStudy", formData),
       description: validateExperienceField("description", formData),
       startDate: validateExperienceField("startDate", formData),
-      endDate: isSubmittingAcademicUpdate ? "" : validateExperienceField("endDate", formData),
+      endDate: validateExperienceField("endDate", formData),
       image: isSubmittingAcademicUpdate ? "" : validateImageFile(selectedImageFile),
       certificate: isSubmittingAcademicUpdate ? "" : validateCertificateFile(selectedCertificateFile),
     }
@@ -1154,13 +1172,17 @@ export function useExperienceManager() {
       nextErrors.position = nextErrors.position || validateEducationOptionField("position", formData)
       nextErrors.position = nextErrors.position || validateWorkOptionField("position", formData)
       nextErrors.fieldOfStudy = nextErrors.fieldOfStudy || validateEducationOptionField("fieldOfStudy", formData)
-      nextErrors.position = nextErrors.position || validateDuplicateField("position", formData)
+      if (normalizeExperienceTypeValue(formData.type) === "academica") {
+        nextErrors.company = nextErrors.company || validateDuplicateField("company", formData)
+      } else {
+        nextErrors.position = nextErrors.position || validateDuplicateField("position", formData)
+      }
       nextErrors.fieldOfStudy = nextErrors.fieldOfStudy || validateDuplicateField("fieldOfStudy", formData)
     }
 
     if (editingExperience && originalEditingValues) {
       const protectedFields: Array<keyof ExperienceFormValues> = isSubmittingAcademicUpdate
-        ? ["description", "startDate"]
+        ? []
         : [
             "company",
             "email",

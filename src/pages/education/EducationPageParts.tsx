@@ -31,6 +31,10 @@ export function EducationStatusBadge({ education }: { education: ExperienceItem 
   )
 }
 
+function formatEducationPeriod(education: ExperienceItem) {
+  return education.endDate ? formatExperienceDate(education.endDate) : "Actual"
+}
+
 export function EducationTable({
   education,
   emptyMessage,
@@ -78,6 +82,7 @@ export function EducationTable({
                   <th className="px-4 py-3 font-semibold">Institucion academica</th>
                   <th className="px-4 py-3 font-semibold">Nivel de formacion</th>
                   <th className="px-4 py-3 font-semibold">Area de estudio</th>
+                  <th className="px-4 py-3 font-semibold">Fecha de emision</th>
                   <th className="px-4 py-3 font-semibold">Estado</th>
                 </tr>
               </thead>
@@ -109,6 +114,9 @@ export function EducationTable({
                     </td>
                     <td className="px-4 py-4 text-sm text-[#355468]">{item.position}</td>
                     <td className="px-4 py-4 text-sm text-[#355468]">{item.fieldOfStudy || "-"}</td>
+                    <td className="px-4 py-4 text-sm text-[#355468]">
+                      {formatEducationPeriod(item)}
+                    </td>
                     <td className="px-4 py-4">
                       <EducationStatusBadge education={item} />
                     </td>
@@ -159,9 +167,7 @@ export function EducationDetailsModal({ education, onClose }: EducationDetailsMo
 
           <div className="grid gap-4 sm:grid-cols-2">
             <DetailItem label="Estado" value={education.current ? "Cursando" : "Finalizado"} />
-            {!education.current && education.startDate ? (
-              <DetailItem label="Fecha de emision" value={formatExperienceDate(education.startDate)} />
-            ) : null}
+            <DetailItem label="Fecha de emision" value={education.endDate ? formatExperienceDate(education.endDate) : "Actual"} />
             <DetailItem label="Area de estudio" value={education.fieldOfStudy || "No especificada"} />
           </div>
 
