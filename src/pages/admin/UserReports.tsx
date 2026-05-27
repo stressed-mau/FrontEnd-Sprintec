@@ -21,8 +21,6 @@ const UserReports = () => {
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
 
-
-
   const rangeMap = {
     Día: "day",
     Semana: "week",
@@ -48,13 +46,34 @@ const UserReports = () => {
   const yearlyData = data?.yearlyData || [];
   const loginData = data?.loginData || [];
   const userData = data?.users || [];
+  const growthData =
+    selectedPeriod === 'Día'
+      ? dailyData
+      : selectedPeriod === 'Semana'
+      ? weeklyData
+      : selectedPeriod === 'Mes'
+      ? monthlyData
+      : yearlyData;
 
+  const hasGrowthData =
+    growthData.length > 0 &&
+    growthData.some(item => item.registros > 0);
+
+  const hasLoginData =
+    loginData.length > 0 &&
+    loginData.some(item => item.registros > 0);
+
+  const hasUsersData =
+    userData.length > 0;
   const currentUsers = userData.slice(
     indexOfFirstUser,
     indexOfLastUser
   );
 
-  const totalPages = Math.ceil(userData.length / usersPerPage);
+  const totalPages = Math.max(
+    1,
+    Math.ceil(userData.length / usersPerPage)
+  );
   const reportRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
@@ -168,7 +187,7 @@ const isCompact = isMobile && !isPrinting;
                 className="print:hidden w-full sm:w-auto h-11 flex items-center justify-center gap-2 px-5 rounded-xl bg-[#003A6C] text-white"
               >
                 <Download className="w-5 h-5" />
-                Exportar a PDF
+                Generar PDF
               </button>
             </div>
             <div className="mb-2 p-2 bg-[#E0F2FE] border border-[#7DD3FC] rounded-2xl w-fit">
@@ -194,6 +213,7 @@ const isCompact = isMobile && !isPrinting;
                   {selectedPeriod === 'Año' && 'Registros por mes (últimos 12 meses)'}
                 </p>
               </div>
+              {hasGrowthData ? (
               <div className="h-48 sm:h-64 w-full overflow-hidden print:h-64 print:w-[950px]">
                 <ResponsiveContainer width={isPrinting ? 900 : "99%"} height={isPrinting ? 230 : "100%"} debounce={0}>
                   <LineChart
@@ -246,7 +266,9 @@ const isCompact = isMobile && !isPrinting;
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-              
+              ) : (
+                <EmptyChart message="Aún no hay registros para el período seleccionado." />
+              )}
               {/* Selectores de Tiempo (Estilo Figma) */}
               <div className="flex justify-center mt-6 print:hidden">
                 <div className="flex flex-wrap justify-center gap-2 bg-[#D1E3EB] p-2 rounded-xl">
@@ -273,6 +295,7 @@ const isCompact = isMobile && !isPrinting;
                 <h2 className="text-xl font-bold text-[#003A6C]">Inicios de sesión por día</h2>
                 <p className="text-sm text-[#4B778D]">Actividad de la última semana</p>
               </div>
+              {hasLoginData ? (
               <div className="h-44 sm:h-64 print:h-64 w-full print:w-[950px]">
                 <ResponsiveContainer width={isPrinting ? 900 : "100%"} height={isPrinting ? 230 : "100%"}>
                   <BarChart data={loginData}>
@@ -300,6 +323,9 @@ const isCompact = isMobile && !isPrinting;
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+              ) : (
+                <EmptyChart message="Aún no hay inicios de sesión registrados." />
+              )}
             </div>
 
             {/* Tabla de Usuarios */}
@@ -307,6 +333,7 @@ const isCompact = isMobile && !isPrinting;
               <div className="p-6 border-b border-[#E2E8F0]">
                 <h2 className="text-xl font-bold text-[#003A6C]">Usuarios registrados ({stats?.totalUsers ?? 0})</h2>
               </div> 
+              {hasUsersData ? (
               <div className="overflow-x-auto print:hidden">
                 <table className="w-full text-left border-collapse">
                   <thead>
@@ -383,6 +410,9 @@ const isCompact = isMobile && !isPrinting;
                   </button>
                 </div>
               </div>
+              ) : (
+                <EmptyChart message="Aún no hay usuarios registrados." />
+              )}
               <div className="hidden print:block">
                 <table className="w-full text-left border-collapse mt-6">
                   <thead>
@@ -459,5 +489,16 @@ const StatCard = ({ title, value, subtext, Icon }: StatCardProps) => (
     </div>
   </div>
 );
+const EmptyChart = ({ message }: { message: string }) => (
+  <div className="flex flex-col items-center justify-center min-h-[250px] text-center">
+    <Eye
+      className="w-14 h-14 text-gray-300 mb-4"
+      strokeWidth={1.5}
+    />
 
+    <p className="text-[#4B5563] text-base">
+      {message}
+    </p>
+  </div>
+);
 export default UserReports;

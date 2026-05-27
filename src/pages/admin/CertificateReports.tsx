@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, Legend 
 } from 'recharts';
-import { Award, Link, FileText, CheckCircle, Download } from 'lucide-react';
+import { Award, Link, FileText, CheckCircle, Download, Eye } from 'lucide-react';
 import Header from '../../components/HeaderUser'; 
 import AdminSidebar from '../../components/Admin/AdminSidebar';
 import { Footer } from '@/components/Footer';
@@ -26,10 +26,21 @@ const CertificateReports = () => {
     conArchivo: 0,
     conAmbos: 0,
   };
+  const hasCertificates = stats.totalCertificados > 0;
   const issuersData = data?.issuers || [];
   const formatData = data?.formatDist || [];
   const expirationData = data?.expirationDist || [];
+  const hasIssuersData =
+    issuersData.length > 0 &&
+    issuersData.some(item => item.cantidad > 0);
 
+  const hasFormatData =
+    formatData.length > 0 &&
+    formatData.some(item => item.value > 0);
+
+  const hasExpirationData =
+    expirationData.length > 0 &&
+    expirationData.some(item => item.value > 0);
 
   const reportRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
@@ -222,7 +233,7 @@ const CertificateReports = () => {
                 "
               >
                 <Download className="w-5 h-5" />
-                Exportar a PDF
+                Generar PDF
               </button>
             </div>
             <div className="mb-5 p-2 bg-[#E0F2FE] border border-[#7DD3FC] rounded-2xl w-fit">
@@ -235,9 +246,23 @@ const CertificateReports = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCard title="Total de Certificados" value={stats.totalCertificados} subtext="Certificados en el sistema" Icon={Award} />
               <StatCard title="Certificados con link" value={stats.conLink} subtext="Con URL de credencial" Icon={Link} />
-              <StatCard title="Certificados con archivo" value={stats.conArchivo} subtext="PDF, PNG, etc." Icon={FileText} />
-              <StatCard title="Certificados con link y archivo" value={stats.conAmbos} subtext="Ambos respaldos" Icon={CheckCircle} />
+              <StatCard title="Certificados con Archivo" value={stats.conArchivo} subtext="PDF, PNG, etc." Icon={FileText} />
+              <StatCard title="Certificados con Link y Archivo" value={stats.conAmbos} subtext="Ambos respaldos" Icon={CheckCircle} />
             </div>
+            {!hasCertificates && (
+              <div className="bg-white border border-[#A5C9D7] rounded-3xl p-10 shadow-sm">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <Eye
+                    className="w-14 h-14 text-gray-300 mb-4"
+                    strokeWidth={1.5}
+                  />
+
+                  <p className="text-lg font-medium text-[#4B5563]">
+                    No existen certificados registrados actualmente.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Gráfica de Top Emisores */}
               <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid">
@@ -247,12 +272,16 @@ const CertificateReports = () => {
                 </div>
                 
                 {/* 1. ESTE BLOQUE SE MUESTRA EN PANTALLA Y SE OCULTA AL IMPRIMIR (print:hidden) */}
-                <div
-                  className="w-full print:hidden"
-                  style={{
-                    height: `${Math.max(issuersData.length * (isCompact ? 45 : 60), 250)}px`,
-                  }}
-                >
+                {hasIssuersData ? (
+                  <div
+                    className="w-full print:hidden"
+                    style={{
+                      height: `${Math.max(
+                        issuersData.length * (isCompact ? 45 : 60),
+                        250
+                      )}px`,
+                    }}
+                  >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={issuersData} layout="vertical" margin={{ left: 20, right: 20, bottom: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
@@ -270,9 +299,12 @@ const CertificateReports = () => {
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-
+                ) : (
+                  <EmptyChart message="Aún no hay emisores registrados." />
+                )}
                 {/* 2. ESTE BLOQUE SE OCULTA EN PANTALLA (hidden) Y SÓLO APARECE AL IMPRIMIR (print:block) */}
                 {/* Forzamos un ancho fijo de 650px para que quepa perfectamente en la hoja sin desbordarse */}
+                {hasIssuersData && (
                 <div
                   className="hidden print:block mx-auto"
                   style={{
@@ -298,16 +330,18 @@ const CertificateReports = () => {
                     <Bar dataKey="cantidad" fill="#4A6CF7" radius={[0, 4, 4, 0]} barSize={20} isAnimationActive={false} />
                   </BarChart>
                 </div>
+                )}
               </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-2">
               {/* Pastel: Distribución por Formato */}
               <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid print:mt-6">
                 <div className="mb-4">
-                  <h2 className="text-xl font-bold text-[#003A6C]">Distribución por formato</h2>
+                  <h2 className="text-xl font-bold text-[#003A6C]">Distribución por Formato</h2>
                   <p className="text-sm text-[#4B778D]">Tipos de archivo de respaldo</p>
                 </div>
                 {/* Vista normal */}
+                {hasFormatData ? (
                 <div
                   className={`${isCompact ? 'h-52' : 'h-64'} flex items-center justify-center print:hidden`}
                 >
@@ -343,8 +377,11 @@ const CertificateReports = () => {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-
+                ) : (
+                  <EmptyChart message="Aún no hay formatos registrados." />
+                )}
                 {/* Vista PDF */}
+                {hasFormatData && (
                 <div
                   className="hidden print:flex justify-center items-center mx-auto"
                   style={{
@@ -381,15 +418,17 @@ const CertificateReports = () => {
                     />
                   </PieChart>
                 </div>
+                )}
               </div>
 
               {/* Pastel: Certificados con Vencimiento */}
               <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid print:mt-6">
                 <div className="mb-4">
-                  <h2 className="text-xl font-bold text-[#003A6C]">Certificados con vencimiento</h2>
+                  <h2 className="text-xl font-bold text-[#003A6C]">Certificados con Vencimiento</h2>
                   <p className="text-sm text-[#4B778D]">Estado de vigencia de certificados</p>
                 </div>
               {/* Vista normal */}
+              {hasExpirationData ? (
               <div className="h-72 flex items-center justify-center print:hidden">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -423,7 +462,11 @@ const CertificateReports = () => {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
+              ) : (
+                <EmptyChart message="Aún no hay certificados con vencimiento registrados." />
+              )}
               {/* Vista PDF */}
+              {hasExpirationData && (
               <div
                 className="hidden print:flex justify-center items-center mx-auto"
                 style={{
@@ -460,6 +503,7 @@ const CertificateReports = () => {
                   />
                 </PieChart>
               </div>
+              )}
               </div>
             </div>
 
@@ -521,5 +565,17 @@ const StatCard = ({
     </div>
   </div>
 )
+const EmptyChart = ({ message }: { message: string }) => (
+  <div className="flex flex-col items-center justify-center h-full min-h-[250px] text-center">
+    <Eye
+      className="w-14 h-14 text-gray-300 mb-4"
+      strokeWidth={1.5}
+    />
+
+    <p className="text-[#4B5563] text-base">
+      {message}
+    </p>
+  </div>
+);
 
 export default CertificateReports;

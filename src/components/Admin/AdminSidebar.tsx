@@ -18,7 +18,7 @@ type NavItem = {
 
 const adminNavItems: NavItem[] = [
   { id: "usuarios", label: "Reporte de Usuarios", icon: Users, path: "/admin/usuarios" },
-  { id: "certificados", label: "Reporte de Certificados", icon: BadgeCheck, path: "/admin/certificados" },
+  { id: "certificados", label: "Gestión de Certificados", icon: BadgeCheck, path: "/admin/certificados" },
 ];
 
 const normalizePath = (path: string) => {
