@@ -56,7 +56,6 @@ const ConfirmActionModal = ({
             >
               {confirmText}
             </button>
-
             <button
               onClick={onCancel}
               className="w-full border-2 border-[#003A6C] text-[#003A6C] py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-all active:scale-[0.98]"

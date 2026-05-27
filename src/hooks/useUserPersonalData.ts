@@ -276,7 +276,9 @@ export const useUserPersonalData = () => {
           if (error) initialErrors[key] = error;
         });
       }
-
+      if (!mappedForm.image) {
+        initialErrors.image = "La Foto de perfil es obligatoria.";
+      }
       setErrors(initialErrors);
     } catch (error) {
       console.error("Error al obtener datos:", error);
@@ -341,7 +343,14 @@ const handleChange = (e: any) => {
 
     const phoneError = validateField("phone", phoneNumber);
     if (phoneError) newErrors.phone = phoneError;
+    const hasImage =
+      preview ||
+      form.image ||
+      fileInputRef.current?.files?.length;
 
+    if (!hasImage) {
+      newErrors.image = "La Foto de perfil es obligatoria.";
+    }
     if (originalForm) {
       PRESERVE_VALUE_FIELDS.forEach((field) => {
         if (originalForm[field].trim() && !form[field].trim()) {

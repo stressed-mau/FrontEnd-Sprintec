@@ -168,7 +168,7 @@ export default function RegisterProfilePage() {
                     )}
                   </div>
                   
-                  <p className="text-sm font-bold text-[#003A6C]">Foto de perfil</p>
+                  <p className="text-sm font-bold text-[#003A6C]">Foto de perfil *</p>
                   
                   <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
                   

@@ -8,6 +8,8 @@ import { useProfile } from '@/hooks/useProfile';
 import { usePasswordVisibility } from '@/hooks/usePasswordVisibility';
 import ConfirmActionModal from '@/components/ConfirmActionModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import AdminSidebar from '../components/Admin/AdminSidebar';
+import { getAuthSession } from '@/services/auth';
 
 type TabType = 'info' | 'password';
 
@@ -17,7 +19,9 @@ const ProfilePage = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('info');
   const [actionType, setActionType] = useState<'info' | 'password' | null>(null);
-
+  const session = getAuthSession();
+  const roleId = session?.user?.role_id;
+  const isAdmin = roleId === 2;
   const {
     profile,
     form,
@@ -74,13 +78,13 @@ const ProfilePage = () => {
     'flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-all duration-150 select-none';
   const tabActive   = 'bg-white text-[#003A6C] shadow-sm';
   const tabInactive = 'text-[#5B8FB9] hover:bg-white/50';
-
+  
   return (
     <div id="profile-page" className="min-h-screen bg-[#F7F0E1] relative flex flex-col">
       <Header />
 
       <div className="flex flex-col lg:flex-row flex-1">
-        <Sidebar />
+        {isAdmin ? <AdminSidebar /> : <Sidebar />}
 
         <main id="profile-main" className="flex-1 p-4 sm:p-6 md:p-10">
           <div className="max-w-5xl mx-auto">

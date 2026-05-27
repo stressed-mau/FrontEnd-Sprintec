@@ -21,8 +21,6 @@ const UserReports = () => {
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
 
-
-
   const rangeMap = {
     Día: "day",
     Semana: "week",
@@ -48,13 +46,34 @@ const UserReports = () => {
   const yearlyData = data?.yearlyData || [];
   const loginData = data?.loginData || [];
   const userData = data?.users || [];
+  const growthData =
+    selectedPeriod === 'Día'
+      ? dailyData
+      : selectedPeriod === 'Semana'
+      ? weeklyData
+      : selectedPeriod === 'Mes'
+      ? monthlyData
+      : yearlyData;
 
+  const hasGrowthData =
+    growthData.length > 0 &&
+    growthData.some(item => item.registros > 0);
+
+  const hasLoginData =
+    loginData.length > 0 &&
+    loginData.some(item => item.registros > 0);
+
+  const hasUsersData =
+    userData.length > 0;
   const currentUsers = userData.slice(
     indexOfFirstUser,
     indexOfLastUser
   );
 
-  const totalPages = Math.ceil(userData.length / usersPerPage);
+  const totalPages = Math.max(
+    1,
+    Math.ceil(userData.length / usersPerPage)
+  );
   const reportRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
@@ -90,7 +109,18 @@ const UserReports = () => {
       }
     }
   `,
+    onBeforePrint: async () => {
+    setIsPrinting(true);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  },
+
+  onAfterPrint: () => {
+    setIsPrinting(false);
+  },
 });
+const isMobile = typeof window !== 'undefined' ? window.innerWidth < 640 : false;
+const [isPrinting, setIsPrinting] = useState(false);
+const isCompact = isMobile && !isPrinting;
 
   if (loading) {
     return (
@@ -107,7 +137,6 @@ const UserReports = () => {
     );
   }
 
-
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col font-sans">
       <Header />
@@ -116,7 +145,7 @@ const UserReports = () => {
         <main className="flex-1 p-4 sm:p-6 md:p-10">
           <div
             ref={reportRef}
-            className="mx-auto max-w-6xl space-y-8 p-4 print:max-w-full print:px-2 print:pt-6 print:scale-[0.95] print:origin-top"
+            className=" mx-auto w-full max-w-6xl space-y-6 p-2 sm:p-4 md:p-6 lg:p-8 print:max-w-full print:px-2 print:pt-6 print:scale-[0.95] print:origin-top"
           >
           <div className="hidden print:flex items-center justify-between mb-4 border-b border-gray-300 pb-3">
             <div className="w-1/3 flex justify-start">
@@ -146,7 +175,7 @@ const UserReports = () => {
             {/* Título + Botón */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">           
               <div className="text-left">
-                <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#003A6C] break-words">
                   Gestión de Usuarios
                 </h1>
                 <p className="mt-1 text-sm text-[#4B778D] md:text-base">
@@ -155,10 +184,10 @@ const UserReports = () => {
               </div>
               <button
                 onClick={handlePrint}
-                className="print:hidden h-11 flex items-center justify-center gap-2 px-5 rounded-xl bg-[#003A6C] text-white hover:bg-[#002d54] hover:text-white transition-colors"
+                className="print:hidden w-full sm:w-auto h-11 flex items-center justify-center gap-2 px-5 rounded-xl bg-[#003A6C] text-white"
               >
                 <Download className="w-5 h-5" />
-                Exportar a PDF
+                Generar PDF
               </button>
             </div>
             <div className="mb-2 p-2 bg-[#E0F2FE] border border-[#7DD3FC] rounded-2xl w-fit">
@@ -167,7 +196,7 @@ const UserReports = () => {
               </span>
             </div>
             {/* Tarjetas de Métricas Superiores */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
               <StatCard title="Total de usuarios" value={stats?.totalUsers ?? 0} subtext="Usuarios registrados en el sistema" Icon={Users} /> 
               <StatCard title="Usuarios nuevos este mes" value={stats?.newUsers ?? 0} subtext="Registros en el mes actual" Icon={UserPlus} />
               <StatCard title="Total de visitantes" value={stats?.totalVisitors ?? 0} subtext="Visitas totales a la plataforma" Icon={Eye} />
@@ -184,8 +213,9 @@ const UserReports = () => {
                   {selectedPeriod === 'Año' && 'Registros por mes (últimos 12 meses)'}
                 </p>
               </div>
-              <div className="h-64 w-full overflow-hidden print:h-64 print:w-[950px]">
-                <ResponsiveContainer width="99%" height="100%" debounce={0}>
+              {hasGrowthData ? (
+              <div className="h-48 sm:h-64 w-full overflow-hidden print:h-64 print:w-[950px]">
+                <ResponsiveContainer width={isPrinting ? 900 : "99%"} height={isPrinting ? 230 : "100%"} debounce={0}>
                   <LineChart
                     data={
                       selectedPeriod === 'Día'
@@ -197,10 +227,10 @@ const UserReports = () => {
                         : yearlyData
                     }
                     margin={{
-                      top: 10,
+                      top: isPrinting ? 5 : 10,
                       right: 20,
                       left: 10,
-                      bottom: 10,
+                      bottom: isPrinting ? 5 : 10,
                     }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
@@ -208,8 +238,8 @@ const UserReports = () => {
                       dataKey="name"
                       axisLine={false}
                       tickLine={false}
-                      interval={0}
-                      minTickGap={20}
+                      interval={isCompact ? 2 : 0}
+                      minTickGap={isCompact ? 40 : 20}
                       tickMargin={8}
                       padding={{ left: 20, right: 20 }}
                       tick={{
@@ -225,16 +255,23 @@ const UserReports = () => {
                       stroke="#22C55E" 
                       strokeWidth={3} 
                       isAnimationActive={false}
-                      dot={{ r: 6, fill: '#22C55E', strokeWidth: 2, stroke: '#fff' }} 
-                      activeDot={{ r: 8 }}
+                      dot={{
+                        r: isCompact ? 3 : 6,
+                        fill: '#22C55E',
+                        strokeWidth: 2,
+                        stroke: '#fff'
+                      }}
+                      activeDot={{ r: isCompact ? 5 : 8 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-              
+              ) : (
+                <EmptyChart message="Aún no hay registros para el período seleccionado." />
+              )}
               {/* Selectores de Tiempo (Estilo Figma) */}
               <div className="flex justify-center mt-6 print:hidden">
-                <div className="inline-flex bg-[#D1E3EB] p-1 rounded-xl">
+                <div className="flex flex-wrap justify-center gap-2 bg-[#D1E3EB] p-2 rounded-xl">
                   {['Día', 'Semana', 'Mes', 'Año'].map((period) => (
                     <button 
                       key={period}
@@ -258,17 +295,37 @@ const UserReports = () => {
                 <h2 className="text-xl font-bold text-[#003A6C]">Inicios de sesión por día</h2>
                 <p className="text-sm text-[#4B778D]">Actividad de la última semana</p>
               </div>
-              <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
+              {hasLoginData ? (
+              <div className="h-44 sm:h-64 print:h-64 w-full print:w-[950px]">
+                <ResponsiveContainer width={isPrinting ? 900 : "100%"} height={isPrinting ? 230 : "100%"}>
                   <BarChart data={loginData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#4B778D', fontSize: 12}} />
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      interval={isCompact ? 1 : 0}
+                      minTickGap={isCompact ? 30 : 10}
+                      tick={{
+                        fill: '#4B778D',
+                        fontSize: isCompact ? 9 : 12,
+                      }}
+                    />
                     <YAxis axisLine={false} tickLine={false} tick={{fill: '#4B778D', fontSize: 12}} />
                     <Tooltip cursor={{fill: '#F1F5F9'}} />
-                    <Bar dataKey="registros" fill="#10B981" radius={[4, 4, 0, 0]} barSize={60} isAnimationActive={false} />
+                    <Bar
+                      dataKey="registros"
+                      fill="#10B981"
+                      radius={[4, 4, 0, 0]}
+                      barSize={isCompact ? 25 : 60}
+                      isAnimationActive={false}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
+              ) : (
+                <EmptyChart message="Aún no hay inicios de sesión registrados." />
+              )}
             </div>
 
             {/* Tabla de Usuarios */}
@@ -276,6 +333,7 @@ const UserReports = () => {
               <div className="p-6 border-b border-[#E2E8F0]">
                 <h2 className="text-xl font-bold text-[#003A6C]">Usuarios registrados ({stats?.totalUsers ?? 0})</h2>
               </div> 
+              {hasUsersData ? (
               <div className="overflow-x-auto print:hidden">
                 <table className="w-full text-left border-collapse">
                   <thead>
@@ -299,11 +357,29 @@ const UserReports = () => {
                     ))}
                   </tbody>
                 </table>
-                <div className="print:hidden flex items-center justify-between px-6 py-4 border-t border-[#E2E8F0]">
+                <div className="
+                  print:hidden
+                  flex flex-col sm:flex-row
+                  items-center
+                  justify-between
+                  gap-3
+                  px-3 sm:px-6
+                  py-4
+                  border-t border-[#E2E8F0]
+                ">
                   <button
                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-lg border border-[#A5C9D7] text-[#003A6C] disabled:opacity-50"
+                    className="
+                      w-full sm:w-auto
+                      px-3 sm:px-4
+                      py-2
+                      rounded-lg
+                      border border-[#A5C9D7]
+                      text-[#003A6C]
+                      text-sm
+                      disabled:opacity-50
+                    "
                   >
                     ← Anterior
                   </button>
@@ -319,12 +395,24 @@ const UserReports = () => {
                       )
                     }
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-lg border border-[#A5C9D7] text-[#003A6C] disabled:opacity-50"
+                    className="
+                      w-full sm:w-auto
+                      px-3 sm:px-4
+                      py-2
+                      rounded-lg
+                      border border-[#A5C9D7]
+                      text-[#003A6C]
+                      text-sm
+                      disabled:opacity-50
+                    "
                   >
                     Siguiente →
                   </button>
                 </div>
               </div>
+              ) : (
+                <EmptyChart message="Aún no hay usuarios registrados." />
+              )}
               <div className="hidden print:block">
                 <table className="w-full text-left border-collapse mt-6">
                   <thead>
@@ -367,14 +455,23 @@ interface StatCardProps {
 }
 
 const StatCard = ({ title, value, subtext, Icon }: StatCardProps) => (
-  <div className="bg-white border border-[#C9E1F0] rounded-[2rem] p-5 shadow-sm transition-all hover:border-[#70A1B9] print:shadow-none">
+  <div className="
+    bg-white
+    border border-[#C9E1F0]
+    rounded-2xl sm:rounded-[2rem]
+    p-3 sm:p-5
+    shadow-sm
+    transition-all
+    hover:border-[#70A1B9]
+    print:shadow-none
+  ">
     <div className="flex justify-between items-start">
-      <div className="space-y-2">
+      <div className="space-y-1 sm:space-y-2">
         <p className="text-[#4B778D] font-semibold text-sm uppercase tracking-wide">
           {title}
         </p>
 
-        <p className="text-4xl font-bold text-[#003A6C]">
+        <p className="text-2xl sm:text-4xl font-bold text-[#003A6C] leading-none">
           {value}
         </p>
 
@@ -383,14 +480,25 @@ const StatCard = ({ title, value, subtext, Icon }: StatCardProps) => (
         </p>
       </div>
 
-      <div className="p-2 rounded-xl bg-[#F5FAFD]">
+      <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-[#F5FAFD]">
         <Icon
-          className="w-5 h-5 text-[#003A6C]"
+          className="w-4 h-4 sm:w-5 sm:h-5 text-[#003A6C]"
           strokeWidth={1.8}
         />
       </div>
     </div>
   </div>
 );
+const EmptyChart = ({ message }: { message: string }) => (
+  <div className="flex flex-col items-center justify-center min-h-[250px] text-center">
+    <Eye
+      className="w-14 h-14 text-gray-300 mb-4"
+      strokeWidth={1.5}
+    />
 
+    <p className="text-[#4B5563] text-base">
+      {message}
+    </p>
+  </div>
+);
 export default UserReports;
