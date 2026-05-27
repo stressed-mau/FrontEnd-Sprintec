@@ -3,10 +3,11 @@ import Sidebar from "../components/Sidebar"
 import type { Portfolio } from "@/types/portfolio"
 import { usePortfolio } from "@/hooks/usePortfolio"
 import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
-import { Mail, Globe, MapPin, Briefcase, Code, GraduationCap, Award, X, ExternalLink } from "lucide-react"
+import { Mail, MapPin, Briefcase, Code, GraduationCap, Award, X, ExternalLink } from "lucide-react"
 import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
+import { getSocialNetworkDisplayName, SocialNetworkIcon } from "@/components/portfolio/SocialNetworkIcon"
 import { useUserPersonalData } from "@/hooks/useUserPersonalData"
 import { useParams } from "react-router-dom"
 import { useState, useEffect } from "react"
@@ -67,7 +68,7 @@ const mapToVisibilityData = (portfolio: Portfolio): PortfolioVisibilityData => (
   })) ?? [],
   networks: portfolio.socialNetworks.map((n, index) => ({
     id: Number(n.id ?? index),
-    label: n.name ?? "",
+    label: getSocialNetworkDisplayName(n),
     sublabel: n.url ?? "",
     checked: asBoolean(n.is_public),
     sourceTable: "social_networks",
@@ -531,7 +532,7 @@ const MyPortfolio = () => {
 
                   {visibleNetworks.map((net) => (
                     <span key={net.id} className="flex items-center gap-1">
-                      <Globe size={16} /> {net.label}
+                      <SocialNetworkIcon network={net} className="h-4 w-4" /> {getSocialNetworkDisplayName(net)}
                     </span>
                   ))}
                 </div>
@@ -711,9 +712,11 @@ const MyPortfolio = () => {
                             key={net.id}
                             href={net.sublabel}
                             target="_blank"
-                            className="text-blue-600 text-sm"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 text-blue-600 text-sm"
                           >
-                            {net.label}
+                            <SocialNetworkIcon network={net} className="h-4 w-4" />
+                            {getSocialNetworkDisplayName(net)}
                           </a>
                         ))
                       ) : (

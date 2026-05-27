@@ -1,5 +1,6 @@
 import React from 'react';
-import { MapPin, Mail, Phone, Heart, Globe, GraduationCap, Award } from 'lucide-react';
+import { MapPin, Mail, Phone, Heart, GraduationCap, Award } from 'lucide-react';
+import { getSocialNetworkDisplayName, SocialNetworkIcon } from "@/components/portfolio/SocialNetworkIcon";
 //import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
 interface ModernTemplateProps {
   profile?: ModernTemplateProfile | null;
@@ -332,9 +333,9 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ profile, portfolio, isP
                     rel="noreferrer"
                     onClick={() => onSocialClick?.(net)}
                     className="w-14 h-14 bg-[#fcecd4] rounded-2xl flex items-center justify-center text-[#173b61] hover:bg-[#ee8e3b] hover:text-white transition-all transform hover:-translate-y-2 shadow-lg"
-                    title={net.name}
+                    title={getSocialNetworkDisplayName(net)}
                   >
-                    <Globe size={24} />
+                    <SocialNetworkIcon network={net} className="h-6 w-6" />
                   </a>
                 ))}
               </div>

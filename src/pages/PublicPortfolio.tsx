@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react"
 //import type { Portfolio } from "@/types/portfolio"
 import { usePortfolio } from "@/hooks/usePortfolio"
 //import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
-import { Calendar, Code, ExternalLink, GitBranch, Globe, Mail, MapPin, Briefcase, GraduationCap, X } from "lucide-react"
+import { Calendar, Code, ExternalLink, GitBranch, Mail, MapPin, Briefcase, GraduationCap, X } from "lucide-react"
 import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
+import { getSocialNetworkDisplayName, getSocialNetworkKey, SocialNetworkIcon } from "@/components/portfolio/SocialNetworkIcon"
 import { useParams } from "react-router-dom"
 import {
   recordPortfolioView,
@@ -30,8 +31,7 @@ const getProjectTechnologies = (project: any): string[] => (
 ).filter(Boolean)
 
 const getNetworkName = (network: any): string => {
-  const rawName = String(network?.name ?? network?.platform ?? network?.label ?? network?.social_network ?? "")
-  return rawName.trim().toLowerCase().replace(/[^a-z0-9]/g, "")
+  return getSocialNetworkKey(network)
 }
 
 const getProjectTitle = (project: any): string =>
@@ -451,7 +451,7 @@ const PublicPortfolio = () => {
 
               {visiblePortfolio.socialNetworks?.map((sn: any, index: number) => (
                 <span key={index} className="flex items-center gap-1">
-                  <Globe size={16} /> {sn.name}
+                  <SocialNetworkIcon network={sn} className="h-4 w-4" /> {getSocialNetworkDisplayName(sn)}
                 </span>
               ))}
             </div>

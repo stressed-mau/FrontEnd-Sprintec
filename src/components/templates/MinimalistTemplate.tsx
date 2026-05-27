@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 //import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
-import { ArrowLeft, ArrowRight, Globe, Code2, Link, Mail, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mail, MapPin } from "lucide-react";
+import { getSocialNetworkDisplayName, SocialNetworkIcon } from "@/components/portfolio/SocialNetworkIcon";
 
 interface MinimalistTemplateProps {
   profile?: any | null;
@@ -85,13 +86,6 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
       setPage(0);
     }
   }, [page, totalPages]);
-
-  const getSocialIcon = (name: string) => {
-    const n = name.toLowerCase();
-    if (n.includes("github")) return <Code2 size={18} />;
-    if (n.includes("linkedin")) return <Link size={18} />;
-    return <Globe size={18} />;
-  };
 
   return (
     <article className="w-full max-w-4xl mx-auto min-h-[420px] bg-white text-zinc-900 font-sans shadow-2xl flex flex-col md:flex-row overflow-hidden border border-stone-100 md:min-h-[520px]">
@@ -315,9 +309,9 @@ const MinimalistTemplate: React.FC<MinimalistTemplateProps> = ({
                 rel="noopener noreferrer" 
                 onClick={() => onSocialClick?.(sn)}
                 className="hover:text-zinc-900 transition-colors"
-                title={sn.name}
+                title={getSocialNetworkDisplayName(sn)}
               >
-                {getSocialIcon(sn.name)}
+                <SocialNetworkIcon network={sn} className="h-[18px] w-[18px]" />
               </a>
             ))}
           </div>

@@ -1,11 +1,11 @@
 import {
   ArrowLeft,
   ArrowRight,
-  Link as LinkIcon,
   Mail,
   MapPin,
 } from "lucide-react"
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
+import { getSocialNetworkDisplayName, SocialNetworkIcon } from "@/components/portfolio/SocialNetworkIcon"
 //import { usePortfolioVisibility } from "../../hooks/usePortfolioVisibility";
 type CorporatePortfolioLink = {
   id: string
@@ -183,7 +183,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
         )
         .map((link: any) => ({
           id: String(link.id),
-          label: link.name ?? link.platform ?? link.label ?? "Red social",
+          label: getSocialNetworkDisplayName(link),
           url: link.url ?? "#",
           source: link,
         })),
@@ -322,7 +322,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                           onClick={() => onSocialClick?.(link.source ?? link)}
                           className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-2 text-xs font-semibold text-[#3D4348] transition hover:border-[#8C6E46] hover:text-[#8C6E46]"
                         >
-                          <LinkIcon className="h-3.5 w-3.5" />
+                          <SocialNetworkIcon network={link.source ?? link} className="h-3.5 w-3.5" />
                           {link.label}
                           </a>
                         ))}
@@ -855,7 +855,7 @@ export function CorporatePortfolioTemplate({ profile, portfolio, onProjectClick,
                     onClick={() => onSocialClick?.(link.source ?? link)}
                     className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#3D4348] transition hover:-translate-y-0.5 hover:border-[#8C6E46] hover:bg-white hover:text-[#8C6E46]"
                   >
-                    <LinkIcon className="h-3.5 w-3.5" />
+                    <SocialNetworkIcon network={link.source ?? link} className="h-3.5 w-3.5" />
                     {link.label}
                   </a>
                 ))}

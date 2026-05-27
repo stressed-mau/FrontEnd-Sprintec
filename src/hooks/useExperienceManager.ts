@@ -198,7 +198,7 @@ function findDuplicateExperience(
 
 function getDuplicateExperienceMessage(duplicateExperience: ExperienceItem) {
   if (duplicateExperience.type === "academica") {
-    return "Ya existe una formación académica registrada con ese nombre. Ingrese un nombre diferente."
+    return "Ya existe una formación académica registrada con esa institución."
   }
 
   return "Ya existe una experiencia laboral registrada con ese nombre. Ingrese un nombre diferente."
