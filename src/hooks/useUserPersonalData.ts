@@ -278,9 +278,6 @@ export const useUserPersonalData = () => {
           if (error) initialErrors[key] = error;
         });
       }
-      if (!mappedForm.image) {
-        initialErrors.image = "La Foto de perfil es obligatoria.";
-      }
       setErrors(initialErrors);
     } catch (error) {
       console.error("Error al obtener datos:", error);
@@ -351,7 +348,7 @@ const handleChange = (e: any) => {
       fileInputRef.current?.files?.length;
 
     if (!hasImage) {
-      newErrors.image = "La Foto de perfil es obligatoria.";
+      newErrors.image = "La foto de perfil es obligatoria.";
     }
     if (originalForm) {
       PRESERVE_VALUE_FIELDS.forEach((field) => {
@@ -511,7 +508,7 @@ const handleChange = (e: any) => {
     }
     setErrors(prev => ({
       ...prev,
-      image: "La Foto de perfil es obligatoria."
+      image: "La foto de perfil es obligatoria."
     }));
   };
 

@@ -152,7 +152,19 @@ const UserPersonalData = () => {
                         </button>
                       </div>
 
-                      <form onSubmit={(e) => { e.preventDefault(); if (canSavePersonalData) setShowConfirmModal(true);}} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+
+                          if (canSavePersonalData) {
+                            setShowConfirmModal(true);
+                            return;
+                          }
+
+                          await handleSubmit(e);
+                        }}
+                        className="p-6 space-y-5 overflow-y-auto custom-scrollbar"
+                      >
                         
                         
                         <div className="flex flex-col items-center gap-2">
@@ -318,9 +330,9 @@ const UserPersonalData = () => {
                         <div className="flex gap-3 pt-4">
                           <button 
                             type="submit" 
-                            disabled={isSubmitting || !canSavePersonalData}
+                            disabled={isSubmitting}
                             className={`bg-[#003A6C] text-white px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
-                              isSubmitting || !canSavePersonalData ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#1a4f85]'
+                              isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#1a4f85]'
                             }`}
                           >
                             {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
