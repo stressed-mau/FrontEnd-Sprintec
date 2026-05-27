@@ -161,7 +161,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Habilidades",
-      description: "Agrega habilidades tecnicas y blandas para fortalecer tu perfil.",
+      description: "Agrega habilidades técnicas y blandas para fortalecer tu perfil.",
       side: "right",
       align: "center",
     },
