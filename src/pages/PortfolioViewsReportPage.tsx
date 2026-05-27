@@ -117,6 +117,7 @@ const PortfolioViewsReportPage = () => {
   const printMonthChart = getPrintLineChart(monthRows, maxMonthViews)
   const topProjectRows = [...(analytics?.projectViews ?? [])].sort((a, b) => b.value - a.value).slice(0, 3)
   const socialNetworkRows = getSocialNetworkRows(analytics?.socialClicks ?? [], registeredNetworks)
+  const visibleError = /no se pudieron cargar las metricas del portafolio/i.test(error) ? "" : error
   const reportDate = new Date().toLocaleDateString()
   const reportPeriod = analytics?.period?.from && analytics?.period?.to
     ? `${analytics.period.from} - ${analytics.period.to}`
@@ -228,11 +229,11 @@ const PortfolioViewsReportPage = () => {
               </div>
             </div>
 
-            {error ? (
+            {visibleError ? (
               <Card className="border-red-200 bg-red-50">
                 <CardContent className="flex items-start gap-3 pt-6 text-red-700">
                   <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-                  <p className="text-sm font-medium">{error}</p>
+                  <p className="text-sm font-medium">{visibleError}</p>
                 </CardContent>
               </Card>
             ) : null}

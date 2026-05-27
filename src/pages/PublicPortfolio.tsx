@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 //import type { Portfolio } from "@/types/portfolio"
 import { usePortfolio } from "@/hooks/usePortfolio"
 //import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
-import { Calendar, Code, ExternalLink, GitBranch, Globe, Mail, MapPin, Briefcase, X } from "lucide-react"
+import { Calendar, Code, ExternalLink, GitBranch, Globe, Mail, MapPin, Briefcase, GraduationCap, X } from "lucide-react"
 import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
@@ -68,6 +68,46 @@ const isProjectCurrent = (project: any): boolean => {
 
 const sameProjectId = (project: any, projectId?: string | number) =>
   projectId != null && String(project?.id) === String(projectId)
+
+const sameRecordId = (record: any, recordId?: string | number) =>
+  recordId != null && String(record?.id) === String(recordId)
+
+const getFirstText = (...values: unknown[]): string => {
+  const value = values.find((item) => typeof item === "string" && item.trim())
+  return typeof value === "string" ? value.trim() : ""
+}
+
+const getExperienceTitle = (experience: any): string =>
+  getFirstText(experience?.position, experience?.role, experience?.job_title, experience?.title) || "Cargo no especificado"
+
+const getExperienceCompany = (experience: any): string =>
+  getFirstText(experience?.company, experience?.company_name, experience?.institution, experience?.organization)
+
+const getEducationTitle = (education: any): string =>
+  getFirstText(education?.title, education?.degree, education?.career, education?.name) || "Formacion no especificada"
+
+const getEducationInstitution = (education: any): string =>
+  getFirstText(education?.institution, education?.institution_name, education?.company, education?.school)
+
+const getRecordDescription = (record: any): string =>
+  getFirstText(record?.description, record?.descripcion, record?.summary, record?.details)
+
+const getRecordStartDate = (record: any): string =>
+  getFirstText(record?.start_date, record?.startDate, record?.fechaInicio)
+
+const getRecordEndDate = (record: any): string =>
+  getFirstText(record?.end_date, record?.endDate, record?.fechaFin)
+
+const getEducationField = (education: any): string =>
+  getFirstText(education?.field_to_study, education?.fieldOfStudy, education?.field, education?.area)
+
+const isCurrentRecord = (record: any): boolean => {
+  const value = record?.currently_studying ?? record?.is_current ?? record?.current ?? record?.currently_working
+  if (typeof value === "boolean") return value
+  if (typeof value === "number") return value === 1
+  if (typeof value === "string") return ["1", "true", "si", "sÃ­", "yes"].includes(value.trim().toLowerCase())
+  return false
+}
 
 type ProjectModalTheme = {
   panel: string
@@ -148,12 +188,83 @@ const PROJECT_MODAL_THEMES: Record<"modern" | "minimalist" | "corporate" | "defa
   },
 }
 
+type DetailRecordModalProps = {
+  kind: "experience" | "education"
+  record: any
+  theme: ProjectModalTheme
+  onClose: () => void
+}
+
+const DetailRecordModal = ({ kind, record, theme, onClose }: DetailRecordModalProps) => {
+  const isEducation = kind === "education"
+  const title = isEducation ? getEducationTitle(record) : getExperienceTitle(record)
+  const subtitle = isEducation ? getEducationInstitution(record) : getExperienceCompany(record)
+  const description = getRecordDescription(record)
+  const startDate = getRecordStartDate(record)
+  const endDate = getRecordEndDate(record)
+  const dateText = [startDate, isCurrentRecord(record) ? "En curso" : endDate].filter(Boolean).join(" - ")
+  const rows = [
+    ["Institucion", isEducation ? subtitle : ""],
+    ["Empresa", isEducation ? "" : subtitle],
+    ["Campo de estudio", isEducation ? getEducationField(record) : ""],
+    ["Fechas", dateText],
+  ].filter(([, value]) => Boolean(value))
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4" role="dialog" aria-modal="true">
+      <div className={`max-h-[88vh] w-[min(100%,30rem)] overflow-y-auto rounded-2xl shadow-2xl ${theme.panel}`}>
+        <div className={`sticky top-0 z-10 flex items-start justify-between gap-3 border-b px-4 py-4 sm:px-5 ${theme.header}`}>
+          <div className="min-w-0">
+            <p className={`text-xs font-bold uppercase tracking-[0.22em] ${theme.eyebrow}`}>
+              {isEducation ? "Detalle de formacion" : "Detalle de experiencia"}
+            </p>
+            <h2 className={`mt-1 break-words text-xl font-bold leading-tight ${theme.title}`}>{title}</h2>
+            {subtitle ? <p className={`mt-1 text-sm font-semibold ${theme.role}`}>{subtitle}</p> : null}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className={`shrink-0 rounded-full p-2 transition ${theme.closeButton}`}
+            aria-label={isEducation ? "Cerrar detalle de formacion" : "Cerrar detalle de experiencia"}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="space-y-4 px-4 py-4 sm:px-5">
+          {description ? (
+            <section>
+              <h3 className={`text-sm font-bold uppercase tracking-[0.16em] ${theme.sectionTitle}`}>Descripcion</h3>
+              <p className={`mt-2 whitespace-pre-line text-sm leading-6 ${theme.text}`}>{description}</p>
+            </section>
+          ) : null}
+
+          {rows.length > 0 ? (
+            <div className={`rounded-xl border p-4 ${theme.infoCard}`}>
+              <dl className="space-y-3">
+                {rows.map(([label, value]) => (
+                  <div key={label}>
+                    <dt className={`text-xs font-bold uppercase tracking-[0.16em] ${theme.sectionTitle}`}>{label}</dt>
+                    <dd className={`mt-1 break-words text-sm ${theme.text}`}>{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const PublicPortfolio = () => {
   const { slug } = useParams()
   const { portfolio, loading, visitId } = usePortfolio(slug) as { portfolio: any, loading: boolean, visitId: string | null };
   const recordedViewRef = useRef<string | null>(null)
   const trackingStartRef = useRef<number>(Date.now())
   const [selectedProject, setSelectedProject] = useState<any | null>(null)
+  const [selectedExperience, setSelectedExperience] = useState<any | null>(null)
+  const [selectedEducation, setSelectedEducation] = useState<any | null>(null)
 
   useEffect(() => {
     if (!visitId) return;
@@ -197,6 +308,22 @@ const PublicPortfolio = () => {
     const networkName = getNetworkName(network)
     if (!networkName || !visitId) return
     await recordSocialClick({ visitId, networkName })
+  }
+
+  const handleExperienceClick = (experienceId?: string | number) => {
+    const clickedExperience = (portfolio?.experiences ?? []).find((experience: any) => sameRecordId(experience, experienceId))
+
+    if (clickedExperience) {
+      setSelectedExperience(clickedExperience)
+    }
+  }
+
+  const handleEducationClick = (educationId?: string | number) => {
+    const clickedEducation = (portfolio?.educations ?? []).find((education: any) => sameRecordId(education, educationId))
+
+    if (clickedEducation) {
+      setSelectedEducation(clickedEducation)
+    }
   }
 
   const handleProjectLinkClick = (linkType: "repository" | "demo", url: string) => {
@@ -280,15 +407,15 @@ const PublicPortfolio = () => {
     <main className="flex-1 p-4 md:p-10">
       {isModern && <ModernTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onSocialClick={handleSocialClick} />}
+      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onExperienceClick={handleExperienceClick} onEducationClick={handleEducationClick} onSocialClick={handleSocialClick} />}
 
       {isMinimalist && <MinimalistTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={visiblePortfolio} isPreview={false} onProjectClick={handleProjectClick} onSocialClick={handleSocialClick} />}
+      profile={profile} portfolio={visiblePortfolio} isPreview={false} onProjectClick={handleProjectClick} onExperienceClick={handleExperienceClick} onEducationClick={handleEducationClick} onSocialClick={handleSocialClick} />}
 
       {isCorporate && <CorporatePortfolioTemplate 
       //data={visibilityData} 
-      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onSocialClick={handleSocialClick} />}
+      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onExperienceClick={handleExperienceClick} onEducationClick={handleEducationClick} onSocialClick={handleSocialClick} />}
 
       {!isModern && !isMinimalist && !isCorporate && (
         <div className="max-w-6xl mx-auto bg-white shadow-lg border-t-8 border-[#003A6C] p-8 md:p-10">
@@ -365,11 +492,52 @@ const PublicPortfolio = () => {
 
                 <div className="mt-6 space-y-6">
                   {visiblePortfolio.experiences.map((exp: any, index: number) => (
-                      <div key={index} className="border-l-2 pl-4">
+                      <div
+                        key={index}
+                        role="button"
+                        tabIndex={0}
+                        className="cursor-pointer border-l-2 pl-4 transition hover:border-[#003A6C] hover:bg-[#EEF5F9]/60 focus:outline-none focus:ring-2 focus:ring-[#003A6C]"
+                        onClick={() => handleExperienceClick(exp.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault()
+                            handleExperienceClick(exp.id)
+                          }
+                        }}
+                      >
                         <p className="font-bold">{exp.company || exp.company_name || "Empresa no especificada"}</p>
                         <p className="text-[#003A6C] text-sm">{exp.position || exp.role || "Cargo no especificado"}</p>
                       </div>
                     ))}
+                </div>
+              </div>
+              ) : null}
+
+              {visiblePortfolio.educations.length > 0 ? (
+              <div>
+                <h3 className="flex items-center gap-2 text-xl font-bold uppercase">
+                  <GraduationCap size={18} /> Formacion academica
+                </h3>
+
+                <div className="mt-6 space-y-6">
+                  {visiblePortfolio.educations.map((education: any, index: number) => (
+                    <div
+                      key={index}
+                      role="button"
+                      tabIndex={0}
+                      className="cursor-pointer border-l-2 pl-4 transition hover:border-[#003A6C] hover:bg-[#EEF5F9]/60 focus:outline-none focus:ring-2 focus:ring-[#003A6C]"
+                      onClick={() => handleEducationClick(education.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault()
+                          handleEducationClick(education.id)
+                        }
+                      }}
+                    >
+                      <p className="font-bold">{education.institution || education.institution_name || "Institucion no especificada"}</p>
+                      <p className="text-[#003A6C] text-sm">{education.title || education.degree || "Formacion no especificada"}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
               ) : null}
@@ -526,6 +694,24 @@ const PublicPortfolio = () => {
             </div>
           </div>
         </div>
+      ) : null}
+
+      {selectedExperience ? (
+        <DetailRecordModal
+          kind="experience"
+          record={selectedExperience}
+          theme={modalTheme}
+          onClose={() => setSelectedExperience(null)}
+        />
+      ) : null}
+
+      {selectedEducation ? (
+        <DetailRecordModal
+          kind="education"
+          record={selectedEducation}
+          theme={modalTheme}
+          onClose={() => setSelectedEducation(null)}
+        />
       ) : null}
     </main>
   )

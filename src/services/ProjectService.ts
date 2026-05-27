@@ -211,6 +211,12 @@ function extractProjectList(body: unknown): unknown[] | null {
     rawList = res.data;
   } else if (res.data && res.data.projects && Array.isArray(res.data.projects)) {
     rawList = res.data.projects;
+  } else if (Array.isArray(res.projects)) {
+    rawList = res.projects;
+  } else if (res.data && typeof res.data === "object" && Array.isArray(res.data.data)) {
+    rawList = res.data.data;
+  } else if (res.data && typeof res.data === "object" && res.data.data && typeof res.data.data === "object" && Array.isArray(res.data.data.projects)) {
+    rawList = res.data.data.projects;
   }
 
   if (!rawList) return null;
@@ -311,7 +317,7 @@ export const getProjects = async () => {
     const list = extractProjectList(body);
     if (list) return list.map(normalizeProject);
 
-    throw new Error("Formato de respuesta inesperado al listar proyectos");
+    return [];
   } catch (error) {
     throw formatProjectError(error, "Error al obtener proyectos");
   }

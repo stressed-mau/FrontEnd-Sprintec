@@ -821,7 +821,8 @@ export function ProjectForm({
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Enlace de GitHub" error={errors.github} tone={tone}>
           <Input
-            type="url"
+            type="text"
+            inputMode="url"
             value={formData.github}
             onChange={(event) => onFieldChange("github", event.target.value)}
             disabled={!canEditGithub}
@@ -833,7 +834,8 @@ export function ProjectForm({
         </Field>
         <Field label="Enlace de la demo" error={errors.demo} tone={tone}>
           <Input
-            type="url"
+            type="text"
+            inputMode="url"
             value={formData.demo}
             onChange={(event) => onFieldChange("demo", event.target.value)}
             disabled={!canEditDemo}
