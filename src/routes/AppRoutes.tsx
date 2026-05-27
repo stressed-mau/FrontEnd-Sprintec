@@ -44,7 +44,9 @@ import TendenciaPlantillasPage from "@/pages/TendenciaPlantillasPage"
 import ReportsIndexPage from "@/pages/ReportsIndexPage"
 import { NotificationsPage } from "@/pages/NotificationsPage"
 import AdminHome from "@/pages/AdminHome"
+import TermsPage from "@/pages/TermsPage" 
 import { ADMIN_DASHBOARD_ROUTE, CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, NOTIFICATIONS_ROUTE, REGISTER_PROFILE_ROUTE, REGISTER_ROUTE, TEMPLATE_TRENDS_ROUTE, REPORTES_INDEX_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+
 
 function AppRoutes() {
   return (
@@ -55,6 +57,7 @@ function AppRoutes() {
       <Route path={LOGIN_ROUTE} element={<LoginPage />} />
       <Route path={REGISTER_ROUTE} element={<RegisterPage />} />
       <Route path="/explore" element={<ExplorePortfolios />} />
+      <Route path="/terminos" element={<TermsPage />} />
       <Route element={<ProtectedRoute />}>
         
         <Route path={LEGACY_DASHBOARD_ROUTE} element={<Navigate to={USER_HOME_ROUTE} replace />} />
@@ -91,7 +94,7 @@ function AppRoutes() {
         <Route path="/certificados/añadir" element={<AddCertificatesPage />} />
         <Route path="/certificados/editar" element={<Navigate to="/certificados/ver" replace />} />
         <Route path="/certificados/eliminar" element={<DeleteCertificatesPage />} />
-        
+                
         <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
         <Route path={REPORTES_INDEX_ROUTE} element={<ReportsIndexPage />} />
         <Route path={TEMPLATE_TRENDS_ROUTE} element={<TendenciaPlantillasPage />} />
@@ -107,7 +110,7 @@ function AppRoutes() {
         <Route path={ADMIN_DASHBOARD_ROUTE} element={<AdminHome />} />
         <Route path="/admin/usuarios" element={<UserReports />} />
         <Route path="/admin/certificados" element={<CertificateReports />} />
-        
+
       </Route>
     </Routes>
   )

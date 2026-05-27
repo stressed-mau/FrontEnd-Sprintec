@@ -44,6 +44,11 @@ export function Footer() {
                   Contacto
                 </Link>
               </li>
+              <li>
+                <Link to="/terminos" className="text-[#C2DBED] transition-colors hover:text-white">
+                  Términos y Condiciones
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
