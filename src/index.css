@@ -186,6 +186,18 @@ body {
   text-shadow: none;
 }
 
+.portfolio-user-guide-popover .driver-popover-btn-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.portfolio-user-guide-popover .driver-popover-btn-disabled:hover,
+.portfolio-user-guide-popover .driver-popover-btn-disabled:focus {
+  background: #f7f0e1;
+  border-color: #c2dbed;
+  color: #003a6c;
+}
+
 .portfolio-user-guide-popover .driver-popover-next-btn:hover,
 .portfolio-user-guide-popover .driver-popover-next-btn:focus,
 .portfolio-user-guide-popover .driver-popover-prev-btn:hover,
