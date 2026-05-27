@@ -3,7 +3,7 @@ import { CircleHelp } from "lucide-react"
 import { driver, type Config, type DriveStep } from "driver.js"
 import "driver.js/dist/driver.css"
 import { getAuthSession } from "@/services/auth"
-
+import { useLocation } from "react-router-dom"
 export const USER_GUIDE_PENDING_KEY = "portfolio_user_guide_pending"
 const USER_GUIDE_SEEN_KEY = "portfolio_user_guide_seen"
 export const USER_GUIDE_OPEN_SIDEBAR_EVENT = "portfolio:user-guide-open-sidebar"
@@ -76,9 +76,11 @@ function restoreUserMenuAfterGuide() {
   window.dispatchEvent(new Event(USER_GUIDE_RESTORE_USER_MENU_EVENT))
 }
 
+
 function scrollToTopForGuide() {
   window.scrollTo({ top: 0, left: 0, behavior: "auto" })
 }
+
 
 type GuideElementResolver = (() => Element) & { keepWhenMissing?: boolean; selector: string }
 
@@ -330,8 +332,14 @@ function getAvailableSteps() {
 export function UserGuide() {
   const guideRef = useRef<ReturnType<typeof driver> | null>(null)
   const config = useMemo(() => driverConfig, [])
+  const location = useLocation()
+
+  const hiddenRoutes = ["/terminos", "/login", "/register", "/", "/about", "/contact"]
+  const shouldHideGuide = hiddenRoutes.includes(location.pathname) || location.pathname.startsWith('/p/')
 
   const startGuide = useCallback(() => {
+    if (shouldHideGuide) return 
+
     scrollToTopForGuide()
 
     window.setTimeout(() => {
@@ -351,9 +359,11 @@ export function UserGuide() {
       })
       guideRef.current.drive()
     }, 320)
-  }, [config])
+  }, [config, shouldHideGuide])  
 
   useEffect(() => {
+    if (shouldHideGuide) return  
+
     const shouldOpen = window.localStorage.getItem(USER_GUIDE_PENDING_KEY) === "1"
 
     if (!shouldOpen) return
@@ -362,11 +372,16 @@ export function UserGuide() {
     const guideTimer = window.setTimeout(startGuide, 450)
 
     return () => window.clearTimeout(guideTimer)
-  }, [startGuide])
+  }, [startGuide, shouldHideGuide])  
 
   useEffect(() => {
     return () => guideRef.current?.destroy()
   }, [])
+
+  
+  if (shouldHideGuide) {
+    return null
+  }
 
   return (
     <button

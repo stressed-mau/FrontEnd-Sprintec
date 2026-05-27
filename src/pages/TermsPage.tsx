@@ -1,12 +1,18 @@
 // Archivo: src/pages/TermsPage.tsx
 import { Footer } from "@/components/Footer"
 import { Header } from "@/components/Header"
+import HeaderUser from "@/components/HeaderUser"
 import { Card, CardContent } from "@/components/ui/card"
+import { isAuthenticated } from "@/services/auth" // Usamos tu función nativa
 
 export default function TermsPage() {
+  // isAuthenticated() devuelve true si estás logueado y false si eres visitante
+  const isLoggedIn = isAuthenticated()
+
   return (
     <div className="flex min-h-screen flex-col bg-[#F4F7F9]">
-      <Header />
+      {/* MAGIA AQUÍ: Si isLoggedIn es true -> HeaderUser. Si es false -> Header público */}
+      {isLoggedIn ? <HeaderUser /> : <Header />}
       
       <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">

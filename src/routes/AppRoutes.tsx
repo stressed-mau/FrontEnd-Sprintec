@@ -57,6 +57,7 @@ function AppRoutes() {
       <Route path={LOGIN_ROUTE} element={<LoginPage />} />
       <Route path={REGISTER_ROUTE} element={<RegisterPage />} />
       <Route path="/explore" element={<ExplorePortfolios />} />
+      <Route path="/terminos" element={<TermsPage />} />
       <Route element={<ProtectedRoute />}>
         
         <Route path={LEGACY_DASHBOARD_ROUTE} element={<Navigate to={USER_HOME_ROUTE} replace />} />
@@ -93,7 +94,7 @@ function AppRoutes() {
         <Route path="/certificados/añadir" element={<AddCertificatesPage />} />
         <Route path="/certificados/editar" element={<Navigate to="/certificados/ver" replace />} />
         <Route path="/certificados/eliminar" element={<DeleteCertificatesPage />} />
-                <Route path="/terminos" element={<TermsPage />} />
+                
         <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
         <Route path={REPORTES_INDEX_ROUTE} element={<ReportsIndexPage />} />
         <Route path={TEMPLATE_TRENDS_ROUTE} element={<TendenciaPlantillasPage />} />
