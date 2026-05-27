@@ -119,14 +119,7 @@ export function NotificationsPage() {
                           {!notification.read && <span className="shrink-0 w-2 h-2 bg-[#003A6C] rounded-full mt-2"></span>}
                         </div>
                         <p className="text-sm text-[#4982AD] mb-2">{notification.description}</p>
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="text-xs text-[#5B8FB9]">{notification.time}</span>
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm text-[#003A6C] font-medium hover:underline">
-                              {notification.dataType === 'weekly_global_report' ? 'Ver reporte' : 'Ver detalles'}
-                            </span>
-                          </div>
-                        </div>
+                        <span className="text-xs text-[#5B8FB9]">{notification.time}</span>
                       </div>
                     </div>
                   </div>
