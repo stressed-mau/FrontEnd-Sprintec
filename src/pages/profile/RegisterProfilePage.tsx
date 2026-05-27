@@ -91,7 +91,7 @@ export default function RegisterProfilePage() {
     );
   }
 
-  if (hasPersonalData && !showSuccessModal) {
+  if (hasPersonalData && form.image && !showSuccessModal) {
     return (
       <div className={`flex min-h-screen flex-col ${isInitialRegisterFlow ? 'bg-[#C2DBED]' : 'bg-[#F7F0E1]'}`}>
         {renderHeader()}

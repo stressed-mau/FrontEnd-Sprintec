@@ -409,7 +409,7 @@ const PortfolioViewsReportPage = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FolderGit2 className="h-5 w-5 text-blue-600" />
-                    Top 3 proyectos vistos
+                    Top 3 proyectos más vistos
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -425,7 +425,7 @@ const PortfolioViewsReportPage = () => {
                   ) : (
                     <div className="py-8 text-center">
                       <FolderGit2 className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-                      <p className="text-sm text-gray-600">Aun no hay informacion detallada sobre las vistas de cada proyecto.</p>
+                      <p className="text-sm text-gray-600">Aún no hay información detallada sobre las vistas de cada proyecto.</p>
                     </div>
                   )}
                 </CardContent>
@@ -435,7 +435,7 @@ const PortfolioViewsReportPage = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ExternalLink className="h-5 w-5 text-purple-600" />
-                    Clics en enlaces de redes
+                    Clics en enlaces de redes profesionales
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

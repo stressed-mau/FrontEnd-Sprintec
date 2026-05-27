@@ -226,7 +226,9 @@ export const useUserPersonalData = () => {
       return false;
     }
 
-    if (!form.fullName.trim() || !form.email.trim() || !phoneNumber.trim()) {
+    const hasProfileImage = Boolean(preview || form.image || fileInputRef.current?.files?.length);
+
+    if (!form.fullName.trim() || !form.email.trim() || !phoneNumber.trim() || !hasProfileImage) {
       return false;
     }
 
@@ -499,6 +501,10 @@ const handleChange = (e: any) => {
 
   const removeImage = () => {
     setPreview(null);
+    setForm(prev => ({
+      ...prev,
+      image: ""
+    }));
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
