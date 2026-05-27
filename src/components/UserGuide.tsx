@@ -128,7 +128,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Datos personales",
-      description: "Completa tu información personal para construir una presentación profesional más completa.",
+      description: "Completa tus datos personales para mejorar la presentación de tu perfil profesional.",
       side: "right",
       align: "center",
     },
@@ -161,7 +161,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Habilidades",
-      description: "Agrega habilidades tecnicas y blandas para fortalecer tu perfil.",
+      description: "Agrega habilidades técnicas y blandas para fortalecer tu perfil.",
       side: "right",
       align: "center",
     },
@@ -258,7 +258,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Mi perfil",
-      description: "Entra a tu perfil para revisar o actualizar la informacion de tu cuenta.",
+      description: "Entra a tu perfil para revisar o actualizar la información de tu cuenta.",
       side: "left",
       align: "center",
     },
@@ -290,7 +290,7 @@ const guideSteps: DriveStep[] = [
     onHighlightStarted: openUserMenuStep,
     onHighlighted: refreshHighlightedStep,
     popover: {
-      title: "Cerrar sesion",
+      title: "Cerrar sesión",
       description: "Finaliza tu sesión de manera segura cuando termines de usar la plataforma.",
       side: "left",
       align: "center",
