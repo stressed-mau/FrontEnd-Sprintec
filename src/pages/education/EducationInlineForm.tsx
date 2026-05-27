@@ -56,10 +56,6 @@ const FIELD_OPTIONS = [
   "Otro",
 ]
 
-function getTodayInputValue() {
-  return new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
-}
-
 type EducationInlineFormProps = {
   formData: ExperienceFormValues
   errors: ExperienceFormErrors
@@ -93,7 +89,6 @@ export function EducationInlineForm({
 }: EducationInlineFormProps) {
   const degreeOptions = educationTitleOptions.length ? educationTitleOptions : DEGREE_OPTIONS
   const fieldOptions = educationFieldOptions.length ? educationFieldOptions : FIELD_OPTIONS
-  const [today] = useState(getTodayInputValue)
   const fileButtonClassName =
     "inline-flex cursor-pointer items-center rounded-lg bg-[#C2DBED] px-4 py-2 text-sm font-medium text-[#003A6C] transition hover:bg-[#A5D7E8] disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
 
@@ -167,16 +162,15 @@ export function EducationInlineForm({
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <FieldError label="Fecha de emision" id="education-start-date" error={errors.startDate} required>
+        <FieldError label="Fecha de emision" id="education-end-date" error={errors.endDate}>
           <Input
-            id="education-start-date"
+            id="education-end-date"
             type="date"
-            value={formData.startDate}
+            value={formData.endDate}
             disabled={isSaving || formData.current}
-            max={today}
-            onBlur={() => onBlur("startDate")}
-            onChange={(event) => onFieldChange("startDate", event.target.value)}
-            aria-invalid={Boolean(errors.startDate)}
+            onBlur={() => onBlur("endDate")}
+            onChange={(event) => onFieldChange("endDate", event.target.value)}
+            aria-invalid={Boolean(errors.endDate)}
             className="h-10 border-gray-300 bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/30"
           />
         </FieldError>
@@ -187,7 +181,7 @@ export function EducationInlineForm({
           id="education-current"
           type="checkbox"
           checked={formData.current}
-          disabled={isSaving || Boolean(formData.startDate)}
+          disabled={isSaving || Boolean(formData.endDate)}
           onChange={(event) => onFieldChange("current", event.target.checked)}
           className="h-4 w-4 rounded border-gray-300 text-[#003A6C] focus:ring-[#003A6C]"
         />
@@ -232,7 +226,7 @@ export function EducationInlineForm({
               className="hidden"
             />
           </label>
-          <p className="text-xs text-gray-500">Formatos: JPG, JPEG, PNG y PDF. Tamano maximo: 2 MB.</p>
+          <p className="text-xs text-gray-500">Formatos: JPG, JPEG, PNG y PDF. Tamano maximo: 5 MB.</p>
           {errors.certificate ? <p className="text-sm text-red-600">{errors.certificate}</p> : null}
         </div>
       </div>
