@@ -168,21 +168,18 @@ export function ExperienceFormModal({
       : fieldOptions
   const isLocationDisabled = isSaving
   const isDescriptionDisabled = isSaving
-  const isStartDateDisabled =
-    isSaving ||
-    isLaboralUpdate ||
-    (!isLaboralExperience && isCurrentActive && !isAcademicUpdate) ||
-    (isAcademicUpdate && !originalEditingValues?.current)
+  const isStartDateDisabled = isSaving || isLaboralUpdate
   const canCloseCurrentLaboralExperience = isLaboralUpdate && Boolean(originalEditingValues?.current)
-  const isEndDateDisabled =
-    isSaving ||
-    (isLaboralUpdate && !canCloseCurrentLaboralExperience) ||
-    (isCurrentActive && !canCloseCurrentLaboralExperience)
+  const isEndDateDisabled = isLaboralExperience
+    ? isSaving ||
+      (isLaboralUpdate && !canCloseCurrentLaboralExperience) ||
+      (isCurrentActive && !canCloseCurrentLaboralExperience)
+    : isSaving
   const isCurrentDisabled =
     isSaving ||
     isEditing ||
     (isLaboralExperience && Boolean(formData.endDate)) ||
-    (!isLaboralExperience && Boolean(formData.startDate))
+    (!isLaboralExperience && Boolean(formData.endDate))
   const isImageDisabled = isSaving || isLaboralUpdate
   const isCertificateDisabled = isSaving || isAcademicUpdate
   const [today] = useState(getTodayInputValue)
@@ -382,37 +379,38 @@ export function ExperienceFormModal({
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label id="experience-start-date-label" htmlFor="experience-start-date" className="text-[#003A6C]">
-                {isLaboralExperience ? "Fecha de inicio" : "Fecha de emisión"} {!isLaboralExperience && isCurrentActive ? null : <span aria-hidden="true">*</span>}
-              </Label>
-              <Input
-                id="experience-start-date"
-                type="date"
-                value={formData.startDate}
-                disabled={isStartDateDisabled}
-                max={today}
-                onBlur={() => onBlur("startDate")}
-                onChange={(event) => onFieldChange("startDate", event.target.value)}
-                className={`h-11 border-[#A5D7E8] bg-white text-[#003A6C] ${disabledControlClassName}`}
-                aria-invalid={Boolean(errors.startDate)}
-                aria-labelledby="experience-start-date-label"
-                aria-describedby={errors.startDate ? "experience-start-date-error" : undefined}
-              />
-              {errors.startDate ? <p id="experience-start-date-error" className="text-sm text-red-600">{errors.startDate}</p> : null}
-            </div>
-
             {isLaboralExperience ? (
               <div className="space-y-2">
+                <Label id="experience-start-date-label" htmlFor="experience-start-date" className="text-[#003A6C]">
+                  Fecha de inicio <span aria-hidden="true">*</span>
+                </Label>
+                <Input
+                  id="experience-start-date"
+                  type="date"
+                  value={formData.startDate}
+                  disabled={isStartDateDisabled}
+                  max={today}
+                  onBlur={() => onBlur("startDate")}
+                  onChange={(event) => onFieldChange("startDate", event.target.value)}
+                  className={`h-11 border-[#A5D7E8] bg-white text-[#003A6C] ${disabledControlClassName}`}
+                  aria-invalid={Boolean(errors.startDate)}
+                  aria-labelledby="experience-start-date-label"
+                  aria-describedby={errors.startDate ? "experience-start-date-error" : undefined}
+                />
+                {errors.startDate ? <p id="experience-start-date-error" className="text-sm text-red-600">{errors.startDate}</p> : null}
+              </div>
+            ) : null}
+
+            <div className="space-y-2">
               <Label id="experience-end-date-label" htmlFor="experience-end-date" className="text-[#003A6C]">
-                Fecha de finalización {!isCurrentActive ? <span aria-hidden="true">*</span> : null}
+                {isLaboralExperience ? "Fecha de finalización" : "Fecha de emisión"} {isLaboralExperience && !isCurrentActive ? <span aria-hidden="true">*</span> : null}
               </Label>
               <Input
                 id="experience-end-date"
                 type="date"
                 value={formData.endDate}
                 disabled={isEndDateDisabled}
-                max={today}
+                max={isLaboralExperience ? today : undefined}
                 onBlur={() => onBlur("endDate")}
                 onChange={(event) => onFieldChange("endDate", event.target.value)}
                 className={`h-11 border-[#A5D7E8] bg-white text-[#003A6C] ${disabledControlClassName}`}
@@ -421,8 +419,7 @@ export function ExperienceFormModal({
                 aria-describedby={errors.endDate ? "experience-end-date-error" : undefined}
               />
               {errors.endDate ? <p id="experience-end-date-error" className="text-sm text-red-600">{errors.endDate}</p> : null}
-              </div>
-            ) : null}
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

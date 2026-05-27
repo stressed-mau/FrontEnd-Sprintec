@@ -37,6 +37,7 @@ type EducationDto = {
   current?: boolean | number | string | null
   is_current?: boolean | number | string | null
   isCurrent?: boolean | number | string | null
+  currently_studying?: boolean | number | string | null
   status?: string | null
   estado?: string | null
   company_email?: string | null
@@ -160,6 +161,30 @@ function asString(value: unknown): string {
   return ""
 }
 
+function asBoolean(value: unknown): boolean | null {
+  if (typeof value === "boolean") {
+    return value
+  }
+
+  if (typeof value === "number") {
+    return value === 1
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase()
+
+    if (["1", "true", "si", "sí", "yes", "cursando"].includes(normalized)) {
+      return true
+    }
+
+    if (["0", "false", "no", "concluido", "finalizado", "pendiente"].includes(normalized)) {
+      return false
+    }
+  }
+
+  return null
+}
+
 function normalizeDateValue(value: unknown): string {
   const rawValue = asString(value)
 
@@ -184,10 +209,11 @@ function normalizeDateValue(value: unknown): string {
 
 function normalizeEducation(dto: EducationDto, index: number): ExperienceItem {
   const endDate = normalizeDateValue(dto.end_date ?? dto.final_date ?? dto.endDate)
+  const currentlyStudying = asBoolean(dto.currently_studying ?? dto.current ?? dto.is_current ?? dto.isCurrent)
   const startDate = normalizeDateValue(
-    dto.end_date ??
-    dto.final_date ??
-    dto.endDate ??
+    dto.start_date ??
+    dto.initial_date ??
+    dto.startDate ??
     dto.issue_date ??
     dto.issued_at ??
     dto.date_issued ??
@@ -206,7 +232,7 @@ function normalizeEducation(dto: EducationDto, index: number): ExperienceItem {
     description: asString(dto.description ?? dto.descripcion),
     startDate,
     endDate,
-    current: !endDate,
+    current: currentlyStudying ?? !endDate,
     image: "",
     certificate: toAbsoluteAssetUrl(
       dto.certification_url ??
@@ -242,26 +268,21 @@ function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "
   const formData = new FormData()
 
   const description = payload.description.trim()
-  const issueDate = payload.startDate.trim()
+  const endDate = payload.endDate.trim()
   const institution = payload.company.trim()
   const title = payload.position.trim()
   const fieldOfStudy = payload.fieldOfStudy.trim()
 
   if (options?.mode !== "update") {
     formData.append("institution", institution)
-    formData.append("institution_name", institution)
     formData.append("title", title)
-    formData.append("degree", title)
     formData.append("field_to_study", fieldOfStudy)
-    formData.append("field_of_study", fieldOfStudy)
 
-    if (issueDate) {
-      formData.append("start_date", issueDate)
-      formData.append("end_date", issueDate)
-      formData.append("issue_date", issueDate)
-      formData.append("date_issued", issueDate)
-      formData.append("fecha_emision", issueDate)
+    if (endDate) {
+      formData.append("end_date", endDate)
     }
+
+    formData.append("currently_studying", payload.current ? "1" : "0")
 
     if (payload.certificateFile) {
       formData.append("certificate", payload.certificateFile)
@@ -272,20 +293,35 @@ function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "
     formData.append("description", description)
   }
 
-  formData.append("is_current", payload.current ? "1" : "0")
-  formData.append("current", payload.current ? "1" : "0")
-  formData.append("status", payload.current ? "cursando" : "concluido")
-
   return formData
 }
 
-function buildEducationUpdateBody(payload: ExperiencePayload) {
-  const body: { description: string; end_date: string | null } = {
-    description: payload.description.trim(),
-    end_date: payload.current ? null : payload.startDate.trim() || null,
+function buildEducationJsonBody(payload: ExperiencePayload, options?: { mode?: "create" | "update" }) {
+  const description = payload.description.trim()
+  const endDate = payload.endDate.trim()
+
+  if (options?.mode === "update") {
+    return {
+      description: description || null,
+      start_date: null,
+      end_date: endDate || null,
+      currently_studying: payload.current,
+    }
   }
 
-  return body
+  return {
+    institution: payload.company.trim(),
+    title: payload.position.trim(),
+    field_to_study: payload.fieldOfStudy.trim(),
+    description: description || null,
+    start_date: null,
+    end_date: endDate || null,
+    currently_studying: payload.current,
+  }
+}
+
+function buildEducationUpdateBody(payload: ExperiencePayload) {
+  return buildEducationJsonBody(payload, { mode: "update" })
 }
 
 export async function getEducation(): Promise<ExperienceItem[]> {
@@ -324,11 +360,13 @@ export async function getEducationOptions(): Promise<EducationOptions> {
 
 export async function createEducation(payload: ExperiencePayload): Promise<ExperienceItem> {
   try {
-    const response = await api.post(EDUCATION_ENDPOINT, buildEducationFormData(payload), {
+    const hasCertificate = Boolean(payload.certificateFile)
+    const body = hasCertificate ? buildEducationFormData(payload) : buildEducationJsonBody(payload)
+    const response = await api.post(EDUCATION_ENDPOINT, body, {
       timeout: EDUCATION_MUTATION_TIMEOUT_MS,
-      headers: {
-        Accept: "application/json",
-      },
+      headers: hasCertificate
+        ? { Accept: "application/json" }
+        : { Accept: "application/json", "Content-Type": "application/json" },
     })
 
     return normalizeEducation(unwrapEducation(response.data), 0)

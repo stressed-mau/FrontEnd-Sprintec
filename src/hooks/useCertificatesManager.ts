@@ -587,6 +587,7 @@ export const useCertificatesManager = () => {
     searchTerm,
     currentPage,
     totalPages,
+    itemsPerPage,
 
     // Actions
     openCreateModal,

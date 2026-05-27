@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { CircleHelp } from "lucide-react"
 import { driver, type Config, type DriveStep } from "driver.js"
 import "driver.js/dist/driver.css"
@@ -103,7 +103,7 @@ const guideSteps: DriveStep[] = [
     element: resolveGuideElement("#btn-go-explore"),
     popover: {
       title: "Explorar portafolios",
-      description: "Busca y revisa portafolios publicos de otros usuarios desde esta seccion.",
+      description: "Busca y revisa portafolios públicos de otros usuarios desde esta sección.",
       side: "bottom",
       align: "center",
       onNextClick: moveNextWithSidebarReady,
@@ -115,7 +115,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Ver mi portafolio",
-      description: "Revisa como se ve tu portafolio publico con la informacion que ya cargaste.",
+      description: "Revisa cómo se ve tu portafolio público con la información que ya cargaste.",
       side: "right",
       align: "center",
     },
@@ -126,7 +126,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Datos personales",
-      description: "Completa primero esta seccion. Es la base de tu perfil publico.",
+      description: "Completa tu información personal para construir una presentación profesional más completa.",
       side: "right",
       align: "center",
     },
@@ -169,8 +169,8 @@ const guideSteps: DriveStep[] = [
     onHighlightStarted: openSidebarStep,
     onHighlighted: refreshHighlightedStep,
     popover: {
-      title: "Experiencia",
-      description: "Incluye tus cargos, empresas y fechas para construir tu trayectoria.",
+      title: "Experiencia Laboral",
+      description: "Agrega tu experiencia laboral para fortalecer tu trayectoria profesional.",
       side: "right",
       align: "center",
     },
@@ -180,8 +180,8 @@ const guideSteps: DriveStep[] = [
     onHighlightStarted: openSidebarStep,
     onHighlighted: refreshHighlightedStep,
     popover: {
-      title: "Formacion academica",
-      description: "Registra tus estudios, instituciones y fechas para completar tu trayectoria academica.",
+      title: "Formación académica",
+      description: "Agrega tu formación académica para respaldar tus conocimientos y mostrar tu trayectoria académica.",
       side: "right",
       align: "center",
     },
@@ -192,7 +192,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Certificados",
-      description: "Agrega certificados o constancias que respalden tus conocimientos y logros.",
+      description: "Agrega certificados y respaldos que validen tus conocimientos, cursos y logros profesionales.",
       side: "right",
       align: "center",
     },
@@ -203,7 +203,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Plantillas",
-      description: "Elige el estilo visual que mejor represente tu portafolio.",
+      description: "Selecciona la plantilla que mejor represente tu estilo profesional y mejora la presentación de tu portafolio.",
       side: "right",
       align: "center",
     },
@@ -214,7 +214,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Visibilidad",
-      description: "Decide que secciones se mostraran antes de publicar.",
+      description: "Configura qué secciones serán visibles antes de publicar tu portafolio.",
       side: "right",
       align: "center",
     },
@@ -225,7 +225,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Publicar",
-      description: "Cuando todo este listo, publica y comparte tu enlace profesional.",
+      description: "Publica tu portafolio para compartir tu perfil profesional mediante un enlace público.",
       side: "right",
       align: "center",
       onNextClick: moveNextWithSidebarRestored,
@@ -244,7 +244,7 @@ const guideSteps: DriveStep[] = [
     element: resolveGuideElement("#btn-user-menu"),
     popover: {
       title: "Cuenta",
-      description: "Desde aqui puedes abrir las opciones de tu cuenta.",
+      description: "Revisa tu perfil, revisa las visualizaciones que tuvo tu portafolio y accede al reporte de plantillas.",
       side: "bottom",
       align: "end",
       onNextClick: moveNextWithUserMenuReady,
@@ -289,7 +289,7 @@ const guideSteps: DriveStep[] = [
     onHighlighted: refreshHighlightedStep,
     popover: {
       title: "Cerrar sesion",
-      description: "Usa esta opcion para salir de tu cuenta de forma segura.",
+      description: "Finaliza tu sesión de manera segura cuando termines de usar la plataforma.",
       side: "left",
       align: "center",
     },
@@ -307,6 +307,8 @@ const driverConfig: Config = {
   progressText: "{{current}} de {{total}}",
   popoverClass: "portfolio-user-guide-popover",
   smoothScroll: true,
+  overlayColor: "#000",
+  overlayOpacity: 0.7,
   stagePadding: 8,
   popoverOffset: 12,
 }
@@ -329,7 +331,7 @@ export function UserGuide() {
   const guideRef = useRef<ReturnType<typeof driver> | null>(null)
   const config = useMemo(() => driverConfig, [])
 
-  function startGuide() {
+  const startGuide = useCallback(() => {
     scrollToTopForGuide()
 
     window.setTimeout(() => {
@@ -349,7 +351,7 @@ export function UserGuide() {
       })
       guideRef.current.drive()
     }, 320)
-  }
+  }, [config])
 
   useEffect(() => {
     const shouldOpen = window.localStorage.getItem(USER_GUIDE_PENDING_KEY) === "1"
@@ -360,7 +362,7 @@ export function UserGuide() {
     const guideTimer = window.setTimeout(startGuide, 450)
 
     return () => window.clearTimeout(guideTimer)
-  }, [])
+  }, [startGuide])
 
   useEffect(() => {
     return () => guideRef.current?.destroy()

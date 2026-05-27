@@ -42,6 +42,31 @@ export interface Certificate {
 const CERTIFICATES_ENDPOINT = '/certificate';
 const CERTIFICATE_MUTATION_TIMEOUT_MS = 30_000;
 
+function serializeCertificateDate(value?: string | null): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(value)) {
+    return value;
+  }
+
+  if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(value)) {
+    const [year, month, day] = value.split(/[-/]/);
+    return `${day}/${month}/${year}`;
+  }
+
+  const parsedDate = new Date(value);
+  if (!Number.isNaN(parsedDate.getTime())) {
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const year = parsedDate.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  return value;
+}
+
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {
     if (error.code === 'ECONNABORTED') {
@@ -68,8 +93,8 @@ function normalizeCertificate(dto: CertificateDto): Certificate {
     name: dto.name ?? '',
     issuer: dto.issuer ?? '',
     description: dto.description ?? undefined,
-    date_issued: dto.date_issued ?? '',
-    date_expired: dto.date_expired ?? undefined,
+    date_issued: serializeCertificateDate(dto.date_issued) ?? '',
+    date_expired: serializeCertificateDate(dto.date_expired),
     credential_id: dto.credential_id ?? undefined,
     credential_url: dto.credential_url ?? undefined,
     file_bonus_url: dto.file_bonus_url ?? undefined,

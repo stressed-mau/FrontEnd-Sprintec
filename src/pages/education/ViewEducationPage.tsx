@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 
 import { EducationDetailsModal, EducationTable } from "@/pages/education/EducationPageParts"
 import {
@@ -19,12 +19,6 @@ export default function ViewEducationPage() {
   const education = manager.academicExperiences
   const filteredEducation = useMemo(() => filterExperiences(education, searchTerm), [education, searchTerm])
   const pagination = paginateExperiences(filteredEducation, currentPage)
-
-  useEffect(() => {
-    void manager.reloadExperiences()
-    // Force a fresh backend read every time this view is opened.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   function handleSearchChange(value: string) {
     setSearchTerm(value)

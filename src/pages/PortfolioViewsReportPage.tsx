@@ -7,6 +7,7 @@ import { getAuthSession } from "@/services/auth"
 import { getUserSocialNetworks, type SocialNetwork } from "@/services/socialNetworksService"
 import { useEffect, useRef, useState } from "react"
 import { useReactToPrint } from "react-to-print"
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import logo from "@/assets/logo/LogoPG.png"
 import {
   AlertCircle,
@@ -32,15 +33,43 @@ const MONTH_LABELS: Record<string, string> = {
   December: "Dic",
 }
 
+const MONTH_KEYS = Object.keys(MONTH_LABELS)
+
 function formatMonthLabel(month: string) {
   return MONTH_LABELS[month] ?? month
 }
 
-function getMonthRows(viewsByMonth: Record<string, number>) {
-  return Object.entries(viewsByMonth).map(([month, views]) => ({
-    month: formatMonthLabel(month),
-    views: Number(views ?? 0),
-  }))
+function getMonthRows(viewsByMonth: Record<string, number>, baseDate = new Date()) {
+  return Array.from({ length: 5 }, (_, index) => {
+    const date = new Date(baseDate.getFullYear(), baseDate.getMonth() - (4 - index), 1)
+    const monthKey = MONTH_KEYS[date.getMonth()]
+
+    return {
+      month: formatMonthLabel(monthKey),
+      views: Number(viewsByMonth[monthKey] ?? 0),
+    }
+  })
+}
+
+function getPrintLineChart(rows: Array<{ month: string; views: number }>, maxViews: number) {
+  const width = 640
+  const height = 220
+  const padding = { top: 18, right: 28, bottom: 42, left: 42 }
+  const chartWidth = width - padding.left - padding.right
+  const chartHeight = height - padding.top - padding.bottom
+  const chartMax = Math.max(4, Math.ceil(maxViews / 4) * 4)
+
+  const points = rows.map((row, index) => {
+    const x = padding.left + (chartWidth / Math.max(rows.length - 1, 1)) * index
+    const y = padding.top + chartHeight - (Math.min(row.views, chartMax) / chartMax) * chartHeight
+
+    return { ...row, x, y }
+  })
+
+  const linePoints = points.map((point) => `${point.x},${point.y}`).join(" ")
+  const ticks = Array.from({ length: 5 }, (_, index) => Math.round((chartMax / 4) * index))
+
+  return { width, height, padding, chartWidth, chartHeight, points, linePoints, ticks, chartMax }
 }
 
 const PROFESSIONAL_NETWORKS = [
@@ -81,8 +110,11 @@ const PortfolioViewsReportPage = () => {
   const { analytics, loading, error } = usePortfolioAnalytics()
   const [registeredNetworks, setRegisteredNetworks] = useState<SocialNetwork[]>([])
   const reportRef = useRef<HTMLDivElement>(null)
-  const monthRows = getMonthRows(analytics?.viewsByMonth ?? {})
+  const viewsByMonth = analytics?.viewsByMonth ?? {}
+  const monthRows = getMonthRows(viewsByMonth)
+  const hasMonthRows = Object.keys(viewsByMonth).length > 0
   const maxMonthViews = Math.max(...monthRows.map((row) => row.views), 1)
+  const printMonthChart = getPrintLineChart(monthRows, maxMonthViews)
   const topProjectRows = [...(analytics?.projectViews ?? [])].sort((a, b) => b.value - a.value).slice(0, 3)
   const socialNetworkRows = getSocialNetworkRows(analytics?.socialClicks ?? [], registeredNetworks)
   const reportDate = new Date().toLocaleDateString()
@@ -102,6 +134,25 @@ const PortfolioViewsReportPage = () => {
         body {
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
+        }
+
+        .portfolio-views-month-chart,
+        .portfolio-views-month-chart .recharts-responsive-container,
+        .portfolio-views-month-chart .recharts-wrapper,
+        .portfolio-views-month-chart .recharts-surface {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
+        .portfolio-views-month-chart {
+          width: 640px !important;
+          max-width: 92% !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+        }
+
+        .portfolio-views-month-chart .recharts-wrapper {
+          left: 0 !important;
         }
       }
     `,
@@ -187,75 +238,162 @@ const PortfolioViewsReportPage = () => {
             ) : null}
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 print:grid-cols-3 print:gap-3">
-              <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+              <Card className="bg-gradient-to-br from-[#003A6C] to-[#4982AD] text-white">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="mb-1 text-sm text-blue-100">Vistas totales</p>
+                      <p className="mb-1 text-sm text-[#C2DBED]">Vistas totales</p>
                       <p className="text-3xl font-bold">{loading ? "..." : analytics?.totalViews ?? 0}</p>
                     </div>
-                    <div className="rounded-lg bg-white/20 p-3">
+                    <div className="rounded-lg bg-[#77B6E6]/25 p-3">
                       <Eye className="h-6 w-6" />
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-blue-100">Cantidad total de veces que se ha abierto tu portafolio publicado.</p>
+                  <p className="mt-3 text-sm text-[#C2DBED]">Cantidad total de veces que se ha abierto tu portafolio publicado.</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+              <Card className="bg-gradient-to-br from-[#0E7D96] to-[#6DACBF] text-white">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="mb-1 text-sm text-purple-100">Vistas este mes</p>
+                      <p className="mb-1 text-sm text-[#EAF4FA]">Vistas este mes</p>
                       <p className="text-3xl font-bold">{loading ? "..." : analytics?.viewsThisMonth ?? 0}</p>
                     </div>
-                    <div className="rounded-lg bg-white/20 p-3">
+                    <div className="rounded-lg bg-[#C2DBED]/30 p-3">
                       <Calendar className="h-6 w-6" />
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-purple-100">Visitas recibidas durante el mes actual.</p>
+                  <p className="mt-3 text-sm text-[#EAF4FA]">Visitas recibidas durante el mes actual.</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white text-[#003A6C] md:col-span-2 lg:col-span-1">
+              <Card className="border-[#D6C7B0] bg-gradient-to-br from-[#F7F0E1] to-[#D6C7B0] text-[#003A6C] md:col-span-2 lg:col-span-1">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="mb-1 text-sm text-[#4B778D]">Clics en enlaces</p>
+                      <p className="mb-1 text-sm text-[#0E7D96]">Clics en enlaces</p>
                       <p className="text-3xl font-bold">{loading ? "..." : analytics?.totalLinkClicks ?? 0}</p>
                     </div>
-                    <div className="rounded-lg bg-[#F1F5F9] p-3">
-                      <ExternalLink className="h-6 w-6 text-gray-400" />
+                    <div className="rounded-lg bg-[#C4A57C]/25 p-3">
+                      <ExternalLink className="h-6 w-6 text-[#0E7D96]" />
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-[#4B778D]">Clicks registrados en enlaces de proyectos publicos, como repositorios, demos.</p>
+                  <p className="mt-3 text-sm text-[#0E7D96]">Clicks registrados en enlaces de proyectos publicos, como repositorios, demos.</p>
                 </CardContent>
               </Card>
             </div>
 
-            <Card className="print:break-inside-avoid">
+            <Card className="print:break-inside-avoid print:overflow-hidden">
               <CardHeader>
                 <CardTitle>Vistas por mes</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="print:px-2">
                 {loading ? (
                   <p className="text-sm font-medium text-[#4B778D]">Cargando metricas...</p>
-                ) : monthRows.length ? (
-                  <div className="space-y-4">
-                    {monthRows.map((row) => (
-                      <div key={row.month} className="space-y-1">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-medium text-gray-600">{row.month}</span>
-                          <span className="font-bold text-[#003A6C]">{row.views}</span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-gray-200">
-                          <div
-                            className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"
-                            style={{ width: `${Math.max((row.views / maxMonthViews) * 100, row.views > 0 ? 6 : 0)}%` }}
+                ) : hasMonthRows ? (
+                  <div>
+                    <p className="mb-6 text-sm text-[#4B778D]">Visualizaciones por mes (ultimos 5 meses)</p>
+                    <div className="portfolio-views-month-chart h-64 w-full min-w-0 max-w-full overflow-hidden print:hidden">
+                      <ResponsiveContainer width="100%" height="100%" debounce={0}>
+                        <LineChart
+                          data={monthRows}
+                          margin={{
+                            top: 10,
+                            right: 20,
+                            left: 10,
+                            bottom: 10,
+                          }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                          <XAxis
+                            dataKey="month"
+                            axisLine={false}
+                            tickLine={false}
+                            interval={0}
+                            minTickGap={20}
+                            tickMargin={8}
+                            padding={{ left: 20, right: 20 }}
+                            tick={{
+                              fill: "#4B778D",
+                              fontSize: 11,
+                            }}
                           />
-                        </div>
-                      </div>
-                    ))}
+                          <YAxis
+                            width={35}
+                            axisLine={false}
+                            tickLine={false}
+                            allowDecimals={false}
+                            domain={[0, maxMonthViews]}
+                            tick={{
+                              fill: "#4B778D",
+                              fontSize: 12,
+                            }}
+                          />
+                          <Tooltip />
+                          <Line
+                            type="monotone"
+                            dataKey="views"
+                            name="Vistas"
+                            stroke="#0E7D96"
+                            strokeWidth={3}
+                            isAnimationActive={false}
+                            dot={{ r: 6, fill: "#0E7D96", strokeWidth: 2, stroke: "#fff" }}
+                            activeDot={{ r: 8, fill: "#003A6C" }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="hidden print:block print:w-full print:overflow-hidden">
+                      <svg
+                        viewBox={`0 0 ${printMonthChart.width} ${printMonthChart.height}`}
+                        className="mx-auto h-auto w-[640px] max-w-full"
+                        role="img"
+                        aria-label="Grafica de vistas por mes de los ultimos 5 meses"
+                      >
+                        {printMonthChart.ticks.map((tick) => {
+                          const y =
+                            printMonthChart.padding.top +
+                            printMonthChart.chartHeight -
+                            (tick / printMonthChart.chartMax) * printMonthChart.chartHeight
+
+                          return (
+                            <g key={tick}>
+                              <line
+                                x1={printMonthChart.padding.left}
+                                x2={printMonthChart.padding.left + printMonthChart.chartWidth}
+                                y1={y}
+                                y2={y}
+                                stroke="#E2E8F0"
+                                strokeDasharray="3 3"
+                              />
+                              <text x={printMonthChart.padding.left - 12} y={y + 4} textAnchor="end" fontSize="11" fill="#4B778D">
+                                {tick}
+                              </text>
+                            </g>
+                          )
+                        })}
+
+                        <polyline
+                          points={printMonthChart.linePoints}
+                          fill="none"
+                          stroke="#0E7D96"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+
+                        {printMonthChart.points.map((point) => (
+                          <g key={point.month}>
+                            <circle cx={point.x} cy={point.y} r="5" fill="#0E7D96" stroke="#FFFFFF" strokeWidth="2" />
+                            <text x={point.x} y={printMonthChart.height - 16} textAnchor="middle" fontSize="11" fill="#4B778D">
+                              {point.month}
+                            </text>
+                          </g>
+                        ))}
+                      </svg>
+                    </div>
                   </div>
                 ) : (
                   <div className="py-8 text-center">
