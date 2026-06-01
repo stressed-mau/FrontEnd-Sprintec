@@ -32,8 +32,10 @@ const EMPTY_FORM: CertificateFormValues = {
 
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 const ALLOWED_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png'];
 const NAME_REGEX = /^[A-Za-zÀ-ÿ0-9\s]+$/;
 const ISSUER_REGEX = /^[A-Za-zÀ-ÿ\s]+$/;
+const CREDENTIAL_ID_REGEX = /^[A-Za-z0-9_.-]+$/;
 
 function getTodayISODate(): string {
   const now = new Date();
@@ -46,9 +48,25 @@ function normalizeComparableText(value: string): string {
 }
 
 function isValidUrl(value: string): boolean {
+  if (/\s/.test(value)) {
+    return false;
+  }
+
   try {
     const url = new URL(value);
-    return url.protocol === 'http:' || url.protocol === 'https:';
+    const hostname = url.hostname;
+
+    const hasValidDomain =
+      hostname.includes('.') &&
+      !hostname.startsWith('.') &&
+      !hostname.endsWith('.') &&
+      hostname.split('.').every(part => part.length > 0);
+
+    return (
+      (value.startsWith('http://') || value.startsWith('https://')) &&
+      (url.protocol === 'http:' || url.protocol === 'https:') &&
+      hasValidDomain
+    );
   } catch {
     return false;
   }
@@ -206,8 +224,17 @@ function validateForm(
     errors.description = 'El campo Descripción permite un máximo de 300 caracteres.';
   }
 
-  if (form.credential_id && form.credential_id.length > 50) {
-    errors.credential_id = 'El campo ID de credencial permite un máximo de 50 caracteres.';
+  if (form.credential_id) {
+    if (form.credential_id.length > 50) {
+      errors.credential_id =
+        'El campo ID de credencial permite un máximo de 50 caracteres.';
+    } else if (/\s/.test(form.credential_id)) {
+      errors.credential_id =
+        'El ID de credencial no puede contener espacios.';
+    } else if (!CREDENTIAL_ID_REGEX.test(form.credential_id)) {
+      errors.credential_id =
+        'El ID de credencial solo puede contener letras, números, guiones y guiones bajos.';
+    }
   }
 
   if (form.credential_url && form.credential_url.length > 200) {
@@ -226,6 +253,9 @@ export const useCertificatesManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // Form state
   const [formData, setFormData] = useState<CertificateFormValues>(EMPTY_FORM);
@@ -391,10 +421,20 @@ export const useCertificatesManager = () => {
   const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const extension = file.name.split('.').pop()?.toLowerCase();
 
-    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    const validMime = ALLOWED_FILE_TYPES.includes(file.type);
+    const validExtension =
+      extension !== undefined &&
+      ALLOWED_EXTENSIONS.includes(extension);
+
+    if (!validMime || !validExtension) {
       setFileInput(null);
-      setErrors((prev) => ({ ...prev, file_bonus_url: 'Formato de imagen no válido.' }));
+      setErrors((prev) => ({
+        ...prev,
+        file_bonus_url:
+          'Solo se permiten archivos PDF, JPG, JPEG o PNG.',
+      }));
       return;
     }
 
@@ -421,66 +461,95 @@ export const useCertificatesManager = () => {
     });
   }, []);
 
-  const handleSubmit = useCallback(
-    async (e?: FormEvent<HTMLFormElement>) => {
-      e?.preventDefault();
-      setErrorMessage('');
+const handleSubmit = useCallback(
+  async (e?: FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
+    setErrorMessage('');
+    setValidationErrors([]);
 
-      const newErrors = validateForm(formData, certificates, editingCertificate?.id);
-      if (Object.keys(newErrors).length > 0) {
-        setTouchedFields({
-          name: true,
-          issuer: true,
-          description: true,
-          date_issued: true,
-          date_expired: true,
-          credential_id: true,
-          credential_url: true,
-          file_bonus_url: true,
-          no_expiration: true,
-        });
-        setErrors(newErrors);
-        return;
+    const newErrors = validateForm(formData, certificates, editingCertificate?.id);
+
+    if (Object.keys(newErrors).length > 0) {
+      setTouchedFields({
+        name: true,
+        issuer: true,
+        description: true,
+        date_issued: true,
+        date_expired: true,
+        credential_id: true,
+        credential_url: true,
+        file_bonus_url: true,
+        no_expiration: true,
+      });
+
+      setErrors(newErrors);
+      return;
+    }
+
+    if (isEditing && editingCertificate && !showConfirmEdit) {
+      setShowConfirmEdit(true);
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const payload: CertificatePayload = {
+        name: formData.name,
+        issuer: formData.issuer,
+        description: formData.description,
+        date_issued: convertDateDDMMYYYYtoISO(formData.date_issued),
+        date_expired: formData.no_expiration
+          ? undefined
+          : convertDateDDMMYYYYtoISO(formData.date_expired ?? ''),
+        credential_id: formData.credential_id,
+        credential_url: formData.credential_url,
+        file_bonus_url: fileInput,
+      };
+
+      if (isEditing && editingCertificate) {
+        await updateCertificate(editingCertificate.id, payload);
+        setSuccessMessage('Certificado actualizado exitosamente');
+      } else {
+        await createCertificate(payload);
+        setSuccessMessage('Certificado creado exitosamente');
       }
 
-      if (isEditing && editingCertificate && !showConfirmEdit) {
-        setShowConfirmEdit(true);
-        return;
-      }
+      setShowSuccessModal(true);
+      setShowConfirmEdit(false);
 
-      setIsSaving(true);
+    } catch (error) {
 
-      try {
-        const payload: CertificatePayload = {
-          name: formData.name,
-          issuer: formData.issuer,
-          description: formData.description,
-          date_issued: convertDateDDMMYYYYtoISO(formData.date_issued),
-          date_expired: formData.no_expiration ? undefined : convertDateDDMMYYYYtoISO(formData.date_expired ?? ''),
-          credential_id: formData.credential_id,
-          credential_url: formData.credential_url,
-          file_bonus_url: fileInput,
-        };
+    if (
+      error &&
+      typeof error === 'object' &&
+      'validationErrors' in error
+    ) {
+      const validationError = error as Error & {
+        validationErrors?: string[];
+      };
 
-        if (isEditing && editingCertificate) {
-          await updateCertificate(editingCertificate.id, payload);
-          setSuccessMessage('Certificado actualizado exitosamente');
-        } else {
-          await createCertificate(payload);
-          setSuccessMessage('Certificado creado exitosamente');
-        }
+      setValidationErrors(
+        validationError.validationErrors ?? []
+      );
 
-        setShowSuccessModal(true);
-        setShowConfirmEdit(false);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Error al guardar el certificado';
-        setErrorMessage(message);
-      } finally {
-        setIsSaving(false);
-      }
-    },
-    [certificates, formData, fileInput, isEditing, editingCertificate, showConfirmEdit]
-  );
+      setShowValidationModal(true);
+
+    } else {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Error al guardar el certificado';
+
+      setErrorMessage(message);
+    }
+
+  }finally {
+      setIsSaving(false);
+    }
+  },
+  [certificates, formData, fileInput, isEditing, editingCertificate, showConfirmEdit]
+);
 
   const requestDelete = useCallback((certificate: Certificate) => {
     setCertificateToDelete(certificate);
@@ -588,6 +657,10 @@ export const useCertificatesManager = () => {
     currentPage,
     totalPages,
     itemsPerPage,
+
+    showValidationModal,
+    validationErrors,
+    setShowValidationModal,
 
     // Actions
     openCreateModal,

@@ -5,7 +5,7 @@ import ConfirmationModal from "@/components/ConfirmationModal"
 import { useCertificatesManager } from "@/hooks/useCertificatesManager"
 import { CertificateFormCard } from "@/pages/certificates/CertificatePageParts"
 import { DuplicateRegistrationModal, ExperiencePageShell, FeedbackMessage } from "@/pages/experience/ExperiencePageParts"
-
+import CertificateValidationModal from "@/components/CertificateValidationModal"
 function normalizeDuplicateText(value: string) {
   return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("es-BO")
 }
@@ -46,7 +46,11 @@ export default function AddCertificatesPage() {
       description="Registra un nuevo certificado o credencial en tu portafolio."
     >
       <FeedbackMessage message={manager.errorMessage || manager.pageError} type="error" />
-
+      <CertificateValidationModal
+        isOpen={manager.showValidationModal}
+        errors={manager.validationErrors}
+        onClose={() => manager.setShowValidationModal(false)}
+      />
       <CertificateFormCard
         formData={manager.formData}
         errors={manager.errors}

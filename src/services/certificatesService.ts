@@ -67,24 +67,50 @@ function serializeCertificateDate(value?: string | null): string | undefined {
   return value;
 }
 
-function formatError(error: unknown): Error {
+function formatError(error: unknown): Error & {
+  validationErrors?: string[];
+} {
+  if (error instanceof Error && 'validationErrors' in error) {
+    return error as Error & { validationErrors?: string[] };
+  }
+
   if (axios.isAxiosError(error)) {
+
     if (error.code === 'ECONNABORTED') {
-      return new Error('La solicitud tardó más de 30 segundos. Intenta nuevamente.');
+      return new Error(
+        'La solicitud tardó más de 30 segundos. Intenta nuevamente.'
+      );
     }
 
     if (error.code === 'ERR_NETWORK') {
-      return new Error('No se pudo conectar con el backend. Verifica que la API esté disponible.');
+      return new Error(
+        'No se pudo conectar con el backend. Verifica que la API esté disponible.'
+      );
     }
 
-    const backendMessage =
-      (error.response?.data as { message?: string } | undefined)?.message ??
-      error.message;
+    const responseData = error.response?.data as {
+      message?: string;
+      errors?: string[];
+    };
 
-    return new Error(backendMessage || 'Error inesperado al consumir certificates API.');
+    const customError = new Error(
+      responseData?.message || error.message
+    ) as Error & {
+      validationErrors?: string[];
+    };
+
+    if (responseData?.errors) {
+      customError.validationErrors = responseData.errors;
+    }
+
+    return customError;
   }
 
-  return new Error('Error inesperado al consumir certificates API.');
+  return new Error(
+    'Error inesperado al consumir certificates API.'
+  ) as Error & {
+    validationErrors?: string[];
+  };
 }
 
 function normalizeCertificate(dto: CertificateDto): Certificate {
@@ -197,6 +223,24 @@ export async function createCertificate(payload: CertificatePayload): Promise<Ce
     const response = await api.post(CERTIFICATES_ENDPOINT, formData, {
       timeout: CERTIFICATE_MUTATION_TIMEOUT_MS,
     });
+ 
+    const responseData = response.data as {
+      success?: boolean;
+      message?: string;
+      errors?: string[];
+    };
+
+    if (responseData.success === false) {
+      const error = new Error(
+        responseData.message || 'Error de validación'
+      ) as Error & {
+        validationErrors?: string[];
+      };
+
+      error.validationErrors = responseData.errors ?? [];
+
+      throw error;
+    }
 
     const dto = unwrapPayload(response.data) as CertificateDto;
     return normalizeCertificate(dto);
