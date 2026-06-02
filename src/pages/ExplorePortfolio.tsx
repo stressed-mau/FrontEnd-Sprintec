@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Eye, Search, SlidersHorizontal } from "lucide-react"; 
 import { Header } from "@/components/Header"; 
 import HeaderUser from "@/components/HeaderUser";
@@ -19,6 +19,11 @@ const getExplorePortfoliosPerPage = () => {
   if (window.innerWidth >= 640) return 8;
   return 4;
 };
+
+const parsePageParam = (value: string | null) => {
+  const parsed = Number.parseInt(value ?? "", 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1
+}
 import AdminSidebar from "../components/Admin/AdminSidebar";
 import { getAuthSession } from "@/services/auth";
 
@@ -90,6 +95,7 @@ function SkillsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
 
 export default function ExplorePortfolios() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
  // const occupationContainerRef = useRef<HTMLDivElement | null>(null)
   const [portfolios, setPortfolios] = useState<PortfolioCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,9 +106,28 @@ export default function ExplorePortfolios() {
   const roleId = session?.user?.role_id;
   const isAdmin = roleId === 2;
   const {  searchTerm,setSearchTerm,isFiltersOpen,setIsFiltersOpen,selectedOccupation,setSelectedOccupation, minProjects,setMinProjects,
-    minSkills,setMinSkills,hasActiveFilters,clearFilters, filteredPortfolios, } = useExplorePortfolioFilters(portfolios)
+    minSkills,setMinSkills,hasActiveFilters,clearFilters, filteredPortfolios, } = useExplorePortfolioFilters(portfolios, {
+      searchTerm: searchParams.get("q") ?? "",
+      isFiltersOpen: searchParams.get("filters") === "1",
+      selectedOccupation: searchParams.get("occupation") ?? "all",
+      minProjects: searchParams.get("minProjects") ?? "all",
+      minSkills: searchParams.get("minSkills") ?? "all",
+    })
   const sortedPortfolios = useSortedPortfolios(filteredPortfolios)
-  const {  currentData, currentPage, totalPages, goToPage,  next, prev, setCurrentPage, } = usePagination({ items: sortedPortfolios, itemsPerPage: perPage })
+  const {  currentData, currentPage, totalPages, goToPage,  next, prev, setCurrentPage, } = usePagination({ items: sortedPortfolios, itemsPerPage: perPage, initialPage: parsePageParam(searchParams.get("page")) })
+
+  useEffect(() => {
+    const nextParams = new URLSearchParams()
+
+    if (searchTerm.trim()) nextParams.set("q", searchTerm.trim())
+    if (selectedOccupation !== "all") nextParams.set("occupation", selectedOccupation)
+    if (minProjects !== "all") nextParams.set("minProjects", minProjects)
+    if (minSkills !== "all") nextParams.set("minSkills", minSkills)
+    if (isFiltersOpen) nextParams.set("filters", "1")
+    if (currentPage > 1) nextParams.set("page", String(currentPage))
+
+    setSearchParams(nextParams, { replace: true })
+  }, [searchTerm, selectedOccupation, minProjects, minSkills, isFiltersOpen, currentPage, setSearchParams])
 
   useEffect(() => {
     const updatePerPage = () => {
@@ -118,8 +143,10 @@ export default function ExplorePortfolios() {
   }, [])
 
   useEffect(() => {
-    setCurrentPage(1)
-  }, [perPage])
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages, setCurrentPage])
 
   useEffect(() => {
     let isMounted = true;
@@ -383,7 +410,7 @@ export default function ExplorePortfolios() {
                   </div>
 
                   <Button
-                    onClick={() => navigate(`/p/${portfolio.slug}`)}
+                    onClick={() => navigate(`/p/${portfolio.slug}`, { state: { fromExplore: true } })}
                     className="shrink-0 h-8 px-3 rounded-lg bg-[#003A6C] hover:bg-[#c4a57c] text-white flex items-center gap-2 text-xs font-bold"
                   >
                     Ver <Eye className="size-4" />

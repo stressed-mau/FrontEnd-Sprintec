@@ -125,6 +125,8 @@ export interface SocialNetwork {
 // =========================
 export interface Portfolio {
   id?: string;
+  user_id?: string;
+  owner_id?: string;
   config: {
     id?: string | number;
     portfolio_id?: string | number;
