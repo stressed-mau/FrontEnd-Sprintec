@@ -43,9 +43,10 @@ import CertificateReports from "@/pages/admin/CertificateReports"
 import TendenciaPlantillasPage from "@/pages/TendenciaPlantillasPage"
 import ReportsIndexPage from "@/pages/ReportsIndexPage"
 import { NotificationsPage } from "@/pages/NotificationsPage"
+import { MessagesPage } from "@/pages/MessagesPage"
 import AdminHome from "@/pages/AdminHome"
 import TermsPage from "@/pages/TermsPage" 
-import { ADMIN_DASHBOARD_ROUTE, CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, NOTIFICATIONS_ROUTE, REGISTER_PROFILE_ROUTE, REGISTER_ROUTE, TEMPLATE_TRENDS_ROUTE, REPORTES_INDEX_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
+import { ADMIN_DASHBOARD_ROUTE, CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGIN_ROUTE, MESSAGES_ROUTE, NOTIFICATIONS_ROUTE, REGISTER_PROFILE_ROUTE, REGISTER_ROUTE, TEMPLATE_TRENDS_ROUTE, REPORTES_INDEX_ROUTE, USER_HOME_ROUTE } from "@/routes/route-paths"
 
 
 function AppRoutes() {
@@ -99,6 +100,9 @@ function AppRoutes() {
         <Route path={REPORTES_INDEX_ROUTE} element={<ReportsIndexPage />} />
         <Route path={TEMPLATE_TRENDS_ROUTE} element={<TendenciaPlantillasPage />} />
         <Route path={NOTIFICATIONS_ROUTE} element={<NotificationsPage />} />
+        <Route path={MESSAGES_ROUTE} element={<MessagesPage />} />
+        <Route path={`${MESSAGES_ROUTE}/:messageId`} element={<MessagesPage />} />
+        <Route path="/messages/:messageId" element={<MessagesPage />} />
         <Route path="/personal/ver" element={<ViewProfilePage />} />
         <Route path="/personal/editar" element={<EditProfilePage />} />
         

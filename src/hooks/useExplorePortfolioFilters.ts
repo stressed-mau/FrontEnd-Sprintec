@@ -14,15 +14,24 @@ export interface PortfolioCard {
 
 type ThresholdValue = "all" | string
 
+type ExplorePortfolioInitialFilters = {
+  searchTerm?: string
+  isFiltersOpen?: boolean
+  selectedOccupation?: string
+  minProjects?: ThresholdValue
+  minSkills?: ThresholdValue
+}
+
 export function useExplorePortfolioFilters(
   portfolios: PortfolioCard[],
+  initialFilters: ExplorePortfolioInitialFilters = {},
 ) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
-  const [selectedOccupation, setSelectedOccupation] = useState("all")
+  const [searchTerm, setSearchTerm] = useState(initialFilters.searchTerm ?? "")
+  const [isFiltersOpen, setIsFiltersOpen] = useState(initialFilters.isFiltersOpen ?? false)
+  const [selectedOccupation, setSelectedOccupation] = useState(initialFilters.selectedOccupation ?? "all")
   const [selectedTechnology, setSelectedTechnology] = useState("all")
-  const [minProjects, setMinProjects] = useState<ThresholdValue>("all")
-  const [minSkills, setMinSkills] = useState<ThresholdValue>("all")
+  const [minProjects, setMinProjects] = useState<ThresholdValue>(initialFilters.minProjects ?? "all")
+  const [minSkills, setMinSkills] = useState<ThresholdValue>(initialFilters.minSkills ?? "all")
 
   const occupationOptions = useMemo(() => {
     return Array.from(new Set(portfolios.map((portfolio) => portfolio.occupation).filter(Boolean))).sort()

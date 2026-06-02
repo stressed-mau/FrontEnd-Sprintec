@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer'
 import Header from '@/components/HeaderUser'
 import Sidebar from '@/components/Sidebar'
 import { useNotifications } from '@/hooks/useNotifications'
+import { MESSAGES_ROUTE } from '@/routes/route-paths'
 
 export function NotificationsPage() {
   const navigate = useNavigate()
@@ -30,7 +31,7 @@ export function NotificationsPage() {
         navigate('/tendencia-plantillas')
         break
       case 'new_message':
-        navigate(data.sender_id ? `/messages/${data.sender_id}` : '/red-profesional')
+        navigate(data.message_id ? `${MESSAGES_ROUTE}/${data.message_id}` : MESSAGES_ROUTE)
         break
       case 'portfolio_view':
         navigate('/visualizaciones')

@@ -10,6 +10,8 @@ import { getExperiences } from "@/services/experienceService";
 import { getProjects } from "@/services/ProjectService";
 import { getUserSocialNetworks } from "@/services/socialNetworksService";
 const normalizeProfile = (d: any) => ({
+  id: d.profile.id ?? d.profile.profile_id ?? "",
+  user_id: d.profile.user_id ?? d.profile.userId ?? d.profile.user?.id ?? "",
   fullname: d.profile.name || "",
   occupation: d.profile.occupation || "",
   biography: d.profile.bio || "",
@@ -37,6 +39,30 @@ const trackVisit = async (portfolioData: any) => {
 
 const getPortfolioId = (d: any) =>
   d.id ?? d.portfolio_id ?? d.config?.id ?? d.config?.portfolio_id ?? d.profile?.portfolio_id ?? null;
+
+const getPortfolioOwnerUserId = (d: any) =>
+  d.user_id ??
+  d.userId ??
+  d.owner_id ??
+  d.owner?.id ??
+  d.creator_id ??
+  d.config?.user_id ??
+  d.config?.userId ??
+  d.config?.owner_id ??
+  d.config?.user?.id ??
+  d.portfolio?.user_id ??
+  d.portfolio?.userId ??
+  d.portfolio?.user?.id ??
+  d.profile?.user_id ??
+  d.profile?.userId ??
+  d.profile?.userID ??
+  d.profile?.id_user ??
+  d.profile?.usuario_id ??
+  d.profile?.user?.id ??
+  d.profile?.user_information?.user_id ??
+  d.user?.id ??
+  d.user_information?.user_id ??
+  null;
 
 const asText = (value: any): string => {
   if (typeof value === "string") return value.trim();
@@ -333,8 +359,10 @@ export const usePortfolio = (externalSlug?: string) => {
 
           setPortfolio({
             id: getPortfolioId(d) ? String(getPortfolioId(d)) : undefined,
+            user_id: getPortfolioOwnerUserId(d) ? String(getPortfolioOwnerUserId(d)) : undefined,
+            owner_id: getPortfolioOwnerUserId(d) ? String(getPortfolioOwnerUserId(d)) : undefined,
             user: {
-              id: String(d.profile.id),
+              id: String(getPortfolioOwnerUserId(d) ?? ""),
               fullname: d.profile.name,
               occupation: d.profile.occupation || "",
               biography: d.profile.bio || "",

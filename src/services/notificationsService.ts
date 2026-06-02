@@ -1,5 +1,6 @@
 import axios from "axios"
 
+import { MESSAGES_ROUTE } from "@/routes/route-paths"
 import { api } from "./api"
 
 export interface NotificationItem {
@@ -58,21 +59,56 @@ function formatRelativeTime(value?: string) {
   return `Hace ${diffDays} d`
 }
 
+function getFirstValue(...values: unknown[]) {
+  return values.find((value) => value !== undefined && value !== null && String(value).trim() !== "")
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value) return null
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value)
+      return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null
+    } catch {
+      return null
+    }
+  }
+
+  return typeof value === "object" ? (value as Record<string, unknown>) : null
+}
+
 function normalizeNotification(notification: Record<string, unknown>): NotificationItem {
-  const payload = (notification.data && typeof notification.data === "object"
-    ? (notification.data as Record<string, unknown>)
-    : notification) as Record<string, unknown>
+  const payload = asRecord(notification.data) ?? notification
+  const messageId = getFirstValue(payload.message_id, payload.messageId, notification.message_id)
+  const isMessageNotification =
+    Boolean(messageId) ||
+    payload.type === "new_message" ||
+    payload.action === "increment" ||
+    notification.type === "new_message"
+
+  const title = getFirstValue(
+    payload.title,
+    notification.title,
+    isMessageNotification ? "Nuevo mensaje recibido" : "Notificacion",
+  )
+  const description = getFirstValue(
+    payload.message,
+    payload.description,
+    notification.description,
+    isMessageNotification ? "Un usuario ha contactado contigo" : "",
+  )
 
   return {
     id: String(notification.id ?? crypto.randomUUID()),
-    title: String(payload.title ?? notification.title ?? "Notificación"),
-    description: String(payload.message ?? payload.description ?? notification.description ?? ""),
+    title: String(title),
+    description: String(description),
     time: formatRelativeTime(String(notification.created_at ?? notification.createdAt ?? "")),
     read: Boolean(notification.read_at ?? notification.read ?? null),
-    link: String(payload.link ?? notification.link ?? "/notificaciones"),
+    link: String(payload.link ?? notification.link ?? (messageId ? `${MESSAGES_ROUTE}/${messageId}` : "/notificaciones")),
     type: typeof notification.type === "string" ? notification.type : undefined,
-    dataType: typeof payload.type === "string" ? payload.type : undefined,
-    data: payload,
+    dataType: isMessageNotification ? "new_message" : typeof payload.type === "string" ? payload.type : undefined,
+    data: { ...payload, ...(messageId ? { message_id: messageId } : {}) },
     createdAt: typeof notification.created_at === "string" ? notification.created_at : undefined,
   }
 }

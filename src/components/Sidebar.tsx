@@ -9,6 +9,7 @@ import {
   Globe,
   GraduationCap,
   LayoutTemplate,
+  MessageCircle,
   Settings2,
   Upload,
   User,
@@ -108,6 +109,7 @@ const navItems: NavItem[] = [
     ],
   },
   { id: "plantillas", label: "Plantillas", icon: LayoutTemplate, path: "/plantillas" },
+  { id: "mensajes", label: "Mensajes", icon: MessageCircle, path: "/mensajes" },
   { id: "configuracion-visibilidad", label: "Configuración de visibilidad", icon: Settings2, path: "/configuracion-visibilidad" },
   { id: "publicar", label: "Publicar", icon: Upload, path: "/publicar" },
 ];
