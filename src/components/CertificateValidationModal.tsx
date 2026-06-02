@@ -1,4 +1,4 @@
-import { X, AlertTriangle } from 'lucide-react';
+import { X, AlertCircle } from 'lucide-react';
 
 interface CertificateValidationModalProps {
   isOpen: boolean;
@@ -29,8 +29,8 @@ const CertificateValidationModal = ({
         <div className="flex flex-col items-center text-center">
 
           {/* Ícono superior */}
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
-            <AlertTriangle className="size-8 text-red-600 stroke-[2.5px]" />
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+            <AlertCircle className="size-8 text-[#003A6C] stroke-[2.5px]" />
           </div>
 
           <h3 className="text-[#003A6C] text-2xl font-bold mb-3">
@@ -42,7 +42,7 @@ const CertificateValidationModal = ({
           </p>
 
           {/* Lista de errores */}
-          <div className="w-full bg-red-50 border border-red-200 rounded-xl p-4 mb-8 text-left max-h-60 overflow-y-auto">
+          <div className="w-full mb-8 text-left max-h-60 overflow-y-auto">
             <ul className="space-y-3">
               {errors.map((error, index) => (
                 <li
