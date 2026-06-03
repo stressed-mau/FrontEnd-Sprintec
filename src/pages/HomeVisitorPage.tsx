@@ -12,7 +12,7 @@ import PortadaCorp from "@/assets/images/PortadaCorp.png"
 import { useEffect, useRef } from "react"
 import { api } from "@/services/api";
 
-export default function Home() {
+export default function HomeVisitorPage() {
   const hasSent = useRef(false)
   const navigate = useNavigate()
 
