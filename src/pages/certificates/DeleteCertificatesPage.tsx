@@ -1,8 +1,8 @@
 import { useMemo } from "react"
 import { Trash2 } from "lucide-react"
 
-import ConfirmationModal from "@/components/ui/modals/ConfirmationModal"
-import DeleteConfirmationModal from "@/components/ui/modals/DeleteConfirmationModal"
+import ConfirmationModal from "@/components/modals/ConfirmationModal"
+import DeleteConfirmationModal from "@/components/modals/DeleteConfirmationModal"
 import { Button } from "@/components/ui/button"
 import { useCertificatesManager } from "@/hooks/useCertificatesManager"
 import { CertificatesSearch, CertificatesTable } from "@/pages/certificates/CertificatePageParts"

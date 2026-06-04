@@ -9,8 +9,8 @@ import { useUserPersonalData } from '@/hooks/useUserPersonalData'; // Reutilizam
 import { USER_HOME_ROUTE } from '@/routes/route-paths';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import ConfirmActionModal from '@/components/ui/modals/ConfirmActionModal';
-import ConfirmationModal from '@/components/ui/modals/ConfirmationModal';
+import ConfirmActionModal from '@/components/modals/ConfirmActionModal';
+import ConfirmationModal from '@/components/modals/ConfirmationModal';
 import HeaderUser from '@/components/HeaderUser';
 import Sidebar from '@/components/Sidebar';
 

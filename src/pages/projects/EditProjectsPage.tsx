@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 
-import ConfirmActionModal from "@/components/ui/modals/ConfirmActionModal";
-import ConfirmationModal from "@/components/ui/modals/ConfirmationModal";
+import ConfirmActionModal from "@/components/modals/ConfirmActionModal";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 import { useProjectsManager, type ProjectItem } from "@/hooks/useProjectsManager";
 import {
   FeedbackMessage,

@@ -2,6 +2,8 @@ import { createContext, createElement, useCallback, useContext, useEffect, useMe
 import type { FormEvent, ReactNode } from 'react';
 import { createSkill, getSkills, removeSkill, updateSkill, type Skill,  type SkillType, } from '../services/skillsService';
 import { AUTH_SESSION_CHANGED_EVENT, getAuthToken } from '@/services/auth/auth-storage';
+import {  formatSkillName,  normalizeSkillName,  isSimilarToOriginal,} from '@/utils/skillUtils';
+import { getSoftSkillValidationMessage,} from '@/utils/skillValidation';
 
 export type { Skill };
 
@@ -11,73 +13,6 @@ const technicalLevelPriority: Record<string, number> = {
   avanzado: 3,
   experto: 4,
 };
-
-function formatSkillName(value: string): string {
-  const lowercaseWords = ['de', 'la', 'el', 'en', 'y', 'con', 'para', 'por'];
-
-  return value
-    .toLowerCase()
-    .trim()
-    .split(' ')
-    .map((word, index) => {
-      if (index !== 0 && lowercaseWords.includes(word)) {
-        return word;
-      }
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    })
-    .join(' ');
-}
-
-function normalizeSkillName(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, ' ');
-}
-
-function normalizeText(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-}
-
-function levenshtein(a: string, b: string): number {
-  const m = a.length;
-  const n = b.length;
-  const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
-    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
-  );
-
-  for (let i = 1; i <= m; i += 1) {
-    for (let j = 1; j <= n; j += 1) {
-      dp[i][j] =
-        a[i - 1] === b[j - 1]
-          ? dp[i - 1][j - 1]
-          : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
-    }
-  }
-
-  return dp[m][n];
-}
-
-function isSimilarToOriginal(original: string, newName: string): boolean {
-  const orig = normalizeText(original);
-  const next = normalizeText(newName);
-
-  if (!next) return false;
-
-  const prefixLength = Math.min(3, orig.length);
-  if (next.startsWith(orig.slice(0, prefixLength))) return true;
-
-  if (next.includes(orig) || orig.includes(next)) return true;
-
-  return levenshtein(orig, next) <= 3;
-}
-
 interface SkillsManagerContextValue {
   isModalOpen: boolean;
   skills: Skill[];
@@ -265,17 +200,13 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     }
 
     if (skillType === 'blanda') {
-      const onlyLetters = /^[a-zA-ZÀ-ÿ\s]+$/;
+      const validationMessage =
+  getSoftSkillValidationMessage(skillName);
 
-      if (!onlyLetters.test(skillName.trim())) {
-        const hasNumbers = /\d/.test(skillName);
-        setErrorMessage(
-          hasNumbers
-            ? 'El Nombre de la habilidad contiene números. Solo se permiten letras.'
-            : 'El Nombre de la habilidad contiene caracteres especiales. Solo se permiten letras.'
-        );
-        return;
-      }
+if (validationMessage) {
+  setErrorMessage(validationMessage);
+  return;
+}
     }
 
     if (editingSkill && editingSkill.type === 'blanda') {
@@ -295,7 +226,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     );
 
     if (exists) {
-      setErrorMessage('Ya existe una habilidad registrada con ese nombre.');
+      setErrorMessage('Ya existe una habilidad registrada con ese nombre. Ingresa un nombre diferente.');
       return;
     }
 
