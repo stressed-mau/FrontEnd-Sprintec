@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { AlertCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import ConfirmationModal from "@/components/ui/modals/ConfirmationModal";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 import { useProjectsManager } from "@/hooks/useProjectsManager";
 import { FeedbackMessage, ProjectForm, ProjectPageShell } from "@/pages/projects/ProjectPageParts";
 
@@ -62,7 +62,7 @@ export default function AddProjectsPage() {
         }}
       />
       {duplicateMessage ? (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="relative w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl">
             <button
               type="button"

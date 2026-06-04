@@ -6,8 +6,8 @@ import { User, Mail, SquarePen, X, ShieldCheck, Loader2, Lock } from 'lucide-rea
 import { Eye, EyeOff } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { usePasswordVisibility } from '@/hooks/usePasswordVisibility';
-import ConfirmActionModal from '@/components/ui/modals/ConfirmActionModal';
-import ConfirmationModal from '@/components/ui/modals/ConfirmationModal';
+import ConfirmActionModal from '@/components/modals/ConfirmActionModal';
+import ConfirmationModal from '@/components/modals/ConfirmationModal';
 import AdminSidebar from '../components/Admin/AdminSidebar';
 import { getAuthSession } from '@/services/auth';
 

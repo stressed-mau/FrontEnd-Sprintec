@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 
-import ConfirmationModal from "@/components/ui/modals/ConfirmationModal"
+import ConfirmationModal from "@/components/modals/ConfirmationModal"
 import { useCertificatesManager } from "@/hooks/useCertificatesManager"
 import { CertificateFormCard } from "@/pages/certificates/CertificatePageParts"
 import { DuplicateRegistrationModal, ExperiencePageShell, FeedbackMessage } from "@/pages/experience/ExperiencePageParts"

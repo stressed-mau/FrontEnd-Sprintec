@@ -5,7 +5,7 @@ import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { useSkillsManager } from '@/hooks/useSkillsManager';
-import ConfirmationModal from '../../components/ui/modals/ConfirmationModal';
+import ConfirmationModal from '../../components/modals/ConfirmationModal';
 import { VIEW_SKILLS_ROUTE } from '@/routes/route-paths';
 
 const DUPLICATE_SKILL_MESSAGE = 'Ya existe una habilidad registrada con ese nombre. Ingresa un nombre diferente.';
@@ -37,18 +37,6 @@ const AddSkillsPage = () => {
     e.preventDefault();
     await handleSave(e);
   };
-
-  useEffect(() => {
-    if (!showSuccessModal) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      handleSuccessClose();
-    }, 1800);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [handleSuccessClose, showSuccessModal]);
 
   const handleCancel = () => {
     window.history.back();

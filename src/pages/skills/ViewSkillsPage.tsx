@@ -3,7 +3,7 @@ import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { Code2, Lightbulb, Search } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/useSkillsManager';
-import ConfirmationModal from '../../components/ui/modals/ConfirmationModal';
+import ConfirmationModal from '../../components/modals/ConfirmationModal';
 
 const LEVEL_LABELS: Record<string, string> = {
   experto: 'Experto',
