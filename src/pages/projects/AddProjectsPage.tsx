@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { AlertCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import ConfirmationModal from "@/components/ConfirmationModal";
+import ConfirmationModal from "@/components/ui/modals/ConfirmationModal";
 import { useProjectsManager } from "@/hooks/useProjectsManager";
 import { FeedbackMessage, ProjectForm, ProjectPageShell } from "@/pages/projects/ProjectPageParts";
 

@@ -5,7 +5,7 @@ import Sidebar from '../components/Sidebar';
 import { allCountries } from 'country-telephone-data';
 import { useUserPersonalData } from '../hooks/useUserPersonalData';
 import { Edit3, Mail, Phone, MapPin, Briefcase, User, X, Upload } from 'lucide-react';
-import ConfirmActionModal from '@/components/ConfirmActionModal';
+import ConfirmActionModal from '@/components/ui/modals/ConfirmActionModal';
 const UserPersonalData = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);

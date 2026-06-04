@@ -5,7 +5,7 @@ import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { useSkillsManager } from '@/hooks/useSkillsManager';
-import ConfirmationModal from '../../components/ConfirmationModal';
+import ConfirmationModal from '../../components/ui/modals/ConfirmationModal';
 import { VIEW_SKILLS_ROUTE } from '@/routes/route-paths';
 
 const DUPLICATE_SKILL_MESSAGE = 'Ya existe una habilidad registrada con ese nombre. Ingresa un nombre diferente.';

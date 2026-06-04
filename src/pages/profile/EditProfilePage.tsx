@@ -3,8 +3,8 @@ import { allCountries } from 'country-telephone-data';
 import { Upload, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import ConfirmActionModal from '@/components/ConfirmActionModal';
-import ConfirmationModal from '@/components/ConfirmationModal';
+import ConfirmActionModal from '@/components/ui/modals/ConfirmActionModal';
+import ConfirmationModal from '@/components/ui/modals/ConfirmationModal';
 import { Footer } from '@/components/Footer';
 import Header from '@/components/HeaderUser';
 import Sidebar from '@/components/Sidebar';

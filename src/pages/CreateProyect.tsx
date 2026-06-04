@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react';
 import { useCreateProyect } from "../hooks/useCreateProyect";
 import { useEffect, useState, useRef  } from 'react';
 import { getLanguages } from "@/services/ProjectService";
-import ConfirmationModal from '../components/ConfirmationModal';
+import ConfirmationModal from '../components/ui/modals/ConfirmationModal';
 
 const inputErrorClassName = "border-red-500 focus:ring-red-200";
 const inputBaseClassName = "border border-[#4982AD] bg-white focus:ring-2 focus:ring-blue-500 outline-none";

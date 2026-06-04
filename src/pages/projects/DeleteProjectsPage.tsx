@@ -1,8 +1,8 @@
 import { Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import ConfirmationModal from "@/components/ConfirmationModal";
-import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
+import ConfirmationModal from "@/components/ui/modals/ConfirmationModal";
+import DeleteConfirmationModal from "@/components/ui/modals/DeleteConfirmationModal";
 import { Button } from "@/components/ui/button";
 import { useProjectsManager, type ProjectItem } from "@/hooks/useProjectsManager";
 import {
