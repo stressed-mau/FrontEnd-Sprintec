@@ -1,6 +1,13 @@
 import axios from "axios";
 import { clearAuthSession, getAuthToken } from "@/services/auth/auth-storage";
 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    skipAuthRedirect?: boolean;
+    skipAuth?: boolean;
+  }
+}
+
 // En desarrollo, usar `/api` (proxy de Vite) evita CORS.
 // En producción, `VITE_API_URL` debe apuntar al backend real (ej: https://dominio.com/api).
 const envBaseUrl = import.meta.env.VITE_API_URL as string | undefined;
@@ -22,7 +29,7 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   const requestUrl = String(config.url ?? "").replace(/^\/+/, "");
   const isPublicAuthEndpoint = requestUrl === "login" || requestUrl === "register";
-  const token = isPublicAuthEndpoint ? null : getAuthToken();
+  const token = isPublicAuthEndpoint || config.skipAuth ? null : getAuthToken();
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -43,8 +50,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
+    const skipAuthRedirect = Boolean(error?.config?.skipAuthRedirect);
 
-    if (status === 401 || status === 419) {
+    if ((status === 401 || status === 419) && !skipAuthRedirect) {
       clearAuthSession();
 
       if (typeof window !== "undefined" && window.location.pathname !== "/login") {

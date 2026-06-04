@@ -17,6 +17,8 @@ export type SendPortfolioMessagePayload = {
   reason_title: string
   base_message: string
   additional_details?: string
+  contact_name?: string
+  contact_email?: string
 }
 
 export type ApiMessageUserInformation = {
@@ -41,12 +43,14 @@ export type ApiMessageUser = {
 export type ApiMessage = {
   id: number
   message: string
-  sender_id: number
+  sender_id: number | null
   receiver_id: number
   is_read: boolean
   is_active: boolean
   created_at: string
   updated_at: string
+  guest_name?: string | null
+  guest_email?: string | null
   sender?: ApiMessageUser | null
 }
 
@@ -60,6 +64,8 @@ export type InboxMessage = {
   category: string
   message: string
   additionalDetails?: string
+  contactName?: string
+  contactEmail?: string
   date: string
   read: boolean
   createdAt: string
@@ -67,6 +73,7 @@ export type InboxMessage = {
 }
 
 const MESSAGES_ENDPOINT = "/messages"
+const PUBLIC_PORTFOLIO_MESSAGES_ENDPOINT = "/public/portfolio-messages"
 
 function buildErrorMessage(error: unknown, fallback: string) {
   if (axios.isAxiosError(error)) {
@@ -123,6 +130,16 @@ function formatRelativeTime(value?: string) {
 function composeBackendMessage(payload: SendPortfolioMessagePayload) {
   const parts = [payload.reason_title.trim(), payload.base_message.trim()]
 
+  if (payload.contact_name?.trim() || payload.contact_email?.trim()) {
+    parts.push(
+      [
+        "Datos de contacto:",
+        payload.contact_name?.trim() ? `Nombre completo: ${payload.contact_name.trim()}` : "",
+        payload.contact_email?.trim() ? `Correo de contacto: ${payload.contact_email.trim()}` : "",
+      ].filter(Boolean).join("\n"),
+    )
+  }
+
   if (payload.additional_details?.trim()) {
     parts.push(`Detalles adicionales:\n${payload.additional_details.trim()}`)
   }
@@ -138,12 +155,17 @@ function parseBackendMessage(value: string) {
 
   const category = sections[0] || "Mensaje"
   const body = sections[1] || sections[0] || ""
-  const detailsSection = sections.slice(2).join("\n\n")
+  const contactSection = sections.find((section) => /^Datos de contacto:/i.test(section)) ?? ""
+  const detailsSection = sections.find((section) => /^Detalles adicionales:/i.test(section)) ?? ""
+  const contactName = contactSection.match(/Nombre completo:\s*(.+)/i)?.[1]?.trim()
+  const contactEmail = contactSection.match(/Correo de contacto:\s*(.+)/i)?.[1]?.trim()
   const additionalDetails = detailsSection.replace(/^Detalles adicionales:\s*/i, "").trim()
 
   return {
     category,
     message: body,
+    contactName: contactName || undefined,
+    contactEmail: contactEmail || undefined,
     additionalDetails: additionalDetails || undefined,
   }
 }
@@ -153,17 +175,21 @@ export function normalizeInboxMessage(message: ApiMessage): InboxMessage {
   const senderInfo = sender?.user_information
   const parsedMessage = parseBackendMessage(message.message || "")
   const fallbackName = sender?.username || `Usuario ${message.sender_id}`
+  const guestName = message.guest_name?.trim() || parsedMessage.contactName
+  const guestEmail = message.guest_email?.trim() || parsedMessage.contactEmail
 
   return {
     id: String(message.id),
-    senderId: String(message.sender_id),
+    senderId: message.sender_id == null ? "" : String(message.sender_id),
     receiverId: String(message.receiver_id),
-    from: senderInfo?.fullname || fallbackName,
-    fromEmail: senderInfo?.public_email || sender?.email || "Sin correo publico",
+    from: guestName || senderInfo?.fullname || fallbackName,
+    fromEmail: guestEmail || senderInfo?.public_email || sender?.email || "Sin correo publico",
     fromPhoto: senderInfo?.image_url || undefined,
     category: parsedMessage.category,
     message: parsedMessage.message,
     additionalDetails: parsedMessage.additionalDetails,
+    contactName: guestName,
+    contactEmail: guestEmail,
     date: formatRelativeTime(message.created_at),
     read: Boolean(message.is_read),
     createdAt: message.created_at,
@@ -173,10 +199,20 @@ export function normalizeInboxMessage(message: ApiMessage): InboxMessage {
 
 export async function sendPortfolioMessage(payload: SendPortfolioMessagePayload): Promise<ApiMessage> {
   try {
-    const response = await api.post(MESSAGES_ENDPOINT, {
-      receiver_id: payload.recipient_id,
+    const isGuestMessage = Boolean(payload.contact_name?.trim() || payload.contact_email?.trim())
+    const endpoint = isGuestMessage ? PUBLIC_PORTFOLIO_MESSAGES_ENDPOINT : MESSAGES_ENDPOINT
+    const response = await api.post(endpoint, {
+      recipient_id: payload.recipient_id,
+      ...(isGuestMessage ? {} : { receiver_id: payload.recipient_id }),
+      portfolio_slug: payload.portfolio_slug,
+      reason: payload.reason,
+      reason_title: payload.reason_title,
+      base_message: payload.base_message,
+      additional_details: payload.additional_details,
+      contact_name: payload.contact_name,
+      contact_email: payload.contact_email,
       message: composeBackendMessage(payload),
-    })
+    }, { skipAuth: isGuestMessage, skipAuthRedirect: true })
 
     return (unwrapMessagePayload(response.data) ?? response.data) as ApiMessage
   } catch (error) {
