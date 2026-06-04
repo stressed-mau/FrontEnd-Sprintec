@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { Clock, Mail, MessageCircle, RefreshCw } from "lucide-react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Clock, Mail, MessageCircle } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 
 import { Footer } from "@/components/Footer"
@@ -7,7 +7,9 @@ import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MESSAGES_ROUTE } from "@/routes/route-paths"
+import { getAuthSession } from "@/services/auth"
 import { getInboxMessages, readInboxMessage, type InboxMessage } from "@/services/messagesService"
+import { subscribeToUserNotifications } from "@/services/realtimeNotificationsService"
 
 export function MessagesPage() {
   const navigate = useNavigate()
@@ -17,38 +19,43 @@ export function MessagesPage() {
   const [loading, setLoading] = useState(true)
   const [loadingMessageId, setLoadingMessageId] = useState("")
   const [pageError, setPageError] = useState("")
+  const selectionRequestRef = useRef(0)
 
   const unreadCount = useMemo(() => messages.filter((message) => !message.read).length, [messages])
 
-  const loadMessages = useCallback(async () => {
-    setLoading(true)
+  const loadMessages = useCallback(async (showLoading = false) => {
+    if (showLoading) {
+      setLoading(true)
+    }
 
     try {
       const inboxMessages = await getInboxMessages()
       setMessages(inboxMessages)
       setPageError("")
-
-      if (!messageId) {
-        setSelectedMessage((current) => {
-          if (!current) return null
-          return inboxMessages.find((message) => message.id === current.id) ?? null
-        })
-      }
     } catch (error) {
-      setMessages([])
-      setSelectedMessage(null)
+      if (showLoading) {
+        setMessages([])
+        setSelectedMessage(null)
+      }
       setPageError(error instanceof Error ? error.message : "No se pudieron cargar los mensajes.")
     } finally {
-      setLoading(false)
+      if (showLoading) {
+        setLoading(false)
+      }
     }
-  }, [messageId])
+  }, [])
 
   const handleSelectMessage = useCallback(
     async (message: InboxMessage) => {
+      const requestId = selectionRequestRef.current + 1
+      selectionRequestRef.current = requestId
+      setSelectedMessage(message)
       setLoadingMessageId(message.id)
 
       try {
         const readMessage = await readInboxMessage(message.id)
+        if (selectionRequestRef.current !== requestId) return
+
         setSelectedMessage(readMessage)
         setMessages((current) => current.map((item) => (item.id === readMessage.id ? readMessage : item)))
         setPageError("")
@@ -57,27 +64,49 @@ export function MessagesPage() {
           navigate(`${MESSAGES_ROUTE}/${readMessage.id}`, { replace: false })
         }
       } catch (error) {
+        if (selectionRequestRef.current !== requestId) return
         setPageError(error instanceof Error ? error.message : "No se pudo cargar el mensaje.")
       } finally {
-        setLoadingMessageId("")
+        if (selectionRequestRef.current === requestId) {
+          setLoadingMessageId("")
+        }
       }
     },
     [messageId, navigate],
   )
 
   useEffect(() => {
-    void loadMessages()
+    void loadMessages(true)
+  }, [loadMessages])
+
+  useEffect(() => {
+    const userId = getAuthSession()?.user?.id
+
+    if (userId == null) {
+      return
+    }
+
+    return subscribeToUserNotifications(String(userId), () => {
+      void loadMessages(false)
+    })
+  }, [loadMessages])
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      void loadMessages(false)
+    }, 5000)
+
+    return () => window.clearInterval(intervalId)
   }, [loadMessages])
 
   useEffect(() => {
     if (!messageId) return
 
+    const requestId = selectionRequestRef.current + 1
+    selectionRequestRef.current = requestId
     const existingMessage = messages.find((message) => message.id === messageId)
     if (existingMessage) {
-      if (selectedMessage?.id !== messageId || !existingMessage.read) {
-        void handleSelectMessage(existingMessage)
-      }
-      return
+      setSelectedMessage(existingMessage)
     }
 
     let isMounted = true
@@ -87,7 +116,7 @@ export function MessagesPage() {
       try {
         const readMessage = await readInboxMessage(messageId)
 
-        if (!isMounted) return
+        if (!isMounted || selectionRequestRef.current !== requestId) return
 
         setSelectedMessage(readMessage)
         setMessages((current) => {
@@ -96,11 +125,11 @@ export function MessagesPage() {
         })
         setPageError("")
       } catch (error) {
-        if (isMounted) {
+        if (isMounted && selectionRequestRef.current === requestId) {
           setPageError(error instanceof Error ? error.message : "No se pudo cargar el mensaje.")
         }
       } finally {
-        if (isMounted) {
+        if (isMounted && selectionRequestRef.current === requestId) {
           setLoadingMessageId("")
         }
       }
@@ -111,7 +140,7 @@ export function MessagesPage() {
     return () => {
       isMounted = false
     }
-  }, [handleSelectMessage, messageId, messages, selectedMessage?.id])
+  }, [messageId])
 
   return (
     <div className="flex min-h-screen flex-col bg-[#F7F0E1]">
@@ -120,7 +149,7 @@ export function MessagesPage() {
         <Sidebar />
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-6xl space-y-6">
-            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
               <div>
                 <h1 className="text-3xl font-bold text-[#003A6C]">Mensajes</h1>
                 <p className="mt-1 text-sm text-[#5B8FB9]">
@@ -129,15 +158,6 @@ export function MessagesPage() {
                     : "No tienes mensajes sin leer"}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => void loadMessages()}
-                disabled={loading}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#6DACBF] bg-white px-4 text-sm font-semibold text-[#003A6C] transition hover:bg-[#EEF7FC] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                Actualizar
-              </button>
             </div>
 
             {pageError ? (
