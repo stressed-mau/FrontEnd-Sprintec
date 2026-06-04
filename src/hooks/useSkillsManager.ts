@@ -6,6 +6,7 @@ import {  formatSkillName,  normalizeSkillName,  } from '@/utils/skillUtils';
 import { getSoftSkillValidationMessage,} from '@/utils/skillValidation';
 import {  sortTechnicalSkills,   sortSoftSkills,  filterSkills,  filterTechnicalSkills,  filterSoftSkills,} from '@/utils/skillFilters';
 import { validateSkillForm } from '@/utils/skillFormValidation';
+import { normalizeErrorMessage }from '@/utils/errorUtils';
 
 export type { Skill };
 
@@ -76,9 +77,6 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
   const [pageError, setPageError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const normalizeErrorMessage = useCallback((message: string) => {
-    return message.replace(/infoemacion/gi, 'información').replace(/informacion/gi, 'información');  }, []);
 
   const loadSkills = useCallback(async () => {
     if (!getAuthToken()) {
@@ -153,13 +151,12 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
   const handleSkillNameChange = (value: string) => {
     setSkillName(value);
     if (editingSkill?.type === 'blanda' || skillType === 'blanda') {
-        const validationMessage =
-         getSoftSkillValidationMessage(value);
-          setErrorMessage(validationMessage ?? '');
-      } else if (errorMessage) { 
-                 setErrorMessage('');
-            } else if (errorMessage) {
-                 setErrorMessage(''); }};
+  const validationMessage =
+    getSoftSkillValidationMessage(value);
+  setErrorMessage(validationMessage ?? '');
+} else {
+  setErrorMessage('');
+}};
 
   const handleSave = async (e?: FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
