@@ -2,10 +2,10 @@ import { createContext, createElement, useCallback, useContext, useEffect, useMe
 import type { FormEvent, ReactNode } from 'react';
 import { createSkill, getSkills, removeSkill, updateSkill, type Skill,  type SkillType, } from '../services/skillsService';
 import { AUTH_SESSION_CHANGED_EVENT, getAuthToken } from '@/services/auth/auth-storage';
-import {  formatSkillName,  normalizeSkillName,  } from '@/utils/skillUtils';
-import { getSoftSkillValidationMessage,} from '@/utils/skillValidation';
-import {  sortTechnicalSkills,   sortSoftSkills,  filterSkills,  filterTechnicalSkills,  filterSoftSkills,} from '@/utils/skillFilters';
-import { validateSkillForm } from '@/utils/skillFormValidation';
+import {  formatSkillName,  normalizeSkillName,  } from '@/utils/skills/skillUtils';
+import { getSoftSkillValidationMessage,} from '@/utils/skills/skillValidation';
+import {  sortTechnicalSkills,   sortSoftSkills,  filterSkills,  filterTechnicalSkills,  filterSoftSkills,} from '@/utils/skills/skillFilters';
+import { validateSkillForm } from '@/utils/skills/skillFormValidation';
 import { normalizeErrorMessage }from '@/utils/errorUtils';
 
 export type { Skill };
