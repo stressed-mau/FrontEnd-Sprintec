@@ -4,15 +4,12 @@ import { createSkill, getSkills, removeSkill, updateSkill, type Skill,  type Ski
 import { AUTH_SESSION_CHANGED_EVENT, getAuthToken } from '@/services/auth/auth-storage';
 import {  formatSkillName,  normalizeSkillName,  isSimilarToOriginal,} from '@/utils/skillUtils';
 import { getSoftSkillValidationMessage,} from '@/utils/skillValidation';
+import { TECHNICAL_LEVEL_PRIORITY } from '@/constants/skillConstants';
+import {  filterSkills,  filterTechnicalSkills,  filterSoftSkills,} from '@/utils/skillFilters';
 
 export type { Skill };
 
-const technicalLevelPriority: Record<string, number> = {
-  basico: 1,
-  intermedio: 2,
-  avanzado: 3,
-  experto: 4,
-};
+
 interface SkillsManagerContextValue {
   isModalOpen: boolean;
   skills: Skill[];
@@ -171,19 +168,13 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     setSkillName(value);
 
     if (editingSkill?.type === 'blanda' || skillType === 'blanda') {
-      const hasNumbers = /\d/.test(value);
-      const hasSpecial = /[^a-zA-ZÀ-ÿ\s]/.test(value);
+    const validationMessage =
+    getSoftSkillValidationMessage(value);
 
-      if (hasNumbers) {
-        setErrorMessage('El Nombre de la habilidad contiene números. Solo se permiten letras.');
-      } else if (hasSpecial) {
-        setErrorMessage(
-          'El Nombre de la habilidad contiene caracteres especiales. Solo se permiten letras.'
-        );
-      } else {
-        setErrorMessage('');
-      }
-    } else if (errorMessage) {
+  setErrorMessage(validationMessage ?? '');
+} else if (errorMessage) {
+  setErrorMessage('');
+} else if (errorMessage) {
       setErrorMessage('');
     }
   };
@@ -392,8 +383,8 @@ const confirmDeleteSelected = async () => {
     return skills
       .filter((skill) => skill.type === 'tecnica')
       .sort((a, b) => {
-        const aPriority = technicalLevelPriority[a.level?.toLowerCase() ?? ''] ?? 0;
-        const bPriority = technicalLevelPriority[b.level?.toLowerCase() ?? ''] ?? 0;
+        const aPriority = TECHNICAL_LEVEL_PRIORITY[a.level?.toLowerCase() ?? ''] ?? 0;
+        const bPriority = TECHNICAL_LEVEL_PRIORITY[b.level?.toLowerCase() ?? ''] ?? 0;
 
         if (bPriority !== aPriority) return aPriority - bPriority;
         return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
@@ -406,39 +397,7 @@ const confirmDeleteSelected = async () => {
       .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
   }, [skills]);
 
-  const filteredSkills = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) return skills;
 
-    return skills.filter(
-      (skill) =>
-        skill.name.toLowerCase().includes(query) ||
-        (skill.level ?? '').toLowerCase().includes(query) ||
-        skill.type.toLowerCase().includes(query)
-    );
-  }, [skills, searchQuery]);
-
-  const filteredTechnicalSkills = useMemo(() => {
-  const query = searchQuery.trim().toLowerCase();
-
-  if (!query) return technicalSkills;
-
-  return technicalSkills.filter(
-    (skill) =>
-      skill.name.toLowerCase().includes(query) ||
-      (skill.level ?? '').toLowerCase().includes(query)
-  );
-}, [technicalSkills, searchQuery]);
-
-const filteredSoftSkills = useMemo(() => {
-  const query = searchQuery.trim().toLowerCase();
-
-  if (!query) return softSkills;
-
-  return softSkills.filter((skill) =>
-    skill.name.toLowerCase().includes(query)
-  );
-}, [softSkills, searchQuery]);
   const canSaveSkill = useMemo(() => {
     if (isSaving || errorMessage.trim() || !skillName.trim()) {
       return false;
@@ -455,6 +414,18 @@ const filteredSoftSkills = useMemo(() => {
 
     return !(sameName && sameType && (skillType === 'blanda' || sameLevel));
   }, [editingSkill, errorMessage, isSaving, skillLevel, skillName, skillType]);
+
+  const filteredSkills = useMemo(() => {
+    return filterSkills(skills, searchQuery);
+  }, [skills, searchQuery]);
+
+  const filteredTechnicalSkills = useMemo(() => {
+    return filterTechnicalSkills(technicalSkills, searchQuery);
+  }, [technicalSkills, searchQuery]);
+
+  const filteredSoftSkills = useMemo(() => {
+    return filterSoftSkills(softSkills, searchQuery);
+  }, [softSkills, searchQuery]);
 
   const value: SkillsManagerContextValue = {
     isModalOpen,  skills, editingSkill, skillType,  skillName,  skillLevel, errorMessage,  successMessage,
