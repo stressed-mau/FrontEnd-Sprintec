@@ -2,7 +2,7 @@ import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
 import { Code2, Lightbulb, Search, Trash2 } from 'lucide-react';
-import { useSkillsManager } from '@/hooks/useSkillsManager';
+import { useSkillsManager } from '@/hooks/skills/useSkillsManager';
 import ConfirmationModal from '../../components/modals/ConfirmationModal';
 import DeleteConfirmationModal from '../../components/modals/DeleteConfirmationModal';
 

@@ -1,17 +1,17 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { getSkills, removeSkill, type Skill,  type SkillType, } from '../services/skillsService';
-import { AUTH_SESSION_CHANGED_EVENT, getAuthToken } from '@/services/auth/auth-storage';
+import type { Skill, SkillType, } from '../../services/skillsService';
 import {  formatSkillName } from '@/utils/skills/skillUtils';
 import {  sortTechnicalSkills,   sortSoftSkills,  filterSkills,  filterTechnicalSkills,  filterSoftSkills,} from '@/utils/skills/skillFilters';
 import { validateSkillForm } from '@/utils/skills/skillFormValidation';
 import { normalizeErrorMessage }from '@/utils/errorUtils';
-import { toggleAllSkillSelection, toggleSkillSelection } from '@/utils/skills/skillSelectionUtils';
+import { removeSelectedSkill, toggleAllSkillSelection, toggleSkillSelection } from '@/utils/skills/skillSelectionUtils';
 import { hasSkillChanges } from '@/utils/skills/skillEditUtils';
 import { buildSkillPayload } from '@/utils/skills/skillPayloadUtils';
-import { removeSkillFromList, removeSelectedSkillsFromList, getDeleteSuccessMessage, deleteSelectedSkills} from '@/utils/skills/skillDeleteUtils';
+import { deleteSkill, removeSkillFromList, removeSelectedSkillsFromList, getDeleteSuccessMessage, deleteSelectedSkills} from '@/utils/skills/skillDeleteUtils';
 import { getSkillNameErrorMessage} from '@/utils/skills/skillNameValidationUtils';
 import { addSkillToList, updateSkillInList, saveSkill} from '@/utils/skills/skillCrudUtils';
+import { useSkillsLoader } from '@/hooks/skills/useSkillsLoader';
 
 export type { Skill };
 
@@ -82,40 +82,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
   const [pageError, setPageError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const loadSkills = useCallback(async () => {
-    if (!getAuthToken()) {
-      setSkills([]);
-      setPageError('');
-      setIsLoading(false);
-      return; }
-      setIsLoading(true);
-      setPageError('');
-
-    try {
-      const remoteSkills = await getSkills();
-      setSkills(remoteSkills);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'No se pudieron cargar las habilidades.';
-      setPageError(normalizeErrorMessage(message));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleAuthSessionChanged = () => {
-      if (getAuthToken()) {
-        void loadSkills();
-        return;  }
-      setSkills([]);
-      setPageError('');
-      setIsLoading(false); };
-
-    handleAuthSessionChanged();
-    window.addEventListener(AUTH_SESSION_CHANGED_EVENT, handleAuthSessionChanged);
-    return () => window.removeEventListener(AUTH_SESSION_CHANGED_EVENT, handleAuthSessionChanged);
-  }, [loadSkills]);
+  const { loadSkills } = useSkillsLoader({ setSkills, setPageError, setIsLoading });
 
   useEffect(() => {
     if (!pageError) return;
@@ -220,13 +187,9 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
 
     try {
       setIsDeleting(true);
-      await removeSkill(skillToDelete.id);
+      await deleteSkill(skillToDelete.id);
       setSkills((prev) => removeSkillFromList( prev, skillToDelete.id ));
-      setSelectedSkillIds((prev) => {
-        const next = new Set(prev);
-        next.delete(skillToDelete.id);
-        return next;
-      });
+     setSelectedSkillIds((prev) => removeSelectedSkill( prev,  skillToDelete.id ));
       setShowConfirmDelete(false);
       setSkillToDelete(null);
       setSuccessMessage('Habilidad eliminada correctamente.');

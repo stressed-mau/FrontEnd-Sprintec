@@ -4,7 +4,7 @@ import { AlertCircle, X } from 'lucide-react';
 import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
-import { useSkillsManager } from '@/hooks/useSkillsManager';
+import { useSkillsManager } from '@/hooks/skills/useSkillsManager';
 import ConfirmationModal from '../../components/modals/ConfirmationModal';
 import { VIEW_SKILLS_ROUTE } from '@/routes/route-paths';
 

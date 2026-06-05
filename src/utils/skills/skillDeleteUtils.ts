@@ -27,6 +27,12 @@ export function getDeleteSuccessMessage(
     : 'Habilidad eliminada correctamente.';
 }
 
+export async function deleteSkill(
+  skillId: string
+): Promise<void> {
+  await removeSkill(skillId);
+}
+
 export async function deleteSelectedSkills(
   selectedIds: Set<string>
 ): Promise<void> {

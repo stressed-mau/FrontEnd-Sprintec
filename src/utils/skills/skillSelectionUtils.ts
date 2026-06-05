@@ -28,6 +28,14 @@ export function toggleAllSkillSelection(
   } else {
     visibleIds.forEach((id) => next.add(id));
   }
+  return next;
+}
 
+export function removeSelectedSkill(
+  selectedIds: Set<string>,
+  skillId: string
+) {
+  const next = new Set(selectedIds);
+  next.delete(skillId);
   return next;
 }
