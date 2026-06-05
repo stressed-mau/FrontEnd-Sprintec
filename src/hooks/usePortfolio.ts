@@ -3,7 +3,7 @@ import type { Portfolio, Experience, Project, Skill, SocialNetwork } from "@/typ
 import { getAuthSession } from "@/services/auth/auth-storage";
 import { api } from "@/services/api";
 
-import { getUserInformation } from "@/services/PersonalDataService"; 
+import { getUserInformation } from "@/services/personalDataService"; 
 import { getSkills } from "@/services/skillsService";
 import { getEducation } from "@/services/educationService";
 import { getExperiences } from "@/services/experienceService";

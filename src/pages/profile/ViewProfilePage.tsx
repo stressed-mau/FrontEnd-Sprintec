@@ -1,11 +1,17 @@
+import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Briefcase, User } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Footer } from '@/components/Footer';
+import { getAuthSession } from '@/services/auth';
+import { REGISTER_PROFILE_ROUTE } from '@/routes/route-paths';
 import Header from '../../components/HeaderUser'; 
 import Sidebar from '../../components/Sidebar';
-import { Footer } from '@/components/Footer';
 import { useUserPersonalData } from '../../hooks/useUserPersonalData';
-import { getAuthSession } from '@/services/auth';
-import { Link } from 'react-router-dom';
-import { REGISTER_PROFILE_ROUTE } from '@/routes/route-paths';
+interface InfoItemProps {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}
 const ViewProfilePage = () => {
   const { form, phoneNumber, countryCode, loading, hasPersonalData } = useUserPersonalData();
   const session = getAuthSession();
@@ -69,7 +75,6 @@ const ViewProfilePage = () => {
 
               <hr className="mb-8 border-gray-100" />
 
-              {/* Grid de detalles */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-12">
               <InfoItem icon={<Mail className="text-blue-500" />} label="Email de cuenta" value={accountEmail} />
                 <InfoItem icon={<Mail className="text-purple-500" />} label="Email Público" value={form.email} />
@@ -87,12 +92,18 @@ const ViewProfilePage = () => {
   );
 };
 
-const InfoItem = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) => (
+const InfoItem = ({
+  icon,
+  label,
+  value,
+}: InfoItemProps) => (
   <div className="flex items-center gap-4">
     <div className="p-3 bg-gray-50 rounded-xl">{icon}</div>
     <div>
       <p className="text-[10px] font-bold text-gray-400 uppercase">{label}</p>
-      <p className="text-[#003A6C] font-medium text-sm">{value || "No especificado"}</p>
+      <p className="text-[#003A6C] font-medium text-sm">
+        {value || "No especificado"}
+      </p>
     </div>
   </div>
 );

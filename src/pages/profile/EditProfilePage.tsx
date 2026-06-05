@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { allCountries } from 'country-telephone-data';
 import { Upload, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
 import ConfirmActionModal from '@/components/ConfirmActionModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { Footer } from '@/components/Footer';
 import Header from '@/components/HeaderUser';
 import Sidebar from '@/components/Sidebar';
 import { useUserPersonalData } from '@/hooks/useUserPersonalData';
-
+import { InputField } from "@/components/forms/InputFieldPersonalData";
+import { TextAreaField } from "@/components/forms/TextAreaFieldPersonalData";
 const EditProfilePage = () => {
   const navigate = useNavigate();
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
@@ -146,13 +146,9 @@ const EditProfilePage = () => {
                     <User size={60} className="text-gray-400" />
                   )}
                 </div>
-
                 <input
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="hidden"
+                  type="file" accept="image/jpeg,image/png"
+                  ref={fileInputRef} onChange={handleFileChange} className="hidden"
                 />
                 <button
                   type="button"
@@ -167,64 +163,35 @@ const EditProfilePage = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-5">
                 <div className="flex flex-col gap-5">
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-[#003A6C]">Nombre completo *</label>
-                    <input
-                      id="fullName"
-                      value={form.fullName}
-                      type="text"
-                      disabled
-                      className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-gray-100 text-sm outline-none text-[#5B6B7A] cursor-not-allowed"
-                    />
-                    {errors.fullName ? <p className="text-red-500 text-xs mt-1">{errors.fullName}</p> : null}
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-[#003A6C]">Biografía</label>
-                    <textarea
-                      id="bio"
-                      value={form.bio}
-                      onChange={handleChange}
-                      rows={6}
-                      maxLength={300}
-                      placeholder="Cuéntanos sobre ti y tu experiencia..."
-                      className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]"
-                    />
-                    {errors.bio ? <p className="text-red-500 text-xs mt-1">{errors.bio}</p> : null}
-                  </div>
+                  <InputField
+                    id="fullName" label="Nombre completo *" value={form.fullName}
+                    onChange={() => {}} disabled={true} error={errors.fullName}
+                    className="bg-gray-100 text-[#5B6B7A] cursor-not-allowed"
+                  />
+                  <TextAreaField
+                    id="bio" label="Biografía" value={form.bio}
+                    onChange={handleChange} error={errors.bio} warning={charLimitWarning.bio}
+                    rows={10} maxLength={300} placeholder="Cuéntanos sobre ti y tu experiencia..."
+                  />
                 </div>
-
                 <div className="flex flex-col gap-5">
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-[#003A6C]">Correo electrónico público *</label>
-                    <input
-                      id="email"
-                      value={form.email}
-                      onChange={handleChange}
-                      type="text" 
-                      inputMode="email"
-                      maxLength={60}
-                      placeholder="Ej: juan.perez@example.com"
-                      className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm outline-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]"
-                    />
-                    {errors.email ? (
-                      <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-                    ) : charLimitWarning.email ? (
-                      <p className="text-yellow-600 text-xs mt-1">{charLimitWarning.email}</p>
-                    ) : emailSuggestion ? (
-                      <p className="text-amber-700 text-xs mt-1">
-                        ¿Quisiste decir{' '}
-                        <span
-                          className="underline cursor-pointer font-medium"
-                          onClick={() => applyEmailSuggestion(emailSuggestion.full)}
-                        >
-                          {emailSuggestion.full}
-                        </span>
-                        ?
-                      </p>
-                    ) : null}
-                  </div>
-
+                  <InputField
+                    id="email" label="Correo electrónico público *" value={form.email}
+                    onChange={handleChange} error={errors.email} warning={charLimitWarning.email}
+                    type="email" maxLength={60} placeholder="Ej: juan.perez@example.com"
+                  />
+                  {!errors.email && !charLimitWarning.email && emailSuggestion && (
+                    <p className="text-amber-700 text-xs mt-1">
+                      ¿Quisiste decir{" "}
+                      <span
+                        className="underline cursor-pointer font-medium"
+                        onClick={() => applyEmailSuggestion(emailSuggestion.full)}
+                      >
+                        {emailSuggestion.full}
+                      </span>
+                      ?
+                    </p>
+                  )}
                   <div className="space-y-1">
                     <label className="block text-sm font-medium text-[#003A6C]">Numero de contacto *</label>
                     <div className="flex gap-2">
@@ -239,14 +206,9 @@ const EditProfilePage = () => {
                           </option>
                         ))}
                       </select>
-
                       <input
-                        value={phoneNumber}
-                        onChange={(event) => handlePhoneChange(event.target.value)}
-                        type="tel"
-                        inputMode="numeric"
-                        maxLength={8}
-                        placeholder="Ej: 77777777"
+                        value={phoneNumber} onChange={(event) => handlePhoneChange(event.target.value)}
+                        type="tel" inputMode="numeric" maxLength={8} placeholder="Ej: 77777777"
                         className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-sm outline-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]"
                       />
                     </div>
@@ -256,30 +218,16 @@ const EditProfilePage = () => {
                       <p className="text-red-500 text-xs mt-1">{charLimitWarning.phone}</p>
                     ) : null}
                   </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-[#003A6C]">Residencia actual</label>
-                    <input
-                      id="location"
-                      value={form.location}
-                      onChange={handleChange}
-                      maxLength={100}
-                      placeholder="Ej: La Paz, Bolivia"
-                      className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm outline-none resize-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-[#003A6C]">Ocupación</label>
-                    <input
-                      id="occupation"
-                      value={form.occupation}
-                      onChange={handleChange}
-                      maxLength={80}
-                      placeholder="Ej: Desarrollador Full Stack"
-                      className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm outline-none focus:ring-2 focus:ring-blue-400 text-[#003A6C]"
-                    />
-                  </div>
+                  <InputField
+                    id="location" label="Residencia actual" value={form.location}
+                    onChange={handleChange} error={errors.location} warning={charLimitWarning.location}
+                    maxLength={100} placeholder="Ej: La Paz, Bolivia"
+                  />
+                  <InputField
+                    id="occupation" label="Ocupación" value={form.occupation}
+                    onChange={handleChange} error={errors.occupation} warning={charLimitWarning.occupation}
+                    maxLength={80} placeholder="Ej: Desarrollador Full Stack"
+                  />
                 </div>
               </div>
 
@@ -293,7 +241,6 @@ const EditProfilePage = () => {
                 >
                   {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
                 </button>
-
                 <button
                   type="button"
                   disabled={isSubmitting}
@@ -309,7 +256,6 @@ const EditProfilePage = () => {
           </div>
         </main>
       </div>
-
       <ConfirmActionModal
         isOpen={showCancelConfirmModal}
         title="Confirmar cambios"
@@ -338,5 +284,4 @@ const EditProfilePage = () => {
     </div>
   );
 };
-
 export default EditProfilePage;

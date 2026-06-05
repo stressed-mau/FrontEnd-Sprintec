@@ -1,13 +1,17 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { getAuthSession } from "@/services/auth/auth-storage";
 import { useEmailValidation } from "@/hooks/useEmailValidation";
-import {PRESERVE_VALUE_FIELDS, LIMITS, validateField, validatePersonalDataForm, validatePreservedFields,
+import {
+  PRESERVE_VALUE_FIELDS, 
+  LIMITS, validateField, 
+  validatePersonalDataForm, 
+  validatePreservedFields,
   type FormErrors,
   type PersonalDataForm,
 } from "@/utils/PersonalDataValidation";
 import { mapUserToForm, userHasData } from "@/utils/PersonalDataMapper";
-import {createUserInformation, getUserInformation, updateUserInformation, type UserInformation,} from "@/services/PersonalDataService";
-import {usePhoneData} from "@/hooks/usePhoneData";
+import {createUserInformation, getUserInformation, updateUserInformation, type UserInformation,} from "@/services/personalDataService";
+import { usePhoneData } from "@/hooks/usePhoneData";
 export const useUserPersonalData = () => {
   const {countryCode, setCountryCode, phoneNumber, setPhoneNumber, originalPhoneNumber, applyPhoneNumber,} = usePhoneData();
   const [charLimitWarning, setCharLimitWarning] = useState({
@@ -30,10 +34,6 @@ export const useUserPersonalData = () => {
     email: "",
     image: ""
   });
-
-  useEffect(() => {
-    console.log("FORM CAMBIÓ:", form);
-  }, [form]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -113,7 +113,7 @@ export const useUserPersonalData = () => {
     }
     const newValue = value;
     setForm(prev => ({...prev, [id]: newValue}));
-    setErrors((prev: any) => ({...prev, server: "", [id]: validateField(id, newValue, validateEmail)}));
+    setErrors((prev: FormErrors) => ({...prev, server: "", [id]: validateField(id, newValue, validateEmail)}));
   };
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

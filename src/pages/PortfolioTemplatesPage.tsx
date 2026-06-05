@@ -6,7 +6,7 @@ import { Palette } from "lucide-react"
 import { usePublishPortfolio } from "../hooks/usePublishPortfolio"
 //import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility"
 import { getAuthSession } from "@/services/auth/auth-storage"
-import { getUserInformation } from "@/services/PersonalDataService"
+import { getUserInformation } from "@/services/personalDataService"
 import { useNavigate } from "react-router-dom"
 // Componentes de Plantillas y Assets [cite: 1-4]
 import ModernTemplate, { type ModernTemplateProfile } from "../components/templates/ModernTemplate"
