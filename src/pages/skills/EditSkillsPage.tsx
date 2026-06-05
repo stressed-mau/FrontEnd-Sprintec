@@ -80,7 +80,9 @@ const EditSkillsPage = () => {
                         <span className="font-semibold text-[#003A6C]">{skill.name}</span>
                       </div>
                       <span className="text-[#4B778D] text-sm">Técnica</span>
-                     <SkillLevelBadge level={skill.level} />
+                      <div className="hidden sm:block">
+                         <SkillLevelBadge  level={skill.level}/>
+                       </div>
                     </div>
                   ))}
                 </div>

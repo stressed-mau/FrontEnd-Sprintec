@@ -73,7 +73,9 @@ const ViewSkillsPage = () => {
                       }`}
                     >
                       <span className="font-semibold text-[#003A6C]">{skill.name}</span>
-                      <SkillLevelBadge  level={skill.level}/>
+                       <div className="hidden sm:block">
+                           <SkillLevelBadge  level={skill.level}/>
+                           </div>
                     </div>
                   ))}
                 </div>
