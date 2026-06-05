@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { api } from "@/services/api";
-import { uploadImage } from "@/services/ProjectService";
+import { uploadImage } from "@/services/projectImageService";
 
 export interface Project {
   id?: number;

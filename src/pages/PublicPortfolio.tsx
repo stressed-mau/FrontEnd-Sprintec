@@ -3,13 +3,16 @@ import { useEffect, useRef, useState } from "react"
 import { usePortfolio } from "@/hooks/usePortfolio"
 //import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityService"
 import { ArrowLeft, Calendar, Code, ExternalLink, GitBranch, Mail, MapPin, Briefcase, GraduationCap, MessageCircle, Send, X } from "lucide-react"
-import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
-import ModernTemplate from "@/components/templates/ModernTemplate"
-import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
+import MinimalistTemplate from "@/components/templates/minimalist/MinimalistTemplate"
+import ModernTemplate from "@/components/templates/modern/ModernTemplate"
+import { CorporatePortfolioTemplate } from "@/components/templates/corporate/CorporatePortfolioTemplate"
 import { getSocialNetworkDisplayName, getSocialNetworkKey, SocialNetworkIcon } from "@/components/portfolio/SocialNetworkIcon"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
-import { LOGIN_ROUTE } from "@/routes/route-paths"
-import { getAuthSession, isAuthenticated } from "@/services/auth"
+import { getAuthSession } from "@/services/auth"
 import { sendPortfolioMessage, type MessageReason } from "@/services/messagesService"
 import {
   recordPortfolioView,
@@ -17,6 +20,7 @@ import {
   recordProjectLinkClick,
   recordSocialClick,
   sendPortfolioTrackingPulse,
+  startPortfolioTracking,
 } from "@/services/portfolioAnalyticsService"
 
 const asBoolean = (value: unknown): boolean => {
@@ -34,7 +38,8 @@ const getProjectTechnologies = (project: any): string[] => (
 ).filter(Boolean)
 
 const getNetworkName = (network: any): string => {
-  return getSocialNetworkKey(network)
+  const networkKey = getSocialNetworkKey(network)
+  return networkKey === "youtube" ? "google" : networkKey
 }
 
 const getProjectTitle = (project: any): string =>
@@ -109,6 +114,9 @@ const MESSAGE_REASON_OPTIONS: Array<{ id: MessageReason; title: string; message:
 ]
 
 const MESSAGE_DETAILS_MAX_LENGTH = 300
+const CONTACT_NAME_MAX_LENGTH = 80
+const CONTACT_EMAIL_MAX_LENGTH = 120
+const CONTACT_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const getPortfolioRecipientId = (portfolio: any): string => {
   const value =
@@ -317,12 +325,15 @@ type PortfolioMessageModalProps = {
   recipientName: string
   portfolioSlug: string
   recipientId: string
+  isGuest: boolean
   onClose: () => void
   onSent: () => void
 }
 
-const PortfolioMessageModal = ({ recipientName, portfolioSlug, recipientId, onClose, onSent }: PortfolioMessageModalProps) => {
+const PortfolioMessageModal = ({ recipientName, portfolioSlug, recipientId, isGuest, onClose, onSent }: PortfolioMessageModalProps) => {
   const [selectedReason, setSelectedReason] = useState<MessageReason | "">("")
+  const [contactName, setContactName] = useState("")
+  const [contactEmail, setContactEmail] = useState("")
   const [details, setDetails] = useState("")
   const [isSending, setIsSending] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
@@ -340,9 +351,26 @@ const PortfolioMessageModal = ({ recipientName, portfolioSlug, recipientId, onCl
 
   const handleSubmit = async () => {
     const reason = MESSAGE_REASON_OPTIONS.find((option) => option.id === selectedReason)
+    const trimmedContactName = contactName.trim()
+    const trimmedContactEmail = contactEmail.trim()
 
     if (!reason) {
       setErrorMessage("Selecciona un motivo de contacto.")
+      return
+    }
+
+    if (isGuest && !trimmedContactName) {
+      setErrorMessage("Ingresa tu nombre completo.")
+      return
+    }
+
+    if (isGuest && !trimmedContactEmail) {
+      setErrorMessage("Ingresa tu correo de contacto.")
+      return
+    }
+
+    if (isGuest && !CONTACT_EMAIL_REGEX.test(trimmedContactEmail)) {
+      setErrorMessage("Ingresa un correo de contacto valido.")
       return
     }
 
@@ -356,6 +384,8 @@ const PortfolioMessageModal = ({ recipientName, portfolioSlug, recipientId, onCl
         reason: reason.id,
         reason_title: reason.title,
         base_message: reason.message,
+        contact_name: isGuest ? trimmedContactName : undefined,
+        contact_email: isGuest ? trimmedContactEmail : undefined,
         additional_details: details.trim() || undefined,
       })
       onSent()
@@ -373,17 +403,58 @@ const PortfolioMessageModal = ({ recipientName, portfolioSlug, recipientId, onCl
           <h2 className="min-w-0 break-words text-xl font-bold leading-tight sm:text-2xl">
             Enviar mensaje a {recipientName}
           </h2>
-          <button
+          <Button
             type="button"
             onClick={onClose}
-            className="ml-3 shrink-0 rounded-full p-1 transition hover:bg-white/15"
+            variant="ghost"
+            size="icon"
+            className="ml-3 h-8 w-8 shrink-0 rounded-full p-1 text-white transition hover:bg-white/15 hover:text-white"
             aria-label="Cerrar modal de mensaje"
           >
             <X className="h-6 w-6" />
-          </button>
+          </Button>
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+          {isGuest ? (
+            <section className="rounded-xl border border-[#6DACBF] bg-[#F6FBFE] p-4">
+              <h3 className="mb-3 text-base font-bold text-[#00457A]">Tus datos de contacto *</h3>
+              <div className="grid gap-3">
+                <Label className="block">
+                  <span className="mb-1.5 block text-sm font-semibold text-[#00457A]">Nombre completo</span>
+                  <Input
+                    type="text"
+                    value={contactName}
+                    onChange={(event) => {
+                      setContactName(event.target.value.slice(0, CONTACT_NAME_MAX_LENGTH))
+                      setErrorMessage("")
+                    }}
+                    maxLength={CONTACT_NAME_MAX_LENGTH}
+                    autoComplete="name"
+                    placeholder="Ej: Maria Rodriguez"
+                    className="h-11 w-full rounded-lg border border-[#6DACBF] px-3 text-base text-[#003A6C] outline-none transition placeholder:text-[#7C9CB8] focus:border-[#00457A] focus:ring-2 focus:ring-[#00457A]/20"
+                  />
+                </Label>
+                <Label className="block">
+                  <span className="mb-1.5 block text-sm font-semibold text-[#00457A]">Correo de contacto</span>
+                  <Input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(event) => {
+                      setContactEmail(event.target.value.slice(0, CONTACT_EMAIL_MAX_LENGTH))
+                      setErrorMessage("")
+                    }}
+                    maxLength={CONTACT_EMAIL_MAX_LENGTH}
+                    autoComplete="email"
+                    inputMode="email"
+                    placeholder="Ej: contacto@correo.com"
+                    className="h-11 w-full rounded-lg border border-[#6DACBF] px-3 text-base text-[#003A6C] outline-none transition placeholder:text-[#7C9CB8] focus:border-[#00457A] focus:ring-2 focus:ring-[#00457A]/20"
+                  />
+                </Label>
+              </div>
+            </section>
+          ) : null}
+
           <section>
             <h3 className="mb-3 text-base font-bold text-[#00457A]">Motivo de contacto *</h3>
             <div className="space-y-3">
@@ -418,7 +489,7 @@ const PortfolioMessageModal = ({ recipientName, portfolioSlug, recipientId, onCl
 
           <label className="block">
             <span className="mb-2 block text-base font-bold text-[#00457A]">Detalles adicionales (opcional)</span>
-            <textarea
+            <Textarea
               value={details}
               onChange={(event) => setDetails(event.target.value.slice(0, MESSAGE_DETAILS_MAX_LENGTH))}
               maxLength={MESSAGE_DETAILS_MAX_LENGTH}
@@ -438,23 +509,26 @@ const PortfolioMessageModal = ({ recipientName, portfolioSlug, recipientId, onCl
         </div>
 
         <div className="grid grid-cols-[1fr_auto] gap-3 border-t border-gray-200 bg-white px-5 py-4">
-          <button
+          <Button
             type="button"
             onClick={handleSubmit}
             disabled={isSending}
+            size="lg"
             className="inline-flex h-11 items-center justify-center gap-3 rounded-lg bg-[#00457A] px-4 text-base font-bold text-white transition hover:bg-[#003A6C] disabled:cursor-not-allowed disabled:opacity-70"
           >
             <Send className="h-5 w-5" />
             {isSending ? "Enviando..." : "Enviar mensaje"}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onClose}
             disabled={isSending}
+            variant="outline"
+            size="lg"
             className="h-11 rounded-lg border border-[#6DACBF] bg-[#CBE7F8] px-5 text-base font-semibold text-[#003A6C] transition hover:bg-[#B7DDF2] disabled:cursor-not-allowed disabled:opacity-70"
           >
             Cancelar
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -467,13 +541,16 @@ const PublicPortfolio = () => {
   const location = useLocation()
   const { portfolio, loading, visitId } = usePortfolio(slug) as { portfolio: any, loading: boolean, visitId: string | null };
   const recordedViewRef = useRef<string | null>(null)
-  const trackingStartRef = useRef<number>(Date.now())
+  const trackingStartRef = useRef<number>(0)
+  const visitIdRef = useRef<string | null>(null)
   const [selectedProject, setSelectedProject] = useState<any | null>(null)
   const [selectedExperience, setSelectedExperience] = useState<any | null>(null)
   const [selectedEducation, setSelectedEducation] = useState<any | null>(null)
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false)
   const [messageFeedback, setMessageFeedback] = useState("")
   const fromExplore = Boolean((location.state as { fromExplore?: boolean } | null)?.fromExplore)
+  const session = getAuthSession()
+  const isGuestVisitor = !session
 
   const handleBack = () => {
     if (fromExplore) {
@@ -497,6 +574,7 @@ const PublicPortfolio = () => {
 
   useEffect(() => {
     if (!visitId) return;
+    visitIdRef.current = visitId
     trackingStartRef.current = Date.now()
 
     // Enviar pulso de permanencia cada 30 segundos
@@ -520,6 +598,20 @@ const PublicPortfolio = () => {
     recordPortfolioView(String(publicSlug))
   }, [loading, portfolio, slug])
 
+  const getTrackingVisitId = async () => {
+    if (visitIdRef.current) return visitIdRef.current
+
+    const portfolioSlug = String(portfolio?.config?.slug ?? slug ?? "")
+    if (!portfolioSlug) return ""
+
+    const trackedVisitId = await startPortfolioTracking({
+      slug: portfolioSlug,
+      template: portfolio?.config?.template ?? portfolio?.template ?? "0",
+    })
+    visitIdRef.current = trackedVisitId || null
+    return trackedVisitId
+  }
+
   const handleProjectClick = async (projectId?: string | number) => {
     if (!projectId) return
 
@@ -529,14 +621,18 @@ const PublicPortfolio = () => {
       setSelectedProject(clickedProject)
     }
 
-    if (!visitId) return
-    await recordProjectClick({ visitId, projectId })
+    const currentVisitId = await getTrackingVisitId()
+    if (!currentVisitId) return
+    await recordProjectClick({ visitId: currentVisitId, projectId })
   };
 
   const handleSocialClick = async (network: any) => {
     const networkName = getNetworkName(network)
-    if (!networkName || !visitId) return
-    await recordSocialClick({ visitId, networkName })
+    if (!networkName) return
+
+    const currentVisitId = await getTrackingVisitId()
+    if (!currentVisitId) return
+    await recordSocialClick({ visitId: currentVisitId, networkName })
   }
 
   const handleExperienceClick = (experienceId?: string | number) => {
@@ -555,23 +651,20 @@ const PublicPortfolio = () => {
     }
   }
 
-  const handleProjectLinkClick = (linkType: "repository" | "demo", url: string) => {
-    if (!selectedProject?.id || !visitId || !url) return
+  const handleProjectLinkClick = async (linkType: "repository" | "demo", url: string) => {
+    if (!selectedProject?.id || !url) return
 
-    void recordProjectLinkClick({
-      visitId,
+    const currentVisitId = await getTrackingVisitId()
+    if (!currentVisitId) return
+
+    await recordProjectLinkClick({
+      visitId: currentVisitId,
       projectId: selectedProject.id,
       linkType,
     })
   }
 
   const handleOpenMessageModal = () => {
-    if (!isAuthenticated()) {
-      navigate(LOGIN_ROUTE, { state: { from: location.pathname } })
-      return
-    }
-
-    const session = getAuthSession()
     const portfolioOwnerId = getPortfolioRecipientId(portfolio)
 
     if (!portfolioOwnerId) {
@@ -944,7 +1037,7 @@ const PublicPortfolio = () => {
                       href={selectedProjectGithubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => handleProjectLinkClick("repository", selectedProjectGithubUrl)}
+                      onClick={() => void handleProjectLinkClick("repository", selectedProjectGithubUrl)}
                       className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition sm:w-auto ${modalTheme.primaryLink}`}
                     >
                       <GitBranch className="h-4 w-4" />
@@ -957,7 +1050,7 @@ const PublicPortfolio = () => {
                       href={selectedProjectDemoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => handleProjectLinkClick("demo", selectedProjectDemoUrl)}
+                      onClick={() => void handleProjectLinkClick("demo", selectedProjectDemoUrl)}
                       className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition sm:w-auto ${modalTheme.secondaryLink}`}
                     >
                       <ExternalLink className="h-4 w-4" />
@@ -994,6 +1087,7 @@ const PublicPortfolio = () => {
           recipientName={recipientName}
           recipientId={recipientId}
           portfolioSlug={portfolioSlug}
+          isGuest={isGuestVisitor}
           onClose={() => setIsMessageModalOpen(false)}
           onSent={() => {
             setIsMessageModalOpen(false)

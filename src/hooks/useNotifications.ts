@@ -6,6 +6,8 @@ import {
   type NotificationItem,
   type NotificationsPageMeta,
 } from "@/services/notificationsService"
+import { getAuthSession } from "@/services/auth"
+import { subscribeToUserNotifications } from "@/services/realtimeNotificationsService"
 
 type UseNotificationsOptions = {
   pollIntervalMs?: number
@@ -56,6 +58,18 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
 
     return () => window.clearInterval(intervalId)
   }, [pollIntervalMs, refreshNotifications])
+
+  useEffect(() => {
+    const userId = getAuthSession()?.user?.id
+
+    if (userId == null) {
+      return
+    }
+
+    return subscribeToUserNotifications(String(userId), () => {
+      void refreshNotifications(false)
+    })
+  }, [refreshNotifications])
 
   const markAsRead = async (id: string) => {
     try {

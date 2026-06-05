@@ -1,9 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { getSkills } from '@/services/skillsService';
-import {
-  AUTH_SESSION_CHANGED_EVENT,
-  getAuthToken,
-} from '@/services/auth/auth-storage';
+import { AUTH_SESSION_CHANGED_EVENT, getAuthToken,} from '@/services/auth/authStorageService';
 import { normalizeErrorMessage } from '@/utils/errorUtils';
 import type { Skill } from '@/services/skillsService';
 

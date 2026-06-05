@@ -1,49 +1,38 @@
-import { useEffect, useState, type FormEvent } from "react"
+import { useEffect, type FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 
-import { EducationInlineForm } from "@/pages/education/EducationInlineForm"
-import { DuplicateRegistrationModal, ExperienceManagerModals, ExperiencePageShell, FeedbackMessage } from "@/pages/experience/ExperiencePageParts"
-import { useExperienceManager } from "@/hooks/useExperienceManager"
-
-function normalizeDuplicateText(value: string) {
-  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("es-BO")
-}
+import { EducationDuplicateRegistrationModal } from "@/components/education/EducationDuplicateRegistrationModal"
+import { EducationFeedbackMessage } from "@/components/education/EducationFeedbackMessage"
+import { EducationInlineForm } from "@/components/education/EducationInlineForm"
+import { EducationManagerModals } from "@/components/education/EducationManagerModals"
+import { EducationPageShell } from "@/components/education/EducationPageShell"
+import { useEducationDuplicateGuard } from "@/hooks/useEducationDuplicateGuard"
+import { useEducationManager } from "@/hooks/useEducationManager"
 
 export default function AddEducationPage() {
   const navigate = useNavigate()
-  const manager = useExperienceManager()
-  const [duplicateMessage, setDuplicateMessage] = useState("")
+  const manager = useEducationManager()
+  const duplicateGuard = useEducationDuplicateGuard({
+    education: manager.education,
+    formData: manager.formData,
+    onBlur: manager.handleBlur,
+  })
 
   useEffect(() => {
-    manager.prepareCreateForm("academica")
+    manager.prepareCreateForm()
     // Prepare the inline form once for this page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setDuplicateMessage("")
-
-    const institution = normalizeDuplicateText(manager.formData.company)
-    const hasDuplicateEducation = Boolean(institution) && manager.academicExperiences.some((education) =>
-      normalizeDuplicateText(education.company) === institution
-    )
-
-    if (hasDuplicateEducation) {
-      manager.handleBlur("company")
-      setDuplicateMessage("Ya existe una formación académica registrada con esa institución. Ingresa una institución diferente.")
-      return
-    }
-
+    if (!duplicateGuard.validateUniqueEducation()) return
     await manager.handleSubmit(event)
   }
 
   return (
-    <ExperiencePageShell
-      title="Registrar Formación Académica"
-      description="Registra una nueva Formación Académica en tu portafolio."
-    >
-      <FeedbackMessage message={manager.feedbackMessage || manager.pageError} type={manager.feedbackType || "error"} />
+    <EducationPageShell title="Registrar Formación Académica" description="Registra una nueva Formación Académica en tu portafolio.">
+      <EducationFeedbackMessage message={manager.feedbackMessage || manager.pageError} type={manager.feedbackType || "error"} />
 
       <EducationInlineForm
         formData={manager.formData}
@@ -61,12 +50,12 @@ export default function AddEducationPage() {
         onCancel={() => navigate("/formacion-academica/ver")}
       />
 
-      <ExperienceManagerModals manager={manager} hideTypeField onSuccessClose={() => navigate("/formacion-academica/ver")} />
-      <DuplicateRegistrationModal
+      <EducationManagerModals manager={manager} onSuccessClose={() => navigate("/formacion-academica/ver")} />
+      <EducationDuplicateRegistrationModal
         title="Formación duplicada"
-        message={duplicateMessage}
-        onClose={() => setDuplicateMessage("")}
+        message={duplicateGuard.duplicateMessage}
+        onClose={duplicateGuard.clearDuplicateMessage}
       />
-    </ExperiencePageShell>
+    </EducationPageShell>
   )
 }

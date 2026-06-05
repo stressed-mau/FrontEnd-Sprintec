@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { updateProfileCredentials } from '@/services/ProfileService';
 import { useEmailValidation } from '@/hooks/useEmailValidation';
-import { getAuthSession, updateAuthSession } from '@/services/auth/auth-storage';
+import { getAuthSession, updateAuthSession } from '@/services/auth/authStorageService';
 export const useProfile = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);

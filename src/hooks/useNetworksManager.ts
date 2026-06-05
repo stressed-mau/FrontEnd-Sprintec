@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import type { MutableRefObject } from "react"
 
-import {
-  getUserSocialNetworks,
-  removeSocialNetwork,
-  updateSocialNetwork,
-  type SocialNetwork,
-} from "@/services/socialNetworksService"
+import { buildConnectedProfessionalNetworks, getProfessionalNetworkLabel } from "@/components/networks/ProfessionalNetworksCatalog"
+import { fetchOAuthUrl, getUserSocialNetworks, removeSocialNetwork, updateSocialNetwork } from "@/services/socialNetworksService"
+import type { SocialNetwork } from "@/types/socialNetworks"
+import { validateNetworkField, validateNetworkForm } from "@/utils/networkValidationUtils"
 
 export type NetworkItem = SocialNetwork
 
@@ -16,53 +15,7 @@ export type NetworkFormValues = {
 
 export type NetworkFormErrors = Partial<Record<keyof NetworkFormValues, string>>
 
-const EMPTY_FORM: NetworkFormValues = {
-  name: "",
-  url: "",
-}
-
-function validateNetworkField(field: keyof NetworkFormValues, values: NetworkFormValues): string {
-  const name = values.name.trim()
-  const url = values.url.trim()
-
-  if (field === "name") {
-    if (!name) {
-      return "El campo Nombre de la red es obligatorio."
-    }
-
-    if (name.length > 40) {
-      return "El campo Nombre de la red permite un máximo de 40 caracteres."
-    }
-
-    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(name)) {
-      return "El campo Nombre de la red contiene caracteres no válidos. Solo se permiten letras."
-    }
-  }
-
-  if (field === "url") {
-    if (!url) {
-      return "El campo URL es obligatorio."
-    }
-
-    if (url.length > 255) {
-      return "El campo URL permite un máximo de 255 caracteres."
-    }
-
-    let parsedUrl: URL
-
-    try {
-      parsedUrl = new URL(url)
-    } catch {
-      return "Ingrese una URL válida."
-    }
-
-    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
-      return "Ingrese una URL válida."
-    }
-  }
-
-  return ""
-}
+const EMPTY_FORM: NetworkFormValues = { name: "", url: "" }
 
 export function useNetworksManager() {
   const [networks, setNetworks] = useState<NetworkItem[]>([])
@@ -76,47 +29,55 @@ export function useNetworksManager() {
   const [successMessage, setSuccessMessage] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [connectingNetwork, setConnectingNetwork] = useState<string | null>(null)
+  const oauthResultHandledRef = useRef(false)
 
-  const isEditing = useMemo(() => editingId !== null, [editingId])
-
-  const loadNetworks = useCallback(async () => {
-    setIsLoading(true)
-
-    try {
-      const remoteNetworks = await getUserSocialNetworks()
-      setNetworks(remoteNetworks)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "No se pudieron cargar las redes sociales."
-      setFeedbackMessage(message)
-      setFeedbackType("error")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void loadNetworks()
-  }, [loadNetworks])
+  const connectedNetworks = useMemo(
+    () => buildConnectedProfessionalNetworks(networks, connectingNetwork),
+    [connectingNetwork, networks],
+  )
 
   const showFeedback = useCallback((message: string, type: "success" | "error") => {
     setFeedbackMessage(message)
     setFeedbackType(type)
   }, [])
 
-  function clearFeedback() {
-    setFeedbackMessage("")
-    setFeedbackType("")
-  }
+  const showError = useCallback((error: unknown, fallbackMessage: string) => {
+    const message = error instanceof Error ? error.message : fallbackMessage
+    showFeedback(message, "error")
+  }, [showFeedback])
 
-  function showSuccessModal(message: string) {
-    setSuccessMessage(message)
-    setIsSuccessModalOpen(true)
-  }
+  const loadNetworks = useCallback(async () => {
+    setIsLoading(true)
 
-  function resetForm() {
-    setEditingId(null)
-    setFormData(EMPTY_FORM)
-    setErrors({})
+    try {
+      setNetworks(await getUserSocialNetworks())
+    } catch (error) {
+      showError(error, "No se pudieron cargar las redes sociales.")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [showError])
+
+  useEffect(() => {
+    void loadNetworks()
+  }, [loadNetworks])
+
+  useEffect(
+    () => handleOAuthResult(oauthResultHandledRef, showFeedback, loadNetworks),
+    [loadNetworks, showFeedback],
+  )
+
+  async function handleDelete(id: string) {
+    clearFeedback()
+
+    try {
+      await removeSocialNetwork(id)
+      setNetworks((current) => current.filter((network) => network.id !== id))
+      showFeedback("Red desconectada correctamente.", "success")
+    } catch (error) {
+      showError(error, "No se pudo eliminar la red.")
+    }
   }
 
   function openEditModal(network: NetworkItem) {
@@ -128,76 +89,47 @@ export function useNetworksManager() {
   }
 
   function closeModal() {
-    resetForm()
+    setEditingId(null)
+    setFormData(EMPTY_FORM)
+    setErrors({})
     setIsModalOpen(false)
   }
 
   function updateField(field: keyof NetworkFormValues, value: string) {
-    setFormData((current) => ({ ...current, [field]: value }))
-
-    if (errors[field]) {
-      const nextValues = { ...formData, [field]: value }
-      setErrors((current) => ({
-        ...current,
-        [field]: validateNetworkField(field, nextValues),
-      }))
-    }
+    const nextValues = { ...formData, [field]: value }
+    setFormData(nextValues)
+    if (errors[field]) setErrors((current) => ({ ...current, [field]: validateNetworkField(field, nextValues) }))
   }
 
   function handleBlur(field: keyof NetworkFormValues) {
-    setErrors((current) => ({
-      ...current,
-      [field]: validateNetworkField(field, formData),
-    }))
+    setErrors((current) => ({ ...current, [field]: validateNetworkField(field, formData) }))
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     clearFeedback()
 
-    const nextErrors: NetworkFormErrors = {
-      name: validateNetworkField("name", formData),
-      url: validateNetworkField("url", formData),
-    }
-
+    const nextErrors = validateNetworkForm(formData)
     setErrors(nextErrors)
+    if (Object.values(nextErrors).some(Boolean) || !editingId || isSaving) return
 
-    if (nextErrors.name || nextErrors.url || !editingId) {
-      return
-    }
+    await saveNetwork()
+  }
+
+  async function handleOAuthConnect(provider: string) {
+    setConnectingNetwork(provider)
 
     try {
-      setIsSaving(true)
-      const updatedNetwork = await updateSocialNetwork(editingId, {
-        name: formData.name.trim().toLowerCase(),
-        url: formData.url.trim(),
-      })
-
-      setNetworks((current) =>
-        current.map((network) => (network.id === editingId ? updatedNetwork : network)),
-      )
-
-      closeModal()
-      showSuccessModal("Red actualizada correctamente.")
+      window.location.href = await fetchOAuthUrl(provider)
     } catch (error) {
-      const message = error instanceof Error ? error.message : "No se pudo actualizar la red."
-      showFeedback(message, "error")
-    } finally {
-      setIsSaving(false)
+      setConnectingNetwork(null)
+      showError(error, "Error al conectar")
     }
   }
 
-  async function handleDelete(id: string) {
-    clearFeedback()
-
-    try {
-      await removeSocialNetwork(id)
-      setNetworks((current) => current.filter((network) => network.id !== id))
-      showFeedback("Red desconectada correctamente.", "success")
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "No se pudo eliminar la red."
-      showFeedback(message, "error")
-    }
+  function clearFeedback() {
+    setFeedbackMessage("")
+    setFeedbackType("")
   }
 
   function closeSuccessModal() {
@@ -205,18 +137,35 @@ export function useNetworksManager() {
     setSuccessMessage("")
   }
 
+  async function saveNetwork() {
+    setIsSaving(true)
+    try {
+      const updatedNetwork = await updateSocialNetwork(editingId ?? "", toNetworkPayload(formData))
+      setNetworks((current) => current.map((network) => (network.id === editingId ? updatedNetwork : network)))
+      closeModal()
+      setSuccessMessage("Red actualizada correctamente.")
+      setIsSuccessModalOpen(true)
+    } catch (error) {
+      showError(error, "No se pudo actualizar la red.")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   return {
     networks,
+    connectedNetworks,
     formData,
     errors,
     feedbackMessage,
     feedbackType,
     isModalOpen,
     isSuccessModalOpen,
-    isEditing,
+    connectingNetwork,
     successMessage,
     isLoading,
     isSaving,
+    isEditing: Boolean(editingId),
     openEditModal,
     closeModal,
     closeSuccessModal,
@@ -224,7 +173,55 @@ export function useNetworksManager() {
     handleBlur,
     handleSubmit,
     handleDelete,
+    handleOAuthConnect,
     loadNetworks,
     showFeedback,
   }
+}
+
+function toNetworkPayload(values: NetworkFormValues) {
+  return {
+    name: values.name.trim().toLowerCase(),
+    url: values.url.trim(),
+  }
+}
+
+function handleOAuthResult(
+  resultHandledRef: MutableRefObject<boolean>,
+  showFeedback: (message: string, type: "success" | "error") => void,
+  loadNetworks: () => Promise<void>,
+) {
+  if (resultHandledRef.current) return undefined
+
+  const urlParams = new URLSearchParams(window.location.search)
+  const status = urlParams.get("social_status")
+  const provider = urlParams.get("social_provider")
+  const message = urlParams.get("social_message")
+  if (!status) return undefined
+
+  resultHandledRef.current = true
+  window.history.replaceState({}, document.title, window.location.pathname)
+  if (status === "success" && provider) return handleOAuthSuccess(provider, showFeedback, loadNetworks)
+  if (status === "error" && provider) showOAuthError(provider, message, showFeedback)
+  return undefined
+}
+
+function handleOAuthSuccess(
+  provider: string,
+  showFeedback: (message: string, type: "success" | "error") => void,
+  loadNetworks: () => Promise<void>,
+) {
+  const timer = setTimeout(() => {
+    const providerLabel = getProfessionalNetworkLabel(provider)
+    showFeedback(`Conexion exitosa con ${providerLabel}. Tu perfil esta ahora conectado.`, "success")
+    void loadNetworks()
+  }, 500)
+
+  return () => clearTimeout(timer)
+}
+
+function showOAuthError(provider: string, message: string | null, showFeedback: (message: string, type: "success" | "error") => void) {
+  const providerLabel = getProfessionalNetworkLabel(provider)
+  const errorMessage = message ? `Error: ${message}` : `No se pudo conectar con ${providerLabel}`
+  showFeedback(errorMessage, "error")
 }

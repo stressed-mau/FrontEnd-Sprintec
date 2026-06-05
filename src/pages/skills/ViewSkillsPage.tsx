@@ -22,7 +22,6 @@ const ViewSkillsPage = () => {
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-6xl space-y-6">
 
-            {/* Encabezado */}
               <h1 className="mb-2 text-3xl font-bold text-[#003A6C]">
                 Ver Habilidades
               </h1>
@@ -30,13 +29,11 @@ const ViewSkillsPage = () => {
                 Gestiona tus habilidades técnicas y blandas
               </p>
 
-            {/* Buscador */}
             <SkillsSearchBar
                 value={searchQuery}
                 onChange={setSearchQuery}
                 placeholder="Buscar por nombre o nivel..." />
 
-            {/* Sección Técnicas */}
             <section className="mb-10">
               <div className="flex items-center gap-2 mb-4 text-[#003A6C]">
                 <Code2 className="size-5" />
@@ -62,7 +59,6 @@ const ViewSkillsPage = () => {
                       Nivel
                     </span>
                   </div>
-                  {/* Filas */}
                   {filteredTechnicalSkills.map((skill, idx) => (
                     <div
                       key={skill.id}
@@ -70,8 +66,7 @@ const ViewSkillsPage = () => {
                         idx !== filteredTechnicalSkills.length - 1
                           ? 'border-b border-[#6dacbf]/10'
                           : ''
-                      }`}
-                    >
+                      }`} >
                       <span className="font-semibold text-[#003A6C]">{skill.name}</span>
                        <div className="hidden sm:block">
                            <SkillLevelBadge  level={skill.level}/>
@@ -82,13 +77,11 @@ const ViewSkillsPage = () => {
               )}
             </section>
 
-            {/* Sección Blandas */}
             <section>
               <div className="flex items-center gap-2 mb-4 text-[#003A6C]">
                 <Lightbulb className="size-5" />
                 <h2 className="text-xl sm:text-2xl">Habilidades Blandas</h2>
               </div>
-
               {isLoading ? (
                 <div className="rounded-2xl border border-[#6dacbf]/30 bg-white py-10 text-center shadow-sm">
                   <p className="text-sm text-[#4B778D]">Cargando habilidades...</p>
@@ -101,13 +94,11 @@ const ViewSkillsPage = () => {
                 />
               ) : (
                 <div className="rounded-2xl border border-[#6dacbf]/30 bg-white shadow-sm overflow-hidden">
-                  {/* Cabecera de tabla */}
                   <div className="px-5 py-3 border-b border-[#6dacbf]/20">
                     <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider">
                       Habilidad
                     </span>
                   </div>
-                  {/* Filas */}
                   {filteredSoftSkills.map((skill, idx) => (
                     <div
                       key={skill.id}
@@ -115,15 +106,13 @@ const ViewSkillsPage = () => {
                         idx !== filteredSoftSkills.length - 1
                           ? 'border-b border-[#6dacbf]/10'
                           : ''
-                      }`}
-                    >
+                      }`}  >
                       <span className="font-semibold text-[#003A6C]">{skill.name}</span>
                     </div>
                   ))}
                 </div>
               )}
             </section>
-
           </div>
         </main>
       </div>

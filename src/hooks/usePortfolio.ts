@@ -1,13 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Portfolio, Experience, Project, Skill, SocialNetwork } from "@/types/portfolio";
-import { getAuthSession } from "@/services/auth/auth-storage";
+import { getAuthSession } from "@/services/auth/authStorageService";
 import { api } from "@/services/api";
 
 import { getUserInformation } from "@/services/PersonalDataService"; 
 import { getSkills } from "@/services/skillsService";
 import { getEducation } from "@/services/educationService";
 import { getExperiences } from "@/services/experienceService";
-import { getProjects } from "@/services/ProjectService";
+import { getProjects } from "@/services/projectCrudService";
 import { getUserSocialNetworks } from "@/services/socialNetworksService";
 const normalizeProfile = (d: any) => ({
   id: d.profile.id ?? d.profile.profile_id ?? "",

@@ -1,62 +1,46 @@
-import { useMemo, useState } from "react"
-
-import { EducationTable } from "@/pages/education/EducationPageParts"
-import {
-  ExperienceManagerModals,
-  ExperiencePageShell,
-  ExperiencePagination,
-  ExperienceSearch,
-  FeedbackMessage,
-} from "@/pages/experience/ExperiencePageParts"
-import { filterExperiences, paginateExperiences } from "@/pages/experience/ExperiencePageUtils"
-import { useExperienceManager } from "@/hooks/useExperienceManager"
+import { EducationFeedbackMessage } from "@/components/education/EducationFeedbackMessage"
+import { EducationManagerModals } from "@/components/education/EducationManagerModals"
+import { EducationPageShell } from "@/components/education/EducationPageShell"
+import { EducationPagination } from "@/components/education/EducationPagination"
+import { EducationSearch } from "@/components/education/EducationSearch"
+import { EducationTable } from "@/components/education/EducationTable"
+import { useEducationManager } from "@/hooks/useEducationManager"
+import { useEducationSearchPagination } from "@/hooks/useEducationSearchPagination"
 
 export default function EditEducationPage() {
-  const manager = useExperienceManager()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-
-  const education = manager.academicExperiences
-  const filteredEducation = useMemo(() => filterExperiences(education, searchTerm), [education, searchTerm])
-  const pagination = paginateExperiences(filteredEducation, currentPage)
-
-  function handleSearchChange(value: string) {
-    setSearchTerm(value)
-    setCurrentPage(1)
-  }
+  const manager = useEducationManager()
+  const education = manager.education
+  const search = useEducationSearchPagination(education)
 
   return (
-    <ExperiencePageShell
-      title="Editar Formacion Academica"
-      description="Selecciona una Formacion Academica de la tabla para actualizarla."
-    >
-      <FeedbackMessage message={manager.feedbackMessage || manager.pageError} type={manager.feedbackType || "error"} />
+    <EducationPageShell title="Editar Formación Académica" description="Selecciona una Formación Académica de la tabla para actualizarla.">
+      <EducationFeedbackMessage message={manager.feedbackMessage || manager.pageError} type={manager.feedbackType || "error"} />
 
-      {education.length > 0 ? <ExperienceSearch value={searchTerm} onChange={handleSearchChange} /> : null}
+      {education.length > 0 ? <EducationSearch value={search.searchTerm} onChange={search.handleSearchChange} /> : null}
 
       {manager.isLoading ? (
         <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
-          Cargando Formacion Academica...
+          Cargando Formación Académica...
         </div>
       ) : (
         <EducationTable
-          education={pagination.items}
-          emptyMessage={searchTerm ? "No se encontro Formacion Academica con ese criterio." : "No hay Formacion Academica para editar."}
-          searchTerm={searchTerm}
+          education={search.pagination.items}
+          emptyMessage={search.searchTerm ? "No se encontró Formación Académica con ese criterio." : "No hay Formación Académica para editar."}
+          searchTerm={search.searchTerm}
           onRowClick={manager.openEditModal}
         />
       )}
 
-      <ExperiencePagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        startIndex={pagination.startIndex}
-        endIndex={pagination.endIndex}
-        totalItems={filteredEducation.length}
-        onPageChange={setCurrentPage}
+      <EducationPagination
+        currentPage={search.pagination.currentPage}
+        totalPages={search.pagination.totalPages}
+        startIndex={search.pagination.startIndex}
+        endIndex={search.pagination.endIndex}
+        totalItems={search.filteredEducation.length}
+        onPageChange={search.setCurrentPage}
       />
 
-      <ExperienceManagerModals manager={manager} hideTypeField />
-    </ExperiencePageShell>
+      <EducationManagerModals manager={manager} />
+    </EducationPageShell>
   )
 }
