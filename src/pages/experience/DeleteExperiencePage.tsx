@@ -1,24 +1,23 @@
-import { useEffect, useMemo, useState } from "react"
+import { useState } from "react"
 import { Trash2 } from "lucide-react"
 
 import ConfirmationModal from "@/components/ConfirmationModal"
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal"
+import { ExperiencePageShell } from "@/components/experience/ExperiencePageShell"
+import { ExperiencePagination } from "@/components/experience/ExperiencePagination"
+import { ExperienceSearch } from "@/components/experience/ExperienceSearch"
+import { ExperienceTable } from "@/components/experience/ExperienceTable"
+import { FeedbackMessage } from "@/components/experience/FeedbackMessage"
 import { Button } from "@/components/ui/button"
-import {
-  ExperiencePageShell,
-  ExperiencePagination,
-  ExperienceSearch,
-  ExperienceTable,
-  FeedbackMessage,
-} from "@/pages/experience/ExperiencePageParts"
-import { filterExperiences, paginateExperiences } from "@/pages/experience/ExperiencePageUtils"
 import { useExperienceManager } from "@/hooks/useExperienceManager"
+import { useExperienceSearchPagination } from "@/hooks/useExperienceSearchPagination"
+import { useExperienceSelection } from "@/hooks/useExperienceSelection"
 
 export default function DeleteExperiencePage() {
   const manager = useExperienceManager()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
+  const experiences = manager.laboralExperiences
+  const search = useExperienceSearchPagination(experiences)
+  const selection = useExperienceSelection(experiences, search.pagination.items)
   const [feedbackMessage, setFeedbackMessage] = useState("")
   const [feedbackType, setFeedbackType] = useState<"success" | "error" | "">("")
   const [isDeleting, setIsDeleting] = useState(false)
@@ -26,108 +25,47 @@ export default function DeleteExperiencePage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [deletedCount, setDeletedCount] = useState(0)
 
-  const experiences = manager.laboralExperiences
-  const filteredExperiences = useMemo(() => filterExperiences(experiences, searchTerm), [experiences, searchTerm])
-  const pagination = paginateExperiences(filteredExperiences, currentPage)
-  const selectedCount = selectedIds.size
-
   function handleSearchChange(value: string) {
-    setSearchTerm(value)
-    setCurrentPage(1)
-    setSelectedIds(new Set())
-  }
-
-  useEffect(() => {
-    setSelectedIds((current) => {
-      const availableIds = new Set(experiences.map((experience) => experience.id))
-      const next = new Set(Array.from(current).filter((id) => availableIds.has(id)))
-      return next.size === current.size ? current : next
-    })
-  }, [experiences])
-
-  function handleSelect(id: string, checked: boolean) {
-    setSelectedIds((current) => {
-      const next = new Set(current)
-      if (checked) {
-        next.add(id)
-      } else {
-        next.delete(id)
-      }
-      return next
-    })
-  }
-
-  function handleSelectAllVisible(checked: boolean) {
-    setSelectedIds((current) => {
-      const next = new Set(current)
-      pagination.items.forEach((experience) => {
-        if (checked) {
-          next.add(experience.id)
-        } else {
-          next.delete(experience.id)
-        }
-      })
-      return next
-    })
+    search.handleSearchChange(value)
+    selection.clearSelection()
   }
 
   async function handleDeleteSelected() {
-    const idsToDelete = Array.from(selectedIds)
-    if (idsToDelete.length === 0 || isDeleting) {
-      return
-    }
+    const idsToDelete = Array.from(selection.selectedIds)
+    if (idsToDelete.length === 0 || isDeleting) return
 
     setIsDeleting(true)
     setFeedbackMessage("")
     setFeedbackType("")
 
     try {
-      for (const id of idsToDelete) {
-        const deleted = await manager.handleDelete(id)
-
-        if (!deleted) {
-          setFeedbackMessage("No se pudo eliminar una de las Experiencias Laborales seleccionadas.")
-          setFeedbackType("error")
-          return
-        }
-      }
+      const deleted = await deleteSelectedExperiences(idsToDelete, manager.handleDelete)
+      if (!deleted) return showDeleteError("No se pudo eliminar una de las Experiencias Laborales seleccionadas.")
 
       setDeletedCount(idsToDelete.length)
-      setSelectedIds(new Set())
+      selection.clearSelection()
       setShowConfirmDelete(false)
       setShowSuccessModal(true)
       await manager.reloadExperiences()
     } catch (error) {
-      setFeedbackMessage(error instanceof Error ? error.message : "No se pudo eliminar la Experiencia Laboral.")
-      setFeedbackType("error")
+      showDeleteError(error instanceof Error ? error.message : "No se pudo eliminar la Experiencia Laboral.")
     } finally {
       setIsDeleting(false)
     }
   }
 
+  function showDeleteError(message: string) {
+    setFeedbackMessage(message)
+    setFeedbackType("error")
+  }
+
   return (
-    <ExperiencePageShell
-      title="Eliminar Experiencia Laboral"
-      description={
-        selectedCount === 0
-          ? "Selecciona una o varias Experiencias Laborales para eliminarlas."
-          : `${selectedCount} Experiencia${selectedCount > 1 ? "s" : ""} Laboral${selectedCount > 1 ? "es" : ""} seleccionada${selectedCount > 1 ? "s" : ""}.`
-      }
-    >
+    <ExperiencePageShell title="Eliminar Experiencia Laboral" description={getDeleteDescription(selection.selectedCount)}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
-          {experiences.length > 0 ? <ExperienceSearch value={searchTerm} onChange={handleSearchChange} /> : null}
+          {experiences.length > 0 ? <ExperienceSearch value={search.searchTerm} onChange={handleSearchChange} /> : null}
         </div>
-        <Button
-          type="button"
-          variant="destructive"
-          onClick={() => setShowConfirmDelete(true)}
-          disabled={selectedCount === 0 || isDeleting}
-          className="h-11 bg-[#B42318] px-5 text-white hover:bg-[#8F1C14]"
-        >
-          <Trash2 className="mr-2 size-4" />
-          {isDeleting ? "Eliminando..." : `Eliminar${selectedCount > 0 ? ` (${selectedCount})` : ""}`}
-        </Button>
+        <DeleteButton selectedCount={selection.selectedCount} isDeleting={isDeleting} onClick={() => setShowConfirmDelete(true)} />
       </div>
 
       <FeedbackMessage message={feedbackMessage || manager.pageError} type={feedbackType || "error"} />
@@ -138,27 +76,27 @@ export default function DeleteExperiencePage() {
         </div>
       ) : (
         <ExperienceTable
-          experiences={pagination.items}
-          emptyMessage={searchTerm ? "No se encontro Experiencia Laboral con ese criterio." : "No hay Experiencia Laboral para eliminar."}
-          searchTerm={searchTerm}
-          selectedIds={selectedIds}
-          onSelect={handleSelect}
-          onSelectAll={handleSelectAllVisible}
+          experiences={search.pagination.items}
+          emptyMessage={search.searchTerm ? "No se encontro Experiencia Laboral con ese criterio." : "No hay Experiencia Laboral para eliminar."}
+          searchTerm={search.searchTerm}
+          selectedIds={selection.selectedIds}
+          onSelect={selection.handleSelect}
+          onSelectAll={selection.handleSelectAllVisible}
         />
       )}
 
       <ExperiencePagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        startIndex={pagination.startIndex}
-        endIndex={pagination.endIndex}
-        totalItems={filteredExperiences.length}
-        onPageChange={setCurrentPage}
+        currentPage={search.pagination.currentPage}
+        totalPages={search.pagination.totalPages}
+        startIndex={search.pagination.startIndex}
+        endIndex={search.pagination.endIndex}
+        totalItems={search.filteredExperiences.length}
+        onPageChange={search.setCurrentPage}
       />
 
       <DeleteConfirmationModal
         isOpen={showConfirmDelete}
-        title={`Esta seguro de que desea eliminar ${selectedCount > 1 ? "estas Experiencias Laborales" : "esta Experiencia Laboral"}?`}
+        title={`Esta seguro de que desea eliminar ${selection.selectedCount > 1 ? "estas Experiencias Laborales" : "esta Experiencia Laboral"}?`}
         message="Esta accion no se puede deshacer."
         isLoading={isDeleting}
         onConfirm={() => void handleDeleteSelected()}
@@ -172,5 +110,28 @@ export default function DeleteExperiencePage() {
         onClose={() => setShowSuccessModal(false)}
       />
     </ExperiencePageShell>
+  )
+}
+
+async function deleteSelectedExperiences(ids: string[], deleteExperience: (id: string) => Promise<boolean>) {
+  for (const id of ids) {
+    const deleted = await deleteExperience(id)
+    if (!deleted) return false
+  }
+
+  return true
+}
+
+function getDeleteDescription(selectedCount: number) {
+  if (selectedCount === 0) return "Selecciona una o varias Experiencias Laborales para eliminarlas."
+  return `${selectedCount} Experiencia${selectedCount > 1 ? "s" : ""} Laboral${selectedCount > 1 ? "es" : ""} seleccionada${selectedCount > 1 ? "s" : ""}.`
+}
+
+function DeleteButton({ selectedCount, isDeleting, onClick }: { selectedCount: number; isDeleting: boolean; onClick: () => void }) {
+  return (
+    <Button type="button" variant="destructive" onClick={onClick} disabled={selectedCount === 0 || isDeleting} className="h-11 bg-[#B42318] px-5 text-white hover:bg-[#8F1C14]">
+      <Trash2 className="mr-2 size-4" />
+      {isDeleting ? "Eliminando..." : `Eliminar${selectedCount > 0 ? ` (${selectedCount})` : ""}`}
+    </Button>
   )
 }

@@ -1,39 +1,25 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 
-import {
-  ExperienceDetailsModal,
-  ExperiencePageShell,
-  ExperiencePagination,
-  ExperienceSearch,
-  ExperienceTable,
-  FeedbackMessage,
-} from "@/pages/experience/ExperiencePageParts"
-import { filterExperiences, paginateExperiences } from "@/pages/experience/ExperiencePageUtils"
-import { type ExperienceItem, useExperienceManager } from "@/hooks/useExperienceManager"
+import { ExperienceDetailsModal } from "@/components/experience/ExperienceDetailsModal"
+import { ExperiencePageShell } from "@/components/experience/ExperiencePageShell"
+import { ExperiencePagination } from "@/components/experience/ExperiencePagination"
+import { ExperienceSearch } from "@/components/experience/ExperienceSearch"
+import { ExperienceTable } from "@/components/experience/ExperienceTable"
+import { FeedbackMessage } from "@/components/experience/FeedbackMessage"
+import { useExperienceManager, type ExperienceItem } from "@/hooks/useExperienceManager"
+import { useExperienceSearchPagination } from "@/hooks/useExperienceSearchPagination"
 
 export default function ViewExperiencePage() {
   const manager = useExperienceManager()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
   const [selectedExperience, setSelectedExperience] = useState<ExperienceItem | null>(null)
-
   const experiences = manager.laboralExperiences
-  const filteredExperiences = useMemo(() => filterExperiences(experiences, searchTerm), [experiences, searchTerm])
-  const pagination = paginateExperiences(filteredExperiences, currentPage)
-
-  function handleSearchChange(value: string) {
-    setSearchTerm(value)
-    setCurrentPage(1)
-  }
+  const search = useExperienceSearchPagination(experiences)
 
   return (
-    <ExperiencePageShell
-      title="Ver Experiencia Laboral"
-      description="Consulta tu Experiencia Laboral registrada."
-    >
+    <ExperiencePageShell title="Ver Experiencia Laboral" description="Consulta tu Experiencia Laboral registrada.">
       <FeedbackMessage message={manager.pageError} type="error" />
 
-      {experiences.length > 0 ? <ExperienceSearch value={searchTerm} onChange={handleSearchChange} /> : null}
+      {experiences.length > 0 ? <ExperienceSearch value={search.searchTerm} onChange={search.handleSearchChange} /> : null}
 
       {manager.isLoading ? (
         <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
@@ -41,20 +27,20 @@ export default function ViewExperiencePage() {
         </div>
       ) : (
         <ExperienceTable
-          experiences={pagination.items}
-          emptyMessage={searchTerm ? "No se encontró Experiencia Laboral con ese criterio." : "No hay Experiencia Laboral registrada."}
-          searchTerm={searchTerm}
+          experiences={search.pagination.items}
+          emptyMessage={search.searchTerm ? "No se encontró Experiencia Laboral con ese criterio." : "No hay Experiencia Laboral registrada."}
+          searchTerm={search.searchTerm}
           onRowClick={setSelectedExperience}
         />
       )}
 
       <ExperiencePagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        startIndex={pagination.startIndex}
-        endIndex={pagination.endIndex}
-        totalItems={filteredExperiences.length}
-        onPageChange={setCurrentPage}
+        currentPage={search.pagination.currentPage}
+        totalPages={search.pagination.totalPages}
+        startIndex={search.pagination.startIndex}
+        endIndex={search.pagination.endIndex}
+        totalItems={search.filteredExperiences.length}
+        onPageChange={search.setCurrentPage}
       />
 
       <ExperienceDetailsModal experience={selectedExperience} onClose={() => setSelectedExperience(null)} />

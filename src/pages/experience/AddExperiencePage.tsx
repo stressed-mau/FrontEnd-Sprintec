@@ -1,8 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 
+import { DuplicateRegistrationModal } from "@/components/experience/DuplicateRegistrationModal"
+import { ExperienceManagerModals } from "@/components/experience/ExperienceManagerModals"
+import { ExperiencePageShell } from "@/components/experience/ExperiencePageShell"
+import { FeedbackMessage } from "@/components/experience/FeedbackMessage"
 import { ExperienceInlineForm } from "@/pages/experience/ExperienceInlineForm"
-import { DuplicateRegistrationModal, ExperienceManagerModals, ExperiencePageShell, FeedbackMessage } from "@/pages/experience/ExperiencePageParts"
 import { useExperienceManager } from "@/hooks/useExperienceManager"
 
 function normalizeDuplicateText(value: string) {
