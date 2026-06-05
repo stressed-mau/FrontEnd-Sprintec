@@ -1,7 +1,7 @@
 import { api } from './api';
-import axios from 'axios';
 import {normalizeSkill} from '@/utils/skills/skillMapperUtils';
 import { unwrapSkill, unwrapSkillList, parseResponseData } from '@/utils/skills/skillResponseUtils';
+import {formatSkillApiError,} from '@/utils/skills/skillApiErrorUtils';
 
 export type SkillType = 'tecnica' | 'blanda';
 type ApiSkillType = 'tecnica' | 'blanda';
@@ -51,26 +51,6 @@ function toApiPayload(payload: SkillPayload): ApiSkillPayload {
   };
 }
 
-function formatError(error: unknown): Error {
-  if (axios.isAxiosError(error)) {
-    if (error.code === 'ECONNABORTED') {
-      return new Error('La solicitud tardó más de 30 segundos. Intenta nuevamente.');
-    }
-
-    if (error.code === 'ERR_NETWORK') {
-      return new Error('No se pudo conectar con el backend configurado. Verifica que la API desplegada esté disponible.');
-    }
-
-    const backendMessage =
-      (error.response?.data as { message?: string } | undefined)?.message ??
-      error.message;
-
-    return new Error(backendMessage || 'Error inesperado al consumir skills API.');
-  }
-
-  return new Error('Error inesperado al consumir skills API.');
-}
-
 export async function getSkills(): Promise<Skill[]> {
   try {
     const response = await api.get(SKILLS_ENDPOINT);
@@ -100,7 +80,7 @@ export async function getSkills(): Promise<Skill[]> {
 
     return normalized;
   } catch (error) {
-    throw formatError(error);
+    throw formatSkillApiError(error);
   }
 }
 
@@ -112,7 +92,7 @@ export async function createSkill(payload: SkillPayload): Promise<Skill> {
     });
     return normalizeSkill(unwrapSkill(response.data));
   } catch (error) {
-    throw formatError(error);
+    throw formatSkillApiError(error);
   }
 }
 
@@ -123,7 +103,7 @@ export async function updateSkill(id: string, payload: SkillPayload): Promise<Sk
     });
     return normalizeSkill(unwrapSkill(response.data));
   } catch (error) {
-    throw formatError(error);
+    throw formatSkillApiError(error);
   }
 }
 
@@ -133,6 +113,6 @@ export async function removeSkill(id: string): Promise<void> {
       timeout: SKILL_MUTATION_TIMEOUT_MS,
     });
   } catch (error) {
-    throw formatError(error);
+    throw formatSkillApiError(error);
   }
 }
