@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom"
 // Componentes de Plantillas y Assets [cite: 1-4]
 import ModernTemplate, { type ModernTemplateProfile } from "../components/templates/ModernTemplate"
 import MinimalistTemplate from "../components/templates/MinimalistTemplate"
-import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
+import { CorporatePortfolioTemplate } from "@/components/templates/corporate/CorporatePortfolioTemplate"
 import PortadaModern from "@/assets/images/PortadaModern1.png"
 import PortadaMin from "@/assets/images/PortadaMin.png"
 import PortadaCorp from "@/assets/images/PortadaCorp.png"

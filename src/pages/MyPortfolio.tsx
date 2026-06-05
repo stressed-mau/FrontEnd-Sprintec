@@ -6,7 +6,7 @@ import type { PortfolioVisibilityData } from "@/services/portfolioVisibilityServ
 import { Mail, MapPin, Briefcase, Code, GraduationCap, Award, X, ExternalLink } from "lucide-react"
 import MinimalistTemplate from "@/components/templates/MinimalistTemplate"
 import ModernTemplate from "@/components/templates/ModernTemplate"
-import { CorporatePortfolioTemplate } from "@/components/portfolio/CorporatePortfolioTemplate"
+import { CorporatePortfolioTemplate } from "@/components/templates/corporate/CorporatePortfolioTemplate"
 import { getSocialNetworkDisplayName, SocialNetworkIcon } from "@/components/portfolio/SocialNetworkIcon"
 import { useUserPersonalData } from "@/hooks/useUserPersonalData"
 import { useParams } from "react-router-dom"
