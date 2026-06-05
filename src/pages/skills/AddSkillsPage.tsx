@@ -95,13 +95,11 @@ const AddSkillsPage = () => {
                       hasNameError
                         ? 'border border-red-400 focus:ring-red-200'
                         : 'border border-[#0E7D96]/20 focus:ring-[#0E7D96]/40'
-                    }`}
-                  />
+                    }`} />
                   {errorMessage && (
                     <p
                       id="skill-name-error"
-                      className="mt-1.5 text-sm font-medium text-red-600"
-                    >
+                      className="mt-1.5 text-sm font-medium text-red-600"  >
                       {errorMessage}
                     </p>
                   )}
@@ -115,8 +113,7 @@ const AddSkillsPage = () => {
                     <select
                       value={skillLevel}
                       onChange={(e) => setSkillLevel(e.target.value)}
-                      className="w-full py-2.5 px-4 border border-[#0E7D96]/20 rounded-xl bg-[#F8FAFC] text-[#003A6C] focus:ring-2 focus:ring-[#0E7D96]/40 outline-none"
-                    >
+                      className="w-full py-2.5 px-4 border border-[#0E7D96]/20 rounded-xl bg-[#F8FAFC] text-[#003A6C] focus:ring-2 focus:ring-[#0E7D96]/40 outline-none"              >
                       <option value="basico">Básico</option>
                       <option value="intermedio">Intermedio</option>
                       <option value="avanzado">Avanzado</option>
@@ -147,13 +144,11 @@ const AddSkillsPage = () => {
         </main>
       </div>
 
-      {/* Modal de éxito*/}
       <ConfirmationModal
         isOpen={showSuccessModal}
         title="Éxito"
         message={successMessage}
-        onClose={handleSuccessClose}
-      />
+        onClose={handleSuccessClose} />
 
       {showDuplicateModal ? (
         <div className="fixed inset-0 z-150 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
@@ -165,12 +160,12 @@ const AddSkillsPage = () => {
               aria-label="Cerrar alerta de habilidad duplicada"          >
               <X className="size-7" />
             </button>
-            <div className="flex flex-col items-center text-center">
+              <div className="flex flex-col items-center text-center">
               <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
                 <AlertCircle className="size-10 text-red-600" />
               </div>
-              <h3 className="mb-3 text-3xl font-bold text-[#003A6C]">Habilidad duplicada</h3>
-              <p className="mb-8 text-center text-lg leading-relaxed text-[#6B7280]">{errorMessage}</p>
+                <h3 className="mb-3 text-3xl font-bold text-[#003A6C]">Habilidad duplicada</h3>
+                <p className="mb-8 text-center text-lg leading-relaxed text-[#6B7280]">{errorMessage}</p>
               <button
                 type="button"
                 onClick={() => setShowDuplicateModal(false)}

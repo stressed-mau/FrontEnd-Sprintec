@@ -2,12 +2,13 @@ import { createContext, createElement, useCallback, useContext, useEffect, useMe
 import type { FormEvent, ReactNode } from 'react';
 import { createSkill, getSkills, removeSkill, updateSkill, type Skill,  type SkillType, } from '../services/skillsService';
 import { AUTH_SESSION_CHANGED_EVENT, getAuthToken } from '@/services/auth/auth-storage';
-import {  formatSkillName,  normalizeSkillName,  } from '@/utils/skills/skillUtils';
+import {  formatSkillName } from '@/utils/skills/skillUtils';
 import { getSoftSkillValidationMessage,} from '@/utils/skills/skillValidation';
 import {  sortTechnicalSkills,   sortSoftSkills,  filterSkills,  filterTechnicalSkills,  filterSoftSkills,} from '@/utils/skills/skillFilters';
 import { validateSkillForm } from '@/utils/skills/skillFormValidation';
 import { normalizeErrorMessage }from '@/utils/errorUtils';
 import { toggleAllSkillSelection, toggleSkillSelection } from '@/utils/skills/skillSelectionUtils';
+import { hasSkillChanges } from '@/utils/skills/skillEditUtils';
 
 export type { Skill };
 
@@ -172,17 +173,12 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     const formattedName = formatSkillName(skillName);
 
     if (editingSkill) {
-        const sameName =
-        normalizeSkillName(editingSkill.name) === normalizeSkillName(formattedName);
-        const sameType = editingSkill.type === skillType;
-        const sameLevel = (editingSkill.level ?? '').toLowerCase() === (skillLevel ?? '').toLowerCase();
-        const noChanges =
-               sameName && sameType && (skillType === 'blanda' || sameLevel);
+        const hasChanges = hasSkillChanges({ editingSkill, formattedName, skillType, skillLevel,});
 
-    if (noChanges) {
-  setErrorMessage('No hay cambios para guardar.');
-  return;
-}}
+    if (!hasChanges) {
+        setErrorMessage('No hay cambios para guardar.');
+        return;
+      }}
 
   const payload = {
     name: formattedName,
@@ -300,12 +296,9 @@ const confirmDeleteSelected = async () => {
     if (isSaving || errorMessage.trim() || !skillName.trim()) { return false; }
     if (!editingSkill) { return true; }
 
-    const formattedName = formatSkillName(skillName);
-    const sameName = normalizeSkillName(editingSkill.name) === normalizeSkillName(formattedName);
-    const sameType = editingSkill.type === skillType;
-    const sameLevel = (editingSkill.level ?? '').toLowerCase() === (skillLevel ?? '').toLowerCase();
-    return !(sameName && sameType && (skillType === 'blanda' || sameLevel));
-  }, [editingSkill, errorMessage, isSaving, skillLevel, skillName, skillType]);
+   const formattedName = formatSkillName(skillName);
+    return hasSkillChanges({  editingSkill,  formattedName,  skillType,  skillLevel,});
+    }, [editingSkill, errorMessage, isSaving, skillLevel, skillName, skillType]);
 
   const filteredSkills = useMemo(() => {
     return filterSkills(skills, searchQuery);

@@ -55,8 +55,7 @@ const EditSkillsPage = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar por nombre o nivel..."
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#0E7D96]/20 bg-white text-[#003A6C] placeholder:text-[#4B778D]/60 outline-none focus:ring-2 focus:ring-[#0E7D96]/30 shadow-sm"
-              />
+                className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#0E7D96]/20 bg-white text-[#003A6C] placeholder:text-[#4B778D]/60 outline-none focus:ring-2 focus:ring-[#0E7D96]/30 shadow-sm" />
             </div>
 
             {/* Sección Técnicas */}
@@ -93,8 +92,7 @@ const EditSkillsPage = () => {
                       onClick={() => openModal(skill)}
                       className={`grid grid-cols-3 px-5 py-4 items-center cursor-pointer transition-colors hover:bg-[#EEF6FC] ${
                         idx !== filteredTechnicalSkills.length - 1 ? 'border-b border-[#6dacbf]/10' : ''
-                      }`}
-                    >
+                      }`}  >
                       <div className="flex items-center gap-2">
                         <Code2 className="size-4 text-[#4B778D]" />
                         <span className="font-semibold text-[#003A6C]">{skill.name}</span>
@@ -104,8 +102,7 @@ const EditSkillsPage = () => {
                         <span
                           className={`inline-flex w-fit px-3 py-1 rounded-full text-xs font-medium ${
                             LEVEL_COLORS[skill.level.toLowerCase()] ?? 'bg-gray-100 text-gray-600'
-                          }`}
-                        >
+                          }`}   >
                           {LEVEL_LABELS[skill.level.toLowerCase()] ?? skill.level}
                         </span>
                       ) : (
@@ -116,9 +113,6 @@ const EditSkillsPage = () => {
                 </div>
               )}
             </section>
-
-            {/* Sección Blandas */}
-
           </div>
         </main>
       </div>
@@ -203,20 +197,17 @@ const EditSkillsPage = () => {
                 </div>
               )}
 
-              {/* Botones */}
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
                   disabled={isSaving || !canSaveSkill}
-                  className="flex-1 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60"
-                >
+                  className="flex-1 bg-[#003A6C] text-white py-3 rounded-xl font-bold hover:bg-[#002a50] transition-all disabled:cursor-not-allowed disabled:opacity-60" >
                   {isSaving ? 'Guardando...' : 'Guardar'}
                 </button>
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="flex-1 bg-[#C2DBED] text-[#003A6C] py-3 rounded-xl font-bold border border-[#6dacbf] hover:bg-[#b0cfeb]"
-                >
+                  className="flex-1 bg-[#C2DBED] text-[#003A6C] py-3 rounded-xl font-bold border border-[#6dacbf] hover:bg-[#b0cfeb]"      >
                   Cancelar
                 </button>
               </div>

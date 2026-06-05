@@ -37,7 +37,6 @@ const DeleteSkillsPage = () => {
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-6xl space-y-6">
 
-            {/* Encabezado */}
               <div>
                 <h1 className="mb-2 text-3xl font-bold text-[#003A6C]">
                   Eliminar Habilidades
@@ -48,15 +47,12 @@ const DeleteSkillsPage = () => {
                     : 'Selecciona una habilidad para eliminar'}
                 </p>
              
-
-              {/* Botón Eliminar — aparece cuando hay selección */}
               {selectedCount > 0 && (
                 <div className="flex justify-end">
   <button
     onClick={() => setShowConfirmDelete(true)}
     disabled={isDeleting}
-    className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-red-700 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
-  >
+    className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-red-700 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"  >
     <Trash2 className="size-4" />
     Eliminar ({selectedCount})
   </button>
@@ -65,7 +61,6 @@ const DeleteSkillsPage = () => {
               )}
             </div>
 
-            {/* Error de página */}
             {pageError && (
               <div className="mb-6 rounded-2xl border-2 border-red-400 bg-red-100 px-4 py-4 text-sm text-red-900 font-semibold shadow-md">
                 <p className="font-bold mb-1">Error:</p>
@@ -73,7 +68,6 @@ const DeleteSkillsPage = () => {
               </div>
             )}
 
-            {/* Buscador */}
             <div className="relative mb-6">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-[#4B778D]" />
               <input
@@ -81,11 +75,9 @@ const DeleteSkillsPage = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar por nombre, tipo o nivel..."
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#0E7D96]/20 bg-white text-[#003A6C] placeholder:text-[#4B778D]/60 outline-none focus:ring-2 focus:ring-[#0E7D96]/30 shadow-sm"
-              />
+                className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#0E7D96]/20 bg-white text-[#003A6C] placeholder:text-[#4B778D]/60 outline-none focus:ring-2 focus:ring-[#0E7D96]/30 shadow-sm"  />
             </div>
 
-            {/* Contenido */}
             {isLoading ? (
               <div className="rounded-2xl border border-[#6dacbf]/30 bg-white py-10 text-center shadow-sm">
                 <p className="text-sm text-[#4B778D]">Cargando habilidades...</p>
@@ -105,7 +97,7 @@ const DeleteSkillsPage = () => {
                 </div>
               </div>
             ) : (
-              /* Tabla con checkboxes */
+              
               <div className="rounded-2xl border border-[#6dacbf]/30 bg-white shadow-sm overflow-hidden">
                 <div className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_120px_140px] px-5 py-3 border-b border-[#6dacbf]/20 gap-4 items-center">
                  <input
@@ -115,18 +107,11 @@ const DeleteSkillsPage = () => {
                         toggleSelectAll(filteredSkills.map((skill) => skill.id))
                       }
                       className="w-4 h-4 accent-[#003A6C] cursor-pointer rounded" />
-                  <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider">
-                    Habilidad
-                  </span>
-                  <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider hidden sm:block">
-                    Tipo
-                  </span>
-                  <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider hidden sm:block">
-                    Nivel
-                  </span>
+                  <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider">  Habilidad  </span>
+                  <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider hidden sm:block">  Tipo </span>
+                  <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider hidden sm:block">  Nivel  </span>
                 </div>
 
-                {/* Filas */}
                 {filteredSkills.map((skill, idx) => {
                   const isSelected = selectedSkillIds.has(skill.id);
                   const isTechnical = skill.type === 'tecnica';
@@ -136,19 +121,16 @@ const DeleteSkillsPage = () => {
                       onClick={() => toggleSelectSkill(skill.id)}
                       className={`grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_120px_140px] px-5 py-4 items-center gap-4 cursor-pointer transition-colors ${
                         isSelected ? 'bg-blue-50' : 'hover:bg-[#EEF6FC]'
-                      } ${idx !== filteredSkills.length - 1 ? 'border-b border-[#6dacbf]/10' : ''}`}
-                    >
-                      {/* Checkbox */}
+                      } ${idx !== filteredSkills.length - 1 ? 'border-b border-[#6dacbf]/10' : ''}`}    >
+                    
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleSelectSkill(skill.id)}
                         onClick={(e) => e.stopPropagation()}
                         className="w-4 h-4 accent-[#003A6C] cursor-pointer rounded"
-                        aria-label={`Seleccionar ${skill.name}`}
-                      />
+                        aria-label={`Seleccionar ${skill.name}`}   />
 
-                      {/* Nombre con ícono de tipo */}
                       <div className="flex items-center gap-2 min-w-0">
                         {isTechnical ? (
                           <Code2 className="size-4 text-[#4B778D] shrink-0" />
@@ -158,26 +140,21 @@ const DeleteSkillsPage = () => {
                         <span
                           className={`font-semibold truncate ${
                             isSelected ? 'text-[#003A6C]' : 'text-[#003A6C]'
-                          }`}
-                        >
+                          }`}   >
                           {skill.name}
                         </span>
                       </div>
 
-                      {/* Tipo */}
                       <span className="text-[#4B778D] text-sm hidden sm:block">
                         {isTechnical ? 'Técnica' : 'Blanda'}
                       </span>
 
-                      {/* Nivel */}
                       <div className="hidden sm:block">
                         {skill.level ? (
                           <span
                             className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
                               LEVEL_COLORS[skill.level.toLowerCase()] ??
-                              'bg-gray-100 text-gray-600'
-                            }`}
-                          >
+                              'bg-gray-100 text-gray-600'  }`} >
                             {LEVEL_LABELS[skill.level.toLowerCase()] ?? skill.level}
                           </span>
                         ) : (
@@ -189,7 +166,6 @@ const DeleteSkillsPage = () => {
                 })}
               </div>
             )}
-
           </div>
         </main>
       </div>
