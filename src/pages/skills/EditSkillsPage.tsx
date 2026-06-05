@@ -5,10 +5,10 @@ import { Code2, X } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/skills/useSkillsManager';
 import ConfirmationModal from '../../components/modals/ConfirmationModal';
 import ConfirmActionModal from '../../components/modals/ConfirmActionModal';
-import {LEVEL_LABELS,LEVEL_COLORS,} from '@/constants/skillConstants';
 import SkillsSearchBar from '@/components/skills/skillsSearchBar';
 import SkillsLoading from '@/components/skills/SkillsLoading';
 import SkillsEmptyState from '@/components/skills/SkillsEmptyState';
+import SkillLevelBadge from '@/components/skills/SkillLevelBadge';
 
 const EditSkillsPage = () => {
   const {
@@ -80,16 +80,7 @@ const EditSkillsPage = () => {
                         <span className="font-semibold text-[#003A6C]">{skill.name}</span>
                       </div>
                       <span className="text-[#4B778D] text-sm">Técnica</span>
-                      {skill.level ? (
-                        <span
-                          className={`inline-flex w-fit px-3 py-1 rounded-full text-xs font-medium ${
-                            LEVEL_COLORS[skill.level.toLowerCase()] ?? 'bg-gray-100 text-gray-600'
-                          }`}   >
-                          {LEVEL_LABELS[skill.level.toLowerCase()] ?? skill.level}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 text-sm">—</span>
-                      )}
+                     <SkillLevelBadge level={skill.level} />
                     </div>
                   ))}
                 </div>

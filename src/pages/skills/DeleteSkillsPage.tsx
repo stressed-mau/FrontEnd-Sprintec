@@ -5,10 +5,10 @@ import { Code2, Lightbulb, Trash2 } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/skills/useSkillsManager';
 import ConfirmationModal from '../../components/modals/ConfirmationModal';
 import DeleteConfirmationModal from '../../components/modals/DeleteConfirmationModal';
-import {LEVEL_LABELS,LEVEL_COLORS,} from '@/constants/skillConstants';
 import SkillsSearchBar from '@/components/skills/skillsSearchBar';
 import SkillsLoading from '@/components/skills/SkillsLoading';
 import SkillsEmptyState from '@/components/skills/SkillsEmptyState';
+import SkillLevelBadge from '@/components/skills/SkillLevelBadge';
 
 const DeleteSkillsPage = () => {
   const {
@@ -125,16 +125,7 @@ const DeleteSkillsPage = () => {
                       </span>
 
                       <div className="hidden sm:block">
-                        {skill.level ? (
-                          <span
-                            className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                              LEVEL_COLORS[skill.level.toLowerCase()] ??
-                              'bg-gray-100 text-gray-600'  }`} >
-                            {LEVEL_LABELS[skill.level.toLowerCase()] ?? skill.level}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 text-sm">—</span>
-                        )}
+                        <SkillLevelBadge  level={skill.level}/>
                       </div>
                     </div>
                   );
