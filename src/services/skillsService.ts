@@ -2,18 +2,17 @@ import { api } from './api';
 import {normalizeSkill} from '@/utils/skills/skillMapperUtils';
 import { unwrapSkill, unwrapSkillList, parseResponseData } from '@/utils/skills/skillResponseUtils';
 import {formatSkillApiError,} from '@/utils/skills/skillApiErrorUtils';
+import { toApiPayload,} from '@/utils/skills/skillApiPayloadUtils';
 
 export type SkillType = 'tecnica' | 'blanda';
-type ApiSkillType = 'tecnica' | 'blanda';
-
 export interface SkillDto {
   id?: string | number;
   name?: string;
-  type?: SkillType | ApiSkillType;
+  type?: SkillType;
   level?: string | null;
   level_of_domain?: string | null;
   nombre?: string;
-  tipo?: SkillType | ApiSkillType;
+  tipo?: SkillType;
   nivel?: string | null;
 }
 
@@ -21,12 +20,6 @@ export interface SkillPayload {
   name: string;
   type: SkillType;
   level?: string;
-}
-
-interface ApiSkillPayload {
-  name: string;
-  level_of_domain?: string;
-  type: ApiSkillType;
 }
 
 export interface Skill {
@@ -38,18 +31,6 @@ export interface Skill {
 
 const SKILLS_ENDPOINT = '/skills';
 const SKILL_MUTATION_TIMEOUT_MS = 30_000;
-
-function mapUiTypeToApi(type: SkillType): ApiSkillType {
-  return type === 'tecnica' ? 'tecnica' : 'blanda';
-}
-
-function toApiPayload(payload: SkillPayload): ApiSkillPayload {
-  return {
-    name: payload.name,
-    level_of_domain: payload.level ? payload.level.toLowerCase() : undefined,
-    type: mapUiTypeToApi(payload.type),
-  };
-}
 
 export async function getSkills(): Promise<Skill[]> {
   try {
