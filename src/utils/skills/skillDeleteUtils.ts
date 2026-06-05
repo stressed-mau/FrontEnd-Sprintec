@@ -17,3 +17,10 @@ export function removeSelectedSkillsFromList(
     (skill) => !selectedIds.has(skill.id)
   );
 }
+export function getDeleteSuccessMessage(
+  count: number
+): string {
+  return count > 1
+    ? 'Habilidades eliminadas correctamente.'
+    : 'Habilidad eliminada correctamente.';
+}

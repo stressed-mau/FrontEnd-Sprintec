@@ -10,6 +10,7 @@ import { normalizeErrorMessage }from '@/utils/errorUtils';
 import { toggleAllSkillSelection, toggleSkillSelection } from '@/utils/skills/skillSelectionUtils';
 import { hasSkillChanges } from '@/utils/skills/skillEditUtils';
 import { buildSkillPayload } from '@/utils/skills/skillPayloadUtils';
+import { removeSkillFromList, removeSelectedSkillsFromList, getDeleteSuccessMessage} from '@/utils/skills/skillDeleteUtils';
 
 export type { Skill };
 
@@ -182,7 +183,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
       }}
 
  const payload = buildSkillPayload(formattedName, skillType,  skillLevel);
- 
+
     try {
       setIsSaving(true);
       if (editingSkill) {
@@ -225,7 +226,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     try {
       setIsDeleting(true);
       await removeSkill(skillToDelete.id);
-      setSkills((prev) => prev.filter((skill) => skill.id !== skillToDelete.id));
+      setSkills((prev) => removeSkillFromList( prev, skillToDelete.id ));
       setSelectedSkillIds((prev) => {
         const next = new Set(prev);
         next.delete(skillToDelete.id);
@@ -260,15 +261,10 @@ const confirmDeleteSelected = async () => {
       setIsDeleting(true);
         await Promise.all(
         Array.from(selectedSkillIds).map((id) => removeSkill(id)));
-      setSkills((prev) =>
-        prev.filter((skill) => !selectedSkillIds.has(skill.id)));
+      setSkills((prev) => removeSelectedSkillsFromList( prev, selectedSkillIds ));
       setSelectedSkillIds(new Set());
       setShowConfirmDelete(false);
-      setSuccessMessage(
-        selectedSkillIds.size > 1
-          ? 'Habilidades eliminadas correctamente.'
-          : 'Habilidad eliminada correctamente.'
-    );
+      setSuccessMessage( getDeleteSuccessMessage( selectedSkillIds.size ));
       setShowSuccessModal(true);
       await loadSkills();
   } catch (error) {
