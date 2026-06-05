@@ -195,12 +195,14 @@ const DeleteSkillsPage = () => {
       </div>
 
     <DeleteConfirmationModal
-          isOpen={showConfirmDelete}
-          title="¿Está seguro de que desea eliminar esta habilidad?"
-          message="Esta acción no se puede deshacer."
-          isLoading={isDeleting}
-          onConfirm={() => void confirmDeleteSelected()}
-          onCancel={cancelDelete}/>
+        isOpen={showConfirmDelete}
+        title={ selectedCount > 1
+               ? '¿Está seguro de que desea eliminar estas habilidades?'
+               : '¿Está seguro de que desea eliminar esta habilidad?'  }
+        message="Esta acción no se puede deshacer."
+        isLoading={isDeleting}
+        onConfirm={() => void confirmDeleteSelected()}
+        onCancel={cancelDelete}/>
 
       <ConfirmationModal
         isOpen={showSuccessModal}

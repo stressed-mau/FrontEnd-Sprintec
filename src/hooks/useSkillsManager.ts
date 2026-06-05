@@ -7,6 +7,7 @@ import { getSoftSkillValidationMessage,} from '@/utils/skills/skillValidation';
 import {  sortTechnicalSkills,   sortSoftSkills,  filterSkills,  filterTechnicalSkills,  filterSoftSkills,} from '@/utils/skills/skillFilters';
 import { validateSkillForm } from '@/utils/skills/skillFormValidation';
 import { normalizeErrorMessage }from '@/utils/errorUtils';
+import { toggleAllSkillSelection, toggleSkillSelection } from '@/utils/skills/skillSelectionUtils';
 
 export type { Skill };
 
@@ -96,7 +97,7 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [normalizeErrorMessage]);
+  }, []);
 
   useEffect(() => {
     const handleAuthSessionChanged = () => {
@@ -250,32 +251,15 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     }};
 
 const toggleSelectSkill = (id: string) => {
-  setSelectedSkillIds((prev) => {
-    const next = new Set(prev);
-    if (next.has(id)) {
-      next.delete(id);
-    } else {
-      next.add(id);
-    }
-    return next;
-  });
-};
+  setSelectedSkillIds((prev) =>
+    toggleSkillSelection(prev, id)
+  );};
 
-  const toggleSelectAll = (visibleIds: string[]) => {
-    const allSelected = visibleIds.every((id) => selectedSkillIds.has(id));
-    if (allSelected) {
-      setSelectedSkillIds((prev) => {
-        const next = new Set(prev);
-        visibleIds.forEach((id) => next.delete(id));
-        return next;
-      });
-      return;}
-    setSelectedSkillIds((prev) => {
-      const next = new Set(prev);
-      visibleIds.forEach((id) => next.add(id));
-      return next;
-    });
-  };
+  const toggleSelectAll = (
+  visibleIds: string[]) => {
+  setSelectedSkillIds((prev) =>
+    toggleAllSkillSelection(prev, visibleIds)
+  );};
 
 const confirmDeleteSelected = async () => {
   if (isDeleting || selectedSkillIds.size === 0) return;
