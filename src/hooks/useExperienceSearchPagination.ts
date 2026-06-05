@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 
-import { filterExperiences, paginateExperiences } from "@/pages/experience/ExperiencePageUtils"
-import type { ExperienceItem } from "@/hooks/useExperienceManager"
+import type { ExperienceItem } from "@/types/experience"
+import { filterExperiences, paginateExperiences } from "@/utils/experiencePaginationUtils"
 
 export function useExperienceSearchPagination(experiences: ExperienceItem[]) {
   const [searchTerm, setSearchTerm] = useState("")

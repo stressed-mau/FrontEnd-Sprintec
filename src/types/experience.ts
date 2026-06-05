@@ -32,3 +32,7 @@ export interface ExperiencePayload {
   removeLogo?: boolean
   removeCertificate?: boolean
 }
+
+export interface WorkOptions {
+  roles: string[]
+}

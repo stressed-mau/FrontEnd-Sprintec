@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 
-import type { ExperienceItem } from "@/hooks/useExperienceManager"
+import type { ExperienceItem } from "@/types/experience"
 
 export function useExperienceSelection(experiences: ExperienceItem[], visibleExperiences: ExperienceItem[]) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())

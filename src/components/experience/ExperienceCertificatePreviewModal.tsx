@@ -1,6 +1,6 @@
 import { X } from "lucide-react"
 
-export function CertificatePreviewModal({ url, onClose }: { url: string | null; onClose: () => void }) {
+export function ExperienceCertificatePreviewModal({ url, onClose }: { url: string | null; onClose: () => void }) {
   if (!url) return null
 
   const isImage = /^data:image\//i.test(url) || /\.(?:jpe?g|png|webp|gif)(?:[?#].*)?$/i.test(url)
