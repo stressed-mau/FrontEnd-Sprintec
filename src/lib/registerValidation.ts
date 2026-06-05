@@ -1,4 +1,4 @@
-import type { RegisterValues } from "@/types/registerForm"
+﻿import type { RegisterValues } from "@/types/registerForm"
 
 const SPECIAL_CHARACTER_REGEX = /[^A-Za-z0-9]/
 

@@ -1,4 +1,4 @@
-import type { RefObject } from "react"
+﻿import type { RefObject } from "react"
 import { Mail, UserRound } from "lucide-react"
 
 import { AuthPasswordField } from "@/components/auth/AuthPasswordField"
@@ -39,6 +39,7 @@ export function RegisterFormFields(props: RegisterFormFieldsProps) {
         icon={UserRound}
         label="Nombre de usuario"
         placeholder="Tu nombre de usuario"
+        pattern="[A-Za-z0-9]*"
         maxLength={30}
         value={values.name}
         onBlur={() => props.handleBlur("name")}

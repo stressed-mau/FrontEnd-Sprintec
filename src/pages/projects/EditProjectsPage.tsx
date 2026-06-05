@@ -1,35 +1,24 @@
-import { useMemo, useState, type FormEvent } from "react";
+﻿import { useState, type FormEvent } from "react";
 
 import ConfirmActionModal from "@/components/ConfirmActionModal";
 import ConfirmationModal from "@/components/ConfirmationModal";
+import { FeedbackMessage } from "@/components/projects/FeedbackMessage";
+import { ProjectForm } from "@/components/projects/ProjectForm";
+import { ProjectFormModal } from "@/components/projects/ProjectFormModal";
+import { ProjectPageShell } from "@/components/projects/ProjectPageShell";
+import { ProjectPagination } from "@/components/projects/ProjectPagination";
+import { ProjectSearch } from "@/components/projects/ProjectSearch";
+import { ProjectTable } from "@/components/projects/ProjectTable";
+import { useProjectSearchPagination } from "@/hooks/useProjectSearchPagination";
 import { useProjectsManager, type ProjectItem } from "@/hooks/useProjectsManager";
-import {
-  FeedbackMessage,
-  filterProjects,
-  paginateProjects,
-  ProjectForm,
-  ProjectFormModal,
-  ProjectPageShell,
-  ProjectPagination,
-  ProjectSearch,
-  ProjectTable,
-} from "@/pages/projects/ProjectPageParts";
+import { filterProjects } from "@/lib/projectListUtils";
 
 export default function EditProjectsPage() {
   const manager = useProjectsManager();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [isEditing, setIsEditing] = useState(false);
   const [showConfirmEdit, setShowConfirmEdit] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  const filteredProjects = useMemo(() => filterProjects(manager.projects, searchTerm), [manager.projects, searchTerm]);
-  const pagination = paginateProjects(filteredProjects, currentPage);
-
-  function handleSearchChange(value: string) {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  }
+  const search = useProjectSearchPagination(manager.projects, filterProjects);
 
   function handleProjectSelect(project: ProjectItem) {
     manager.startEdit(project);
@@ -61,7 +50,7 @@ export default function EditProjectsPage() {
       <FeedbackMessage message={manager.pageError} type="error" />
       <FeedbackMessage message={manager.successMessage} type="success" />
 
-      {manager.projects.length > 0 ? <ProjectSearch value={searchTerm} onChange={handleSearchChange} /> : null}
+      {manager.projects.length > 0 ? <ProjectSearch value={search.searchTerm} onChange={search.handleSearchChange} /> : null}
 
       {manager.isLoading ? (
         <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
@@ -69,20 +58,20 @@ export default function EditProjectsPage() {
         </div>
       ) : (
         <ProjectTable
-          projects={pagination.items}
-          emptyMessage={searchTerm ? "No se encontraron proyectos con ese criterio." : "No hay proyectos para editar."}
+          projects={search.pagination.items}
+          emptyMessage={search.searchTerm ? "No se encontraron proyectos con ese criterio." : "No hay proyectos para editar."}
           onRowClick={handleProjectSelect}
           variant="edit"
         />
       )}
 
       <ProjectPagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        startIndex={pagination.startIndex}
-        endIndex={pagination.endIndex}
-        totalItems={filteredProjects.length}
-        onPageChange={setCurrentPage}
+        currentPage={search.pagination.currentPage}
+        totalPages={search.pagination.totalPages}
+        startIndex={search.pagination.startIndex}
+        endIndex={search.pagination.endIndex}
+        totalItems={search.filteredProjects.length}
+        onPageChange={search.setCurrentPage}
       />
 
       {isEditing && manager.editingProject ? (

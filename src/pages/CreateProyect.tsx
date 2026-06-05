@@ -5,7 +5,7 @@ import ProjectCard from '../components/ProjectCard';
 import { Plus } from 'lucide-react';
 import { useCreateProyect } from "../hooks/useCreateProyect";
 import { useEffect, useState, useRef  } from 'react';
-import { getLanguages } from "@/services/ProjectService";
+import { getLanguages } from "@/services/projectTechnologyService";
 import ConfirmationModal from '../components/ConfirmationModal';
 
 const inputErrorClassName = "border-red-500 focus:ring-red-200";

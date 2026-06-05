@@ -1,66 +1,34 @@
-import { Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+﻿import { Trash2 } from "lucide-react";
+import { useState } from "react";
 
 import ConfirmationModal from "@/components/ConfirmationModal";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
+import { FeedbackMessage } from "@/components/projects/FeedbackMessage";
+import { ProjectPageShell } from "@/components/projects/ProjectPageShell";
+import { ProjectPagination } from "@/components/projects/ProjectPagination";
+import { ProjectSearch } from "@/components/projects/ProjectSearch";
+import { ProjectTable } from "@/components/projects/ProjectTable";
 import { Button } from "@/components/ui/button";
-import { useProjectsManager, type ProjectItem } from "@/hooks/useProjectsManager";
-import {
-  FeedbackMessage,
-  paginateProjects,
-  ProjectPageShell,
-  ProjectPagination,
-  ProjectSearch,
-  ProjectTable,
-} from "@/pages/projects/ProjectPageParts";
+import { useProjectSearchPagination } from "@/hooks/useProjectSearchPagination";
+import { useProjectSelection } from "@/hooks/useProjectSelection";
+import { useProjectsManager } from "@/hooks/useProjectsManager";
+import { filterProjectsByTitle } from "@/lib/projectListUtils";
 
 export default function DeleteProjectsPage() {
   const manager = useProjectsManager();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [deletedCount, setDeletedCount] = useState(0);
-
-  const filteredProjects = useMemo(() => filterProjectsByTitle(manager.projects, searchTerm), [manager.projects, searchTerm]);
-  const pagination = paginateProjects(filteredProjects, currentPage);
-  const selectedCount = selectedIds.size;
+  const search = useProjectSearchPagination(manager.projects, filterProjectsByTitle);
+  const selection = useProjectSelection(search.pagination.items);
 
   function handleSearchChange(value: string) {
-    setSearchTerm(value);
-    setCurrentPage(1);
-    setSelectedIds(new Set());
-  }
-
-  function handleToggleSelect(id: number, selected: boolean) {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      if (selected) {
-        next.add(id);
-      } else {
-        next.delete(id);
-      }
-      return next;
-    });
-  }
-
-  function handleSelectAllVisible(selected: boolean) {
-    setSelectedIds((current) => {
-      const next = new Set(current);
-      pagination.items.forEach((project) => {
-        if (selected) {
-          next.add(project.id);
-        } else {
-          next.delete(project.id);
-        }
-      });
-      return next;
-    });
+    search.handleSearchChange(value);
+    selection.clearSelection();
   }
 
   async function handleConfirmDelete() {
-    const idsToDelete = Array.from(selectedIds);
+    const idsToDelete = Array.from(selection.selectedIds);
     if (idsToDelete.length === 0) return;
 
     const deleted = await manager.removeProjects(idsToDelete);
@@ -68,7 +36,7 @@ export default function DeleteProjectsPage() {
 
     if (deleted) {
       setDeletedCount(idsToDelete.length);
-      setSelectedIds(new Set());
+      selection.clearSelection();
       setShowSuccessModal(true);
     }
   }
@@ -77,23 +45,23 @@ export default function DeleteProjectsPage() {
     <ProjectPageShell
       title="Eliminar proyectos"
       description={
-        selectedCount === 0
+        selection.selectedCount === 0
           ? "Selecciona uno o varios proyectos para eliminarlos."
-          : `${selectedCount} proyecto${selectedCount > 1 ? "s" : ""} seleccionado${selectedCount > 1 ? "s" : ""}.`
+          : `${selection.selectedCount} proyecto${selection.selectedCount > 1 ? "s" : ""} seleccionado${selection.selectedCount > 1 ? "s" : ""}.`
       }
     >
       <FeedbackMessage message={manager.pageError} type="error" />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {manager.projects.length > 0 ? <ProjectSearch value={searchTerm} onChange={handleSearchChange} /> : <span />}
+        {manager.projects.length > 0 ? <ProjectSearch value={search.searchTerm} onChange={handleSearchChange} /> : <span />}
         <Button
           type="button"
-          disabled={selectedCount === 0 || manager.isDeleting}
+          disabled={selection.selectedCount === 0 || manager.isDeleting}
           onClick={() => setShowConfirmDelete(true)}
           className="bg-red-600 text-white hover:bg-red-700"
         >
           <Trash2 className="size-4" />
-          {manager.isDeleting ? "Eliminando..." : `Eliminar${selectedCount > 0 ? ` (${selectedCount})` : ""}`}
+          {manager.isDeleting ? "Eliminando..." : `Eliminar${selection.selectedCount > 0 ? ` (${selection.selectedCount})` : ""}`}
         </Button>
       </div>
 
@@ -103,28 +71,28 @@ export default function DeleteProjectsPage() {
         </div>
       ) : (
         <ProjectTable
-          projects={pagination.items}
-          emptyMessage={searchTerm ? "No se encontraron proyectos con ese criterio." : "No hay proyectos para eliminar."}
+          projects={search.pagination.items}
+          emptyMessage={search.searchTerm ? "No se encontraron proyectos con ese criterio." : "No hay proyectos para eliminar."}
           selectable
-          selectedIds={selectedIds}
-          onToggleSelect={handleToggleSelect}
-          onSelectAll={handleSelectAllVisible}
+          selectedIds={selection.selectedIds}
+          onToggleSelect={selection.handleToggleSelect}
+          onSelectAll={selection.handleSelectAllVisible}
         />
       )}
 
       <ProjectPagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        startIndex={pagination.startIndex}
-        endIndex={pagination.endIndex}
-        totalItems={filteredProjects.length}
-        onPageChange={setCurrentPage}
+        currentPage={search.pagination.currentPage}
+        totalPages={search.pagination.totalPages}
+        startIndex={search.pagination.startIndex}
+        endIndex={search.pagination.endIndex}
+        totalItems={search.filteredProjects.length}
+        onPageChange={search.setCurrentPage}
       />
 
       <DeleteConfirmationModal
         isOpen={showConfirmDelete}
-        title={`Esta seguro de que desea eliminar ${selectedCount > 1 ? "estos proyectos" : "este proyecto"}?`}
-        message="Esta accion no se puede deshacer."
+        title={`Está seguro de que desea eliminar ${selection.selectedCount > 1 ? "estos proyectos" : "este proyecto"}?`}
+        message="Esta acción no se puede deshacer."
         isLoading={manager.isDeleting}
         onConfirm={() => void handleConfirmDelete()}
         onCancel={() => setShowConfirmDelete(false)}
@@ -132,17 +100,10 @@ export default function DeleteProjectsPage() {
 
       <ConfirmationModal
         isOpen={showSuccessModal}
-        title="Exito"
+        title="Éxito"
         message={manager.successMessage || `${deletedCount > 1 ? "Proyectos eliminados" : "Proyecto eliminado"} correctamente.`}
         onClose={() => setShowSuccessModal(false)}
       />
     </ProjectPageShell>
   );
-}
-
-function filterProjectsByTitle(projects: ProjectItem[], searchTerm: string) {
-  const normalizedSearch = searchTerm.trim().toLowerCase();
-  if (!normalizedSearch) return projects;
-
-  return projects.filter((project) => project.nombre.toLowerCase().includes(normalizedSearch));
 }

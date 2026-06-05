@@ -1,36 +1,25 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
+import { FeedbackMessage } from "@/components/projects/FeedbackMessage";
+import { ProjectDetailsModal } from "@/components/projects/ProjectDetailsModal";
+import { ProjectPageShell } from "@/components/projects/ProjectPageShell";
+import { ProjectPagination } from "@/components/projects/ProjectPagination";
+import { ProjectSearch } from "@/components/projects/ProjectSearch";
+import { ProjectTable } from "@/components/projects/ProjectTable";
+import { useProjectSearchPagination } from "@/hooks/useProjectSearchPagination";
 import { useProjectsManager, type ProjectItem } from "@/hooks/useProjectsManager";
-import {
-  FeedbackMessage,
-  filterProjects,
-  paginateProjects,
-  ProjectDetailsModal,
-  ProjectPageShell,
-  ProjectPagination,
-  ProjectSearch,
-  ProjectTable,
-} from "@/pages/projects/ProjectPageParts";
+import { filterProjects } from "@/lib/projectListUtils";
 
 export default function ViewProjectsPage() {
   const manager = useProjectsManager();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
-
-  const filteredProjects = useMemo(() => filterProjects(manager.projects, searchTerm), [manager.projects, searchTerm]);
-  const pagination = paginateProjects(filteredProjects, currentPage);
-
-  function handleSearchChange(value: string) {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  }
+  const search = useProjectSearchPagination(manager.projects, filterProjects);
 
   return (
     <ProjectPageShell title="Ver proyectos" description="Consulta los proyectos registrados en tu portafolio.">
       <FeedbackMessage message={manager.pageError} type="error" />
 
-      {manager.projects.length > 0 ? <ProjectSearch value={searchTerm} onChange={handleSearchChange} /> : null}
+      {manager.projects.length > 0 ? <ProjectSearch value={search.searchTerm} onChange={search.handleSearchChange} /> : null}
 
       {manager.isLoading ? (
         <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
@@ -38,19 +27,19 @@ export default function ViewProjectsPage() {
         </div>
       ) : (
         <ProjectTable
-          projects={pagination.items}
-          emptyMessage={searchTerm ? "No se encontraron proyectos con ese criterio." : "No hay proyectos registrados."}
+          projects={search.pagination.items}
+          emptyMessage={search.searchTerm ? "No se encontraron proyectos con ese criterio." : "No hay proyectos registrados."}
           onRowClick={setSelectedProject}
         />
       )}
 
       <ProjectPagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        startIndex={pagination.startIndex}
-        endIndex={pagination.endIndex}
-        totalItems={filteredProjects.length}
-        onPageChange={setCurrentPage}
+        currentPage={search.pagination.currentPage}
+        totalPages={search.pagination.totalPages}
+        startIndex={search.pagination.startIndex}
+        endIndex={search.pagination.endIndex}
+        totalItems={search.filteredProjects.length}
+        onPageChange={search.setCurrentPage}
       />
 
       <ProjectDetailsModal project={selectedProject} onClose={() => setSelectedProject(null)} />

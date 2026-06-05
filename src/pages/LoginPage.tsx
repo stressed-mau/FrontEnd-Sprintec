@@ -1,4 +1,4 @@
-import { LogIn, Mail } from "lucide-react"
+﻿import { LogIn, Mail } from "lucide-react"
 import { Link } from "react-router-dom"
 
 import { AuthCard } from "@/components/auth/AuthCard"
@@ -22,7 +22,7 @@ export default function LoginPage() {
 
   return (
     <AuthCard
-      title="Iniciar sesion"
+      title="Iniciar sesión"
       description="Accede a tu portafolio profesional."
       icon={LogIn}
       iconClassName="mx-auto flex size-16 items-center justify-center rounded-2xl bg-[#E3EEF7] text-[#003A6C] shadow-sm"
@@ -33,8 +33,8 @@ export default function LoginPage() {
           id={emailInputId}
           type="text"
           icon={Mail}
-          label="Tu usuario o correo electronico"
-          placeholder="Tu usuario o tu correo electronico registrado"
+          label="Tu usuario o correo electrónico"
+          placeholder="Tu usuario o tu correo electrónico registrado"
           maxLength={60}
           value={values.user}
           onBlur={() => handleBlur("user")}
@@ -47,7 +47,7 @@ export default function LoginPage() {
 
         <AuthPasswordField
           id={passwordInputId}
-          label="Contrasena"
+          label="Contraseña"
           placeholder="••••••••"
           value={values.password}
           onBlur={() => handleBlur("password")}
@@ -56,7 +56,7 @@ export default function LoginPage() {
           errorId={passwordErrorId}
           isVisible={showPassword}
           toggleVisibility={togglePasswordVisibility}
-          visibilityLabel={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+          visibilityLabel={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
           required
         />
 
@@ -68,7 +68,7 @@ export default function LoginPage() {
           disabled={isSubmitting}
           className="h-11 w-full bg-[#003A6C] text-white transition hover:bg-[#4982AD] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isSubmitting ? "Iniciando sesion..." : "Iniciar sesion"}
+          {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
         </Button>
       </form>
 
@@ -76,7 +76,7 @@ export default function LoginPage() {
         <p>
           No tienes cuenta?{" "}
           <Link to={REGISTER_ROUTE} className="font-medium text-[#4982AD] transition hover:text-[#003A6C]">
-            Registrate aqui
+            Regístrate aquí
           </Link>
         </p>
       </div>
