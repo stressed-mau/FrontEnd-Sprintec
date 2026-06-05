@@ -47,7 +47,6 @@ export function looksLikeSkillDtoArray(value: unknown): value is SkillDto[] {
 
 export function findSkillArray(value: unknown, seen = new WeakSet<object>()): SkillDto[] | null {
   const unwrapped = unwrapPayload(value);
-  console.log('Skills recibidas del backend:', unwrapped);
 
   if (looksLikeSkillDtoArray(unwrapped)) {
     return unwrapped;
