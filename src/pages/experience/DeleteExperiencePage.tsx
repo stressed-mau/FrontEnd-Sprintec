@@ -62,53 +62,23 @@ export default function DeleteExperiencePage() {
   return (
     <ExperiencePageShell title="Eliminar Experiencia Laboral" description={getDeleteDescription(selection.selectedCount)}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex-1">
-          {experiences.length > 0 ? <ExperienceSearch value={search.searchTerm} onChange={handleSearchChange} /> : null}
-        </div>
+        <div className="flex-1">{experiences.length > 0 ? <ExperienceSearch value={search.searchTerm} onChange={handleSearchChange} /> : null}</div>
         <DeleteButton selectedCount={selection.selectedCount} isDeleting={isDeleting} onClick={() => setShowConfirmDelete(true)} />
       </div>
 
       <FeedbackMessage message={feedbackMessage || manager.pageError} type={feedbackType || "error"} />
 
       {manager.isLoading ? (
-        <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
-          Cargando Experiencia Laboral...
-        </div>
+        <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">Cargando Experiencia Laboral...</div>
       ) : (
-        <ExperienceTable
-          experiences={search.pagination.items}
-          emptyMessage={search.searchTerm ? "No se encontro Experiencia Laboral con ese criterio." : "No hay Experiencia Laboral para eliminar."}
-          searchTerm={search.searchTerm}
-          selectedIds={selection.selectedIds}
-          onSelect={selection.handleSelect}
-          onSelectAll={selection.handleSelectAllVisible}
-        />
+        <ExperienceTable experiences={search.pagination.items} emptyMessage={search.searchTerm ? "No se encontró Experiencia Laboral con ese criterio." : "No hay Experiencia Laboral para eliminar."} searchTerm={search.searchTerm} selectedIds={selection.selectedIds} onSelect={selection.handleSelect} onSelectAll={selection.handleSelectAllVisible} />
       )}
 
-      <ExperiencePagination
-        currentPage={search.pagination.currentPage}
-        totalPages={search.pagination.totalPages}
-        startIndex={search.pagination.startIndex}
-        endIndex={search.pagination.endIndex}
-        totalItems={search.filteredExperiences.length}
-        onPageChange={search.setCurrentPage}
-      />
+      <ExperiencePagination currentPage={search.pagination.currentPage} totalPages={search.pagination.totalPages} startIndex={search.pagination.startIndex} endIndex={search.pagination.endIndex} totalItems={search.filteredExperiences.length} onPageChange={search.setCurrentPage} />
 
-      <DeleteConfirmationModal
-        isOpen={showConfirmDelete}
-        title={`Esta seguro de que desea eliminar ${selection.selectedCount > 1 ? "estas Experiencias Laborales" : "esta Experiencia Laboral"}?`}
-        message="Esta accion no se puede deshacer."
-        isLoading={isDeleting}
-        onConfirm={() => void handleDeleteSelected()}
-        onCancel={() => setShowConfirmDelete(false)}
-      />
+      <DeleteConfirmationModal isOpen={showConfirmDelete} title={`Está seguro de que desea eliminar ${selection.selectedCount > 1 ? "estas Experiencias Laborales" : "esta Experiencia Laboral"}?`} message="Esta acción no se puede deshacer." isLoading={isDeleting} onConfirm={() => void handleDeleteSelected()} onCancel={() => setShowConfirmDelete(false)} />
 
-      <ConfirmationModal
-        isOpen={showSuccessModal}
-        title="Exito"
-        message={`${deletedCount > 1 ? "Experiencias Laborales eliminadas" : "Experiencia Laboral eliminada"} correctamente.`}
-        onClose={() => setShowSuccessModal(false)}
-      />
+      <ConfirmationModal isOpen={showSuccessModal} title="Éxito" message={`${deletedCount > 1 ? "Experiencias Laborales eliminadas" : "Experiencia Laboral eliminada"} correctamente.`} onClose={() => setShowSuccessModal(false)} />
     </ExperiencePageShell>
   )
 }

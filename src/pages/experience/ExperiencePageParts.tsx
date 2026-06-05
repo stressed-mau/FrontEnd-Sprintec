@@ -4,6 +4,6 @@ export { ExperienceManagerModals } from "@/components/experience/ExperienceManag
 export { ExperiencePageShell } from "@/components/experience/ExperiencePageShell"
 export { ExperiencePagination } from "@/components/experience/ExperiencePagination"
 export { ExperienceSearch } from "@/components/experience/ExperienceSearch"
-export { ExperienceStatusBadge, ExperienceTypeBadge } from "@/components/experience/ExperienceBadges"
+export { ExperienceStatusBadge } from "@/components/experience/ExperienceStatusBadge"
 export { ExperienceTable } from "@/components/experience/ExperienceTable"
 export { FeedbackMessage } from "@/components/experience/FeedbackMessage"

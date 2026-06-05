@@ -1,8 +1,9 @@
-import { Briefcase, GraduationCap, X } from "lucide-react"
 import { useState } from "react"
+import { Briefcase, X } from "lucide-react"
 
-import { CertificatePreviewModal } from "@/components/experience/ExperienceCertificatePreviewModal"
-import { ExperienceStatusBadge, ExperienceTypeBadge } from "@/components/experience/ExperienceBadges"
+import { ExperienceCertificatePreviewModal } from "@/components/experience/ExperienceCertificatePreviewModal"
+import { ExperienceStatusBadge } from "@/components/experience/ExperienceStatusBadge"
+import { Button } from "@/components/ui/button"
 import { formatExperienceDate } from "@/hooks/useExperienceManager"
 import type { ExperienceItem } from "@/types/experience"
 
@@ -13,26 +14,24 @@ export function ExperienceDetailsModal({ experience, onClose }: { experience: Ex
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-3 backdrop-blur-sm sm:items-center sm:px-4">
       <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-[#6DACBF] bg-white p-6 shadow-2xl sm:rounded-3xl">
-        <ExperienceDetailsHeader experience={experience} onClose={onClose} />
+        <ExperienceDetailsHeader onClose={onClose} />
         <div className="space-y-6">
-          <ExperienceDetailsSummary experience={experience} />
+          <ExperienceSummary experience={experience} />
           <ExperienceDetailsGrid experience={experience} />
           <DetailItem label="Descripción" value={experience.description || "No especificada"} />
-          {experience.certificate ? <CertificateButton onClick={() => setCertificatePreviewUrl(experience.certificate)} /> : null}
+          {experience.certificate ? <DocumentButton onClick={() => setCertificatePreviewUrl(experience.certificate)} /> : null}
         </div>
       </div>
-      <CertificatePreviewModal url={certificatePreviewUrl} onClose={() => setCertificatePreviewUrl(null)} />
+      <ExperienceCertificatePreviewModal url={certificatePreviewUrl} onClose={() => setCertificatePreviewUrl(null)} />
     </div>
   )
 }
 
-function ExperienceDetailsHeader({ experience, onClose }: { experience: ExperienceItem; onClose: () => void }) {
+function ExperienceDetailsHeader({ onClose }: { onClose: () => void }) {
   return (
     <div className="mb-6 flex items-start justify-between gap-4">
       <div>
-        <h2 className="text-2xl font-bold text-[#003A6C]">
-          Detalle de {experience.type === "academica" ? "Formación Académica" : "Experiencia Laboral"}
-        </h2>
+        <h2 className="text-2xl font-bold text-[#003A6C]">Detalle de Experiencia Laboral</h2>
         <p className="mt-1 text-sm text-[#4B778D]">Información completa del registro seleccionado.</p>
       </div>
       <button type="button" onClick={onClose} className="rounded-full p-1 text-[#003A6C] transition hover:bg-[#EEF5F9]" aria-label="Cerrar detalle de experiencia">
@@ -42,30 +41,21 @@ function ExperienceDetailsHeader({ experience, onClose }: { experience: Experien
   )
 }
 
-function ExperienceDetailsSummary({ experience }: { experience: ExperienceItem }) {
+function ExperienceSummary({ experience }: { experience: ExperienceItem }) {
   return (
     <div className="flex items-start gap-4">
-      <ExperienceDetailsImage experience={experience} />
+      {experience.image ? (
+        <img src={experience.image} alt="" className="size-16 shrink-0 rounded-lg border border-[#D7E6F2] bg-white object-contain p-1 shadow-sm" />
+      ) : (
+        <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-[#D9EAF4] text-[#003A6C]">
+          <Briefcase className="size-8" />
+        </div>
+      )}
       <div>
         <p className="text-xl font-semibold text-[#003A6C]">{experience.company}</p>
         <p className="text-[#4B778D]">{experience.position}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <ExperienceTypeBadge type={experience.type} />
-          <ExperienceStatusBadge experience={experience} />
-        </div>
+        <div className="mt-3"><ExperienceStatusBadge experience={experience} /></div>
       </div>
-    </div>
-  )
-}
-
-function ExperienceDetailsImage({ experience }: { experience: ExperienceItem }) {
-  if (experience.image) {
-    return <img src={experience.image} alt="" className="size-16 shrink-0 rounded-lg border border-[#D7E6F2] bg-white object-contain p-1 shadow-sm" />
-  }
-
-  return (
-    <div className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-[#D9EAF4] text-[#003A6C]">
-      {experience.type === "academica" ? <GraduationCap className="size-8" /> : <Briefcase className="size-8" />}
     </div>
   )
 }
@@ -73,39 +63,19 @@ function ExperienceDetailsImage({ experience }: { experience: ExperienceItem }) 
 function ExperienceDetailsGrid({ experience }: { experience: ExperienceItem }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      {experience.type === "academica" ? <AcademicDetails experience={experience} /> : <WorkDetails experience={experience} />}
+      <DetailItem label="Inicio" value={formatExperienceDate(experience.startDate)} />
+      <DetailItem label="Fin" value={experience.current ? "Actual" : formatExperienceDate(experience.endDate)} />
       <DetailItem label="Correo" value={experience.email || "No especificado"} />
-      <DetailItem
-        label={experience.type === "academica" ? "Campo de estudio" : "Ubicación"}
-        value={experience.type === "academica" ? experience.fieldOfStudy || "No especificado" : experience.location || "No especificada"}
-      />
+      <DetailItem label="Ubicación" value={experience.location || "No especificada"} />
     </div>
   )
 }
 
-function AcademicDetails({ experience }: { experience: ExperienceItem }) {
+function DocumentButton({ onClick }: { onClick: () => void }) {
   return (
-    <>
-      <DetailItem label="Fecha de emisión" value={experience.endDate ? formatExperienceDate(experience.endDate) : "Actual"} />
-      <DetailItem label="Estado" value={experience.current ? "Cursando actualmente" : "Concluido"} />
-    </>
-  )
-}
-
-function WorkDetails({ experience }: { experience: ExperienceItem }) {
-  return (
-    <>
-      <DetailItem label="Inicio" value={formatExperienceDate(experience.startDate)} />
-      <DetailItem label="Fin" value={experience.current ? "Actual" : formatExperienceDate(experience.endDate)} />
-    </>
-  )
-}
-
-function CertificateButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className="inline-flex rounded-lg border border-[#A5D7E8] bg-[#EEF5F9] px-4 py-2 text-sm font-medium text-[#003A6C] hover:bg-[#D9EAF4]">
+    <Button type="button" variant="outline" onClick={onClick} className="border-[#A5D7E8] bg-[#EEF5F9] text-[#003A6C] hover:bg-[#D9EAF4]">
       Ver certificado
-    </button>
+    </Button>
   )
 }
 

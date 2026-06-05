@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer"
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
 
-interface ExperiencePageShellProps {
+type ExperiencePageShellProps = {
   title: string
   description: string
   children: ReactNode

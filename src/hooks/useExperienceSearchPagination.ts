@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 
-import { filterExperiences, paginateExperiences } from "@/lib/experienceListUtils"
 import type { ExperienceItem } from "@/types/experience"
+import { filterExperiences, paginateExperiences } from "@/utils/experiencePaginationUtils"
 
 export function useExperienceSearchPagination(experiences: ExperienceItem[]) {
   const [searchTerm, setSearchTerm] = useState("")
@@ -14,11 +14,5 @@ export function useExperienceSearchPagination(experiences: ExperienceItem[]) {
     setCurrentPage(1)
   }
 
-  return {
-    filteredExperiences,
-    handleSearchChange,
-    pagination,
-    searchTerm,
-    setCurrentPage,
-  }
+  return { filteredExperiences, handleSearchChange, pagination, searchTerm, setCurrentPage }
 }

@@ -1,8 +1,9 @@
 import { api } from "@/services/api"
 import { formatExperienceError } from "@/services/experienceErrorService"
-import { normalizeExperience, asStringArray } from "@/services/experienceNormalizeService"
+import { asStringArray, normalizeExperience } from "@/services/experienceNormalizeService"
 import { buildExperienceFormData, buildExperienceUpdateBody } from "@/services/experiencePayloadService"
 import { parseExperienceResponse, unwrapExperience, unwrapExperienceGroups } from "@/services/experienceResponseService"
+import type { UnknownRecord } from "@/services/experienceDtoService"
 import type { ExperienceItem, ExperiencePayload, WorkOptions } from "@/types/experience"
 
 export type { ExperienceItem, ExperiencePayload, ExperienceType, WorkOptions } from "@/types/experience"
@@ -18,7 +19,9 @@ export async function getExperiences(): Promise<ExperienceItem[]> {
       transformResponse: (value) => value,
     })
 
-    if (response.status === 204) return []
+    if (response.status === 204) {
+      return []
+    }
 
     return unwrapExperienceGroups(parseExperienceResponse(response.data)).flatMap((group) =>
       group.items.map((item, index) => normalizeExperience(item, index, group.type ?? "laboral")),
@@ -31,7 +34,10 @@ export async function getExperiences(): Promise<ExperienceItem[]> {
 export async function getWorkOptions(): Promise<WorkOptions> {
   try {
     const response = await api.get(WORK_OPTIONS_ENDPOINT)
-    const options = getOptionsRecord(response.data)
+    const data = response.data && typeof response.data === "object"
+      ? (response.data as UnknownRecord).data
+      : null
+    const options = data && typeof data === "object" ? data as UnknownRecord : {}
 
     return {
       roles: asStringArray(options.roles ?? options.positions ?? options.titles ?? options.cargos),
@@ -58,7 +64,10 @@ export async function updateExperience(id: string, payload: ExperiencePayload): 
   try {
     const response = await api.put(`${EXPERIENCES_ENDPOINT}/${id}`, buildExperienceUpdateBody(payload), {
       timeout: EXPERIENCE_MUTATION_TIMEOUT_MS,
-      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
     })
 
     return normalizeExperience(unwrapExperience(response.data), 0, payload.type)
@@ -75,13 +84,4 @@ export async function removeExperience(id: string): Promise<void> {
   } catch (error) {
     throw formatExperienceError(error)
   }
-}
-
-function getOptionsRecord(data: unknown): Record<string, unknown> {
-  if (!data || typeof data !== "object" || Array.isArray(data)) return {}
-
-  const record = data as Record<string, unknown>
-  return record.data && typeof record.data === "object" && !Array.isArray(record.data)
-    ? (record.data as Record<string, unknown>)
-    : record
 }

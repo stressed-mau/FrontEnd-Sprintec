@@ -11,38 +11,20 @@ import { useExperienceSearchPagination } from "@/hooks/useExperienceSearchPagina
 
 export default function ViewExperiencePage() {
   const manager = useExperienceManager()
-  const [selectedExperience, setSelectedExperience] = useState<ExperienceItem | null>(null)
   const experiences = manager.laboralExperiences
   const search = useExperienceSearchPagination(experiences)
+  const [selectedExperience, setSelectedExperience] = useState<ExperienceItem | null>(null)
 
   return (
     <ExperiencePageShell title="Ver Experiencia Laboral" description="Consulta tu Experiencia Laboral registrada.">
       <FeedbackMessage message={manager.pageError} type="error" />
-
       {experiences.length > 0 ? <ExperienceSearch value={search.searchTerm} onChange={search.handleSearchChange} /> : null}
-
       {manager.isLoading ? (
-        <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">
-          Cargando Experiencia Laboral...
-        </div>
+        <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-10 text-center text-sm text-[#4B778D] shadow-sm">Cargando Experiencia Laboral...</div>
       ) : (
-        <ExperienceTable
-          experiences={search.pagination.items}
-          emptyMessage={search.searchTerm ? "No se encontró Experiencia Laboral con ese criterio." : "No hay Experiencia Laboral registrada."}
-          searchTerm={search.searchTerm}
-          onRowClick={setSelectedExperience}
-        />
+        <ExperienceTable experiences={search.pagination.items} emptyMessage={search.searchTerm ? "No se encontró Experiencia Laboral con ese criterio." : "No hay Experiencia Laboral registrada."} searchTerm={search.searchTerm} onRowClick={setSelectedExperience} />
       )}
-
-      <ExperiencePagination
-        currentPage={search.pagination.currentPage}
-        totalPages={search.pagination.totalPages}
-        startIndex={search.pagination.startIndex}
-        endIndex={search.pagination.endIndex}
-        totalItems={search.filteredExperiences.length}
-        onPageChange={search.setCurrentPage}
-      />
-
+      <ExperiencePagination currentPage={search.pagination.currentPage} totalPages={search.pagination.totalPages} startIndex={search.pagination.startIndex} endIndex={search.pagination.endIndex} totalItems={search.filteredExperiences.length} onPageChange={search.setCurrentPage} />
       <ExperienceDetailsModal experience={selectedExperience} onClose={() => setSelectedExperience(null)} />
     </ExperiencePageShell>
   )

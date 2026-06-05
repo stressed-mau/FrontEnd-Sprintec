@@ -1,16 +1,6 @@
 import { AlertCircle, X } from "lucide-react"
 
-export function DuplicateRegistrationModal({
-  title,
-  message,
-  closeLabel = "Entendido",
-  onClose,
-}: {
-  title: string
-  message: string
-  closeLabel?: string
-  onClose: () => void
-}) {
+export function DuplicateRegistrationModal({ title, message, closeLabel = "Entendido", onClose }: { title: string; message: string; closeLabel?: string; onClose: () => void }) {
   if (!message) return null
 
   return (

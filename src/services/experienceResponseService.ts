@@ -1,15 +1,13 @@
-import type { ExperienceDto, ExperienceType } from "@/types/experience"
-
-type UnknownRecord = Record<string, unknown>
-
-export interface ExperienceGroup {
-  items: ExperienceDto[]
-  type?: ExperienceType
-}
+import type { ExperienceDto, ExperienceGroup, UnknownRecord } from "@/services/experienceDtoService"
 
 export function parseExperienceResponse(data: unknown): unknown {
-  if (data == null || data === "") return []
-  if (typeof data !== "string") return data
+  if (data == null || data === "") {
+    return []
+  }
+
+  if (typeof data !== "string") {
+    return data
+  }
 
   try {
     return JSON.parse(data)
@@ -25,54 +23,70 @@ export function unwrapExperience(data: unknown): ExperienceDto {
 
 export function unwrapExperienceGroups(data: unknown): ExperienceGroup[] {
   const unwrapped = unwrapPayload(data)
-  if (Array.isArray(unwrapped)) return [{ items: unwrapped as ExperienceDto[] }]
-  if (!isRecord(unwrapped)) return []
 
-  return getDirectGroups(unwrapped) ?? getTypedGroups(unwrapped) ?? getLegacyGroups(unwrapped) ?? []
+  if (Array.isArray(unwrapped)) {
+    return [{ items: unwrapped as ExperienceDto[] }]
+  }
+
+  if (!unwrapped || typeof unwrapped !== "object") {
+    return []
+  }
+
+  return unwrapRecordGroups(unwrapped as UnknownRecord)
 }
 
 function unwrapPayload(data: unknown): unknown {
-  if (!isRecord(data)) return data
-  if (isRecord(data.data)) return unwrapPayload(data.data)
-  if (isRecord(data.experience)) return unwrapPayload(data.experience)
-  if (isRecord(data.education)) return unwrapPayload(data.education)
+  if (!data || typeof data !== "object") {
+    return data
+  }
+
+  const record = data as UnknownRecord
+  const nextPayload = record.data ?? record.experience ?? record.education
+
+  if (nextPayload && typeof nextPayload === "object") {
+    return unwrapPayload(nextPayload)
+  }
+
   return data
 }
 
-function getDirectGroups(record: UnknownRecord) {
-  if (Array.isArray(record.experiences)) return [{ items: record.experiences as ExperienceDto[] }]
-  if (Array.isArray(record.experience)) return [{ items: record.experience as ExperienceDto[] }]
-  if (Array.isArray(record.data)) return [{ items: record.data as ExperienceDto[] }]
-  return null
+function unwrapRecordGroups(record: UnknownRecord): ExperienceGroup[] {
+  if (Array.isArray(record.experiences)) {
+    return [{ items: record.experiences as ExperienceDto[] }]
+  }
+
+  if (Array.isArray(record.experience)) {
+    return [{ items: record.experience as ExperienceDto[] }]
+  }
+
+  if (Array.isArray(record.laboral) || Array.isArray(record.academica)) {
+    return buildTypedGroups(record.laboral, record.academica)
+  }
+
+  if (hasLegacyGroups(record)) {
+    return buildTypedGroups(resolveWorkItems(record), resolveEducationItems(record))
+  }
+
+  return Array.isArray(record.data) ? [{ items: record.data as ExperienceDto[] }] : []
 }
 
-function getTypedGroups(record: UnknownRecord) {
-  if (!Array.isArray(record.laboral) && !Array.isArray(record.academica)) return null
+function hasLegacyGroups(record: UnknownRecord) {
+  return ["work_experience", "work_experiences", "education", "educations"].some((key) => Array.isArray(record[key]))
+}
 
+function resolveWorkItems(record: UnknownRecord) {
+  const single = Array.isArray(record.work_experience) ? record.work_experience : []
+  return single.length ? single : record.work_experiences
+}
+
+function resolveEducationItems(record: UnknownRecord) {
+  const single = Array.isArray(record.education) ? record.education : []
+  return single.length ? single : record.educations
+}
+
+function buildTypedGroups(workItems: unknown, educationItems: unknown): ExperienceGroup[] {
   return [
-    { items: toExperienceList(record.laboral), type: "laboral" as const },
-    { items: toExperienceList(record.academica), type: "academica" as const },
+    { items: Array.isArray(workItems) ? workItems as ExperienceDto[] : [], type: "laboral" },
+    { items: Array.isArray(educationItems) ? educationItems as ExperienceDto[] : [], type: "academica" },
   ]
-}
-
-function getLegacyGroups(record: UnknownRecord) {
-  const hasLegacyGroups = ["work_experience", "work_experiences", "education", "educations"].some((key) =>
-    Array.isArray(record[key]),
-  )
-  if (!hasLegacyGroups) return null
-
-  const workExperience = toExperienceList(record.work_experience)
-  const education = toExperienceList(record.education)
-  return [
-    { items: workExperience.length ? workExperience : toExperienceList(record.work_experiences), type: "laboral" as const },
-    { items: education.length ? education : toExperienceList(record.educations), type: "academica" as const },
-  ]
-}
-
-function toExperienceList(value: unknown) {
-  return Array.isArray(value) ? (value as ExperienceDto[]) : []
-}
-
-function isRecord(value: unknown): value is UnknownRecord {
-  return Boolean(value && typeof value === "object" && !Array.isArray(value))
 }

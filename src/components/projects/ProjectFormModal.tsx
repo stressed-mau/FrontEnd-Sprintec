@@ -14,7 +14,7 @@ export function ProjectFormModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-3 backdrop-blur-sm sm:items-center sm:px-4">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl border border-[#6DACBF] bg-[#C2DBED] shadow-2xl sm:rounded-2xl">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl border border-[#6DACBF] bg-[#C2DBED] shadow-2xl sm:rounded-2xl">
         <div className="flex items-start justify-between gap-4 border-b border-[#D7E6F2] px-5 pb-4 pt-5 sm:px-6">
           <div>
             <h2 className="text-xl font-semibold text-[#003A6C]">{title}</h2>

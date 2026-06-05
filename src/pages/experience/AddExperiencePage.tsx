@@ -8,10 +8,6 @@ import { FeedbackMessage } from "@/components/experience/FeedbackMessage"
 import { ExperienceInlineForm } from "@/pages/experience/ExperienceInlineForm"
 import { useExperienceManager } from "@/hooks/useExperienceManager"
 
-function normalizeDuplicateText(value: string) {
-  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("es-BO")
-}
-
 export default function AddExperiencePage() {
   const navigate = useNavigate()
   const manager = useExperienceManager()
@@ -26,55 +22,30 @@ export default function AddExperiencePage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setDuplicateMessage("")
-
-    const position = normalizeDuplicateText(manager.formData.position)
-    const hasDuplicateExperience = Boolean(position) && manager.laboralExperiences.some((experience) =>
-      normalizeDuplicateText(experience.position) === position
-    )
-
-    if (hasDuplicateExperience) {
-      manager.handleBlur("position")
-      setDuplicateMessage("Ya existe una experiencia laboral registrada con ese cargo. Ingresa un cargo diferente.")
-      return
-    }
-
+    if (hasDuplicatePosition(manager.formData.position, manager.laboralExperiences)) return showDuplicate()
     await manager.handleSubmit(event)
   }
 
+  function showDuplicate() {
+    manager.handleBlur("position")
+    setDuplicateMessage("Ya existe una experiencia laboral registrada con ese cargo. Ingresa un cargo diferente.")
+  }
+
   return (
-    <ExperiencePageShell
-      title="Registrar Experiencia Laboral"
-      description="Registra una nueva Experiencia Laboral en tu portafolio."
-      compact
-    >
+    <ExperiencePageShell title="Registrar Experiencia Laboral" description="Registra una nueva Experiencia Laboral en tu portafolio." compact>
       <FeedbackMessage message={manager.feedbackMessage || manager.pageError} type={manager.feedbackType || "error"} />
-
-      <ExperienceInlineForm
-        mode="experience"
-        formData={manager.formData}
-        errors={manager.errors}
-        isSaving={manager.isSaving}
-        canRemoveImage={manager.canRemoveImage}
-        canRemoveCertificate={manager.canRemoveCertificate}
-        workRoleOptions={manager.workOptions.roles}
-        fileInputRef={manager.fileInputRef}
-        certificateInputRef={manager.certificateInputRef}
-        onFieldChange={manager.updateField}
-        onBlur={manager.handleBlur}
-        onImageChange={manager.handleImageChange}
-        onCertificateChange={manager.handleCertificateChange}
-        onRemoveImage={manager.removeImage}
-        onRemoveCertificate={manager.removeCertificate}
-        onSubmit={handleSubmit}
-        onCancel={() => navigate("/experiencia/ver")}
-      />
-
+      <ExperienceInlineForm mode="experience" formData={manager.formData} errors={manager.errors} isSaving={manager.isSaving} canRemoveImage={manager.canRemoveImage} canRemoveCertificate={manager.canRemoveCertificate} workRoleOptions={manager.workOptions.roles} fileInputRef={manager.fileInputRef} certificateInputRef={manager.certificateInputRef} onFieldChange={manager.updateField} onBlur={manager.handleBlur} onImageChange={manager.handleImageChange} onCertificateChange={manager.handleCertificateChange} onRemoveImage={manager.removeImage} onRemoveCertificate={manager.removeCertificate} onSubmit={handleSubmit} onCancel={() => navigate("/experiencia/ver")} />
       <ExperienceManagerModals manager={manager} hideTypeField onSuccessClose={() => navigate("/experiencia/ver")} />
-      <DuplicateRegistrationModal
-        title="Experiencia duplicada"
-        message={duplicateMessage}
-        onClose={() => setDuplicateMessage("")}
-      />
+      <DuplicateRegistrationModal title="Experiencia duplicada" message={duplicateMessage} onClose={() => setDuplicateMessage("")} />
     </ExperiencePageShell>
   )
+}
+
+function hasDuplicatePosition(position: string, experiences: Array<{ position: string }>) {
+  const normalizedPosition = normalizeDuplicateText(position)
+  return Boolean(normalizedPosition) && experiences.some((experience) => normalizeDuplicateText(experience.position) === normalizedPosition)
+}
+
+function normalizeDuplicateText(value: string) {
+  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("es-BO")
 }
