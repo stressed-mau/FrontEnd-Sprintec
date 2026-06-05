@@ -6,6 +6,7 @@ import { useSkillsManager } from '@/hooks/skills/useSkillsManager';
 import ConfirmationModal from '../../components/modals/ConfirmationModal';
 import {LEVEL_LABELS,LEVEL_COLORS,} from '@/constants/skillConstants';
 import SkillsSearchBar from '@/components/skills/skillsSearchBar';
+import SkillsLoading from '@/components/skills/SkillsLoading';
 
 const ViewSkillsPage = () => {
   const {
@@ -42,9 +43,7 @@ const ViewSkillsPage = () => {
               </div>
 
               {isLoading ? (
-                <div className="rounded-2xl border border-[#6dacbf]/30 bg-white py-10 text-center shadow-sm">
-                  <p className="text-sm text-[#4B778D]">Cargando habilidades...</p>
-                </div>
+                <SkillsLoading />
               ) : filteredTechnicalSkills.length === 0 ? (
                 <div className="rounded-2xl border-2 border-dashed border-[#6dacbf] bg-[#F7F0E1] py-14 text-center shadow-sm">
                   <p className="text-sm text-[#4B778D]">

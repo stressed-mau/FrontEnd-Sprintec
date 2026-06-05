@@ -7,6 +7,7 @@ import ConfirmationModal from '../../components/modals/ConfirmationModal';
 import DeleteConfirmationModal from '../../components/modals/DeleteConfirmationModal';
 import {LEVEL_LABELS,LEVEL_COLORS,} from '@/constants/skillConstants';
 import SkillsSearchBar from '@/components/skills/skillsSearchBar';
+import SkillsLoading from '@/components/skills/SkillsLoading';
 
 const DeleteSkillsPage = () => {
   const {
@@ -63,9 +64,7 @@ const DeleteSkillsPage = () => {
               placeholder="Buscar por nombre o nivel..."/> </div>
 
             {isLoading ? (
-              <div className="rounded-2xl border border-[#6dacbf]/30 bg-white py-10 text-center shadow-sm">
-                <p className="text-sm text-[#4B778D]">Cargando habilidades...</p>
-              </div>
+              <SkillsLoading />
             ) : filteredSkills.length === 0 ? (
               <div className="rounded-2xl bg-white py-20 shadow-sm border border-[#6dacbf]/20 flex flex-col items-center justify-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
