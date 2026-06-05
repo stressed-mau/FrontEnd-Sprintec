@@ -16,3 +16,7 @@ export const INVALID_SOFT_SKILL_EDIT_MESSAGE =
   
 export const REQUIRED_SKILL_NAME_MESSAGE =
   'El campo Nombre de la habilidad es obligatorio.';
+
+export const SKILLS_ENDPOINT = '/skills';
+
+export const SKILL_MUTATION_TIMEOUT_MS = 30000;

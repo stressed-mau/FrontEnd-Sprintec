@@ -3,6 +3,7 @@ import {normalizeSkill} from '@/utils/skills/skillMapperUtils';
 import { unwrapSkill, unwrapSkillList, parseResponseData } from '@/utils/skills/skillResponseUtils';
 import {formatSkillApiError,} from '@/utils/skills/skillApiErrorUtils';
 import { toApiPayload,} from '@/utils/skills/skillApiPayloadUtils';
+import { SKILLS_ENDPOINT, SKILL_MUTATION_TIMEOUT_MS,} from '@/constants/skillConstants';
 
 export type SkillType = 'tecnica' | 'blanda';
 export interface SkillDto {
@@ -28,9 +29,6 @@ export interface Skill {
   type: SkillType;
   level?: string;
 }
-
-const SKILLS_ENDPOINT = '/skills';
-const SKILL_MUTATION_TIMEOUT_MS = 30_000;
 
 export async function getSkills(): Promise<Skill[]> {
   try {
