@@ -1,16 +1,17 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { createSkill, getSkills, removeSkill, updateSkill, type Skill,  type SkillType, } from '../services/skillsService';
+import { getSkills, removeSkill, type Skill,  type SkillType, } from '../services/skillsService';
 import { AUTH_SESSION_CHANGED_EVENT, getAuthToken } from '@/services/auth/auth-storage';
 import {  formatSkillName } from '@/utils/skills/skillUtils';
-import { getSoftSkillValidationMessage,} from '@/utils/skills/skillValidation';
 import {  sortTechnicalSkills,   sortSoftSkills,  filterSkills,  filterTechnicalSkills,  filterSoftSkills,} from '@/utils/skills/skillFilters';
 import { validateSkillForm } from '@/utils/skills/skillFormValidation';
 import { normalizeErrorMessage }from '@/utils/errorUtils';
 import { toggleAllSkillSelection, toggleSkillSelection } from '@/utils/skills/skillSelectionUtils';
 import { hasSkillChanges } from '@/utils/skills/skillEditUtils';
 import { buildSkillPayload } from '@/utils/skills/skillPayloadUtils';
-import { removeSkillFromList, removeSelectedSkillsFromList, getDeleteSuccessMessage} from '@/utils/skills/skillDeleteUtils';
+import { removeSkillFromList, removeSelectedSkillsFromList, getDeleteSuccessMessage, deleteSelectedSkills} from '@/utils/skills/skillDeleteUtils';
+import { getSkillNameErrorMessage} from '@/utils/skills/skillNameValidationUtils';
+import { addSkillToList, updateSkillInList, saveSkill} from '@/utils/skills/skillCrudUtils';
 
 export type { Skill };
 
@@ -152,15 +153,12 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
     setIsModalOpen(false);
     resetForm();};
 
-  const handleSkillNameChange = (value: string) => {
-    setSkillName(value);
-    if (editingSkill?.type === 'blanda' || skillType === 'blanda') {
-  const validationMessage =
-    getSoftSkillValidationMessage(value);
-  setErrorMessage(validationMessage ?? '');
-} else {
-  setErrorMessage('');
-}};
+ const handleSkillNameChange = (value: string) => {
+  setSkillName(value);
+
+  const isSoftSkill =  editingSkill?.type === 'blanda' ||  skillType === 'blanda';
+  setErrorMessage( getSkillNameErrorMessage( value, isSoftSkill ));
+};
 
   const handleSave = async (e?: FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
@@ -186,15 +184,12 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
 
     try {
       setIsSaving(true);
-      if (editingSkill) {
-        const updated = await updateSkill(editingSkill.id, payload);
-        setSkills((prev) => prev.map((skill) => (skill.id === editingSkill.id ? updated : skill)));
-        setSuccessMessage('La habilidad se ha actualizado correctamente.');
+     const result = await saveSkill(editingSkill,payload);
+    if (result.isEditing) { setSkills((prev) => updateSkillInList(prev, result.skill));
       } else {
-        const created = await createSkill(payload);
-        setSkills((prev) => [...prev, created]);
-        setSuccessMessage('La habilidad se ha registrado correctamente.');
+        setSkills((prev) => addSkillToList(prev, result.skill));
       }
+      setSuccessMessage( result.successMessage);
       await loadSkills();
       setIsModalOpen(false);
       setShowConfirmEdit(false);
@@ -259,8 +254,7 @@ const confirmDeleteSelected = async () => {
   if (isDeleting || selectedSkillIds.size === 0) return;
     try {
       setIsDeleting(true);
-        await Promise.all(
-        Array.from(selectedSkillIds).map((id) => removeSkill(id)));
+        await deleteSelectedSkills(selectedSkillIds);
       setSkills((prev) => removeSelectedSkillsFromList( prev, selectedSkillIds ));
       setSelectedSkillIds(new Set());
       setShowConfirmDelete(false);
