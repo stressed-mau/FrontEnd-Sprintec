@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getPortfolioVisibilityData, savePortfolioVisibilitySection,
+
+import { getPortfolioVisibilityDataService, savePortfolioVisibilitySectionService,
   type PortfolioVisibilityData,
   type SectionKey,
   type VisibilityItem,
 } from '../services/portfolioVisibilityService';
 
-const initialData: PortfolioVisibilityData = {
+const INITIAL_DATA: PortfolioVisibilityData = {
   projects: [],
   skills: [],
   experience: [],
@@ -18,7 +19,7 @@ const MIN_VISIBLE_MESSAGE =
   'Debe mantener al menos una sección visible en el portafolio.';
 
 export const usePortfolioVisibility = () => {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState(INITIAL_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [pageError, setPageError] = useState('');
@@ -26,11 +27,11 @@ export const usePortfolioVisibility = () => {
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await getPortfolioVisibilityData();
+      const res = await getPortfolioVisibilityDataService();
       setPageError('');
       setData(res);
-    } catch (e: any) {
-      setPageError(e.message);
+    } catch (error) {
+      setPageError(error instanceof Error ? error.message : 'No se pudo cargar la visibilidad del portafolio.');
     } finally {
       setIsLoading(false);
     }
@@ -49,9 +50,9 @@ export const usePortfolioVisibility = () => {
   ) => {
     try {
       setIsSaving(true);
-      await savePortfolioVisibilitySection(section, next, itemId, sourceTable);
-    } catch (e: any) {
-      setPageError(e.message);
+      await savePortfolioVisibilitySectionService(section, next, itemId, sourceTable);
+    } catch (error) {
+      setPageError(error instanceof Error ? error.message : 'No se pudo guardar la visibilidad del portafolio.');
       setData((p) => ({ ...p, [section]: prev }));
     } finally {
       setIsSaving(false);
@@ -117,7 +118,12 @@ export const usePortfolioVisibility = () => {
   };
 
   return {
-    data, isLoading, isSaving,  pageError,
-    handleItemCheck,  handleBulkSelect, reload: load,
+    data,
+    isLoading,
+    isSaving,
+    pageError,
+    handleItemCheck,
+    handleBulkSelect,
+    reload: load,
   };
 };

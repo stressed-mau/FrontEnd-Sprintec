@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import { api } from './api';
 
 export type SectionKey =
@@ -30,6 +31,42 @@ export type PortfolioVisibilityData = Record<SectionKey, VisibilityItem[]>;
 
 const USER_INFORMATION_ENDPOINT = '/visibility';
 
+type VisibilityItemDto = {
+  id?: number;
+  name?: string;
+  title?: string;
+  position?: string;
+  degree?: string;
+  label?: string;
+  role?: string;
+  rol?: string;
+  company_name?: string;
+  company?: string;
+  institution?: string;
+  institution_name?: string;
+  organization?: string;
+  project_rol?: string;
+  type?: string;
+  level_of_domain?: string;
+  issuer?: string;
+  platform?: string;
+  url?: string;
+  is_public?: unknown;
+};
+
+type VisibilityResponseDto = {
+  data?: {
+    projects?: VisibilityItemDto[];
+    skills?: VisibilityItemDto[];
+    work_experiences?: VisibilityItemDto[];
+    educations?: VisibilityItemDto[];
+    certificates?: VisibilityItemDto[];
+    social_networks?: VisibilityItemDto[];
+  };
+};
+
+type VisibilityPayload = NonNullable<VisibilityResponseDto['data']>;
+
 function formatError(error: unknown): Error {
   if (axios.isAxiosError(error)) {
     const backendMessage = error.response?.data?.message || error.message;
@@ -45,68 +82,78 @@ function asBoolean(value: unknown): boolean {
   return value === undefined ? true : false;
 }
 
-const normalizeProjects = (data: any) =>
-  (data?.projects || []).map((item: any) => ({
-    id: item.id,
-    label: item.name || 'Proyecto',
-    sublabel: item.project_rol || item.rol || item.role || 'Rol no especificado',
-    checked: asBoolean(item.is_public),
-    sourceTable: 'projects',
-  }));
+function toText(value: string | undefined, fallback: string): string {
+  return value && value.trim().length > 0 ? value : fallback;
+}
 
-const normalizeSkills = (data: any) =>
-  (data?.skills || []).map((item: any) => ({
-    id: item.id,
-    label: item.name,
-    sublabel:
-      item.type === 'tecnica'
-        ? `Técnica (${item.level_of_domain})`
-        : 'Blanda',
+function normalizeProjects(data: VisibilityPayload) {
+  return (data.projects || []).map((item) => ({
+    id: item.id ?? 0,
+    label: toText(item.name, 'Proyecto'),
+    sublabel: toText(item.project_rol ?? item.rol ?? item.role, 'Rol no especificado'),
     checked: asBoolean(item.is_public),
-    sourceTable: 'skills',
+    sourceTable: 'projects' as const,
   }));
+}
 
-const normalizeWorkExperience = (data: any) =>
-  (data?.work_experiences || []).map((item: any) => ({
-    id: item.id,
-    label: item.role,
-    sublabel: item.company_name,
+function normalizeSkills(data: VisibilityPayload) {
+  return (data.skills || []).map((item) => ({
+    id: item.id ?? 0,
+    label: toText(item.name, 'Habilidad'),
+    sublabel: item.type === 'tecnica' ? `Técnica (${toText(item.level_of_domain, 'Sin nivel')})` : 'Blanda',
     checked: asBoolean(item.is_public),
-    sourceTable: 'work_experiences',
+    sourceTable: 'skills' as const,
   }));
+}
 
-const normalizeEducation = (data: any) =>
-  (data?.educations || []).map((item: any) => ({
-    id: item.id,
-    label: item.title || item.position || item.degree || item.name || item.label || 'Sin titulo',
-    sublabel: item.institution || item.company || item.company_name || item.institution_name || item.organization || item.sublabel || 'Sin institucion',
+function normalizeWorkExperience(data: VisibilityPayload) {
+  return (data.work_experiences || []).map((item) => ({
+    id: item.id ?? 0,
+    label: toText(item.role ?? item.rol, 'Experiencia laboral'),
+    sublabel: toText(item.company_name ?? item.company, 'Sin empresa'),
     checked: asBoolean(item.is_public),
-    sourceTable: 'educations',
+    sourceTable: 'work_experiences' as const,
   }));
+}
 
-const normalizeCertificates = (data: any) =>
-  (data?.certificates || []).map((item: any) => ({
-    id: item.id,
-    label: item.name,
-    sublabel: item.issuer,
+function normalizeEducation(data: VisibilityPayload) {
+  return (data.educations || []).map((item) => ({
+    id: item.id ?? 0,
+    label: toText(item.title ?? item.position ?? item.degree ?? item.name ?? item.label, 'Sin titulo'),
+    sublabel: toText(
+      item.institution ?? item.company ?? item.company_name ?? item.institution_name ?? item.organization,
+      'Sin institucion'
+    ),
+    checked: asBoolean(item.is_public),
+    sourceTable: 'educations' as const,
+  }));
+}
+
+function normalizeCertificates(data: VisibilityPayload) {
+  return (data.certificates || []).map((item) => ({
+    id: item.id ?? 0,
+    label: toText(item.name, 'Certificado'),
+    sublabel: toText(item.issuer, 'Sin emisor'),
     checked: item.is_public !== undefined ? asBoolean(item.is_public) : true,
-    sourceTable: 'certificates',
+    sourceTable: 'certificates' as const,
   }));
+}
 
-const normalizeNetworks = (data: any) =>
-  (data?.social_networks || []).map((item: any) => ({
-    id: item.id,
-    label: item.name || item.platform || 'Red Social',
-    sublabel: item.url || '',
+function normalizeNetworks(data: VisibilityPayload) {
+  return (data.social_networks || []).map((item) => ({
+    id: item.id ?? 0,
+    label: toText(item.name ?? item.platform, 'Red Social'),
+    sublabel: toText(item.url, ''),
     checked: asBoolean(item.is_public),
-    sourceTable: 'social_networks',
+    sourceTable: 'social_networks' as const,
   }));
+}
 
 // ---------------- API ----------------
-export async function getPortfolioVisibilityData(): Promise<PortfolioVisibilityData> {
+export async function getPortfolioVisibilityDataService(): Promise<PortfolioVisibilityData> {
   try {
-    const res = await api.get(USER_INFORMATION_ENDPOINT);
-    const payload = res.data?.data || {};
+    const res = await api.get<VisibilityResponseDto>(USER_INFORMATION_ENDPOINT);
+    const payload = res.data?.data ?? {};
 
     return {
       projects: normalizeProjects(payload),
@@ -121,7 +168,7 @@ export async function getPortfolioVisibilityData(): Promise<PortfolioVisibilityD
   }
 }
 
-export async function savePortfolioVisibilitySection(
+export async function savePortfolioVisibilitySectionService(
   _section: SectionKey,
   items: VisibilityItem[],
   itemId?: number,

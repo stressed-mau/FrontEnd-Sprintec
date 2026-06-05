@@ -1,8 +1,9 @@
 import axios from "axios";
+
 import { api } from "@/services/api";
 import { toAbsoluteAssetUrl } from "@/services/assetUrl";
 
-const publicApi = axios.create({
+const PUBLIC_API = axios.create({
   baseURL: (api.defaults.baseURL ?? "http://localhost:5173/api").replace(/\/+$/, ""),
   timeout: 30_000,
   headers: {
@@ -151,11 +152,10 @@ function formatError(error: unknown): Error {
   return new Error("No se pudieron cargar los portafolios.");
 }
 
-export async function getExplorePortfolios(filters: ExplorePortfoliosFilters = {}): Promise<ExplorePortfoliosResponse> {
+export async function getExplorePortfoliosService(filters: ExplorePortfoliosFilters = {}): Promise<ExplorePortfoliosResponse> {
   try {
-    // El endpoint publica el listado completo; los filtros y paginacion se aplican en cliente.
     void filters;
-    const response = await publicApi.get<CardsResponseDto>("/portfolios");
+    const response = await PUBLIC_API.get<CardsResponseDto>("/portfolios");
     const cards = getCardsFromResponse(response.data?.data);
 
     const portfolios = cards.map(normalizeCard);

@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 
-import type { PortfolioCard } from "@/hooks/useExplorePortfolioFilters";
+import type { ExplorePortfolioCard } from "@/services/explorePortfoliosService";
 
-function getPortfolioSortName(portfolio: PortfolioCard) {
+function getPortfolioSortName(portfolio: ExplorePortfolioCard) {
   return (portfolio.fullName || portfolio.username || "").trim();
 }
 
-export function useSortedPortfolios(portfolios: PortfolioCard[]) {
+export function useSortedPortfolios(portfolios: ExplorePortfolioCard[]) {
   return useMemo(() => {
     return [...portfolios].sort((left, right) => {
       const leftName = getPortfolioSortName(left);

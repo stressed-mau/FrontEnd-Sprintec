@@ -1,14 +1,27 @@
-import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility";
-import { type VisibilityItem, type SectionKey } from "@/services/portfolioVisibilityService";
-import { usePublishPortfolio } from "../hooks/usePublishPortfolio";
+import { useEffect, useState } from "react";
+
+import { ChevronDown, ChevronUp, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+import { Footer } from "@/components/Footer";
+import { type SectionKey, type VisibilityItem } from "@/services/portfolioVisibilityService";
+
 import Header from "../components/HeaderUser";
 import Sidebar from "../components/Sidebar";
-import { Footer } from "@/components/Footer";
-import { ChevronDown, ChevronUp, Settings } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"
-const PortfolioVisibilityPage = () => {
-  const navigate = useNavigate()
+import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility";
+import { usePublishPortfolio } from "../hooks/usePublishPortfolio";
+
+const PORTFOLIO_VISIBILITY_SECTIONS = [
+  { key: "projects", label: "Proyectos" },
+  { key: "skills", label: "Habilidades" },
+  { key: "experience", label: "Experiencia Laboral" },
+  { key: "education", label: "Formación Académica" },
+  { key: "certificates", label: "Certificados" },
+  { key: "networks", label: "Redes profesionales" },
+] as const;
+
+const PortfolioVisibilityConfigPage = () => {
+  const navigate = useNavigate();
   const { 
     data: visibilityData, 
     isLoading, 
@@ -23,7 +36,7 @@ const PortfolioVisibilityPage = () => {
     void checkInitialStatus();
   }, []);
   const toggleExpand = (key: string) => {
-    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const getVisibleStats = (key: SectionKey) => {
@@ -33,14 +46,6 @@ const PortfolioVisibilityPage = () => {
     return `${visible} de ${total} visibles`;
   };
 
-  const sections = [
-    { key: 'projects', label: 'Proyectos' },
-    { key: 'skills', label: 'Habilidades' },
-    { key: 'experience', label: 'Experiencia Laboral' },
-    { key: 'education', label: 'Formación Académica' },
-    { key: 'certificates', label: 'Certificados' },
-    { key: 'networks', label: 'Redes profesionales' },
-  ] as const;
   if (isPublished) {
     return (
       <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
@@ -134,7 +139,7 @@ const PortfolioVisibilityPage = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {sections.map(({ key, label }) => {
+                  {PORTFOLIO_VISIBILITY_SECTIONS.map(({ key, label }) => {
                     const items: VisibilityItem[] = visibilityData ? visibilityData[key] : [];
                     const isExpanded = expandedSections[key];
                     const hasItems = items.length > 0;
@@ -254,4 +259,4 @@ const PortfolioVisibilityPage = () => {
   );
 };
 
-export default PortfolioVisibilityPage;
+export default PortfolioVisibilityConfigPage;
