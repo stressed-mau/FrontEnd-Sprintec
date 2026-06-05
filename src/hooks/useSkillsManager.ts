@@ -9,6 +9,7 @@ import { validateSkillForm } from '@/utils/skills/skillFormValidation';
 import { normalizeErrorMessage }from '@/utils/errorUtils';
 import { toggleAllSkillSelection, toggleSkillSelection } from '@/utils/skills/skillSelectionUtils';
 import { hasSkillChanges } from '@/utils/skills/skillEditUtils';
+import { buildSkillPayload } from '@/utils/skills/skillPayloadUtils';
 
 export type { Skill };
 
@@ -180,12 +181,8 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
         return;
       }}
 
-  const payload = {
-    name: formattedName,
-    type: skillType,
-    level: skillType === 'tecnica' ? skillLevel.toLowerCase() : undefined,
-};
-
+ const payload = buildSkillPayload(formattedName, skillType,  skillLevel);
+ 
     try {
       setIsSaving(true);
       if (editingSkill) {
