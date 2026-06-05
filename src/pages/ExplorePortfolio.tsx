@@ -84,9 +84,6 @@ function FilterDropdown({ value, options, placeholder, onChange }: FilterDropdow
   )
 }
 
-//function OccupationDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
- // return <FilterDropdown {...props} placeholder="Todos" />}
-
 function ProjectsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
   return <FilterDropdown {...props} placeholder="Cualquiera" />}
 
@@ -96,7 +93,6 @@ function SkillsDropdown(props: Omit<FilterDropdownProps, 'placeholder'>) {
 export default function ExplorePortfolios() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
- // const occupationContainerRef = useRef<HTMLDivElement | null>(null)
   const [portfolios, setPortfolios] = useState<PortfolioCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState("");

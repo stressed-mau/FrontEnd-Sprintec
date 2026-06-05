@@ -1,13 +1,13 @@
-import Header from '../../components/HeaderUser';
-import Sidebar from '../../components/Sidebar';
-import { Footer } from '@/components/Footer';
 import { Code2, Lightbulb } from 'lucide-react';
+import { Footer } from '@/components/Footer';
 import { useSkillsManager } from '@/hooks/skills/useSkillsManager';
-import ConfirmationModal from '../../components/modals/ConfirmationModal';
 import SkillsSearchBar from '@/components/skills/skillsSearchBar';
 import SkillsLoading from '@/components/skills/SkillsLoading';
 import SkillsEmptyState from '@/components/skills/SkillsEmptyState';
 import SkillLevelBadge from '@/components/skills/SkillLevelBadge';
+import Header from '../../components/HeaderUser';
+import Sidebar from '../../components/Sidebar';
+import ConfirmationModal from '../../components/modals/ConfirmationModal';
 
 const ViewSkillsPage = () => {
   const {
