@@ -20,6 +20,7 @@ import {
   recordProjectLinkClick,
   recordSocialClick,
   sendPortfolioTrackingPulse,
+  startPortfolioTracking,
 } from "@/services/portfolioAnalyticsService"
 
 const asBoolean = (value: unknown): boolean => {
@@ -37,7 +38,8 @@ const getProjectTechnologies = (project: any): string[] => (
 ).filter(Boolean)
 
 const getNetworkName = (network: any): string => {
-  return getSocialNetworkKey(network)
+  const networkKey = getSocialNetworkKey(network)
+  return networkKey === "youtube" ? "google" : networkKey
 }
 
 const getProjectTitle = (project: any): string =>
@@ -539,7 +541,8 @@ const PublicPortfolio = () => {
   const location = useLocation()
   const { portfolio, loading, visitId } = usePortfolio(slug) as { portfolio: any, loading: boolean, visitId: string | null };
   const recordedViewRef = useRef<string | null>(null)
-  const trackingStartRef = useRef<number>(Date.now())
+  const trackingStartRef = useRef<number>(0)
+  const visitIdRef = useRef<string | null>(null)
   const [selectedProject, setSelectedProject] = useState<any | null>(null)
   const [selectedExperience, setSelectedExperience] = useState<any | null>(null)
   const [selectedEducation, setSelectedEducation] = useState<any | null>(null)
@@ -571,6 +574,7 @@ const PublicPortfolio = () => {
 
   useEffect(() => {
     if (!visitId) return;
+    visitIdRef.current = visitId
     trackingStartRef.current = Date.now()
 
     // Enviar pulso de permanencia cada 30 segundos
@@ -594,6 +598,20 @@ const PublicPortfolio = () => {
     recordPortfolioView(String(publicSlug))
   }, [loading, portfolio, slug])
 
+  const getTrackingVisitId = async () => {
+    if (visitIdRef.current) return visitIdRef.current
+
+    const portfolioSlug = String(portfolio?.config?.slug ?? slug ?? "")
+    if (!portfolioSlug) return ""
+
+    const trackedVisitId = await startPortfolioTracking({
+      slug: portfolioSlug,
+      template: portfolio?.config?.template ?? portfolio?.template ?? "0",
+    })
+    visitIdRef.current = trackedVisitId || null
+    return trackedVisitId
+  }
+
   const handleProjectClick = async (projectId?: string | number) => {
     if (!projectId) return
 
@@ -603,14 +621,18 @@ const PublicPortfolio = () => {
       setSelectedProject(clickedProject)
     }
 
-    if (!visitId) return
-    await recordProjectClick({ visitId, projectId })
+    const currentVisitId = await getTrackingVisitId()
+    if (!currentVisitId) return
+    await recordProjectClick({ visitId: currentVisitId, projectId })
   };
 
   const handleSocialClick = async (network: any) => {
     const networkName = getNetworkName(network)
-    if (!networkName || !visitId) return
-    await recordSocialClick({ visitId, networkName })
+    if (!networkName) return
+
+    const currentVisitId = await getTrackingVisitId()
+    if (!currentVisitId) return
+    await recordSocialClick({ visitId: currentVisitId, networkName })
   }
 
   const handleExperienceClick = (experienceId?: string | number) => {
@@ -629,11 +651,14 @@ const PublicPortfolio = () => {
     }
   }
 
-  const handleProjectLinkClick = (linkType: "repository" | "demo", url: string) => {
-    if (!selectedProject?.id || !visitId || !url) return
+  const handleProjectLinkClick = async (linkType: "repository" | "demo", url: string) => {
+    if (!selectedProject?.id || !url) return
 
-    void recordProjectLinkClick({
-      visitId,
+    const currentVisitId = await getTrackingVisitId()
+    if (!currentVisitId) return
+
+    await recordProjectLinkClick({
+      visitId: currentVisitId,
       projectId: selectedProject.id,
       linkType,
     })
@@ -1012,7 +1037,7 @@ const PublicPortfolio = () => {
                       href={selectedProjectGithubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => handleProjectLinkClick("repository", selectedProjectGithubUrl)}
+                      onClick={() => void handleProjectLinkClick("repository", selectedProjectGithubUrl)}
                       className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition sm:w-auto ${modalTheme.primaryLink}`}
                     >
                       <GitBranch className="h-4 w-4" />
@@ -1025,7 +1050,7 @@ const PublicPortfolio = () => {
                       href={selectedProjectDemoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => handleProjectLinkClick("demo", selectedProjectDemoUrl)}
+                      onClick={() => void handleProjectLinkClick("demo", selectedProjectDemoUrl)}
                       className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition sm:w-auto ${modalTheme.secondaryLink}`}
                     >
                       <ExternalLink className="h-4 w-4" />

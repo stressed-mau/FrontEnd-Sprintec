@@ -1,172 +1,48 @@
 import axios from "axios"
 
 import { api } from "@/services/api"
+import type {
+  PortfolioAnalytics,
+  PortfolioAnalyticsDto,
+  PortfolioTrackingParams,
+  PortfolioViewRecordResult,
+  ProjectClickParams,
+  ProjectLinkClickParams,
+  SocialClickParams,
+} from "@/types/portfolioAnalytics"
+import {
+  asString,
+  normalizePortfolioAnalytics,
+  normalizePortfolioViewResult,
+} from "@/utils/portfolioAnalyticsUtils"
+
+export type {
+  AnalyticsBreakdownItem,
+  PortfolioAnalytics,
+  PortfolioViewRecordResult,
+} from "@/types/portfolioAnalytics"
 
 const publicApi = axios.create({
   baseURL: (api.defaults.baseURL ?? "/api").replace(/\/+$/, ""),
   timeout: 30_000,
-  headers: {
-    Accept: "application/json",
-  },
+  headers: { Accept: "application/json" },
 })
-
-type PortfolioAnalyticsDto = {
-  status?: string
-  data?: {
-    portfolio_id?: number
-    slug?: string
-    total_views?: number
-    views_this_month?: number
-    views_by_month?: Record<string, number>
-    period?: {
-      from?: string
-      to?: string
-    }
-    total_visits?: number
-    average_time_seconds?: number
-    interest_rate?: number
-    top_template?: string | null
-    templates?: Array<Record<string, unknown>>
-    top_projects?: Array<Record<string, unknown>>
-    project_views?: Array<Record<string, unknown>>
-    project_link_clicks?: Array<Record<string, unknown>>
-    social_clicks?: Array<Record<string, unknown>>
-    total_link_clicks?: number
-    link_clicks?: number
-  }
-  message?: string
-}
-
-export type PortfolioViewRecordResult = {
-  portfolioId?: number
-  slug?: string
-  counted: boolean
-}
-
-export type AnalyticsBreakdownItem = {
-  id: string
-  label: string
-  value: number
-  secondary?: string
-}
-
-export type PortfolioAnalytics = {
-  portfolioId?: number
-  slug?: string
-  totalViews: number
-  viewsThisMonth: number
-  viewsByMonth: Record<string, number>
-  period?: {
-    from?: string
-    to?: string
-  }
-  totalVisits: number
-  averageTimeSeconds: number
-  interestRate: number
-  topTemplate: string | null
-  templates: AnalyticsBreakdownItem[]
-  projectViews: AnalyticsBreakdownItem[]
-  socialClicks: AnalyticsBreakdownItem[]
-  totalLinkClicks: number
-}
-
-function formatAnalyticsError(error: unknown) {
-  if (axios.isAxiosError(error)) {
-    const message =
-      typeof error.response?.data?.message === "string"
-        ? error.response.data.message
-        : "No se pudieron cargar las metricas del portafolio."
-
-    return new Error(message)
-  }
-
-  return new Error("No se pudieron cargar las metricas del portafolio.")
-}
-
-function asString(value: unknown): string {
-  if (typeof value === "string") return value.trim()
-  if (typeof value === "number") return String(value)
-  return ""
-}
-
-function asNumber(value: unknown): number {
-  const numberValue = Number(value ?? 0)
-  return Number.isFinite(numberValue) ? numberValue : 0
-}
-
-function normalizeBreakdownItem(item: Record<string, unknown>, index: number): AnalyticsBreakdownItem {
-  const id = asString(item.project_id ?? item.id ?? item.type ?? item.social_network_id ?? index)
-  const label = asString(item.title ?? item.name ?? item.label ?? item.type ?? item.platform) || `Item ${index + 1}`
-  const value = asNumber(item.clicks ?? item.views ?? item.visits ?? item.count ?? item.total)
-  const secondaryValue = item.avg_time ?? item.average_time_seconds
-
-  return {
-    id,
-    label,
-    value,
-    secondary: secondaryValue != null ? `${asNumber(secondaryValue)} s promedio` : undefined,
-  }
-}
-
-function normalizeBreakdown(value: unknown): AnalyticsBreakdownItem[] {
-  if (!Array.isArray(value)) return []
-
-  return value
-    .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
-    .map(normalizeBreakdownItem)
-}
-
-function hasProjectName(item: Record<string, unknown>) {
-  return Boolean(asString(item.title ?? item.name ?? item.label))
-}
-
-function isDeletedProjectLabel(label: string) {
-  const normalizedLabel = label.trim().toLowerCase()
-
-  return [
-    "unknown project",
-    "unknown_project",
-    "proyecto desconocido",
-    "proyecto eliminado",
-    "deleted project",
-    "deleted_project",
-  ].includes(normalizedLabel)
-}
-
-function normalizeProjectBreakdown(value: unknown): AnalyticsBreakdownItem[] {
-  if (!Array.isArray(value)) return []
-
-  return value
-    .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
-    .filter(hasProjectName)
-    .map(normalizeBreakdownItem)
-    .filter((item) => !isDeletedProjectLabel(item.label))
-}
 
 export async function recordPortfolioView(slug: string): Promise<PortfolioViewRecordResult | null> {
   try {
     const response = await publicApi.post(`/p/${encodeURIComponent(slug)}/view`)
     const data = response.data?.data ?? response.data ?? {}
-    const result = {
-      portfolioId: Number(data.portfolio_id ?? data.portfolioId ?? 0) || undefined,
-      slug: asString(data.slug) || slug,
-      counted: Boolean(data.counted),
-    }
+    const result = normalizePortfolioViewResult(data, slug)
 
     console.info("Vista de portafolio registrada:", result)
     return result
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.warn("No se pudo registrar la vista del portafolio.", error.response?.data ?? error.message)
-      return null
-    }
-
-    console.warn("No se pudo registrar la vista del portafolio.")
+    warnTrackingFailure("No se pudo registrar la vista del portafolio.", error)
     return null
   }
 }
 
-export async function startPortfolioTracking(params: { slug: string; template: string | number }) {
+export async function startPortfolioTracking(params: PortfolioTrackingParams) {
   try {
     const response = await publicApi.post("/tracking/visit", {
       portfolio_slug: params.slug,
@@ -176,23 +52,20 @@ export async function startPortfolioTracking(params: { slug: string; template: s
 
     return asString(response.data?.visit_id ?? response.data?.id ?? response.data?.data?.visit_id ?? response.data?.data?.id)
   } catch (error) {
-    console.warn("No se pudo iniciar el tracking avanzado del portafolio.", axios.isAxiosError(error) ? error.response?.data ?? error.message : error)
+    warnTrackingFailure("No se pudo iniciar el tracking avanzado del portafolio.", error)
     return ""
   }
 }
 
 export async function sendPortfolioTrackingPulse(visitId: string | number, secondsElapsed: number) {
   try {
-    await publicApi.post("/tracking/pulse", {
-      visit_id: visitId,
-      seconds_elapsed: secondsElapsed,
-    })
+    await publicApi.post("/tracking/pulse", { visit_id: visitId, seconds_elapsed: secondsElapsed })
   } catch (error) {
-    console.warn("Pulso de tracking fallido.", axios.isAxiosError(error) ? error.response?.data ?? error.message : error)
+    warnTrackingFailure("Pulso de tracking fallido.", error)
   }
 }
 
-export async function recordProjectClick(params: { visitId: string | number; projectId: string | number }) {
+export async function recordProjectClick(params: ProjectClickParams) {
   try {
     await publicApi.post("/tracking/project-click", {
       visit_id: params.visitId,
@@ -200,15 +73,11 @@ export async function recordProjectClick(params: { visitId: string | number; pro
       clicked_at: new Date().toISOString(),
     })
   } catch (error) {
-    console.warn("Click tracking fallido.", axios.isAxiosError(error) ? error.response?.data ?? error.message : error)
+    warnTrackingFailure("Click tracking fallido.", error)
   }
 }
 
-export async function recordProjectLinkClick(params: {
-  visitId: string | number
-  projectId: string | number
-  linkType: "repository" | "demo"
-}) {
+export async function recordProjectLinkClick(params: ProjectLinkClickParams) {
   try {
     await publicApi.post("/tracking/project-link-click", {
       visit_id: params.visitId,
@@ -217,11 +86,11 @@ export async function recordProjectLinkClick(params: {
       clicked_at: new Date().toISOString(),
     })
   } catch (error) {
-    console.warn("Click de enlace de proyecto no registrado.", axios.isAxiosError(error) ? error.response?.data ?? error.message : error)
+    warnTrackingFailure("Click de enlace de proyecto no registrado.", error)
   }
 }
 
-export async function recordSocialClick(params: { visitId: string | number; networkName: string }) {
+export async function recordSocialClick(params: SocialClickParams) {
   try {
     await publicApi.post("/tracking/social-click", {
       visit_id: params.visitId,
@@ -229,42 +98,36 @@ export async function recordSocialClick(params: { visitId: string | number; netw
       clicked_at: new Date().toISOString(),
     })
   } catch (error) {
-    console.warn("Click de red social no registrado.", axios.isAxiosError(error) ? error.response?.data ?? error.message : error)
+    warnTrackingFailure("Click de red social no registrado.", error)
   }
 }
 
 export async function getPortfolioAnalytics(): Promise<PortfolioAnalytics> {
   try {
     const response = await api.get<PortfolioAnalyticsDto>("/user/portfolio/analytics")
-
     if (response.data.status !== "success" || !response.data.data) {
       throw new Error(response.data.message || "No se pudieron cargar las metricas del portafolio.")
     }
 
-    const data = response.data.data
-    const projectViews = normalizeProjectBreakdown(data.project_views?.length ? data.project_views : data.top_projects)
-    const socialClicks = normalizeBreakdown(data.social_clicks)
-    const projectLinkClicks = normalizeBreakdown(data.project_link_clicks)
-
-    const totalTrackedLinkClicks = [...projectLinkClicks, ...socialClicks].reduce((total, item) => total + item.value, 0)
-
-    return {
-      portfolioId: data.portfolio_id,
-      slug: data.slug,
-      totalViews: asNumber(data.total_views),
-      viewsThisMonth: asNumber(data.views_this_month),
-      viewsByMonth: data.views_by_month ?? {},
-      period: data.period,
-      totalVisits: asNumber(data.total_visits),
-      averageTimeSeconds: asNumber(data.average_time_seconds),
-      interestRate: asNumber(data.interest_rate),
-      topTemplate: data.top_template ?? null,
-      templates: normalizeBreakdown(data.templates),
-      projectViews,
-      socialClicks,
-      totalLinkClicks: asNumber(data.total_link_clicks ?? data.link_clicks) || totalTrackedLinkClicks,
-    }
+    return normalizePortfolioAnalytics(response.data.data)
   } catch (error) {
     throw formatAnalyticsError(error)
   }
+}
+
+function warnTrackingFailure(message: string, error: unknown) {
+  if (axios.isAxiosError(error)) {
+    console.warn(message, error.response?.data ?? error.message)
+    return
+  }
+
+  console.warn(message)
+}
+
+function formatAnalyticsError(error: unknown) {
+  if (!axios.isAxiosError(error)) return new Error("No se pudieron cargar las metricas del portafolio.")
+
+  const responseData = error.response?.data as { message?: unknown } | undefined
+  const message = typeof responseData?.message === "string" ? responseData.message : "No se pudieron cargar las metricas del portafolio."
+  return new Error(message)
 }
