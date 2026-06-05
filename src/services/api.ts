@@ -1,5 +1,5 @@
 import axios from "axios";
-import { clearAuthSession, getAuthToken } from "@/services/auth/auth-storage";
+import { clearAuthSession, getAuthToken } from "@/services/auth/authStorageService";
 
 declare module "axios" {
   export interface AxiosRequestConfig {

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { publishPortfolioRequest } from "../services/PublishPortfolioService";
 import { getPortfolioVisibilityData } from "@/services/portfolioVisibilityService";
 import { api } from "../services/api";
-import { getAuthSession } from "@/services/auth/auth-storage";
+import { getAuthSession } from "@/services/auth/authStorageService";
 export const usePublishPortfolio = () => {
   const [isPublished, setIsPublished] = useState(false);
   const [portfolioUrl, setPortfolioUrl] = useState("");

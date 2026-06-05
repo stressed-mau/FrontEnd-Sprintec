@@ -1,5 +1,5 @@
-﻿export { loginUser, registerUser } from "@/services/auth/auth-api"
-export { AuthServiceError } from "@/services/auth/auth-errors"
+export { loginUser, registerUser } from "@/services/auth/authApiService"
+export { AuthServiceError } from "@/services/auth/authErrorService"
 export {
   AUTH_SESSION_STORAGE_KEY,
   clearAuthSession,
@@ -8,7 +8,7 @@ export {
   isAuthenticated,
   saveAuthSession,
   updateAuthSession,
-} from "@/services/auth/auth-storage"
+} from "@/services/auth/authStorageService"
 export type {
   ApiValidationErrors,
   AuthResponse,
@@ -16,4 +16,4 @@ export type {
   AuthUser,
   LoginRequest,
   RegisterRequest,
-} from "@/services/auth/auth-types"
+} from "@/types/auth"

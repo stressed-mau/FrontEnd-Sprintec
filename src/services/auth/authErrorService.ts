@@ -1,6 +1,6 @@
 import axios from "axios"
 
-import type { ApiValidationErrors } from "@/services/auth/auth-types"
+import type { ApiValidationErrors } from "@/types/auth"
 
 export class AuthServiceError extends Error {
   status?: number

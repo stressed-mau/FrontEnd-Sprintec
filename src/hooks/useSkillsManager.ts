@@ -1,7 +1,7 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { createSkill, getSkills, removeSkill, updateSkill, type Skill,  type SkillType, } from '../services/skillsService';
-import { AUTH_SESSION_CHANGED_EVENT, getAuthToken } from '@/services/auth/auth-storage';
+import { AUTH_SESSION_CHANGED_EVENT, getAuthToken } from '@/services/auth/authStorageService';
 
 export type { Skill };
 

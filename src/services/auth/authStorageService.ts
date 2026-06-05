@@ -1,4 +1,4 @@
-import type { AuthResponse, AuthSession, AuthUser } from "@/services/auth/auth-types"
+import type { AuthResponse, AuthSession, AuthUser } from "@/types/auth"
 
 export const AUTH_SESSION_STORAGE_KEY = "portfolio_auth_session"
 export const AUTH_SESSION_CHANGED_EVENT = "portfolio-auth-session-changed"

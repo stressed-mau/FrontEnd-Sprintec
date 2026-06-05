@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { getAuthSession } from "@/services/auth/auth-storage";
+import { getAuthSession } from "@/services/auth/authStorageService";
 import { allCountries } from 'country-telephone-data';
 import { useEmailValidation } from "@/hooks/useEmailValidation";
 import {

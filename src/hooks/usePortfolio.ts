@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Portfolio, Experience, Project, Skill, SocialNetwork } from "@/types/portfolio";
-import { getAuthSession } from "@/services/auth/auth-storage";
+import { getAuthSession } from "@/services/auth/authStorageService";
 import { api } from "@/services/api";
 
 import { getUserInformation } from "@/services/PersonalDataService"; 

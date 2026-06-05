@@ -5,7 +5,7 @@ import Sidebar from "../components/Sidebar"
 import { Palette } from "lucide-react"
 import { usePublishPortfolio } from "../hooks/usePublishPortfolio"
 //import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility"
-import { getAuthSession } from "@/services/auth/auth-storage"
+import { getAuthSession } from "@/services/auth/authStorageService"
 import { getUserInformation } from "@/services/PersonalDataService"
 import { useNavigate } from "react-router-dom"
 // Componentes de Plantillas y Assets [cite: 1-4]

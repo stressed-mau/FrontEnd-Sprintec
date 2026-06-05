@@ -1,6 +1,6 @@
 import { api } from "@/services/api"
-import { AuthServiceError, buildAuthServiceError, normalizeValidationErrors } from "@/services/auth/auth-errors"
-import type { AuthResponse, LoginRequest, RegisterRequest } from "@/services/auth/auth-types"
+import { AuthServiceError, buildAuthServiceError, normalizeValidationErrors } from "@/services/auth/authErrorService"
+import type { AuthResponse, LoginRequest, RegisterRequest } from "@/types/auth"
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value))
