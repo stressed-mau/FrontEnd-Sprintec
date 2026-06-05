@@ -1,5 +1,6 @@
 import { api } from './api';
 import axios from 'axios';
+import {normalizeSkill} from '@/utils/skills/skillMapperUtils';
 
 export type SkillType = 'tecnica' | 'blanda';
 type ApiSkillType = 'tecnica' | 'blanda';
@@ -37,41 +38,6 @@ export interface Skill {
 const SKILLS_ENDPOINT = '/skills';
 const SKILL_MUTATION_TIMEOUT_MS = 30_000;
 
-function mapApiTypeToUi(type?: SkillDto['type']): SkillType {
-  const normalizedType =
-    typeof type === 'string'
-      ? type
-          .toLowerCase()
-          .trim()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-      : '';
-
-  // Técnicas
-  if (
-    normalizedType === 'tecnica' ||
-    normalizedType === 'tecnico' ||
-    normalizedType === 'technical'
-  ) {
-    return 'tecnica';
-  }
-
-  // Blandas
-  if (
-    normalizedType === 'blanda' ||
-    normalizedType === 'blando' ||
-    normalizedType === 'soft' ||
-    normalizedType === 'softskill' ||
-    normalizedType === 'softskills'
-  ) {
-    return 'blanda';
-  }
-
-  console.warn('Tipo de habilidad no reconocido:', type);
-
-  return 'blanda'; // mejor fallback
-}
-
 function mapUiTypeToApi(type: SkillType): ApiSkillType {
   return type === 'tecnica' ? 'tecnica' : 'blanda';
 }
@@ -82,26 +48,6 @@ function toApiPayload(payload: SkillPayload): ApiSkillPayload {
     level_of_domain: payload.level ? payload.level.toLowerCase() : undefined,
     type: mapUiTypeToApi(payload.type),
   };
-}
-
-function capitalizeLevel(level?: string | null): string | undefined {
-  if (!level) {
-    return undefined;
-  }
-
-  const normalizedLevel = level
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-
-  const levelMap: Record<string, string> = {
-    basico: 'basico',
-    intermedio: 'intermedio',
-    avanzado: 'avanzado',
-    experto: 'experto',
-  };
-
-  return levelMap[normalizedLevel] ?? normalizedLevel;
 }
 
 function formatError(error: unknown): Error {
@@ -122,16 +68,6 @@ function formatError(error: unknown): Error {
   }
 
   return new Error('Error inesperado al consumir skills API.');
-}
-
-function normalizeSkill(dto: SkillDto): Skill {
-  console.log("NORMALIZANDO:", dto);
-  return {
-    id: String(dto.id ?? crypto.randomUUID()),
-    name: dto.name ?? dto.nombre ?? '',
-    type: mapApiTypeToUi(dto.type ?? dto.tipo),
-    level: capitalizeLevel(dto.level_of_domain ?? dto.level ?? dto.nivel),
-  };
 }
 
 function unwrapPayload(data: unknown): unknown {
