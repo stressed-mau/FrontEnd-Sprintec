@@ -1,9 +1,6 @@
 import type { Skill, SkillType } from '@/services/skillsService';
-import {
-  formatSkillName,
-  normalizeSkillName,
-  isSimilarToOriginal,
-} from './skillUtils';
+import {formatSkillName, normalizeSkillName, isSimilarToOriginal,} from './skillUtils';
+import { SOFT_SKILL_NUMBERS_MESSAGE, SOFT_SKILL_SPECIAL_CHARS_MESSAGE, REQUIRED_SKILL_NAME_MESSAGE, INVALID_SOFT_SKILL_EDIT_MESSAGE, DUPLICATE_SKILL_MESSAGE } from '@/constants/skillConstants';
 
 export function validateSkillForm({
   skillName,
@@ -18,7 +15,7 @@ export function validateSkillForm({
 }): string | null {
 
   if (!skillName.trim()) {
-    return 'El campo Nombre de la habilidad es obligatorio.';
+    return REQUIRED_SKILL_NAME_MESSAGE;
   }
 
   if (skillType === 'blanda') {
@@ -28,8 +25,8 @@ export function validateSkillForm({
       const hasNumbers = /\d/.test(skillName);
 
       return hasNumbers
-        ? 'El Nombre de la habilidad contiene números. Solo se permiten letras.'
-        : 'El Nombre de la habilidad contiene caracteres especiales. Solo se permiten letras.';
+        ? SOFT_SKILL_NUMBERS_MESSAGE
+        : SOFT_SKILL_SPECIAL_CHARS_MESSAGE;
     }
   }
 
@@ -38,7 +35,7 @@ export function validateSkillForm({
     editingSkill.type === 'blanda' &&
     !isSimilarToOriginal(editingSkill.name, skillName.trim())
   ) {
-    return 'No se puede cambiar el nombre de la habilidad, solo se permiten correcciones.';
+    return INVALID_SOFT_SKILL_EDIT_MESSAGE;
   }
 
   const formattedName = formatSkillName(skillName);
@@ -51,7 +48,7 @@ export function validateSkillForm({
   );
 
   if (exists) {
-    return 'Ya existe una habilidad registrada con ese nombre. Ingresa un nombre diferente.';
+    return DUPLICATE_SKILL_MESSAGE;
   }
 
   return null;

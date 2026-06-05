@@ -1,3 +1,5 @@
+import { SOFT_SKILL_NUMBERS_MESSAGE, SOFT_SKILL_SPECIAL_CHARS_MESSAGE,} from '@/constants/skillConstants';
+
 export function containsOnlyLetters(value: string): boolean {
   const onlyLetters = /^[a-zA-ZÀ-ÿ\s]+$/;
   return onlyLetters.test(value.trim());
@@ -13,6 +15,6 @@ export function getSoftSkillValidationMessage(
   }
 
   return hasNumbers
-    ? 'El Nombre de la habilidad contiene números. Solo se permiten letras.'
-    : 'El Nombre de la habilidad contiene caracteres especiales. Solo se permiten letras.';
+    ? SOFT_SKILL_NUMBERS_MESSAGE
+    : SOFT_SKILL_SPECIAL_CHARS_MESSAGE;
 }

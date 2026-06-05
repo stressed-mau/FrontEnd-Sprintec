@@ -20,3 +20,23 @@ export const REQUIRED_SKILL_NAME_MESSAGE =
 export const SKILLS_ENDPOINT = '/skills';
 
 export const SKILL_MUTATION_TIMEOUT_MS = 30000;
+
+export const SOFT_SKILL_NUMBERS_MESSAGE =
+  'El Nombre de la habilidad contiene números. Solo se permiten letras.';
+
+export const SOFT_SKILL_SPECIAL_CHARS_MESSAGE =
+  'El Nombre de la habilidad contiene caracteres especiales. Solo se permiten letras.';
+
+export const LEVEL_LABELS: Record<string, string> = {
+  experto: 'Experto',
+  avanzado: 'Avanzado',
+  intermedio: 'Intermedio',
+  basico: 'Básico',
+};
+
+export const LEVEL_COLORS: Record<string, string> = {
+  experto: 'bg-purple-100 text-purple-700',
+  avanzado: 'bg-pink-100 text-pink-600',
+  intermedio: 'bg-blue-100 text-blue-600',
+  basico: 'bg-gray-100 text-gray-600',
+};

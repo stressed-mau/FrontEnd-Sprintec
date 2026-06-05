@@ -4,20 +4,7 @@ import { Footer } from '@/components/Footer';
 import { Code2, Lightbulb, Search } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/skills/useSkillsManager';
 import ConfirmationModal from '../../components/modals/ConfirmationModal';
-
-const LEVEL_LABELS: Record<string, string> = {
-  experto: 'Experto',
-  avanzado: 'Avanzado',
-  intermedio: 'Intermedio',
-  basico: 'Básico',
-};
-
-const LEVEL_COLORS: Record<string, string> = {
-  experto: 'bg-purple-100 text-purple-700',
-  avanzado: 'bg-pink-100 text-pink-600',
-  intermedio: 'bg-blue-100 text-blue-600',
-  basico: 'bg-gray-100 text-gray-600',
-};
+import {LEVEL_LABELS,LEVEL_COLORS,} from '@/constants/skillConstants';
 
 const ViewSkillsPage = () => {
   const {

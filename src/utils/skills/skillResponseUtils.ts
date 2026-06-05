@@ -130,3 +130,13 @@ export function unwrapSkill(data: unknown): SkillDto {
   }
   return unwrapped as SkillDto;
 }
+export function validateApiResponse(
+  data: unknown
+): void {
+  if ( data && typeof data === 'object' && (data as { success?: boolean }).success === false ) {
+    const body = data as {
+      message?: string;
+    };
+    throw new Error( body.message || 'Error al obtener habilidades');
+  }
+}

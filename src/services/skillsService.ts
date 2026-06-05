@@ -1,6 +1,6 @@
 import { api } from './api';
 import {normalizeSkill} from '@/utils/skills/skillMapperUtils';
-import { unwrapSkill, unwrapSkillList, parseResponseData } from '@/utils/skills/skillResponseUtils';
+import { unwrapSkill, unwrapSkillList, parseResponseData, validateApiResponse} from '@/utils/skills/skillResponseUtils';
 import {formatSkillApiError,} from '@/utils/skills/skillApiErrorUtils';
 import { toApiPayload,} from '@/utils/skills/skillApiPayloadUtils';
 import { SKILLS_ENDPOINT, SKILL_MUTATION_TIMEOUT_MS,} from '@/constants/skillConstants';
@@ -33,29 +33,12 @@ export interface Skill {
 export async function getSkills(): Promise<Skill[]> {
   try {
     const response = await api.get(SKILLS_ENDPOINT);
-
-    if (
-      response.data &&
-      typeof response.data === 'object' &&
-      (response.data as { success?: boolean }).success === false
-    ) {
-      const body = response.data as { message?: string };
-      throw new Error(body.message || 'Error al obtener habilidades');
-    }
-
+    validateApiResponse(response.data);
     if (response.status === 204) {
       return [];
     }
-
     const unwrapped = unwrapSkillList(parseResponseData(response.data));
-
-    console.log("DATOS CRUDOS DEL BACKEND:");
-    console.log(unwrapped);
-
     const normalized = unwrapped.map(normalizeSkill);
-
-    console.log("DATOS NORMALIZADOS:");
-    console.log(normalized);
 
     return normalized;
   } catch (error) {
