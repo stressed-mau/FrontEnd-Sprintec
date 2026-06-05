@@ -10,7 +10,7 @@ import AddExperiencePage from "@/pages/experience/AddExperiencePage"
 import DeleteExperiencePage from "@/pages/experience/DeleteExperiencePage"
 import EditExperiencePage from "@/pages/experience/EditExperiencePage"
 import ViewExperiencePage from "@/pages/experience/ViewExperiencePage"
-import HomeVisitor from "@/pages/HomeVisitor"
+import HomeVisitorPage from "@/pages/HomeVisitorPage"
 import LoginPage from "@/pages/LoginPage"
 import NetworksPage from "@/pages/NetworksPage"
 import PortfolioTemplatesPage from "@/pages/PortfolioTemplatesPage"
@@ -52,7 +52,7 @@ import { ADMIN_DASHBOARD_ROUTE, CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGI
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomeVisitor />} />
+      <Route path="/" element={<HomeVisitorPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path={LOGIN_ROUTE} element={<LoginPage />} />
