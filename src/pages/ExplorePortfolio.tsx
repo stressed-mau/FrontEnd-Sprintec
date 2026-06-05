@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Eye, Search, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -63,8 +63,7 @@ function FilterDropdown({ value, options, placeholder, onChange }: FilterDropdow
               onChange("all");
               setOpen(false);
             }}
-            className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === "all" ? "font-semibold" : ""}`}
-          >
+            className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === "all" ? "font-semibold" : ""}`} >
             {placeholder ?? "Todos"}
           </li>
           {options.map((option) => (
@@ -74,8 +73,7 @@ function FilterDropdown({ value, options, placeholder, onChange }: FilterDropdow
                 onChange(option);
                 setOpen(false);
               }}
-              className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === option ? "font-semibold" : ""}`}
-            >
+              className={`cursor-pointer px-3 py-2 text-sm text-[#003A6C] hover:bg-[#F3F7F8] ${value === option ? "font-semibold" : ""}`} >
               {option}
             </li>
           ))}
@@ -141,8 +139,7 @@ export default function ExplorePortfolioPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsFiltersOpen((current) => !current)}
-                className={`h-11 shrink-0 rounded-2xl border-[#6DACBF]/40 bg-white px-3 text-[#003A6C] shadow-sm hover:bg-[#F7F0E1] sm:h-12 sm:px-4 ${hasActiveFilters ? "border-[#4982AD] bg-[#F7F0E1]" : ""}`}
-              >
+                className={`h-11 shrink-0 rounded-2xl border-[#6DACBF]/40 bg-white px-3 text-[#003A6C] shadow-sm hover:bg-[#F7F0E1] sm:h-12 sm:px-4 ${hasActiveFilters ? "border-[#4982AD] bg-[#F7F0E1]" : ""}`}    >
                 <SlidersHorizontal className="size-4" />
               </Button>
             </div>
@@ -157,8 +154,7 @@ export default function ExplorePortfolioPage() {
                     type="button"
                     variant="ghost"
                     className="h-7 rounded-lg px-2 text-[11px] font-semibold text-[#003A6C] hover:bg-[#F7F0E1]"
-                    onClick={handleClearFilters}
-                  >
+                    onClick={handleClearFilters}  >
                     Limpiar
                   </Button>
                 </div>
@@ -175,8 +171,7 @@ export default function ExplorePortfolioPage() {
                         value={selectedOccupation === "all" ? "" : selectedOccupation}
                         onChange={(event) => handleOccupationChange(event.target.value)}
                         placeholder="Buscar por ocupación"
-                        className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] shadow-sm outline-none transition focus:border-[#4982AD] focus:ring-2 focus:ring-[#4982AD]/20"
-                      />
+                        className="h-8 w-full rounded-lg border border-[#6DACBF]/30 bg-[#FDF8F0] px-2 text-xs text-[#003A6C] shadow-sm outline-none transition focus:border-[#4982AD] focus:ring-2 focus:ring-[#4982AD]/20"  />
                     </div>
                   </label>
 
@@ -188,14 +183,8 @@ export default function ExplorePortfolioPage() {
                     <div className="relative">
                       <ProjectsDropdown
                         value={minProjects}
-                        options={[
-                          "1 o más",
-                          "3 o más",
-                          "5 o más",
-                          "10 o más",
-                        ]}
-                        onChange={handleProjectsChange}
-                      />
+                        options={[ "1 o más", "3 o más", "5 o más", "10 o más",]}
+                        onChange={handleProjectsChange}   />
                     </div>
                   </label>
 
@@ -207,14 +196,8 @@ export default function ExplorePortfolioPage() {
                     <div className="relative">
                       <SkillsDropdown
                         value={minSkills}
-                        options={[
-                          "1 o más",
-                          "3 o más",
-                          "5 o más",
-                          "8 o más",
-                        ]}
-                        onChange={handleSkillsChange}
-                      />
+                        options={[ "1 o más", "3 o más", "5 o más",  "8 o más", ]}
+                        onChange={handleSkillsChange}    />
                     </div>
                   </label>
                 </div>
@@ -243,15 +226,22 @@ export default function ExplorePortfolioPage() {
               {currentData.map((portfolio) => (
                 <div
                   key={portfolio.id}
-                  className="group mx-auto flex w-full max-w-md items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#4982AD]/30 hover:shadow-md"
-                >
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/p/${portfolio.slug}`, { state: { fromExplore: true } })}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      navigate(`/p/${portfolio.slug}`, { state: { fromExplore: true } });
+                    }
+                  }}
+                  className="group mx-auto flex w-full max-w-md items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#4982AD]/30 hover:shadow-md" >
                   <div className="shrink-0">
                     {portfolio.profileImage ? (
                       <img
                         src={portfolio.profileImage}
                         className="size-16 rounded-full object-cover ring-2 ring-[#FDF8F0] md:size-18"
-                        alt="Perfil"
-                      />
+                        alt="Perfil" />
                     ) : (
                       <div className="size-16 md:size-18 flex items-center justify-center rounded-full bg-[#003A6C] text-lg font-bold text-white">
                         {getInitials(portfolio.fullName || portfolio.username)}
@@ -287,13 +277,6 @@ export default function ExplorePortfolioPage() {
                       )}
                     </div>
                   </div>
-
-                  <Button
-                    onClick={() => navigate(`/p/${portfolio.slug}`, { state: { fromExplore: true } })}
-                    className="flex h-8 shrink-0 items-center gap-2 rounded-lg bg-[#003A6C] px-3 text-xs font-bold text-white hover:bg-[#c4a57c]"
-                  >
-                    Ver <Eye className="size-4" />
-                  </Button>
                 </div>
               ))}
             </div>
@@ -312,15 +295,11 @@ export default function ExplorePortfolioPage() {
               <div className="flex items-center gap-1">
                 {[...Array(totalPages)].map((_, index) => {
                   const pageNumber = index + 1;
-
                   if (totalPages > 5 && Math.abs(currentPage - pageNumber) > 1 && pageNumber !== 1 && pageNumber !== totalPages) {
                     if (pageNumber === 2 || pageNumber === totalPages - 1) {
                       return <span key={pageNumber} className="px-1 text-gray-400">...</span>;
-                    }
-
-                    return null;
+                    } return null;
                   }
-
                   return (
                     <button
                       key={pageNumber}
@@ -330,8 +309,7 @@ export default function ExplorePortfolioPage() {
                         currentPage === pageNumber
                           ? "bg-[#003A6C] text-white shadow-lg shadow-[#003A6C]/30"
                           : "border border-gray-100 bg-white text-gray-500 hover:bg-gray-100"
-                      }`}
-                    >
+                      }`} >
                       {pageNumber}
                     </button>
                   );
@@ -342,8 +320,7 @@ export default function ExplorePortfolioPage() {
                 variant="outline"
                 onClick={next}
                 disabled={currentPage === totalPages || totalPages === 0 || loading}
-                className="rounded-xl border-gray-200 bg-white px-2 md:px-4"
-              >
+                className="rounded-xl border-gray-200 bg-white px-2 md:px-4" >
                 <span className="mr-1 hidden md:inline">Siguiente</span>
                 <ChevronRight className="size-5" />
               </Button>
@@ -351,7 +328,6 @@ export default function ExplorePortfolioPage() {
           </div>
         </main>
       </div>
-
       <Footer />
     </div>
   );
