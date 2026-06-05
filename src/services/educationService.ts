@@ -1,393 +1,69 @@
-import axios from "axios"
-
 import { api } from "@/services/api"
-import { toAbsoluteAssetUrl } from "@/services/assetUrl"
-import type { ExperienceItem, ExperiencePayload } from "@/services/experienceService"
+import { formatEducationError } from "@/services/educationErrorService"
+import { normalizeEducation, asStringArray } from "@/services/educationNormalizeService"
+import { buildEducationFormData, buildEducationJsonBody, buildEducationUpdateBody } from "@/services/educationPayloadService"
+import { parseEducationResponse, unwrapEducation, unwrapEducationList } from "@/services/educationResponseService"
+import type { EducationItem, EducationOptions, EducationPayload } from "@/types/education"
 
-type UnknownRecord = Record<string, unknown>
-
-export type EducationOptions = {
-  titles: string[]
-  fields: string[]
-}
-
-type EducationDto = {
-  id?: string | number
-  education_id?: string | number
-  institution?: string
-  institution_name?: string
-  title?: string
-  degree?: string
-  field_to_study?: string | null
-  field_of_study?: string | null
-  field?: string | null
-  description?: string | null
-  descripcion?: string | null
-  start_date?: string | null
-  initial_date?: string | null
-  issue_date?: string | null
-  issued_at?: string | null
-  date_issued?: string | null
-  emission_date?: string | null
-  fecha_emision?: string | null
-  end_date?: string | null
-  final_date?: string | null
-  startDate?: string | null
-  endDate?: string | null
-  current?: boolean | number | string | null
-  is_current?: boolean | number | string | null
-  isCurrent?: boolean | number | string | null
-  currently_studying?: boolean | number | string | null
-  status?: string | null
-  estado?: string | null
-  company_email?: string | null
-  email?: string | null
-  certificate?: string | null
-  certificate_url?: string | null
-  certification_url?: string | null
-  certification?: string | null
-  certification_path?: string | null
-  certificate_file?: string | null
-  certificate_file_url?: string | null
-  certificate_path?: string | null
-  document?: string | null
-  document_url?: string | null
-  document_path?: string | null
-  file?: string | null
-  file_url?: string | null
-  file_path?: string | null
-  attachment?: string | null
-}
+export type { EducationOptions } from "@/types/education"
 
 const EDUCATION_ENDPOINT = "/education"
 const EDUCATION_OPTIONS_ENDPOINT = "/education/options"
 const EDUCATION_MUTATION_TIMEOUT_MS = 30_000
 
-function formatError(error: unknown): Error {
-  if (axios.isAxiosError(error)) {
-    if (error.code === "ECONNABORTED") {
-      return new Error("La solicitud tardó demasiado. Intenta nuevamente.")
-    }
-
-    if (error.code === "ERR_NETWORK") {
-      return new Error("No se pudo conectar con el backend")
-    }
-
-    const backendMessage =
-      (error.response?.data as { message?: string } | undefined)?.message ??
-      error.message
-
-    return new Error(backendMessage || "Error inesperado al consumir education API.")
-  }
-
-  return new Error("Error inesperado al consumir education API.")
-}
-
-function unwrapPayload(data: unknown): unknown {
-  if (!data || typeof data !== "object") {
-    return data
-  }
-
-  const record = data as UnknownRecord
-
-  if ("data" in record && record.data && typeof record.data === "object") {
-    return unwrapPayload(record.data)
-  }
-
-  if ("education" in record && record.education && typeof record.education === "object") {
-    return unwrapPayload(record.education)
-  }
-
-  return data
-}
-
-function unwrapEducationList(data: unknown): EducationDto[] {
-  const unwrapped = unwrapPayload(data)
-
-  if (Array.isArray(unwrapped)) {
-    return unwrapped as EducationDto[]
-  }
-
-  if (!unwrapped || typeof unwrapped !== "object") {
-    return []
-  }
-
-  const record = unwrapped as UnknownRecord
-
-  if (Array.isArray(record.education)) {
-    return record.education as EducationDto[]
-  }
-
-  if (Array.isArray(record.educations)) {
-    return record.educations as EducationDto[]
-  }
-
-  if (Array.isArray(record.data)) {
-    return record.data as EducationDto[]
-  }
-
-  return []
-}
-
-function unwrapEducation(data: unknown): EducationDto {
-  return (unwrapPayload(data) ?? {}) as EducationDto
-}
-
-function parseResponseData(data: unknown): unknown {
-  if (data == null || data === "") {
-    return []
-  }
-
-  if (typeof data !== "string") {
-    return data
-  }
-
-  try {
-    return JSON.parse(data)
-  } catch {
-    return data
-  }
-}
-
-function asString(value: unknown): string {
-  if (typeof value === "string") {
-    return value.trim()
-  }
-
-  if (typeof value === "number") {
-    return String(value)
-  }
-
-  return ""
-}
-
-function asBoolean(value: unknown): boolean | null {
-  if (typeof value === "boolean") {
-    return value
-  }
-
-  if (typeof value === "number") {
-    return value === 1
-  }
-
-  if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase()
-
-    if (["1", "true", "si", "sí", "yes", "cursando"].includes(normalized)) {
-      return true
-    }
-
-    if (["0", "false", "no", "concluido", "finalizado", "pendiente"].includes(normalized)) {
-      return false
-    }
-  }
-
-  return null
-}
-
-function normalizeDateValue(value: unknown): string {
-  const rawValue = asString(value)
-
-  if (!rawValue) {
-    return ""
-  }
-
-  const isoDateMatch = rawValue.match(/^(\d{4}-\d{2}-\d{2})/)
-
-  if (isoDateMatch) {
-    return isoDateMatch[1]
-  }
-
-  const slashDateMatch = rawValue.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
-
-  if (slashDateMatch) {
-    return `${slashDateMatch[3]}-${slashDateMatch[2]}-${slashDateMatch[1]}`
-  }
-
-  return rawValue
-}
-
-function normalizeEducation(dto: EducationDto, index: number): ExperienceItem {
-  const endDate = normalizeDateValue(dto.end_date ?? dto.final_date ?? dto.endDate)
-  const currentlyStudying = asBoolean(dto.currently_studying ?? dto.current ?? dto.is_current ?? dto.isCurrent)
-  const startDate = normalizeDateValue(
-    dto.start_date ??
-    dto.initial_date ??
-    dto.startDate ??
-    dto.issue_date ??
-    dto.issued_at ??
-    dto.date_issued ??
-    dto.emission_date ??
-    dto.fecha_emision
-  )
-
-  return {
-    id: asString(dto.id ?? dto.education_id) || `education-${index + 1}`,
-    type: "academica",
-    company: asString(dto.institution ?? dto.institution_name),
-    email: asString(dto.company_email ?? dto.email),
-    position: asString(dto.title ?? dto.degree),
-    location: "",
-    fieldOfStudy: asString(dto.field_to_study ?? dto.field_of_study ?? dto.field),
-    description: asString(dto.description ?? dto.descripcion),
-    startDate,
-    endDate,
-    current: currentlyStudying ?? !endDate,
-    image: "",
-    certificate: toAbsoluteAssetUrl(
-      dto.certification_url ??
-      dto.certification_path ??
-      dto.certification ??
-      dto.certificate_file_url ??
-      dto.certificate_file ??
-      dto.certificate_url ??
-      dto.certificate_path ??
-      dto.certificate ??
-      dto.document_url ??
-      dto.document_path ??
-      dto.document ??
-      dto.file_url ??
-      dto.file_path ??
-      dto.file ??
-      dto.attachment,
-    ),
-  }
-}
-
-function asStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return []
-  }
-
-  return value
-    .map((item) => asString(item))
-    .filter(Boolean)
-}
-
-function buildEducationFormData(payload: ExperiencePayload, options?: { mode?: "create" | "update" }) {
-  const formData = new FormData()
-
-  const description = payload.description.trim()
-  const endDate = payload.endDate.trim()
-  const institution = payload.company.trim()
-  const title = payload.position.trim()
-  const fieldOfStudy = payload.fieldOfStudy.trim()
-
-  if (options?.mode !== "update") {
-    formData.append("institution", institution)
-    formData.append("title", title)
-    formData.append("field_to_study", fieldOfStudy)
-
-    if (endDate) {
-      formData.append("end_date", endDate)
-    }
-
-    formData.append("currently_studying", payload.current ? "1" : "0")
-
-    if (payload.certificateFile) {
-      formData.append("certificate", payload.certificateFile)
-    }
-  }
-
-  if (description) {
-    formData.append("description", description)
-  }
-
-  return formData
-}
-
-function buildEducationJsonBody(payload: ExperiencePayload, options?: { mode?: "create" | "update" }) {
-  const description = payload.description.trim()
-  const endDate = payload.endDate.trim()
-
-  if (options?.mode === "update") {
-    return {
-      description: description || null,
-      start_date: null,
-      end_date: endDate || null,
-      currently_studying: payload.current,
-    }
-  }
-
-  return {
-    institution: payload.company.trim(),
-    title: payload.position.trim(),
-    field_to_study: payload.fieldOfStudy.trim(),
-    description: description || null,
-    start_date: null,
-    end_date: endDate || null,
-    currently_studying: payload.current,
-  }
-}
-
-function buildEducationUpdateBody(payload: ExperiencePayload) {
-  return buildEducationJsonBody(payload, { mode: "update" })
-}
-
-export async function getEducation(): Promise<ExperienceItem[]> {
+export async function getEducation(): Promise<EducationItem[]> {
   try {
     const response = await api.get(EDUCATION_ENDPOINT, {
       responseType: "text",
       transformResponse: (value) => value,
     })
 
-    if (response.status === 204) {
-      return []
-    }
-
-    return unwrapEducationList(parseResponseData(response.data)).map((item, index) => normalizeEducation(item, index))
+    if (response.status === 204) return []
+    return unwrapEducationList(parseEducationResponse(response.data)).map((item, index) => normalizeEducation(item, index))
   } catch (error) {
-    throw formatError(error)
+    throw formatEducationError(error)
   }
 }
 
 export async function getEducationOptions(): Promise<EducationOptions> {
   try {
     const response = await api.get(EDUCATION_OPTIONS_ENDPOINT)
-    const data = response.data && typeof response.data === "object"
-      ? (response.data as UnknownRecord).data
-      : null
-    const options = data && typeof data === "object" ? data as UnknownRecord : {}
+    const options = getOptionsRecord(response.data)
 
     return {
       titles: asStringArray(options.titles),
       fields: asStringArray(options.fields),
     }
   } catch (error) {
-    throw formatError(error)
+    throw formatEducationError(error)
   }
 }
 
-export async function createEducation(payload: ExperiencePayload): Promise<ExperienceItem> {
+export async function createEducation(payload: EducationPayload): Promise<EducationItem> {
   try {
     const hasCertificate = Boolean(payload.certificateFile)
     const body = hasCertificate ? buildEducationFormData(payload) : buildEducationJsonBody(payload)
     const response = await api.post(EDUCATION_ENDPOINT, body, {
       timeout: EDUCATION_MUTATION_TIMEOUT_MS,
-      headers: hasCertificate
-        ? { Accept: "application/json" }
-        : { Accept: "application/json", "Content-Type": "application/json" },
+      headers: hasCertificate ? { Accept: "application/json" } : { Accept: "application/json", "Content-Type": "application/json" },
     })
 
     return normalizeEducation(unwrapEducation(response.data), 0)
   } catch (error) {
-    throw formatError(error)
+    throw formatEducationError(error)
   }
 }
 
-export async function updateEducation(id: string, payload: ExperiencePayload): Promise<ExperienceItem> {
+export async function updateEducation(id: string, payload: EducationPayload): Promise<EducationItem> {
   try {
     const response = await api.put(`${EDUCATION_ENDPOINT}/${id}`, buildEducationUpdateBody(payload), {
       timeout: EDUCATION_MUTATION_TIMEOUT_MS,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
     })
 
     return normalizeEducation(unwrapEducation(response.data), 0)
   } catch (error) {
-    throw formatError(error)
+    throw formatEducationError(error)
   }
 }
 
@@ -397,6 +73,15 @@ export async function removeEducation(id: string): Promise<void> {
       timeout: EDUCATION_MUTATION_TIMEOUT_MS,
     })
   } catch (error) {
-    throw formatError(error)
+    throw formatEducationError(error)
   }
+}
+
+function getOptionsRecord(data: unknown): Record<string, unknown> {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return {}
+
+  const record = data as Record<string, unknown>
+  return record.data && typeof record.data === "object" && !Array.isArray(record.data)
+    ? (record.data as Record<string, unknown>)
+    : record
 }
