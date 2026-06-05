@@ -1,11 +1,12 @@
 import Header from '../../components/HeaderUser';
 import Sidebar from '../../components/Sidebar';
 import { Footer } from '@/components/Footer';
-import { Code2, Lightbulb, Search, Trash2 } from 'lucide-react';
+import { Code2, Lightbulb, Trash2 } from 'lucide-react';
 import { useSkillsManager } from '@/hooks/skills/useSkillsManager';
 import ConfirmationModal from '../../components/modals/ConfirmationModal';
 import DeleteConfirmationModal from '../../components/modals/DeleteConfirmationModal';
 import {LEVEL_LABELS,LEVEL_COLORS,} from '@/constants/skillConstants';
+import SkillsSearchBar from '@/components/skills/skillsSearchBar';
 
 const DeleteSkillsPage = () => {
   const {
@@ -56,14 +57,10 @@ const DeleteSkillsPage = () => {
             )}
 
             <div className="relative mb-6">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-[#4B778D]" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar por nombre, tipo o nivel..."
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#0E7D96]/20 bg-white text-[#003A6C] placeholder:text-[#4B778D]/60 outline-none focus:ring-2 focus:ring-[#0E7D96]/30 shadow-sm"  />
-            </div>
+           <SkillsSearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Buscar por nombre o nivel..."/> </div>
 
             {isLoading ? (
               <div className="rounded-2xl border border-[#6dacbf]/30 bg-white py-10 text-center shadow-sm">
