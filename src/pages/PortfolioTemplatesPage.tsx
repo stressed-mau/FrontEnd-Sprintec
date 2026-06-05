@@ -10,7 +10,7 @@ import { getUserInformation } from "@/services/PersonalDataService"
 import { useNavigate } from "react-router-dom"
 // Componentes de Plantillas y Assets [cite: 1-4]
 import ModernTemplate, { type ModernTemplateProfile } from "../components/templates/modern/ModernTemplate"
-import MinimalistTemplate from "../components/templates/MinimalistTemplate"
+import MinimalistTemplate from "../components/templates/minimalist/MinimalistTemplate"
 import { CorporatePortfolioTemplate } from "@/components/templates/corporate/CorporatePortfolioTemplate"
 import PortadaModern from "@/assets/images/PortadaModern1.png"
 import PortadaMin from "@/assets/images/PortadaMin.png"
