@@ -15,25 +15,43 @@ export function useEducationDuplicateGuard({ education, formData, onBlur }: Educ
     setDuplicateMessage("")
   }
 
-  function validateUniqueInstitution() {
+  function validateUniqueEducation() {
     clearDuplicateMessage()
+    if (!hasRequiredDuplicateFields(formData)) return true
+    if (!hasDuplicateEducationRecord(education, formData)) return true
 
-    const institution = normalizeDuplicateText(formData.company)
-    if (!institution) return true
-
-    const hasDuplicateEducation = education.some((item) => normalizeDuplicateText(item.company) === institution)
-    if (!hasDuplicateEducation) return true
-
-    onBlur("company")
-    setDuplicateMessage("Ya existe una formación académica registrada con esa institución. Ingresa una institución diferente.")
+    markDuplicateFields(onBlur)
+    setDuplicateMessage("Ya existe una formación académica registrada con esos datos.")
     return false
   }
 
   return {
     duplicateMessage,
     clearDuplicateMessage,
-    validateUniqueInstitution,
+    validateUniqueEducation,
   }
+}
+
+function hasDuplicateEducationRecord(education: EducationItem[], formData: EducationFormValues) {
+  return education.some((item) => (
+    normalizeDuplicateText(item.company) === normalizeDuplicateText(formData.company) &&
+    normalizeDuplicateText(item.position) === normalizeDuplicateText(formData.position) &&
+    normalizeDuplicateText(item.fieldOfStudy) === normalizeDuplicateText(formData.fieldOfStudy)
+  ))
+}
+
+function hasRequiredDuplicateFields(formData: EducationFormValues) {
+  return Boolean(
+    normalizeDuplicateText(formData.company) &&
+    normalizeDuplicateText(formData.position) &&
+    normalizeDuplicateText(formData.fieldOfStudy),
+  )
+}
+
+function markDuplicateFields(onBlur: (field: keyof EducationFormValues) => void) {
+  onBlur("company")
+  onBlur("position")
+  onBlur("fieldOfStudy")
 }
 
 function normalizeDuplicateText(value: string) {

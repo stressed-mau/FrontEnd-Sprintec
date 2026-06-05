@@ -7,11 +7,16 @@ import {
   COMPANY_MAX_LENGTH,
   MAX_IMAGE_SIZE_BYTES,
 } from "@/constants/experienceFormConstants"
-import { isFutureExperienceDate, isIsoExperienceDate, parseExperienceDate } from "@/utils/experienceDateUtils"
+import { isFutureExperienceDate, isIsoExperienceDate, normalizeExperienceFormDate, parseExperienceDate } from "@/utils/experienceDateUtils"
 import type { ExperienceFormErrors, ExperienceFormValues } from "@/hooks/useExperienceManager"
+import type { ExperienceItem } from "@/types/experience"
 
 export function normalizeExperienceText(value: string) {
   return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("es-BO")
+}
+
+export function hasDuplicateExperienceRecord(values: ExperienceFormValues, experiences: ExperienceItem[]) {
+  return experiences.some((experience) => isSameExperienceRecord(values, experience))
 }
 
 export function sanitizeExperienceCompany(value: string) {
@@ -56,6 +61,18 @@ function validateCompany(value: string) {
   if (!COMPANY_ALLOWED_CHARACTERS.test(company)) return "El campo empresa solo permite ingresar caracteres literales, puntos y comas."
   if (company.length > COMPANY_MAX_LENGTH) return "El nombre de la empresa no puede exceder los 100 caracteres."
   return ""
+}
+
+function isSameExperienceRecord(values: ExperienceFormValues, experience: ExperienceItem) {
+  return (
+    normalizeExperienceText(values.company) === normalizeExperienceText(experience.company) &&
+    normalizeExperienceText(values.email) === normalizeExperienceText(experience.email) &&
+    normalizeExperienceText(values.position) === normalizeExperienceText(experience.position) &&
+    normalizeExperienceText(values.location) === normalizeExperienceText(experience.location) &&
+    normalizeExperienceFormDate(values.startDate) === normalizeExperienceFormDate(experience.startDate) &&
+    normalizeExperienceFormDate(values.endDate) === normalizeExperienceFormDate(experience.endDate) &&
+    values.current === experience.current
+  )
 }
 
 function validateEmail(value: string) {

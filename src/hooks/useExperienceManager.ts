@@ -6,7 +6,7 @@ import { createExperience, getExperiences, getWorkOptions, removeExperience, upd
 import type { ExperienceItem, ExperiencePayload, ExperienceType, WorkOptions } from "@/types/experience"
 import { formatExperienceDate, normalizeExperienceFormDate } from "@/utils/experienceDateUtils"
 import { buildExperiencePayload, hasExperienceChanges, toExperienceFormValues } from "@/utils/experienceFormPayloadUtils"
-import { normalizeExperienceText, sanitizeExperienceCompany, validateExperienceField, validateExperienceForm, validateExperienceImageFile } from "@/utils/experienceValidationUtils"
+import { hasDuplicateExperienceRecord, sanitizeExperienceCompany, validateExperienceField, validateExperienceForm, validateExperienceImageFile } from "@/utils/experienceValidationUtils"
 
 export type { ExperienceItem, ExperienceType } from "@/types/experience"; export { formatExperienceDate }
 
@@ -268,10 +268,9 @@ export function useExperienceManager() {
   }
 
   function showDuplicateIfNeeded() {
-    const duplicate = laboralExperiences.find((item) => normalizeExperienceText(item.position) === normalizeExperienceText(formData.position))
-    if (!duplicate) return false
+    if (!hasDuplicateExperienceRecord(formData, laboralExperiences)) return false
 
-    setDuplicateMessage("Ya existe una experiencia laboral registrada con ese nombre. Ingrese un nombre diferente."); setIsDuplicateModalOpen(true)
+    setDuplicateMessage("Ya existe una experiencia laboral registrada con esos datos."); setIsDuplicateModalOpen(true)
     return true
   }
 

@@ -1,5 +1,6 @@
 import ConfirmActionModal from "@/components/ConfirmActionModal"
 import ConfirmationModal from "@/components/ConfirmationModal"
+import { DuplicateRegistrationModal } from "@/components/experience/DuplicateRegistrationModal"
 import { ExperienceFormModal } from "@/components/experience/ExperienceFormModal"
 import type { useExperienceManager } from "@/hooks/useExperienceManager"
 
@@ -34,7 +35,7 @@ export function ExperienceManagerModals({ manager, onSuccessClose, hideTypeField
       ) : null}
 
       {manager.isDuplicateModalOpen ? (
-        <ConfirmationModal isOpen={manager.isDuplicateModalOpen} title="Registro duplicado" message={manager.duplicateMessage} buttonText="Aceptar" onClose={manager.closeDuplicateModal} />
+        <DuplicateRegistrationModal title="Experiencia duplicada" message={manager.duplicateMessage} onClose={manager.closeDuplicateModal} />
       ) : null}
 
       {manager.isSuccessModalOpen ? (

@@ -26,7 +26,7 @@ export default function AddEducationPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!duplicateGuard.validateUniqueInstitution()) return
+    if (!duplicateGuard.validateUniqueEducation()) return
     await manager.handleSubmit(event)
   }
 
