@@ -2,7 +2,6 @@ import { createContext, createElement, useCallback, useContext, useEffect, useMe
 import type { FormEvent, ReactNode } from 'react';
 import type { Skill, SkillType, } from '../../services/skillsService';
 import {  formatSkillName } from '@/utils/skills/skillUtils';
-import {  sortTechnicalSkills,   sortSoftSkills,  filterSkills,  filterTechnicalSkills,  filterSoftSkills,} from '@/utils/skills/skillFilters';
 import { validateSkillForm } from '@/utils/skills/skillFormValidation';
 import { normalizeErrorMessage }from '@/utils/errorUtils';
 import { removeSelectedSkill, toggleAllSkillSelection, toggleSkillSelection } from '@/utils/skills/skillSelectionUtils';
@@ -12,6 +11,8 @@ import { deleteSkill, removeSkillFromList, removeSelectedSkillsFromList, getDele
 import { getSkillNameErrorMessage} from '@/utils/skills/skillNameValidationUtils';
 import { addSkillToList, updateSkillInList, saveSkill} from '@/utils/skills/skillCrudUtils';
 import { useSkillsLoader } from '@/hooks/skills/useSkillsLoader';
+import { getModalState } from '@/utils/skills/skillModalUtils';
+import { useSkillFilters } from './useSkillFilters';
 
 export type { Skill };
 
@@ -106,15 +107,14 @@ export function SkillsProvider({ children }: { children: ReactNode }) {
   }, [resetForm]);
 
   const openModal = (skill?: Skill) => {
-    if (skill) {
-      setEditingSkill(skill);
-      setSkillType(skill.type);
-      setSkillName(skill.name);
-      setSkillLevel(skill.level ?? 'basico');
-    } else {  resetForm(); }
-    setErrorMessage('');
-    setIsModalOpen(true);
-  };
+  const modalState = getModalState({ skill });
+  setEditingSkill(modalState.editingSkill);
+  setSkillType(modalState.skillType);
+  setSkillName(modalState.skillName);
+  setSkillLevel(modalState.skillLevel);
+  setErrorMessage('');
+  setIsModalOpen(true);
+};
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -234,14 +234,6 @@ const confirmDeleteSelected = async () => {
     setIsDeleting(false);
   }};
 
-  const technicalSkills = useMemo(
-  () => sortTechnicalSkills(skills),
-  [skills]);
-
-  const softSkills = useMemo(
-  () => sortSoftSkills(skills),
-  [skills]);
-
   const canSaveSkill = useMemo(() => {
     if (isSaving || errorMessage.trim() || !skillName.trim()) { return false; }
     if (!editingSkill) { return true; }
@@ -250,17 +242,8 @@ const confirmDeleteSelected = async () => {
     return hasSkillChanges({  editingSkill,  formattedName,  skillType,  skillLevel,});
     }, [editingSkill, errorMessage, isSaving, skillLevel, skillName, skillType]);
 
-  const filteredSkills = useMemo(() => {
-    return filterSkills(skills, searchQuery);
-  }, [skills, searchQuery]);
-
-  const filteredTechnicalSkills = useMemo(() => {
-    return filterTechnicalSkills(technicalSkills, searchQuery);
-  }, [technicalSkills, searchQuery]);
-
-  const filteredSoftSkills = useMemo(() => {
-    return filterSoftSkills(softSkills, searchQuery);
-  }, [softSkills, searchQuery]);
+  const {technicalSkills,softSkills,filteredSkills,filteredTechnicalSkills,filteredSoftSkills,
+          } = useSkillFilters({ skills,searchQuery,});
 
   const value: SkillsManagerContextValue = {
     isModalOpen,  skills, editingSkill, skillType,  skillName,  skillLevel, errorMessage,  successMessage, showSuccessModal, pageError, isLoading,isSaving, canSaveSkill, isDeleting,  technicalSkills, 
