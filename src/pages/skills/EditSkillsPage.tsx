@@ -8,6 +8,7 @@ import ConfirmActionModal from '../../components/modals/ConfirmActionModal';
 import {LEVEL_LABELS,LEVEL_COLORS,} from '@/constants/skillConstants';
 import SkillsSearchBar from '@/components/skills/skillsSearchBar';
 import SkillsLoading from '@/components/skills/SkillsLoading';
+import SkillsEmptyState from '@/components/skills/SkillsEmptyState';
 
 const EditSkillsPage = () => {
   const {
@@ -53,13 +54,11 @@ const EditSkillsPage = () => {
               {isLoading ? (
                 <SkillsLoading />
               ) : filteredTechnicalSkills.length === 0 ? (
-                <div className="rounded-2xl border-2 border-dashed border-[#6dacbf] bg-[#F7F0E1] py-14 text-center shadow-sm">
-                  <p className="text-sm text-[#4B778D]">
-                    {searchQuery
-                      ? 'No hay habilidades técnicas que coincidan con la búsqueda'
-                      : 'No hay habilidades técnicas registradas'}
-                  </p>
-                </div>
+                <SkillsEmptyState
+                  searchQuery={searchQuery}
+                  emptyMessage="No hay habilidades técnicas registradas"
+                  searchMessage="No hay habilidades técnicas que coincidan con la búsqueda"
+                />
               ) : (
                 <div className="rounded-2xl border border-[#6dacbf]/30 bg-white shadow-sm overflow-hidden">
                   {/* Cabecera */}

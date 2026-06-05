@@ -8,6 +8,7 @@ import DeleteConfirmationModal from '../../components/modals/DeleteConfirmationM
 import {LEVEL_LABELS,LEVEL_COLORS,} from '@/constants/skillConstants';
 import SkillsSearchBar from '@/components/skills/skillsSearchBar';
 import SkillsLoading from '@/components/skills/SkillsLoading';
+import SkillsEmptyState from '@/components/skills/SkillsEmptyState';
 
 const DeleteSkillsPage = () => {
   const {
@@ -66,21 +67,12 @@ const DeleteSkillsPage = () => {
             {isLoading ? (
               <SkillsLoading />
             ) : filteredSkills.length === 0 ? (
-              <div className="rounded-2xl bg-white py-20 shadow-sm border border-[#6dacbf]/20 flex flex-col items-center justify-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-                  <Code2 className="size-8" />
-                </div>
-                <div className="text-center">
-                  <p className="font-bold text-[#003A6C] text-base mb-1">No hay habilidades</p>
-                  <p className="text-sm text-[#4B778D]">
-                    {searchQuery
-                      ? 'No hay habilidades que coincidan con la búsqueda'
-                      : 'Registra habilidades para poder eliminarlas'}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              
+              <SkillsEmptyState
+                searchQuery={searchQuery}
+                emptyMessage="No hay habilidades registradas"
+                searchMessage="No hay habilidades que coincidan con la búsqueda"
+              />
+            ) : (              
               <div className="rounded-2xl border border-[#6dacbf]/30 bg-white shadow-sm overflow-hidden">
                 <div className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_120px_140px] px-5 py-3 border-b border-[#6dacbf]/20 gap-4 items-center">
                  <input
