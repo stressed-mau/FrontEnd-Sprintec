@@ -40,7 +40,7 @@ import EditProfilePage from '@/pages/profile/EditProfilePage';
 import ViewProfilePage from '@/pages/profile/ViewProfilePage';
 import UserReports from "@/pages/admin/UserReports"
 import CertificateReports from "@/pages/admin/CertificateReports"
-import TendenciaPlantillasPage from "@/pages/TendenciaPlantillasPage"
+import TemplateTrendPage from "@/pages/TemplateTrendPage"
 import ReportsIndexPage from "@/pages/ReportsIndexPage"
 import { NotificationsPage } from "@/pages/NotificationsPage"
 import { MessagesPage } from "@/pages/MessagesPage"
@@ -98,7 +98,7 @@ function AppRoutes() {
                 
         <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
         <Route path={REPORTES_INDEX_ROUTE} element={<ReportsIndexPage />} />
-        <Route path={TEMPLATE_TRENDS_ROUTE} element={<TendenciaPlantillasPage />} />
+        <Route path={TEMPLATE_TRENDS_ROUTE} element={<TemplateTrendPage />} />
         <Route path={NOTIFICATIONS_ROUTE} element={<NotificationsPage />} />
         <Route path={MESSAGES_ROUTE} element={<MessagesPage />} />
         <Route path={`${MESSAGES_ROUTE}/:messageId`} element={<MessagesPage />} />

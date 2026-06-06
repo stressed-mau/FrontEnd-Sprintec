@@ -1,68 +1,33 @@
-import { useEffect, useState, useMemo } from "react"
-import { useNavigate } from "react-router-dom"
-import { FileText, Search, LayoutGrid, List, X } from "lucide-react"
-import Header from "@/components/HeaderUser"
-import Sidebar from "@/components/Sidebar"
-import { Footer } from "@/components/Footer"
-import { api } from "@/services/api"
-import { TEMPLATE_TRENDS_ROUTE } from "@/routes/route-paths"
-import AdminSidebar from '../components/Admin/AdminSidebar';
-import { getAuthSession } from '@/services/auth';
-import { getPeriodSearchText } from "@/utils/reports/reportUtils";
-import type { ReportItem } from "@/types/report";
+import { FileText, LayoutGrid, List, Search, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+import { Footer } from "@/components/Footer";
+import HeaderUser from "@/components/HeaderUser";
+import Sidebar from "@/components/Sidebar";
 import ReportCardGrid from "@/components/reports/ReportCardGrid";
 import ReportRowList from "@/components/reports/ReportRowList";
+import { getAuthSession } from "@/services/auth";
+import { TEMPLATE_TRENDS_ROUTE } from "@/routes/route-paths";
+import AdminSidebar from "../components/Admin/AdminSidebar";
+import { useReportsIndex } from "@/hooks/useReportsIndex";
 
 const ReportsIndexPage = () => {
-  const navigate = useNavigate()
-  const [reports, setReports]   = useState<ReportItem[]>([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState("")
-  const [search, setSearch]     = useState("")
-  const [dateFrom, setDateFrom] = useState("")
-  const [dateTo, setDateTo]     = useState("")
-  const [view, setView]         = useState<"grid" | "list">("grid")
+  const navigate = useNavigate();
   const session = getAuthSession();
   const roleId = session?.user?.role_id;
   const isAdmin = roleId === 2;
-  useEffect(() => {
-    let mounted = true
-    api.get("/tracking/global-reports")
-      .then(res => {
-        if (!mounted) return
-        const data = res.data?.data ?? res.data
-        setReports(Array.isArray(data) ? data : [])
-      })
-      .catch(err => {
-        if (mounted) setError(err.response?.data?.message || err.message || "No se pudo cargar el historial.")
-      })
-      .finally(() => { if (mounted) setLoading(false) })
-    return () => { mounted = false }
-  }, [])
-
-  const filtered = useMemo(() => {
-    return reports.filter((r, i) => {
-      if (search) {
-        const hay = getPeriodSearchText(r.period_start, r.period_end, i)
-        if (!hay.includes(search.toLowerCase())) return false
-      }
-      if (dateFrom && r.period_end < dateFrom) return false
-      if (dateTo   && r.period_start > dateTo)  return false
-      return true
-    })
-  }, [reports, search, dateFrom, dateTo])
-
-  const hasFilters = search || dateFrom || dateTo
+  const {reports,filteredReports,loading,error,search,setSearch, dateFrom,setDateFrom,dateTo,
+    setDateTo,view,setView,hasFilters,clearFilters, } = useReportsIndex();
 
   function handleNavigate(globalIndex: number) {
     navigate(globalIndex === 0
       ? TEMPLATE_TRENDS_ROUTE
-      : `${TEMPLATE_TRENDS_ROUTE}?offset=-${globalIndex}`)
+      : `${TEMPLATE_TRENDS_ROUTE}?offset=-${globalIndex}`);
   }
 
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
-      <Header />
+      <HeaderUser />
       <div className="flex flex-col lg:flex-row flex-1">
         {isAdmin ? <AdminSidebar /> : <Sidebar />}
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
@@ -91,7 +56,7 @@ const ReportsIndexPage = () => {
                   <input
                     type="text"
                     value={search}
-                    onChange={e => setSearch(e.target.value)}
+                    onChange={(event) => setSearch(event.target.value)}
                     placeholder="Buscar por período (ej: mayo 2026)..."
                     className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#C9E1F0] bg-white
                                text-[13.5px] text-[#003A6C] placeholder-[#8DAFC8]
@@ -103,7 +68,7 @@ const ReportsIndexPage = () => {
                   <input
                     type="date"
                     value={dateFrom}
-                    onChange={e => setDateFrom(e.target.value)}
+                    onChange={(event) => setDateFrom(event.target.value)}
                     className="px-2.5 py-2 rounded-xl border border-[#C9E1F0] bg-white
                                text-[12.5px] text-[#003A6C] focus:outline-none focus:border-[#003A6C] transition-colors"
                   />
@@ -114,14 +79,14 @@ const ReportsIndexPage = () => {
                   <input
                     type="date"
                     value={dateTo}
-                    onChange={e => setDateTo(e.target.value)}
+                    onChange={(event) => setDateTo(event.target.value)}
                     className="px-2.5 py-2 rounded-xl border border-[#C9E1F0] bg-white
                                text-[12.5px] text-[#003A6C] focus:outline-none focus:border-[#003A6C] transition-colors"/>
                 </div>
 
                 {hasFilters && (
                   <button
-                    onClick={() => { setSearch(""); setDateFrom(""); setDateTo("") }}
+                    onClick={clearFilters}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#C9E1F0]
                                bg-white text-[12.5px] text-[#4B778D] hover:border-[#4B778D]
                                hover:text-[#003A6C] transition-colors" >
@@ -153,10 +118,10 @@ const ReportsIndexPage = () => {
             {!loading && reports.length > 0 && (
               <p className="text-[12.5px] text-[#4B778D] mb-4 flex items-center gap-2">
                 {hasFilters
-                  ? `${filtered.length} de ${reports.length} reportes`
+                  ? `${filteredReports.length} de ${reports.length} reportes`
                   : "Mostrando todos los reportes"}
                 <span className="bg-[#E0F2FE] text-[#0369A1] text-[11.5px] font-semibold px-2 py-0.5 rounded-full">
-                  {filtered.length}
+                  {filteredReports.length}
                 </span>
               </p>
             )}
@@ -167,9 +132,9 @@ const ReportsIndexPage = () => {
               </div>
             )}
 
-            {!loading && view === "grid" && filtered.length > 0 && (
+            {!loading && view === "grid" && filteredReports.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filtered.map((report) => {
+                {filteredReports.map((report) => {
                   const globalIndex = reports.findIndex(r => r.id === report.id)
                   return (
                     <ReportCardGrid
@@ -181,7 +146,7 @@ const ReportsIndexPage = () => {
               </div>
             )}
 
-            {!loading && view === "list" && filtered.length > 0 && (
+              {!loading && view === "list" && filteredReports.length > 0 && (
               <div className="bg-white rounded-2xl border border-[#C9E1F0] overflow-hidden">
                 <div className="grid gap-4 px-5 py-2.5 border-b border-slate-100 text-[11px] font-semibold text-[#8DAFC8] uppercase tracking-wider"
                   style={{ gridTemplateColumns: "2fr 1fr 1fr 40px" }} >
@@ -190,7 +155,7 @@ const ReportsIndexPage = () => {
                   <span>Estado</span>
                   <span />
                 </div>
-                {filtered.map((report) => {
+                {filteredReports.map((report) => {
                   const globalIndex = reports.findIndex(r => r.id === report.id)
                   return (
                     <ReportRowList
@@ -202,7 +167,7 @@ const ReportsIndexPage = () => {
               </div>
             )}
 
-            {!loading && filtered.length === 0 && (
+              {!loading && filteredReports.length === 0 && (
               <div className="rounded-2xl border border-dashed border-[#C9E1F0] bg-white px-6 py-14 text-center">
                 <FileText className="w-9 h-9 text-[#C9E1F0] mx-auto mb-3" />
                 <p className="text-[14.5px] font-medium text-[#4B778D]">
@@ -213,7 +178,7 @@ const ReportsIndexPage = () => {
                 </p>
                 {hasFilters && (
                   <button
-                    onClick={() => { setSearch(""); setDateFrom(""); setDateTo("") }}
+                    onClick={clearFilters}
                     className="mt-4 text-[13px] text-[#003A6C] underline underline-offset-2 hover:text-[#0E7D96]" >
                     Limpiar filtros
                   </button>
