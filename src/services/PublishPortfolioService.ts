@@ -1,6 +1,5 @@
 import { api } from "./api";
 
-// URL corregida según el documento
 const PUBLISH_ENDPOINT = "/portfolio/publish";
 
 export const publishPortfolioRequest = async (template: number, isPublic: boolean) => {

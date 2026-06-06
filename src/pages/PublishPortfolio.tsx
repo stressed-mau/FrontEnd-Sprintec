@@ -1,12 +1,10 @@
 import { useEffect } from "react"
+import { Upload, CheckCircle2, Copy } from "lucide-react"
 import { Footer } from "@/components/Footer"
 import Header from "../components/HeaderUser"
 import Sidebar from "../components/Sidebar"
-import { Upload, CheckCircle2, Copy } from "lucide-react"
 import { usePublishPortfolio } from "../hooks/usePublishPortfolio"
-
 const PublishPortfolio = () => {
-  // Ahora solo usamos el hook de publicación
   const {
     isPublished,
     portfolioUrl,
@@ -20,9 +18,7 @@ const PublishPortfolio = () => {
   } = usePublishPortfolio()
 
   useEffect(() => {
-    console.log("SE EJECUTA useEffect");
     const syncStatus = async () => {
-      console.log("LLAMANDO checkInitialStatus");
       await checkInitialStatus();
       await validatePortfolioContent();
     };
@@ -180,5 +176,4 @@ const PublishPortfolio = () => {
     </div>
   )
 }
-
 export default PublishPortfolio
