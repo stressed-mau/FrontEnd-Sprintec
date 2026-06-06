@@ -1,17 +1,36 @@
 import { useState, useEffect } from 'react';
-import { updateProfileCredentials } from '@/services/ProfileService';
+import { updateProfileCredentials } from '@/services/profileService';
 import { useEmailValidation } from '@/hooks/useEmailValidation';
 import { getAuthSession, updateAuthSession } from '@/services/auth/authStorageService';
+export interface ProfileData {
+  username: string;
+  email: string;
+}
+export interface ProfileForm {
+  username: string;
+  email: string;
+  currentPasswordInfo: string;
+  currentPasswordPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+export interface ServerMessage {
+  type: string;
+  text: string;
+}
+export interface EmailSuggestion {
+  full: string;
+}
 export const useProfile = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [serverMessage, setServerMessage] = useState({ type: '', text: '' });
+  const [serverMessage, setServerMessage] = useState<ServerMessage>({ type: '', text: '' });
   const session = getAuthSession();
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState<ProfileData>({
     username: session?.user?.username || '',
     email: session?.user?.email || '',
   });
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ProfileForm>({
     username: session?.user?.username || '',
     email: session?.user?.email || '',
     currentPasswordInfo: '',
@@ -23,9 +42,7 @@ export const useProfile = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const { suggestion, sanitizeEmailInput, validateEmail } = useEmailValidation(form.email);
-
   const SPECIAL_CHARACTER_REGEX = /[^A-Za-z0-9]/;
-
   const validateField = (field: string, nextForm = form): string => {
     if (field === "username") {
       const username = nextForm.username?.trim() ?? "";
@@ -35,7 +52,6 @@ export const useProfile = () => {
       if (username.length > 30) return "El nombre de usuario permite un máximo de 30 caracteres.";
       return "";
     }
-
     if (field === "email") {
       const email = nextForm.email?.trim() ?? "";
       if (!email) return "El correo electrónico es obligatorio.";
@@ -44,7 +60,6 @@ export const useProfile = () => {
       const emailRes = validateEmail(email);
       return emailRes.error || "";
     }
-
     if (field === "currentPasswordInfo") {
       const usernameChanged = nextForm.username.trim() !== profile.username.trim();
       const emailChanged = nextForm.email.trim() !== profile.email.trim();
@@ -52,12 +67,10 @@ export const useProfile = () => {
       if (!nextForm.currentPasswordInfo) return "La contraseña es necesaria para cambiar la información.";
       return "";
     }
-
     if (field === "currentPasswordPassword") {
       if (!nextForm.currentPasswordPassword) return "El campo Contraseña actual es obligatorio.";
       return "";
     }
-
     if (field === "newPassword") {
       const newPassword = nextForm.newPassword;
       if (!newPassword) return "El campo Nueva contraseña es obligatorio.";
@@ -69,17 +82,14 @@ export const useProfile = () => {
       if (!SPECIAL_CHARACTER_REGEX.test(newPassword)) return "La contraseña debe contener al menos un carácter especial.";
       return "";
     }
-
     if (field === "confirmPassword") {
       const confirmPassword = nextForm.confirmPassword;
       if (!confirmPassword) return "El campo Confirmar contraseña es obligatorio.";
       if (confirmPassword !== nextForm.newPassword) return "Las contraseñas no coinciden.";
       return "";
     }
-
     return "";
   };
-
   const resetForm = () => {
     setForm({
       username: profile.username,
@@ -93,8 +103,6 @@ export const useProfile = () => {
     setTouched({});
     setServerMessage({ type: '', text: '' });
   };
-
-  // Carga inicial de datos
   useEffect(() => {
     setProfile({
       username: session?.user?.username || '',
@@ -113,20 +121,15 @@ export const useProfile = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const newValue = name === 'email' ? sanitizeEmailInput(value) : value;
-    
+    const newValue = name === 'email' ? sanitizeEmailInput(value) : value;  
     setForm((prev) => {
       const next = { ...prev, [name]: newValue };
-
-      // Si el campo ya fue tocado, valida en vivo (para guiar al usuario).
       if (touched[name]) {
         const msg = validateField(name, next);
         setErrors((current) => {
           const nextErrors = { ...current };
           if (msg) nextErrors[name] = msg;
           else delete nextErrors[name];
-
-          // Validaciones dependientes
           if (name === "username" || name === "email") {
             if (touched.currentPasswordInfo) {
               const pwdMsg = validateField("currentPasswordInfo", next);
@@ -139,11 +142,9 @@ export const useProfile = () => {
             if (confirmMsg) nextErrors.confirmPassword = confirmMsg;
             else delete nextErrors.confirmPassword;
           }
-
           return nextErrors;
         });
       }
-
       return next;
     });
   };
@@ -162,8 +163,6 @@ export const useProfile = () => {
   const validateInfoFields = (): Record<string, string> => {
     const newErrs: Record<string, string> = {};
     const { username, email } = form;
-
-    // Username
     if (!username || !username.trim()) {
       newErrs.username = 'El nombre de usuario es obligatorio.';
     } else if (username.trim().length < 3) {
@@ -171,8 +170,6 @@ export const useProfile = () => {
     } else if (username.length > 30) {
       newErrs.username = 'El nombre de usuario permite un máximo de 30 caracteres.';
     }
-
-    // Email
     if (!email || !email.trim()) {
       newErrs.email = 'El correo electrónico es obligatorio.';
     } else if (/\s/.test(email)) {
@@ -185,50 +182,37 @@ export const useProfile = () => {
         newErrs.email = emailRes.error;
       }
     }
-
     return newErrs;
   };
-// ─── Actualizar Información (username y/o email) ─────────────────────────────
-
-
     const handleUpdateInfo = async () => {
     setServerMessage({ type: '', text: '' });
-
     const newErrs = validateInfoFields();
-
-    // current_password requerido si se cambia el username o email
     const usernameChanged = form.username.trim() !== profile.username.trim();
     const emailChanged = form.email.trim() !== profile.email.trim();
     if ((usernameChanged || emailChanged) && !form.currentPasswordInfo) {
       newErrs.currentPasswordInfo = 'La contraseña es necesaria para cambiar la información.';
     }
-
     if (Object.keys(newErrs).length > 0) {
       setErrors(newErrs);
       return;
     }
-
-    // Armar payload mínimo según qué cambió
     const payload: Record<string, string> = {};
     payload.username = form.username.trim();
     payload.email = form.email.trim();
     if (usernameChanged || emailChanged) {
       payload.current_password = form.currentPasswordInfo;
     }
-
     setIsSubmitting(true); 
     try {
       const response = await updateProfileCredentials(payload);
       if (response.success && response.data) {
         const updatedUsername = response.data.username || form.username;
         const updatedEmail = response.data.email || form.email;
-
         setProfile({
           username: updatedUsername,
           email: updatedEmail,
         });
-        setForm(prev => ({
-          ...prev,
+        setForm(prev => ({...prev,
           username: updatedUsername,
           email: updatedEmail,
           currentPasswordInfo: '',
@@ -237,7 +221,6 @@ export const useProfile = () => {
         if (updateAuthSession) {
           updateAuthSession({ username: updatedUsername, email: updatedEmail });
         }
-
         setServerMessage({ type: 'success', text: 'Información actualizada correctamente.' });
       }
     } catch (err: any) {
@@ -249,15 +232,11 @@ export const useProfile = () => {
   const handleChangePassword = async () => {
     setServerMessage({ type: '', text: '' });
     const newErrs: Record<string, string> = {};
+    const { currentPasswordPassword, newPassword, confirmPassword } = form;
 
-   const { currentPasswordPassword, newPassword, confirmPassword } = form;
-
-  // Validación Contraseña Actual
   if (!currentPasswordPassword) {
     newErrs.currentPasswordPassword = "El campo Contraseña actual es obligatorio.";
   }
-
-  // Validaciones Nueva Contraseña (idénticas a RegisterForm)
   if (!newPassword) {
     newErrs.newPassword = "El campo Nueva contraseña es obligatorio.";
   } else {
@@ -271,18 +250,15 @@ export const useProfile = () => {
     }
   }
 
-  // Validación Confirmación
   if (!confirmPassword) {
     newErrs.confirmPassword = "El campo Confirmar contraseña es obligatorio.";
   } else if (confirmPassword !== newPassword) {
     newErrs.confirmPassword = "Las contraseñas no coinciden.";
   }
-
     if (Object.keys(newErrs).length > 0) {
       setErrors(newErrs);
       return;
     }
-
     setIsSubmitting(true);
     try {
       await updateProfileCredentials({
@@ -303,7 +279,6 @@ export const useProfile = () => {
       setIsSubmitting(false);
     }
   };
-
   return {
     profile,
     form,

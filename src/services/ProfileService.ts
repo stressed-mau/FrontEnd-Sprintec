@@ -5,7 +5,7 @@ const CREDENTIALS_ENDPOINT = '/user/credentials';
 export interface UpdateCredentialsPayload {
   username?: string;
   email?: string;
-  current_password?: string;       // Requerido solo si se cambia email o contraseña
+  current_password?: string; 
   new_password?: string;
   new_password_confirmation?: string;
 }

@@ -8,7 +8,7 @@ import ReportCardGrid from "@/components/reports/ReportCardGrid";
 import ReportRowList from "@/components/reports/ReportRowList";
 import { getAuthSession } from "@/services/auth";
 import { TEMPLATE_TRENDS_ROUTE } from "@/routes/route-paths";
-import AdminSidebar from "../components/Admin/AdminSidebar";
+import AdminSidebar from "../components/admin/AdminSidebar";
 import { useReportsIndex } from "@/hooks/useReportsIndex";
 
 const ReportsIndexPage = () => {

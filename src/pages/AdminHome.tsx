@@ -1,5 +1,5 @@
 import Header from "../components/HeaderUser";
-import AdminSidebar from '../components/Admin/AdminSidebar';
+import AdminSidebar from '../components/admin/AdminSidebar';
 import { Footer } from "@/components/Footer";
 import { getAuthSession } from "@/services/auth";
 import { FileBarChart2, BadgeCheck, Info, Shield } from "lucide-react";
