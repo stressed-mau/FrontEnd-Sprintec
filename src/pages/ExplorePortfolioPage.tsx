@@ -149,7 +149,7 @@ export default function ExplorePortfolioPage() {
                       navigate(`/p/${portfolio.slug}`, { state: { fromExplore: true } });
                     }
                   }}
-                  className="group mx-auto flex w-full max-w-md items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all hover:border-[#4982AD]/30 hover:shadow-md" >
+                  className="group flex w-full items-center gap-4 rounded-xl border border-gray-100 bg-white p-2 shadow-sm transition-all hover:border-[#4982AD]/30 hover:shadow-md" >
                   <div className="shrink-0">
                     {portfolio.profileImage ? (
                       <img
