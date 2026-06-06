@@ -1,12 +1,15 @@
-import React, { useRef, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { useRef, useState } from 'react';
 import { Users, UserPlus, Eye, Download } from 'lucide-react';
+import { useReactToPrint } from 'react-to-print';
+import StatCardUser from "@/components/reports/StatCardUser";
+import PrintHeaderUser from "@/components/reports/PrintHeaderUser";
+import UserGrowthChart from "@/components/reports/UserGrowthChart";
+import UsersTable from "@/components/reports/UsersTable";
+import LoginChart from "@/components/reports/LoginChart";
+import { Footer } from '@/components/Footer';
+import { useUserReports } from "@/hooks/useUserReports";
 import Header from '../../components/HeaderUser'; 
 import AdminSidebar from '../../components/Admin/AdminSidebar';
-import { Footer } from '@/components/Footer';
-import { useReactToPrint } from 'react-to-print';
-import { useUserReports } from "@/hooks/useUserReports";
-import logo from "@/assets/logo/LogoPG.png";
 
 const UserReports = () => {
 
@@ -15,9 +18,7 @@ const UserReports = () => {
   >('Mes');
 
   const [currentPage, setCurrentPage] = useState(1);
-
   const usersPerPage = 6;
-
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
 
@@ -63,8 +64,6 @@ const UserReports = () => {
     loginData.length > 0 &&
     loginData.some(item => item.registros > 0);
 
-  const hasUsersData =
-    userData.length > 0;
   const currentUsers = userData.slice(
     indexOfFirstUser,
     indexOfLastUser
@@ -147,32 +146,10 @@ const isCompact = isMobile && !isPrinting;
             ref={reportRef}
             className=" mx-auto w-full max-w-6xl space-y-6 p-2 sm:p-4 md:p-6 lg:p-8 print:max-w-full print:px-2 print:pt-6 print:scale-[0.95] print:origin-top"
           >
-          <div className="hidden print:flex items-center justify-between mb-4 border-b border-gray-300 pb-3">
-            <div className="w-1/3 flex justify-start">
-              <img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
-            </div>
-
-            <div className="w-1/3 text-center">
-              <h1 className="text-2xl font-bold text-[#003A6C] leading-tight">
-                Reporte de Usuarios
-              </h1>
-
-              <p className="text-sm text-gray-500">
-                Gestión y análisis de usuarios registrados
-              </p>
-            </div>
-
-            <div className="w-1/3 flex justify-end">
-              <div className="text-right">
-                <p className="text-sm font-semibold text-[#003A6C]">
-                  {new Date().toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </div>
-            
-            {/* Título y Subtítulo */}
-            {/* Título + Botón */}
+          <PrintHeaderUser
+            title="Reporte de Usuarios"
+            subtitle="Gestión y análisis de usuarios registrados"
+          />
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">           
               <div className="text-left">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#003A6C] break-words">
@@ -195,250 +172,41 @@ const isCompact = isMobile && !isPrinting;
                 Reporte actualizado automáticamente
               </span>
             </div>
-            {/* Tarjetas de Métricas Superiores */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
-              <StatCard title="Total de usuarios" value={stats?.totalUsers ?? 0} subtext="Usuarios registrados en el sistema" Icon={Users} /> 
-              <StatCard title="Usuarios nuevos este mes" value={stats?.newUsers ?? 0} subtext="Registros en el mes actual" Icon={UserPlus} />
-              <StatCard title="Total de visitantes" value={stats?.totalVisitors ?? 0} subtext="Visitas totales a la plataforma" Icon={Eye} />
+              <StatCardUser title="Total de usuarios" value={stats?.totalUsers ?? 0} subtext="Usuarios registrados en el sistema" Icon={Users} /> 
+              <StatCardUser title="Usuarios nuevos este mes" value={stats?.newUsers ?? 0} subtext="Registros en el mes actual" Icon={UserPlus} />
+              <StatCardUser title="Total de visitantes" value={stats?.totalVisitors ?? 0} subtext="Visitas totales a la plataforma" Icon={Eye} />
             </div>
 
-            {/* Gráfica de Crecimiento Temporal */}
-            <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid">
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-[#003A6C]">Crecimiento temporal</h2>
-                <p className="text-sm text-[#4B778D]">
-                  {selectedPeriod === 'Día' && 'Registros por hora (últimas 24 horas)'}
-                  {selectedPeriod === 'Semana' && 'Registros por día (últimos 7 días)'}
-                  {selectedPeriod === 'Mes' && 'Registros por semana (último mes)'}
-                  {selectedPeriod === 'Año' && 'Registros por mes (últimos 12 meses)'}
-                </p>
-              </div>
-              {hasGrowthData ? (
-              <div className="h-48 sm:h-64 w-full overflow-hidden print:h-64 print:w-[950px]">
-                <ResponsiveContainer width={isPrinting ? 900 : "99%"} height={isPrinting ? 230 : "100%"} debounce={0}>
-                  <LineChart
-                    data={
-                      selectedPeriod === 'Día'
-                        ? dailyData
-                        : selectedPeriod === 'Semana'
-                        ? weeklyData
-                        : selectedPeriod === 'Mes'
-                        ? monthlyData
-                        : yearlyData
-                    }
-                    margin={{
-                      top: isPrinting ? 5 : 10,
-                      right: 20,
-                      left: 10,
-                      bottom: isPrinting ? 5 : 10,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                    <XAxis
-                      dataKey="name"
-                      axisLine={false}
-                      tickLine={false}
-                      interval={isCompact ? 2 : 0}
-                      minTickGap={isCompact ? 40 : 20}
-                      tickMargin={8}
-                      padding={{ left: 20, right: 20 }}
-                      tick={{
-                        fill: '#4B778D',
-                        fontSize: 11,
-                      }}
-                    />
-                    <YAxis width={35} axisLine={false} tickLine={false} tick={{fill: '#4B778D', fontSize: 12}} />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="registros" 
-                      stroke="#22C55E" 
-                      strokeWidth={3} 
-                      isAnimationActive={false}
-                      dot={{
-                        r: isCompact ? 3 : 6,
-                        fill: '#22C55E',
-                        strokeWidth: 2,
-                        stroke: '#fff'
-                      }}
-                      activeDot={{ r: isCompact ? 5 : 8 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              ) : (
-                <EmptyChart message="Aún no hay registros para el período seleccionado." />
-              )}
-              {/* Selectores de Tiempo (Estilo Figma) */}
-              <div className="flex justify-center mt-6 print:hidden">
-                <div className="flex flex-wrap justify-center gap-2 bg-[#D1E3EB] p-2 rounded-xl">
-                  {['Día', 'Semana', 'Mes', 'Año'].map((period) => (
-                    <button 
-                      key={period}
-                      onClick={() => setSelectedPeriod(period as 'Día' | 'Semana' | 'Mes' | 'Año')}
-                      className={`px-6 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      selectedPeriod === period
-                        ? 'bg-[#003A6C] text-white'
-                        : 'text-[#4B778D] hover:bg-[#B8D4E0]'
-                    }`}
-                    >
-                      {period}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Gráfica de Inicios de Sesión (Barras) */}
-            <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid">
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-[#003A6C]">Inicios de sesión por día</h2>
-                <p className="text-sm text-[#4B778D]">Actividad de la última semana</p>
-              </div>
-              {hasLoginData ? (
-              <div className="h-44 sm:h-64 print:h-64 w-full print:w-[950px]">
-                <ResponsiveContainer width={isPrinting ? 900 : "100%"} height={isPrinting ? 230 : "100%"}>
-                  <BarChart data={loginData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                    <XAxis
-                      dataKey="name"
-                      axisLine={false}
-                      tickLine={false}
-                      interval={isCompact ? 1 : 0}
-                      minTickGap={isCompact ? 30 : 10}
-                      tick={{
-                        fill: '#4B778D',
-                        fontSize: isCompact ? 9 : 12,
-                      }}
-                    />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#4B778D', fontSize: 12}} />
-                    <Tooltip cursor={{fill: '#F1F5F9'}} />
-                    <Bar
-                      dataKey="registros"
-                      fill="#10B981"
-                      radius={[4, 4, 0, 0]}
-                      barSize={isCompact ? 25 : 60}
-                      isAnimationActive={false}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              ) : (
-                <EmptyChart message="Aún no hay inicios de sesión registrados." />
-              )}
-            </div>
-
-            {/* Tabla de Usuarios */}
-            <div className="bg-white border border-[#A5C9D7] rounded-3xl overflow-hidden shadow-sm">
-              <div className="p-6 border-b border-[#E2E8F0]">
-                <h2 className="text-xl font-bold text-[#003A6C]">Usuarios registrados ({stats?.totalUsers ?? 0})</h2>
-              </div> 
-              {hasUsersData ? (
-              <div className="overflow-x-auto print:hidden">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="text-[#4B778D] text-sm uppercase tracking-wider">
-                      <th className="px-6 py-4 font-semibold border-b border-[#E2E8F0]">Nombre</th>
-                      <th className="px-6 py-4 font-semibold border-b border-[#E2E8F0]">Correo</th>
-                      <th className="px-6 py-4 font-semibold border-b border-[#E2E8F0]">Ocupación</th>
-                      <th className="px-6 py-4 font-semibold border-b border-[#E2E8F0]">Fecha de registro</th>
-                      <th className="px-6 py-4 font-semibold border-b border-[#E2E8F0]">Última conexión</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-[#003A6C] divide-y divide-[#E2E8F0]">
-                    {currentUsers.map((user, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 font-medium">{user.name}</td>
-                        <td className="px-6 py-4 ">{user.email}</td>
-                        <td className="px-6 py-4">{user.job}</td>
-                        <td className="px-6 py-4 text-sm">{user.date}</td>
-                        <td className="px-6 py-4 text-sm">{user.last}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="
-                  print:hidden
-                  flex flex-col sm:flex-row
-                  items-center
-                  justify-between
-                  gap-3
-                  px-3 sm:px-6
-                  py-4
-                  border-t border-[#E2E8F0]
-                ">
-                  <button
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="
-                      w-full sm:w-auto
-                      px-3 sm:px-4
-                      py-2
-                      rounded-lg
-                      border border-[#A5C9D7]
-                      text-[#003A6C]
-                      text-sm
-                      disabled:opacity-50
-                    "
-                  >
-                    ← Anterior
-                  </button>
-
-                  <span className="text-sm text-[#4B778D]">
-                    Página {currentPage} de {totalPages}
-                  </span>
-
-                  <button
-                    onClick={() =>
-                      setCurrentPage((prev) =>
-                        Math.min(prev + 1, totalPages)
-                      )
-                    }
-                    disabled={currentPage === totalPages}
-                    className="
-                      w-full sm:w-auto
-                      px-3 sm:px-4
-                      py-2
-                      rounded-lg
-                      border border-[#A5C9D7]
-                      text-[#003A6C]
-                      text-sm
-                      disabled:opacity-50
-                    "
-                  >
-                    Siguiente →
-                  </button>
-                </div>
-              </div>
-              ) : (
-                <EmptyChart message="Aún no hay usuarios registrados." />
-              )}
-              <div className="hidden print:block">
-                <table className="w-full text-left border-collapse mt-6">
-                  <thead>
-                    <tr className="text-[#4B778D] text-sm uppercase tracking-wider">
-                      <th className="px-4 py-3 border-b">Nombre</th>
-                      <th className="px-4 py-3 border-b">Correo</th>
-                      <th className="px-4 py-3 border-b">Ocupación</th>
-                      <th className="px-4 py-3 border-b">Fecha de registro</th>
-                      <th className="px-4 py-3 border-b">Última conexión</th>
-                    </tr>
-                  </thead>
-
-                  <tbody className="text-[#003A6C]">
-                    {userData.map((user, idx) => (
-                      <tr key={idx} className="border-b border-[#E2E8F0]">
-                        <td className="px-4 py-3">{user.name}</td>
-                        <td className="px-4 py-3">{user.email}</td>
-                        <td className="px-4 py-3">{user.job}</td>
-                        <td className="px-4 py-3">{user.date}</td>
-                        <td className="px-4 py-3">{user.last}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <UserGrowthChart
+              selectedPeriod={selectedPeriod}
+              growthData={growthData}
+              hasGrowthData={hasGrowthData}
+              isPrinting={isPrinting}
+              isCompact={isCompact}
+              onPeriodChange={setSelectedPeriod}
+            />
+            <LoginChart
+              loginData={loginData}
+              hasLoginData={hasLoginData}
+              isPrinting={isPrinting}
+              isCompact={isCompact}
+            />
+            <UsersTable
+              users={userData}
+              currentUsers={currentUsers}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalUsers={stats?.totalUsers ?? 0}
+              onPrev={() =>
+                setCurrentPage(prev => Math.max(prev - 1, 1))
+              }
+              onNext={() =>
+                setCurrentPage(prev =>
+                  Math.min(prev + 1, totalPages)
+                )
+              }
+            />
           </div>
         </main>
       </div>
@@ -447,58 +215,4 @@ const isCompact = isMobile && !isPrinting;
   );
 };
 
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  subtext: string;
-  Icon: React.ElementType; 
-}
-
-const StatCard = ({ title, value, subtext, Icon }: StatCardProps) => (
-  <div className="
-    bg-white
-    border border-[#C9E1F0]
-    rounded-2xl sm:rounded-[2rem]
-    p-3 sm:p-5
-    shadow-sm
-    transition-all
-    hover:border-[#70A1B9]
-    print:shadow-none
-  ">
-    <div className="flex justify-between items-start">
-      <div className="space-y-1 sm:space-y-2">
-        <p className="text-[#4B778D] font-semibold text-sm uppercase tracking-wide">
-          {title}
-        </p>
-
-        <p className="text-2xl sm:text-4xl font-bold text-[#003A6C] leading-none">
-          {value}
-        </p>
-
-        <p className="text-xs text-[#70A1B9] font-medium">
-          {subtext}
-        </p>
-      </div>
-
-      <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-[#F5FAFD]">
-        <Icon
-          className="w-4 h-4 sm:w-5 sm:h-5 text-[#003A6C]"
-          strokeWidth={1.8}
-        />
-      </div>
-    </div>
-  </div>
-);
-const EmptyChart = ({ message }: { message: string }) => (
-  <div className="flex flex-col items-center justify-center min-h-[250px] text-center">
-    <Eye
-      className="w-14 h-14 text-gray-300 mb-4"
-      strokeWidth={1.5}
-    />
-
-    <p className="text-[#4B5563] text-base">
-      {message}
-    </p>
-  </div>
-);
 export default UserReports;
