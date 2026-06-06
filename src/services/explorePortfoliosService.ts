@@ -1,7 +1,8 @@
 import axios from "axios";
-
 import { api } from "@/services/api";
 import { toAbsoluteAssetUrl } from "@/services/assetUrl";
+import type {CardsResponseDto, PortfolioCardApiDto,} from "@/types/explorePortfolio";
+import { toStringValue } from "@/utils/explore/stringUtils";
 
 const PUBLIC_API = axios.create({
   baseURL: (api.defaults.baseURL ?? "http://localhost:5173/api").replace(/\/+$/, ""),
@@ -43,52 +44,6 @@ export interface ExplorePortfolioCard {
   projectsCount: number;
   skillsCount: number;
   topSkills: string[];
-}
-
-function toStringValue(value: unknown, fallback = ""): string {
-  return typeof value === "string" ? value : value == null ? fallback : String(value);
-}
-
-interface PortfolioSkillApiDto {
-  name?: string | null;
-}
-
-interface PortfolioCardApiDto {
-  user_id?: string | number | null;
-  slug?: string | null;
-  username?: string | null;
-  fullname?: string | null;
-  name?: string | null;
-  occupation?: string | null;
-  image_url?: string | null;
-  image?: string | null;
-  photo?: string | null;
-  avatar?: string | null;
-  profile_image?: string | null;
-  profileImage?: string | null;
-  user?: {
-    image_url?: string | null;
-    image?: string | null;
-    photo?: string | null;
-    avatar?: string | null;
-  } | null;
-  user_information?: {
-    image_url?: string | null;
-    image?: string | null;
-    photo?: string | null;
-    avatar?: string | null;
-  } | null;
-  skills_count?: number | null;
-  projects_count?: number | null;
-  skills?: Array<string | PortfolioSkillApiDto>;
-}
-
-interface CardsResponseDto {
-  success?: boolean;
-  data?: PortfolioCardApiDto[] | {
-    count?: number;
-    portfolios?: PortfolioCardApiDto[];
-  };
 }
 
 function normalizeCard(dto: PortfolioCardApiDto, index: number): ExplorePortfolioCard {

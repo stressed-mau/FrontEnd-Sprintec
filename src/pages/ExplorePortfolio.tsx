@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
@@ -11,7 +10,7 @@ import { isAuthenticated, getAuthSession } from "@/services/auth";
 import Sidebar from "@/components/Sidebar";
 import AdminSidebar from "../components/Admin/AdminSidebar";
 import { getInitials } from "@/utils/explore/stringUtils";
-import FiltersDropdown from "@/components/explore/FilterDropdown";
+import FilterDropdown from "@/components/explore/FilterDropdown";
 
 export default function ExplorePortfolioPage() {
   const navigate = useNavigate();

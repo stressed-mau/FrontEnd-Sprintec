@@ -6,3 +6,14 @@ export function getInitials(name: string): string {
     .map((word) => word[0].toUpperCase())
     .join("");
 }
+
+export function toStringValue(
+  value: unknown,
+  fallback = "",
+): string {
+  return typeof value === "string"
+    ? value
+    : value == null
+    ? fallback
+    : String(value);
+}
