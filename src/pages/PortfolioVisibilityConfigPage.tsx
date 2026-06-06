@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
-
 import { ChevronDown, ChevronUp, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 import { Footer } from "@/components/Footer";
 import { type SectionKey, type VisibilityItem } from "@/services/portfolioVisibilityService";
-
 import Header from "../components/HeaderUser";
 import Sidebar from "../components/Sidebar";
 import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility";
@@ -22,14 +19,7 @@ const PORTFOLIO_VISIBILITY_SECTIONS = [
 
 const PortfolioVisibilityConfigPage = () => {
   const navigate = useNavigate();
-  const { 
-    data: visibilityData, 
-    isLoading, 
-    isSaving, 
-    pageError,
-    handleItemCheck, 
-    handleBulkSelect 
-  } = usePortfolioVisibility();
+  const {data: visibilityData, isLoading, isSaving, pageError,  handleItemCheck, handleBulkSelect } = usePortfolioVisibility();
   const { isPublished, checkInitialStatus } = usePublishPortfolio();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   useEffect(() => {
@@ -81,8 +71,7 @@ const PortfolioVisibilityConfigPage = () => {
                 <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
                   <button
                     onClick={() => navigate("/publicar")}
-                    className="px-5 py-2.5 rounded-xl bg-[#003A6C] text-white font-bold hover:bg-[#002a4d] transition"
-                  >
+                    className="px-5 py-2.5 rounded-xl bg-[#003A6C] text-white font-bold hover:bg-[#002a4d] transition" >
                     Despublicar portafolio
                   </button>
                 </div>
@@ -151,12 +140,9 @@ const PortfolioVisibilityConfigPage = () => {
                       <div className={`border border-[#C9E1F0] rounded-xl overflow-hidden transition-all
                          ${!sectionEnabled ? "opacity-50" : "opacity-100"}`}>
                         
-                        {/* HEADER */}
                         <div className="p-4 flex items-center justify-between bg-white">
                           <div className="flex items-center gap-4">
                             
-                            
-                            {/* SWITCH */}
                             <label className="relative inline-flex items-center cursor-pointer">
                               <input 
                                 type="checkbox" 
@@ -175,29 +161,24 @@ const PortfolioVisibilityConfigPage = () => {
                             </div>
                           </div>
 
-                          {/* EXPAND */}
                           <button 
                             onClick={() => toggleExpand(key)}
-                            className="p-1 rounded-full hover:bg-gray-100 text-[#003A6C] transition-colors"
-                          >
+                            className="p-1 rounded-full hover:bg-gray-100 text-[#003A6C] transition-colors" >
                             {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                           </button>
                         </div>
 
-                        {/* CONTENIDO */}
                         {isExpanded && (
                           <div className="border-t border-[#C9E1F0] bg-[#F8FBFE] px-6 py-5">
                             {items.length > 0 ? (
                               <>
                                 
-                                {/* BOTONES */}
                                 <div className="flex gap-3 mb-6">
                                   <button 
                                     onClick={() => handleBulkSelect(key, true)}
                                     disabled={isSaving || allChecked}
                                     className="px-4 py-2 bg-[#C9E1F0] text-[#003A6C] text-sm font-medium rounded-lg 
-                                               hover:bg-[#c4ab75] active:bg-[#b89f68] transition-colors shadow-sm"
-                                  >
+                                               hover:bg-[#c4ab75] active:bg-[#b89f68] transition-colors shadow-sm"  >
                                     Seleccionar todos
                                   </button>
 
@@ -205,13 +186,11 @@ const PortfolioVisibilityConfigPage = () => {
                                     onClick={() => handleBulkSelect(key, false)}
                                     disabled={isSaving || !allChecked}
                                     className="px-4 py-2 bg-[#C9E1F0] text-[#003A6C] text-sm font-medium rounded-lg 
-                                               hover:bg-[#c4ab75] active:bg-[#a5cde3] transition-colors shadow-sm"
-                                  >
+                                               hover:bg-[#c4ab75] active:bg-[#a5cde3] transition-colors shadow-sm" >
                                     Deseleccionar todos
                                   </button>
                                 </div>
 
-                                {/* ITEMS */}
                                 <div className="space-y-4">
                                   {items.map((item: VisibilityItem) => (
                                     <div key={`${item.sourceTable}-${item.id}`} className="flex items-center gap-4">
@@ -220,8 +199,7 @@ const PortfolioVisibilityConfigPage = () => {
                                         checked={item.checked}
                                         disabled={isSaving}
                                         onChange={() => handleItemCheck(key, item.id, item.sourceTable)}
-                                        className="w-4 h-4 text-[#003A6C] border-[#A5D7E8] rounded focus:ring-[#003A6C] cursor-pointer"
-                                      />
+                                        className="w-4 h-4 text-[#003A6C] border-[#A5D7E8] rounded focus:ring-[#003A6C] cursor-pointer" />
 
                                       <div className="flex items-center gap-2">
                                         <span className="text-sm font-bold text-[#003A6C]">

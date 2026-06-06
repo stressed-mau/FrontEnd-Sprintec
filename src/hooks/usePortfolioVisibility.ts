@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-
 import { getPortfolioVisibilityDataService, savePortfolioVisibilitySectionService,
-  type PortfolioVisibilityData,
-  type SectionKey,
-  type VisibilityItem,
-} from '../services/portfolioVisibilityService';
+  type PortfolioVisibilityData, type SectionKey,type VisibilityItem,} from '../services/portfolioVisibilityService';
 
 const INITIAL_DATA: PortfolioVisibilityData = {
   projects: [],
@@ -15,8 +11,7 @@ const INITIAL_DATA: PortfolioVisibilityData = {
   networks: [],
 };
 
-const MIN_VISIBLE_MESSAGE =
-  'Debe mantener al menos una sección visible en el portafolio.';
+const MIN_VISIBLE_MESSAGE = 'Debe mantener al menos una sección visible en el portafolio.';
 
 export const usePortfolioVisibility = () => {
   const [data, setData] = useState(INITIAL_DATA);
@@ -63,8 +58,7 @@ export const usePortfolioVisibility = () => {
     section: SectionKey,
     id: number,
     sourceTable?: VisibilityItem['sourceTable']
-  ) => {
-    setPageError('');
+  ) => { setPageError('');
     const prev = data[section];
 
     const totalChecked = Object.values(data)
@@ -76,7 +70,6 @@ export const usePortfolioVisibility = () => {
     );
 
     if (!target) return;
-
     if (totalChecked === 1 && target.checked) {
       setPageError(MIN_VISIBLE_MESSAGE);
       return;
@@ -112,18 +105,9 @@ export const usePortfolioVisibility = () => {
         return;
       }
     }
-
     setData((p) => ({ ...p, [section]: next }));
     await persist(section, next, prev);
   };
 
-  return {
-    data,
-    isLoading,
-    isSaving,
-    pageError,
-    handleItemCheck,
-    handleBulkSelect,
-    reload: load,
-  };
+  return {data,isLoading, isSaving, pageError, handleItemCheck, handleBulkSelect, reload: load, };
 };
