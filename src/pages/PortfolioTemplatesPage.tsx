@@ -4,11 +4,9 @@ import Header from "../components/HeaderUser"
 import Sidebar from "../components/Sidebar"
 import { Palette } from "lucide-react"
 import { usePublishPortfolio } from "../hooks/usePublishPortfolio"
-//import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility"
 import { getAuthSession } from "@/services/auth/authStorageService"
-import { getUserInformation } from "@/services/PersonalDataService"
+import { getUserInformation } from "@/services/personalDataService"
 import { useNavigate } from "react-router-dom"
-// Componentes de Plantillas y Assets [cite: 1-4]
 import ModernTemplate, { type ModernTemplateProfile } from "../components/templates/modern/ModernTemplate"
 import MinimalistTemplate from "../components/templates/minimalist/MinimalistTemplate"
 import { CorporatePortfolioTemplate } from "@/components/templates/corporate/CorporatePortfolioTemplate"
@@ -17,9 +15,6 @@ import PortadaMin from "@/assets/images/PortadaMin.png"
 import PortadaCorp from "@/assets/images/PortadaCorp.png"
 
 const PortfolioTemplatesPage = () => {
-  // Lógica de visibilidad para la vista previa
-  //const { data } = usePortfolioVisibility()
-  // Lógica de publicación para persistir la plantilla seleccionada
   const navigate = useNavigate()
   const {
     handlePublish,
@@ -28,14 +23,10 @@ const PortfolioTemplatesPage = () => {
     isPublished,
     loading
   } = usePublishPortfolio()
-
-  // Estados locales para la UI 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
   const [modernProfile, setModernProfile] = useState<ModernTemplateProfile | null>(null)
-
-  // Definición de plantillas (incluyendo el dbId para el servidor) [cite: 9-13]
   const templates = [
     {
       id: "Moderna",
@@ -62,8 +53,6 @@ const PortfolioTemplatesPage = () => {
       coverImage: PortadaCorp,
     },
   ]
-
-  // Carga de perfil y estado inicial
   useEffect(() => {
     const loadInitialData = async () => {
       await checkInitialStatus()
@@ -88,7 +77,6 @@ const PortfolioTemplatesPage = () => {
     void loadInitialData()
   }, [])
 
-  // Sincronizar selección visual con datos del servidor [cite: 8-9]
   useEffect(() => {
   console.log("ID que llega del servidor:", selectedIdFromHook);
     if (selectedIdFromHook) {
@@ -97,12 +85,10 @@ const PortfolioTemplatesPage = () => {
     }
   }, [selectedIdFromHook])
 
-  // Manejador de selección para guardar en DB si ya está publicado
   const handleSelectTemplate = async (templateId: string, dbId: number) => {
     setSelectedTemplate(templateId);
 
     await handlePublish(dbId, isPublished); 
-    //await checkInitialStatus();
   };
   if (loading) {
     return (
@@ -136,11 +122,9 @@ const PortfolioTemplatesPage = () => {
               </div>
 
               <div className="mx-auto max-w-3xl rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
-
                 <h2 className="text-2xl font-bold text-[#003A6C]">
                   Plantillas bloqueadas
                 </h2>
-
                 <p className="mt-3 text-sm leading-6 text-gray-600">
                   No puedes modificar las plantillas mientras tu portafolio
                   esté publicado. Primero debes despublicar el portafolio desde la sección
@@ -158,7 +142,6 @@ const PortfolioTemplatesPage = () => {
             </div>
           </main>
         </div>
-
         <Footer />
       </div>
     )
@@ -169,14 +152,11 @@ const PortfolioTemplatesPage = () => {
       <div className="flex flex-col md:flex-row flex-1">
         <Sidebar />
         <main className="flex-1 p-4 md:p-10">
-          <div className="max-w-5xl mx-auto">
-            
+          <div className="max-w-5xl mx-auto">         
             <div className="text-center md:text-left mb-8">
               <h1 className="text-[#003A6C] text-3xl md:text-4xl font-bold mb-2">Plantillas de Portafolio</h1>
               <p className="text-gray-600 text-sm md:text-base">Gestiona el diseño visual de tu portafolio público</p>
             </div>
-
-            {/* BLOQUE SOLICITADO: Interfaz y Lógica Original [cite: 15-39] */}
             <section className="bg-gray-100 rounded-2xl border border-[#C9E1F0] p-6 mb-8 shadow-sm">
               <div className="flex items-center gap-2 mb-1">
                 <Palette className="text-purple-600 w-6 h-6 transform scale-x-[-1]" />
@@ -256,7 +236,6 @@ const PortfolioTemplatesPage = () => {
                   </div>
                 ))}
               </div>
-
               <div className="mt-6 p-4 bg-[#F8F2FF] rounded-xl border border-purple-300 flex items-center gap-2">
                 <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -266,13 +245,9 @@ const PortfolioTemplatesPage = () => {
                 </p>
               </div>
             </section>
-            {/* FIN BLOQUE SOLICITADO */}
-
           </div>
         </main>
       </div>
-
-      {/* Modal de Vista Previa [cite: 93-103] */}
       {showPreview && (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-6xl h-[90vh] bg-white rounded-3xl overflow-hidden flex flex-col shadow-2xl">
@@ -320,5 +295,4 @@ const PortfolioTemplatesPage = () => {
     </div>
   )
 }
-
 export default PortfolioTemplatesPage

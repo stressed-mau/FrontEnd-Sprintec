@@ -33,12 +33,5 @@ export const getCertificateReports = async () => {
   const response = await api.get<ApiResponse>(
     '/admin/report/certificates'
   );
-
-  console.log('RESPONSE COMPLETO:', response);
-
-  console.log('JSON DEL BACKEND:', response.data);
-
-  console.log('DATA REAL:', response.data.data);
-
   return response.data.data;
 };

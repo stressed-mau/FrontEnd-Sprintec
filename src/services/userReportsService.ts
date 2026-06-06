@@ -51,14 +51,7 @@ export const getUserReports = async (
     `/admin/report?range=${range}`
   );
 
-  console.log("RESPONSE COMPLETO:", response);
-  console.log("JSON DEL BACKEND:", response.data);
-
   const backendData = response.data.data;
-
-  console.log("DATA REAL:", backendData);
-  console.log("RANGO:", response.data.data.registered_users.range);
-  console.log("LABELS:", response.data.data.registered_users.labels);
 
   return {
     stats: {

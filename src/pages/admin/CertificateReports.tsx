@@ -1,23 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, Legend 
-} from 'recharts';
+import { useEffect, useRef, useState } from 'react';
 import { Award, Link, FileText, CheckCircle, Download, Eye } from 'lucide-react';
+import { useReactToPrint } from 'react-to-print';
+import { Footer } from '@/components/Footer';
+import StatCard from "@/components/reports/StatCard";
+import PrintHeader from "@/components/reports/PrintHeader";
 import Header from '../../components/HeaderUser'; 
 import AdminSidebar from '../../components/Admin/AdminSidebar';
-import { Footer } from '@/components/Footer';
-import { useReactToPrint } from 'react-to-print';
+import TopIssuersChart from "@/components/reports/TopIssuersChart";
+import FormatDistributionChart from "@/components/reports/FormatDistributionChart";
+import ExpirationChart from "@/components/reports/ExpirationChart";
+
 import { useCertificateReports } from '@/hooks/useCertificateReports';
-import logo from "@/assets/logo/LogoPG.png"
-interface PieLabelProps {
-  cx?: number;
-  cy?: number;
-  midAngle?: number;
-  innerRadius?: number;
-  outerRadius?: number;
-  percent?: number;
-}
 const CertificateReports = () => {
   const {data, loading, error, } = useCertificateReports();
   const stats = data?.stats || {
@@ -85,39 +78,6 @@ const CertificateReports = () => {
       setIsPrinting(false);
     },
   });
-  // Colores para las gráficas de pastel 
-  const COLORS_FORMAT = ['#36A2EB', '#FFCE56', '#FF334B', '#4BC0C0'];
-  const COLORS_EXPIRATION = ['#FF9F40', '#51db86'];
-  const renderCustomizedLabel = ({
-    cx = 0,
-    cy = 0,
-    midAngle = 0,
-    innerRadius = 0,
-    outerRadius = 0,
-    percent = 0,
-  }: PieLabelProps) => {
-    if (percent < 0.05) return null;
-
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.6;
-
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="#fff"
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize={12}
-        fontWeight={700}
-      >
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
-  };
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 640 : false
   );
@@ -174,35 +134,7 @@ const CertificateReports = () => {
               print:origin-top
             "
           >
-            <div className="hidden print:flex items-center justify-between mb-4 border-b border-gray-300 pb-3">
-            <div className="w-1/3 flex justify-start">
-              <img
-                src={logo}
-                alt="Logo"
-                className="w-12 h-12 object-contain"
-              />
-            </div>
-
-            <div className="w-1/3 text-center">
-              <h1 className="text-2xl font-bold text-[#003A6C] leading-tight">
-                Reporte de Certificados
-              </h1>
-
-              <p className="text-sm text-gray-500">
-                Plataforma Portfolio Gen
-              </p>
-            </div>
-
-            <div className="w-1/3 flex justify-end">
-              <div className="text-right">
-                <p className="text-sm font-semibold text-[#003A6C]">
-                  {new Date().toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-
-          </div>
-            
+            <PrintHeader />    
             {/* Header del Reporte */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">           
               <div className="text-left">
@@ -241,8 +173,6 @@ const CertificateReports = () => {
                 Reporte actualizado automáticamente
               </span>
             </div>
-
-            {/* Tarjetas de Métricas (Imagen 1) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCard title="Total de Certificados" value={stats.totalCertificados} subtext="Certificados en el sistema" Icon={Award} />
               <StatCard title="Certificados con link" value={stats.conLink} subtext="Con URL de credencial" Icon={Link} />
@@ -263,247 +193,56 @@ const CertificateReports = () => {
                 </div>
               </div>
             )}
-
-            {/* Gráfica de Top Emisores */}
               <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid">
                 <div className="mb-6">
-                  <h2 className="text-xl font-bold text-[#003A6C]">Top 10 Emisores</h2>
-                  <p className="text-sm text-[#4B778D]">Organizaciones con más certificados emitidos</p>
+                  <h2 className="text-xl font-bold text-[#003A6C]">
+                    Top 10 Emisores
+                  </h2>
+                  <p className="text-sm text-[#4B778D]">
+                    Organizaciones con más certificados emitidos
+                  </p>
                 </div>
-                
-                {/* 1. ESTE BLOQUE SE MUESTRA EN PANTALLA Y SE OCULTA AL IMPRIMIR (print:hidden) */}
-                {hasIssuersData ? (
-                  <div
-                    className="w-full print:hidden"
-                    style={{
-                      height: `${Math.max(
-                        issuersData.length * (isCompact ? 45 : 60),
-                        250
-                      )}px`,
-                    }}
-                  >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={issuersData} layout="vertical" margin={{ left: 20, right: 20, bottom: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
-                      <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#4B778D'}} />
-                      <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} width={isCompact ? 70 : 110} tick={{fill: '#003A6C', fontSize: isMobile ? 9 : 12, fontWeight: 500}} />
-                      <Tooltip
-                        cursor={{ fill: '#F8FAFC' }}
-                        contentStyle={{
-                          padding: isCompact ? '4px 8px' : '8px 12px',
-                          fontSize: isCompact ? '11px' : '13px',
-                          borderRadius: '8px',
-                        }}
-                      />
-                      <Bar dataKey="cantidad" fill="#4A6CF7" radius={[0, 4, 4, 0]} barSize={25} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                ) : (
-                  <EmptyChart message="Aún no hay emisores registrados." />
-                )}
-                {/* 2. ESTE BLOQUE SE OCULTA EN PANTALLA (hidden) Y SÓLO APARECE AL IMPRIMIR (print:block) */}
-                {/* Forzamos un ancho fijo de 650px para que quepa perfectamente en la hoja sin desbordarse */}
-                {hasIssuersData && (
-                <div
-                  className="hidden print:block mx-auto"
-                  style={{
-                    height: `${Math.max(issuersData.length * 50, 250)}px`,
-                    width: '1000px' 
-                  }}
-                >
-                  <BarChart data={issuersData} layout="vertical" width={900} height={Math.max(issuersData.length * 50, 250)} margin={{ left: 20, right: 30, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E2E8F0" />
-                    <XAxis 
-                      type="number" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{fill: '#4B778D'}} 
-                      label={{
-                        value: 'Cantidad de certificados emitidos',
-                        position: 'insideBottom',
-                        offset: -10,
-                        style: { fill: '#70A1B9', fontSize: 11, fontWeight: 500 },
-                      }}
-                    />
-                    <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} width={140} tick={{fill: '#003A6C', fontSize: 10, fontWeight: 500}} />
-                    <Bar dataKey="cantidad" fill="#4A6CF7" radius={[0, 4, 4, 0]} barSize={20} isAnimationActive={false} />
-                  </BarChart>
-                </div>
-                )}
+
+                <TopIssuersChart
+                  data={issuersData}
+                  isCompact={isCompact}
+                  isMobile={isMobile}
+                  hasData={hasIssuersData}
+                />
               </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-2">
-              {/* Pastel: Distribución por Formato */}
               <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid print:mt-6">
                 <div className="mb-4">
-                  <h2 className="text-xl font-bold text-[#003A6C]">Distribución por Formato</h2>
-                  <p className="text-sm text-[#4B778D]">Tipos de archivo de respaldo</p>
+                  <h2 className="text-xl font-bold text-[#003A6C']">
+                    Distribución por Formato
+                  </h2>
+                  <p className="text-sm text-[#4B778D]">
+                    Tipos de archivo de respaldo
+                  </p>
                 </div>
-                {/* Vista normal */}
-                {hasFormatData ? (
-                <div
-                  className={`${isCompact ? 'h-52' : 'h-64'} flex items-center justify-center print:hidden`}
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={formatData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={isCompact ? 65 : 90}
-                        dataKey="value"
-                        labelLine={false}
-                        label={renderCustomizedLabel}
-                      >
-                        {formatData.map((_, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS_FORMAT[index % COLORS_FORMAT.length]}
-                          />
-                        ))}
-                      </Pie>
 
-                      <Tooltip />
-
-                      <Legend
-                        verticalAlign="bottom"
-                        height={36}
-                        wrapperStyle={{
-                          fontSize: isCompact ? "10px" : "16px",
-                          paddingTop: "10px",
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                ) : (
-                  <EmptyChart message="Aún no hay formatos registrados." />
-                )}
-                {/* Vista PDF */}
-                {hasFormatData && (
-                <div
-                  className="hidden print:flex justify-center items-center mx-auto"
-                  style={{
-                    width: "450px",
-                    height: "320px",
-                  }}
-                >
-                  <PieChart width={450} height={320}>
-                    <Pie
-                      data={formatData}
-                      cx="50%"
-                      cy="45%"
-                      outerRadius={90}
-                      dataKey="value"
-                      labelLine={false}
-                      label={renderCustomizedLabel}
-                      isAnimationActive={false}
-                    >
-                      {formatData.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS_FORMAT[index % COLORS_FORMAT.length]}
-                        />
-                      ))}
-                    </Pie>
-
-                    <Legend
-                      verticalAlign="bottom"
-                      height={36}
-                      wrapperStyle={{
-                        fontSize: "16px",
-                        paddingTop: "10px",
-                      }}
-                    />
-                  </PieChart>
-                </div>
-                )}
+                <FormatDistributionChart
+                  data={formatData}
+                  isCompact={isCompact}
+                  hasData={hasFormatData}
+                />
               </div>
-
-              {/* Pastel: Certificados con Vencimiento */}
               <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid print:mt-6">
                 <div className="mb-4">
-                  <h2 className="text-xl font-bold text-[#003A6C]">Certificados con Vencimiento</h2>
-                  <p className="text-sm text-[#4B778D]">Estado de vigencia de certificados</p>
+                  <h2 className="text-xl font-bold text-[#003A6C]">
+                    Certificados con Vencimiento
+                  </h2>
+                  <p className="text-sm text-[#4B778D]">
+                    Estado de vigencia de certificados
+                  </p>
                 </div>
-              {/* Vista normal */}
-              {hasExpirationData ? (
-              <div className="h-72 flex items-center justify-center print:hidden">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={expirationData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={isCompact ? 65 : 90}
-                      dataKey="value"
-                      labelLine={false}
-                      label={renderCustomizedLabel}
-                    >
-                      {expirationData.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS_EXPIRATION[index % COLORS_EXPIRATION.length]}
-                        />
-                      ))}
-                    </Pie>
 
-                    <Tooltip />
-
-                    <Legend
-                      verticalAlign="bottom"
-                      height={36}
-                      wrapperStyle={{
-                        fontSize: isCompact ? '10px' : '16px',
-                        paddingTop: '3px',
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              ) : (
-                <EmptyChart message="Aún no hay certificados con vencimiento registrados." />
-              )}
-              {/* Vista PDF */}
-              {hasExpirationData && (
-              <div
-                className="hidden print:flex justify-center items-center mx-auto"
-                style={{
-                  width: '450px',
-                  height: '320px',
-                }}
-              >
-                <PieChart width={450} height={320}>
-                  <Pie
-                    data={expirationData}
-                    cx="50%"
-                    cy="45%"
-                    outerRadius={90}
-                    dataKey="value"
-                    labelLine={false}
-                    label={renderCustomizedLabel}
-                    isAnimationActive={false}
-                  >
-                    {expirationData.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS_EXPIRATION[index % COLORS_EXPIRATION.length]}
-                      />
-                    ))}
-                  </Pie>
-
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    wrapperStyle={{
-                      fontSize: '16px',
-                      paddingTop: '3px',
-                    }}
-                  />
-                </PieChart>
-              </div>
-              )}
+                <ExpirationChart
+                  data={expirationData}
+                  isCompact={isCompact}
+                  hasData={hasExpirationData}
+                />
               </div>
             </div>
 
@@ -514,68 +253,5 @@ const CertificateReports = () => {
     </div>
   );
 };
-
-// --- Subcomponente de Tarjeta de Estadística ---
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  subtext: string;
-  Icon: React.ElementType; 
-}
-
-const StatCard = ({
-  title,
-  value,
-  subtext,
-  Icon,
-}: StatCardProps) => (
-  <div className="
-    bg-white
-    p-3 sm:p-5
-    rounded-2xl sm:rounded-3xl
-    border border-[#D6E6EE]
-    shadow-sm
-    transition-all
-    hover:shadow-md
-    hover:border-[#70A1B9]
-  ">
-    <div className="flex items-start justify-between">
-
-      <div className="space-y-1 sm:space-y-2">
-        <p className="text-[#4B778D] font-semibold text-sm leading-tight">
-          {title}
-        </p>
-
-        <p className="text-2xl sm:text-4xl font-bold text-[#003A6C] leading-none">
-          {value}
-        </p>
-
-        <p className="text-xs text-[#70A1B9] font-medium">
-          {subtext}
-        </p>
-      </div>
-
-      <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-[#F1F7F9]">
-        <Icon
-          className="w-4 h-4 sm:w-5 sm:h-5 text-[#003A6C]"
-          strokeWidth={1.7}
-        />
-      </div>
-
-    </div>
-  </div>
-)
-const EmptyChart = ({ message }: { message: string }) => (
-  <div className="flex flex-col items-center justify-center h-full min-h-[250px] text-center">
-    <Eye
-      className="w-14 h-14 text-gray-300 mb-4"
-      strokeWidth={1.5}
-    />
-
-    <p className="text-[#4B5563] text-base">
-      {message}
-    </p>
-  </div>
-);
 
 export default CertificateReports;
