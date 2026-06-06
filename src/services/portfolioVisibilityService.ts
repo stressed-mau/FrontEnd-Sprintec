@@ -89,7 +89,7 @@ function toText(value: string | undefined, fallback: string): string {
 function normalizeProjects(data: VisibilityPayload) {
   return (data.projects || []).map((item) => ({
     id: item.id ?? 0,
-    label: toText(item.name, 'Proyecto'),
+    label: toText(item.title ?? item.name ?? item.label, 'Proyecto'),
     sublabel: toText(item.project_rol ?? item.rol ?? item.role, 'Rol no especificado'),
     checked: asBoolean(item.is_public),
     sourceTable: 'projects' as const,
