@@ -1,7 +1,7 @@
 import axios from "axios";
 import { api } from "./api";
 import { DAY_KEYS_ES, DAY_KEYS_EN,TEMPLATE_COLORS,capitalizeLabel,formatPeriodLabel, buildTrendFooterBadge,} from "@/utils/reports/templateTrendUtils";
-
+import { normalizeReportPayload } from "@/services/mappers/templateTrendMapper";
 export interface TrendStats {
   template_name: string;
   template_key: string;
@@ -49,30 +49,15 @@ export interface TemplateTrendsResponse {
   chartData: TrendChartPoint[];
 }
 
-function normalizeReportPayload(payload: unknown): TrackingReportData | null {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-
-  const candidate = payload as Partial<TrackingReportData>;
-  if (!candidate.templates_data || !candidate.daily_visits) {
-    return null;
-  }
-
-  return candidate as TrackingReportData;
-}
-
 function buildErrorMessage(error: unknown) {
   if (axios.isAxiosError(error)) {
     return error.response?.data?.message || error.message || "No se pudo cargar el reporte de plantillas.";
   }
-
   return "No se pudo cargar el reporte de plantillas.";
 }
 
 export async function getTemplateTrends(weekOffset = 0): Promise<TemplateTrendsResponse> {
   let payload: TrackingReportData | null = null;
-
   try {
     if (weekOffset === 0) {
       const response = await api.get("/tracking/global-reports/latest");
