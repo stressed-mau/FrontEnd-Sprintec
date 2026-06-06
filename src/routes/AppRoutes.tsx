@@ -10,7 +10,7 @@ import AddExperiencePage from "@/pages/experience/AddExperiencePage"
 import DeleteExperiencePage from "@/pages/experience/DeleteExperiencePage"
 import EditExperiencePage from "@/pages/experience/EditExperiencePage"
 import ViewExperiencePage from "@/pages/experience/ViewExperiencePage"
-import HomeVisitor from "@/pages/HomeVisitor"
+import HomeVisitorPage from "@/pages/HomeVisitorPage"
 import LoginPage from "@/pages/LoginPage"
 import NetworksPage from "@/pages/NetworksPage"
 import PortfolioTemplatesPage from "@/pages/PortfolioTemplatesPage"
@@ -23,7 +23,7 @@ import UserHome from "@/pages/UserHome"
 import MyPortfolio from "@/pages/MyPortfolio"
 import ProtectedRoute from "@/routes/ProtectedRoute"
 import PublicPortfolio from "@/pages/PublicPortfolio"
-import ExplorePortfolios from "@/pages/ExplorePortfolio"
+import ExplorePortfolios from "@/pages/ExplorePortfolioPage"
 import ViewSkillsPage from "@/pages/skills/ViewSkillsPage"
 import AddSkillsPage from "@/pages/skills/AddSkillsPage"
 import EditSkillsPage from "@/pages/skills/EditSkillsPage"
@@ -40,7 +40,7 @@ import EditProfilePage from '@/pages/profile/EditProfilePage';
 import ViewProfilePage from '@/pages/profile/ViewProfilePage';
 import UserReports from "@/pages/admin/UserReports"
 import CertificateReports from "@/pages/admin/CertificateReports"
-import TendenciaPlantillasPage from "@/pages/TendenciaPlantillasPage"
+import TemplateTrendPage from "@/pages/TemplateTrendPage"
 import ReportsIndexPage from "@/pages/ReportsIndexPage"
 import { NotificationsPage } from "@/pages/NotificationsPage"
 import { MessagesPage } from "@/pages/MessagesPage"
@@ -52,7 +52,7 @@ import { ADMIN_DASHBOARD_ROUTE, CERTIFICATES_ROUTE, LEGACY_DASHBOARD_ROUTE, LOGI
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomeVisitor />} />
+      <Route path="/" element={<HomeVisitorPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path={LOGIN_ROUTE} element={<LoginPage />} />
@@ -98,7 +98,7 @@ function AppRoutes() {
                 
         <Route path="/configuracion-visibilidad" element={<PortfolioVisibilityConfigPage />} />
         <Route path={REPORTES_INDEX_ROUTE} element={<ReportsIndexPage />} />
-        <Route path={TEMPLATE_TRENDS_ROUTE} element={<TendenciaPlantillasPage />} />
+        <Route path={TEMPLATE_TRENDS_ROUTE} element={<TemplateTrendPage />} />
         <Route path={NOTIFICATIONS_ROUTE} element={<NotificationsPage />} />
         <Route path={MESSAGES_ROUTE} element={<MessagesPage />} />
         <Route path={`${MESSAGES_ROUTE}/:messageId`} element={<MessagesPage />} />

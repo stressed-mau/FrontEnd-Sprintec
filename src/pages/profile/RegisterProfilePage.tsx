@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { InputField } from "@/components/forms/InputFieldPersonalData";
 import { TextAreaField } from "@/components/forms/TextAreaFieldPersonalData";
-import ConfirmActionModal from '@/components/ConfirmActionModal';
-import ConfirmationModal from '@/components/ConfirmationModal';
+import ConfirmActionModal from '@/components/modals/ConfirmActionModal';
+import ConfirmationModal from '@/components/modals/ConfirmationModal';
 import HeaderUser from '@/components/HeaderUser';
 import Sidebar from '@/components/Sidebar';
 

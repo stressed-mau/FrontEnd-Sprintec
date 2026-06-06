@@ -1,34 +1,37 @@
 import { useState } from "react";
 import { publishPortfolioRequest } from "../services/PublishPortfolioService";
-import { getPortfolioVisibilityData } from "@/services/portfolioVisibilityService";
+import { getPortfolioVisibilityDataService } from "@/services/portfolioVisibilityService";
 import { api } from "../services/api";
 import { getAuthSession } from "@/services/auth/authStorageService";
-type ApiError = {
-  response?: {
-    data?: {
-      message?: string;
-    };
-    status?: number;
-  };
-  message?: string;
-};
-type PortfolioApiData = {
+
+type PublishPortfolioData = {
   config?: {
-    template?: number;
-    is_public?: boolean;
+    template?: number | null;
     slug?: string;
+    is_public?: boolean;
   };
   public_url?: string;
   is_public?: boolean;
 };
-type PortfolioVisibilityData = {
-  projects: unknown[];
-  skills: unknown[];
-  experience: unknown[];
-  education: unknown[];
-  certificates: unknown[];
-  networks: unknown[];
+
+type PublishPortfolioResponse = {
+  success?: boolean;
+  data?: PublishPortfolioData;
 };
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error) {
+    return error.message || fallback;
+  }
+
+  if (typeof error === "object" && error !== null) {
+    const candidate = error as { response?: { data?: { message?: string } }; message?: string };
+    return candidate.response?.data?.message || candidate.message || fallback;
+  }
+
+  return fallback;
+}
+
 export const usePublishPortfolio = () => {
   const [isPublished, setIsPublished] = useState(false);
   const [portfolioUrl, setPortfolioUrl] = useState("");
@@ -36,57 +39,38 @@ export const usePublishPortfolio = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
   const [hasPortfolioContent, setHasPortfolioContent] = useState(true);
-  const cleanUrl = (url?: string): string => {
-    if (!url || typeof url !== 'string' || !url.startsWith('http')) return "";
+  const cleanUrl = (url: unknown): string => {
+    if (typeof url !== "string" || !url.startsWith("http")) return "";
+
     try {
       const urlObj = new URL(url);
-      if (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') {
-        urlObj.port = '5173'; 
+      
+      // Cambiamos el puerto solo si estamos en localhost
+      if (urlObj.hostname === "localhost" || urlObj.hostname === "127.0.0.1") {
+        urlObj.port = "5173";
       }
-      urlObj.pathname = urlObj.pathname.replace(/^\/api/, '');
+
+      urlObj.pathname = urlObj.pathname.replace(/^\/api/, "");
+
       return urlObj.toString();
-    } catch (e) {
-      return url.replace('/api/p/', '/p/').replace(':8000', ':5173');
+    } catch {
+      return url.replace("/api/p/", "/p/").replace(":8000", ":5173");
     }
-  };
-  const buildPortfolioUrl = (data: PortfolioApiData, username: string) => {
-    const config = data.config;
-    const userSlug = config?.slug || username;
-    return data.public_url
-      ? cleanUrl(data.public_url)
-      : `${window.location.origin}/p/${userSlug}`;
-  };
-  const extractPortfolioState = (data: PortfolioApiData) => {
-    return {
-      template: data.config?.template ?? null,
-      isPublic: data.config?.is_public ?? data.is_public ?? false,
-    };
-  };
-  const publishWithValidation = async (template: number, isPublic: boolean) => {
-    const hasContent = await validatePortfolioContent();
-    if (!hasContent) {
-      setError("Debes registrar al menos un elemento de alguna sección antes de publicar.");
-      await publishPortfolioRequest(template, false);
-      return null;
-    }
-    return publishPortfolioRequest(template, isPublic);
-  };
-  const hasAnyContent = (data: PortfolioVisibilityData): boolean => {
-    const sections = [
-      data.projects,
-      data.skills,
-      data.experience,
-      data.education,
-      data.certificates,
-      data.networks,
-    ];
-    return sections.some(section => section.length > 0);
   };
   const validatePortfolioContent = async () => {
     try {
-      const data = await getPortfolioVisibilityData();
-      const hasContent = hasAnyContent(data);
+      const data = await getPortfolioVisibilityDataService();
+
+      const hasContent =
+        data.projects.length > 0 ||
+        data.skills.length > 0 ||
+        data.experience.length > 0 ||
+        data.education.length > 0 ||
+        data.certificates.length > 0 ||
+        data.networks.length > 0;
+
       setHasPortfolioContent(hasContent);
+
       return hasContent;
     } catch (error) {
       console.error("Error validando contenido:", error);
@@ -94,29 +78,31 @@ export const usePublishPortfolio = () => {
       return false;
     }
   };
-  const handlePublish = async (template: number, isPublic = true) => {
+  const handlePublish = async (template: number, isPublic: boolean = true) => {
+    const hasContent = await validatePortfolioContent();
+
+    if (!hasContent) {
+      setError("Debes registrar al menos un elemento de alguna sección antes de publicar.");
+      await publishPortfolioRequest(template, false);
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
-
-      const result = await publishWithValidation(template, isPublic);
-      if (!result) return;
-
+      const result = await publishPortfolioRequest(template, isPublic) as {
+        is_public?: boolean;
+        public_url?: string;
+        template?: number | null;
+      };
       window.dispatchEvent(new Event("portfolioUpdated"));
 
-      setIsPublished(result.is_public);
-      setPortfolioUrl(cleanUrl(result.public_url));
-      setSelectedTemplate(result.template);
-
+      setIsPublished(Boolean(result.is_public));
+      setPortfolioUrl(cleanUrl(result.public_url ?? ""));
+      setSelectedTemplate(result.template ?? null);
       return result;
-
-    } catch (err: unknown) {
-      const error = err as ApiError;
-      setError(
-        error?.response?.data?.message ||
-        error?.message ||
-        "Error al publicar"
-      );
+    } catch (error) {
+      console.error("ERROR PUBLICANDO:", error);
+      setError(getErrorMessage(error, "Error al publicar"));
     } finally {
       setLoading(false);
     }
@@ -130,9 +116,8 @@ export const usePublishPortfolio = () => {
       window.dispatchEvent(new Event("portfolioUpdated"));
       setIsPublished(false);
       setPortfolioUrl("");
-    } catch (err: unknown) {
-      const error = err as ApiError;
-      setError(error?.response?.data?.message || error?.message || "Error al ocultar el portafolio");
+    } catch (error) {
+      setError(getErrorMessage(error, "Error al ocultar el portafolio"));
     } finally {
       setLoading(false);
     }
@@ -144,29 +129,36 @@ export const usePublishPortfolio = () => {
     if (!username) return;
     try {
       setLoading(true);
-      const res = await api.get(`/p/${username}`);
-      if (!res.data?.success) return;
-      const portfolioData = res.data.data;
-      const { template, isPublic } = extractPortfolioState(portfolioData);
-      setSelectedTemplate(template);
-      setIsPublished(isPublic);
-      setPortfolioUrl(buildPortfolioUrl(portfolioData, username));
+      const res = await api.get<PublishPortfolioResponse>(`/p/${username}`);
 
-    } catch (err: unknown) {
-      const error = err as ApiError;
-      if (error?.response?.status === 404) {
+      if (res.data?.success) {
+        const portfolioData = res.data.data ?? ({} as PublishPortfolioData);
+        const config = portfolioData.config ?? {};
+        setSelectedTemplate(config.template ?? null);
+        setIsPublished(Boolean(config.is_public ?? portfolioData.is_public ?? false));
+        setPortfolioUrl(cleanUrl(portfolioData.public_url ?? ""));
+
+        const userSlug = config?.slug || username;
+        const finalUrl = portfolioData.public_url 
+        ? cleanUrl(portfolioData.public_url) 
+        : `${window.location.origin}/p/${userSlug}`;
+        setPortfolioUrl(finalUrl);
+      }
+    } catch (error) {
+    const candidate = error as { response?: { status?: number } } | undefined;
+    if (candidate?.response?.status === 404) {
         setIsPublished(false);
         const session = getAuthSession();
-        setPortfolioUrl(
-          `${window.location.origin}/p/${session?.user?.username}`
-        );
-      } else {
-        setPortfolioUrl("");
-      }
-    } finally {
-      setLoading(false);
+        setPortfolioUrl(`${window.location.origin}/p/${session?.user?.username}`);
+    } else {
+      setPortfolioUrl("");
     }
-  };
+} finally {
+    setLoading(false); 
+  }
+};
+
+  
 
   return {
     isPublished,

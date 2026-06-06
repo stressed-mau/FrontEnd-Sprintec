@@ -1,16 +1,6 @@
 import { useMemo, useState } from "react"
 
-export interface PortfolioCard {
-  id: string
-  slug: string
-  username: string
-  fullName: string
-  occupation: string
-  profileImage: string
-  projectsCount: number
-  skillsCount: number
-  topSkills: string[]
-}
+import type { ExplorePortfolioCard } from "@/services/explorePortfoliosService"
 
 type ThresholdValue = "all" | string
 
@@ -23,7 +13,7 @@ type ExplorePortfolioInitialFilters = {
 }
 
 export function useExplorePortfolioFilters(
-  portfolios: PortfolioCard[],
+  portfolios: ExplorePortfolioCard[],
   initialFilters: ExplorePortfolioInitialFilters = {},
 ) {
   const [searchTerm, setSearchTerm] = useState(initialFilters.searchTerm ?? "")

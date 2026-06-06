@@ -2,35 +2,25 @@ import { Footer } from "@/components/Footer"
 import { Header } from "@/components/Header"
 import { Button } from "@/components/ui/button"
 import { REGISTER_ROUTE } from "@/routes/route-paths"
-import {Award,Briefcase,ChevronsLeftRight,FolderGit2,Sparkles,Share2,Users,TrendingUp,Palette} from "lucide-react"
+import {Award,Briefcase,ChevronsLeftRight,FolderGit2,Sparkles,Share2,Users,TrendingUp} from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Foto from "@/assets/images/fotoEscritorio.png"
 import FotoP from "@/assets/images/fotoPorque.jpeg"
 import PortadaModern from "@/assets/images/PortadaModern1.png"
 import PortadaMin from "@/assets/images/PortadaMin.png"
 import PortadaCorp from "@/assets/images/PortadaCorp.png"
-import { useEffect, useRef } from "react"
-import { api } from "@/services/api";
+import { useVisitorTracking } from "@/hooks/useVisitorTracking"
+import { FeatureCard } from "@/components/home/FeatureCard"
+import { BenefitItem } from "@/components/home/BenefitItem"
+import { TemplateCard } from "@/components/home/TemplateCard"
 
-export default function Home() {
-  const hasSent = useRef(false)
+
+export default function HomeVisitorPage() {
+
   const navigate = useNavigate()
 
-  useEffect(() => {
-    if (hasSent.current) return
-
-    hasSent.current = true
-
-    const registerVisit = async () => {
-      try {
-        await api.post('/visitor')
-      } catch (error) {
-        console.error(error)
-      }
-    }
-
-    registerVisit()
-  }, [])
+  useVisitorTracking()
+  
   return (
     <div className="min-h-screen bg-linear-to-b from-[#F7F0E1] to-[#C2DBED] flex flex-col">
       <Header />
@@ -159,53 +149,6 @@ export default function Home() {
   )
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
-  return (
-    <div className="rounded-xl border border-[#0e6db6] bg-[#F8FAFC] p-3 sm:p-5 lg:p-6 transition-shadow hover:shadow-md">
-      <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-white shadow-sm sm:mb-4 sm:size-11 lg:size-12">
-        {icon}
-      </div>
-      <h3 className="mb-2 text-sm font-bold leading-snug text-[#003A6C] sm:text-base lg:text-xl">{title}</h3>
-      <p className="text-xs leading-snug text-[#4982AD] sm:text-sm sm:leading-relaxed lg:text-base">{description}</p>
-    </div>
-  )
-}
-
-function BenefitItem({ icon, color, title, description }: { icon: React.ReactNode; color: string; title: string; description: string }) {
-  return (
-    <div className="flex gap-4 lg:gap-6">
-      <div className={`shrink-0 size-12 lg:size-14 ${color} rounded-2xl flex items-center justify-center shadow-sm`}> {icon} </div>
-      <div>
-        <h3 className="text-lg lg:text-xl font-bold text-[#003A6C] mb-1">{title}</h3>
-        <p className="text-sm lg:text-base text-[#4982AD] leading-relaxed">{description}</p>
-      </div>
-    </div>
-  )
-}
-
-function TemplateCard({ title, description, img, isFeatured }: { title: string; description: string; img: string; isFeatured?: boolean }) {
-  return (
-    <div className={`bg-white rounded-3xl border ${isFeatured ? 'border-2 border-[#C2DBED] shadow-xl lg:scale-105' : 'border-[#C2DBED] shadow-sm'} flex flex-col overflow-hidden hover:shadow-2xl transition-all group hover:-translate-y-1`}>
-      <div className="relative h-48 lg:h-60 overflow-hidden">
-        <img
-          src={img}
-          alt={`Portada de ${title}`}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-black/10" />
-        <div className="absolute bottom-3 right-3 rounded-full bg-white/85 p-2 shadow-sm">
-          <Palette className="size-5 text-[#003A6C]" />
-        </div>
-      </div>
-      <div className="p-6 lg:p-8 flex-1 flex flex-col justify-between space-y-4">
-        <div>
-          <h3 className="text-xl lg:text-2xl font-bold text-[#003A6C]">{title}</h3>
-          <p className="text-[#4982AD] text-sm lg:text-base leading-relaxed mt-2">{description}</p>
-        </div>
-      </div>
-    </div>
-  )
-}
 function GitHubIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>

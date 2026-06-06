@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-
-import ConfirmationModal from "@/components/ConfirmationModal";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 import { DuplicateProjectModal } from "@/components/projects/DuplicateProjectModal";
 import { FeedbackMessage } from "@/components/projects/FeedbackMessage";
 import { ProjectForm } from "@/components/projects/ProjectForm";

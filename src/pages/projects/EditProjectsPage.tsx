@@ -1,7 +1,7 @@
 ﻿import { useState, type FormEvent } from "react";
 
-import ConfirmActionModal from "@/components/ConfirmActionModal";
-import ConfirmationModal from "@/components/ConfirmationModal";
+import ConfirmActionModal from "@/components/modals/ConfirmActionModal";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 import { FeedbackMessage } from "@/components/projects/FeedbackMessage";
 import { ProjectForm } from "@/components/projects/ProjectForm";
 import { ProjectFormModal } from "@/components/projects/ProjectFormModal";

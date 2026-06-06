@@ -1,127 +1,104 @@
-import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility";
-import { type VisibilityItem, type SectionKey } from "@/services/portfolioVisibilityService";
-import { usePublishPortfolio } from "../hooks/usePublishPortfolio";
+import { useEffect, useState } from "react";
+import { Settings } from "lucide-react";
+import { Footer } from "@/components/Footer";
 import Header from "../components/HeaderUser";
 import Sidebar from "../components/Sidebar";
-import { Footer } from "@/components/Footer";
-import { ChevronDown, ChevronUp, Settings } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"
-const PortfolioVisibilityPage = () => {
-  const navigate = useNavigate()
-  const { 
-    data: visibilityData, 
-    isLoading, 
-    isSaving, 
+import { type SectionKey, type VisibilityItem,} from "@/services/portfolioVisibilityService";
+import { usePortfolioVisibility } from "../hooks/usePortfolioVisibility";
+import { usePublishPortfolio } from "../hooks/usePublishPortfolio";
+import PublishedPortfolioWarning from "@/components/portfVisibilityConfig/PublishedPortfolioWarning";
+import VisibilitySectionCard from "@/components/portfVisibilityConfig/VisibilitySectionCard";
+
+const PORTFOLIO_VISIBILITY_SECTIONS = [
+  { key: "projects", label: "Proyectos" },
+  { key: "skills", label: "Habilidades" },
+  { key: "experience", label: "Experiencia Laboral" },
+  { key: "education", label: "Formación Académica" },
+  { key: "certificates", label: "Certificados" },
+  { key: "networks", label: "Redes profesionales" },
+] as const;
+
+const PortfolioVisibilityConfigPage = () => {
+  const {
+    data: visibilityData,
+    isLoading,
+    isSaving,
     pageError,
-    handleItemCheck, 
-    handleBulkSelect 
+    handleItemCheck,
+    handleBulkSelect,
   } = usePortfolioVisibility();
-  const { isPublished, checkInitialStatus } = usePublishPortfolio();
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+  const {
+    isPublished,
+    checkInitialStatus,
+  } = usePublishPortfolio();
+
+  const [expandedSections, setExpandedSections] =
+    useState<Record<string, boolean>>({});
+
   useEffect(() => {
     void checkInitialStatus();
   }, []);
+
   const toggleExpand = (key: string) => {
-    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+    setExpandedSections((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
   const getVisibleStats = (key: SectionKey) => {
-    const items: VisibilityItem[] = visibilityData ? visibilityData[key] : [];
+    const items: VisibilityItem[] =
+      visibilityData ? visibilityData[key] : [];
+
     const total = items.length;
-    const visible = items.filter((i: VisibilityItem) => i.checked).length;
+    const visible = items.filter((item) => item.checked).length;
+
     return `${visible} de ${total} visibles`;
   };
 
-  const sections = [
-    { key: 'projects', label: 'Proyectos' },
-    { key: 'skills', label: 'Habilidades' },
-    { key: 'experience', label: 'Experiencia Laboral' },
-    { key: 'education', label: 'Formación Académica' },
-    { key: 'certificates', label: 'Certificados' },
-    { key: 'networks', label: 'Redes profesionales' },
-  ] as const;
   if (isPublished) {
-    return (
-      <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
-        <Header />
-
-        <div className="flex flex-col md:flex-row flex-1">
-          <Sidebar />
-
-          <main className="flex-1 p-4 md:p-10">
-            <div className="mx-auto max-w-6xl space-y-6">
-
-              <div className="mb-8">
-                <h1 className="text-[#003A6C] text-3xl md:text-4xl font-bold mb-2">
-                  Configuración de Visibilidad
-                </h1>
-
-                <p className="text-sm text-[#4B778D] md:text-base">
-                  Elige qué elementos específicos mostrar en tu portafolio
-                </p>
-              </div>
-
-              <div className="mx-auto max-w-3xl rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
-
-                <h2 className="text-2xl font-bold text-[#003A6C]">
-                  Configuración bloqueada
-                </h2>
-
-                <p className="mt-3 text-sm leading-6 text-gray-600">
-                  No puedes modificar la visibilidad mientras el portafolio
-                  esté publicado. Primero debes despublicar el portafolio desde la sección
-                  de publicación.
-                </p>
-                <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-                  <button
-                    onClick={() => navigate("/publicar")}
-                    className="px-5 py-2.5 rounded-xl bg-[#003A6C] text-white font-bold hover:bg-[#002a4d] transition"
-                  >
-                    Despublicar portafolio
-                  </button>
-                </div>
-              </div>
-            </div>
-          </main>
-        </div>
-
-        <Footer />
-      </div>
-    )
+    return <PublishedPortfolioWarning />;
   }
+
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col font-sans">
       <Header />
+
       <div className="flex flex-col md:flex-row flex-1">
         <Sidebar />
+
         <div role="main" className="flex-1 p-4 md:p-10">
           <div className="mx-auto max-w-6xl space-y-6">
-            
+
             <div className="mb-8">
               <h1 className="text-[#003A6C] text-3xl md:text-4xl font-bold mb-2">
                 Configuración de Visibilidad
               </h1>
+
               <p className="text-sm text-[#4B778D] md:text-base">
                 Elige qué elementos específicos mostrar en tu portafolio
               </p>
             </div>
 
             <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100">
+
               {pageError && (
                 <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
                   {pageError}
                 </div>
               )}
-              
+
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 bg-blue-50 rounded-lg">
                   <Settings className="w-5 h-5 text-[#003A6C]" />
                 </div>
+
                 <div>
                   <h2 className="text-[#003A6C] font-semibold text-lg">
                     Configuración de Visibilidad
                   </h2>
+
                   <p className="text-gray-500 text-sm">
                     Elige qué elementos específicos mostrar en tu portafolio
                   </p>
@@ -130,128 +107,46 @@ const PortfolioVisibilityPage = () => {
 
               {isLoading ? (
                 <div className="flex justify-center py-20">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#003A6C]"></div>
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#003A6C]" />
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {sections.map(({ key, label }) => {
-                    const items: VisibilityItem[] = visibilityData ? visibilityData[key] : [];
-                    const isExpanded = expandedSections[key];
-                    const hasItems = items.length > 0;
-                    const allChecked = hasItems && items.every(i => i.checked);
-                    const sectionEnabled = hasItems && items.some(i => i.checked);
+                  {PORTFOLIO_VISIBILITY_SECTIONS.map(
+                    ({ key, label }) => {
+                      const items: VisibilityItem[] =
+                        visibilityData
+                          ? visibilityData[key]
+                          : [];
 
-                    return (
-                      
-                      <div className={`border border-[#C9E1F0] rounded-xl overflow-hidden transition-all
-                         ${!sectionEnabled ? "opacity-50" : "opacity-100"}`}>
-                        
-                        {/* HEADER */}
-                        <div className="p-4 flex items-center justify-between bg-white">
-                          <div className="flex items-center gap-4">
-                            
-                            
-                            {/* SWITCH */}
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input 
-                                type="checkbox" 
-                                className="sr-only peer"
-                                checked={sectionEnabled}
-                                disabled={isSaving || !hasItems}
-                                onChange={() => handleBulkSelect(key, !sectionEnabled)}/>
-                              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#003A6C]"></div>
-                            </label>
+                      const isExpanded =
+                        expandedSections[key];
 
-                            <div className="flex items-center gap-3">
-                              <span className="text-[#003A6C] font-semibold">{label}</span>
-                              <span className="text-gray-400 text-sm font-medium">
-                                {getVisibleStats(key)}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* EXPAND */}
-                          <button 
-                            onClick={() => toggleExpand(key)}
-                            className="p-1 rounded-full hover:bg-gray-100 text-[#003A6C] transition-colors"
-                          >
-                            {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                          </button>
-                        </div>
-
-                        {/* CONTENIDO */}
-                        {isExpanded && (
-                          <div className="border-t border-[#C9E1F0] bg-[#F8FBFE] px-6 py-5">
-                            {items.length > 0 ? (
-                              <>
-                                
-                                {/* BOTONES */}
-                                <div className="flex gap-3 mb-6">
-                                  <button 
-                                    onClick={() => handleBulkSelect(key, true)}
-                                    disabled={isSaving || allChecked}
-                                    className="px-4 py-2 bg-[#C9E1F0] text-[#003A6C] text-sm font-medium rounded-lg 
-                                               hover:bg-[#c4ab75] active:bg-[#b89f68] transition-colors shadow-sm"
-                                  >
-                                    Seleccionar todos
-                                  </button>
-
-                                  <button 
-                                    onClick={() => handleBulkSelect(key, false)}
-                                    disabled={isSaving || !allChecked}
-                                    className="px-4 py-2 bg-[#C9E1F0] text-[#003A6C] text-sm font-medium rounded-lg 
-                                               hover:bg-[#c4ab75] active:bg-[#a5cde3] transition-colors shadow-sm"
-                                  >
-                                    Deseleccionar todos
-                                  </button>
-                                </div>
-
-                                {/* ITEMS */}
-                                <div className="space-y-4">
-                                  {items.map((item: VisibilityItem) => (
-                                    <div key={`${item.sourceTable}-${item.id}`} className="flex items-center gap-4">
-                                      <input 
-                                        type="checkbox"
-                                        checked={item.checked}
-                                        disabled={isSaving}
-                                        onChange={() => handleItemCheck(key, item.id, item.sourceTable)}
-                                        className="w-4 h-4 text-[#003A6C] border-[#A5D7E8] rounded focus:ring-[#003A6C] cursor-pointer"
-                                      />
-
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-sm font-bold text-[#003A6C]">
-                                          {item.label}
-                                        </span>
-
-                                        {item.sublabel && (
-                                          <span className="text-xs text-gray-400 font-medium">
-                                            {item.sublabel}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </>
-                            ) : (
-                              <p className="text-sm text-gray-400 italic">
-                                No hay elementos para mostrar en esta sección.
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      return (
+                        <VisibilitySectionCard
+                          key={key}
+                          sectionKey={key}
+                          label={label}
+                          items={items}
+                          isExpanded={!!isExpanded}
+                          isSaving={isSaving}
+                          visibleStats={getVisibleStats(key)}
+                          onToggleExpand={toggleExpand}
+                          onBulkSelect={handleBulkSelect}
+                          onItemCheck={handleItemCheck}
+                        />
+                      );
+                    }
+                  )}
                 </div>
               )}
             </div>
           </div>
         </div>
       </div>
+
       <Footer />
     </div>
   );
 };
 
-export default PortfolioVisibilityPage;
+export default PortfolioVisibilityConfigPage;

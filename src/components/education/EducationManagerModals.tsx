@@ -1,5 +1,5 @@
-import ConfirmActionModal from "@/components/ConfirmActionModal"
-import ConfirmationModal from "@/components/ConfirmationModal"
+import ConfirmActionModal from "@/components/modals/ConfirmActionModal"
+import ConfirmationModal from "@/components/modals/ConfirmationModal"
 import { EducationFormModal } from "@/components/education/EducationFormModal"
 import type { useEducationManager } from "@/hooks/useEducationManager"
 

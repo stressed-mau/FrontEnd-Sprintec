@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { Trash2 } from "lucide-react"
 
-import ConfirmationModal from "@/components/ConfirmationModal"
-import DeleteConfirmationModal from "@/components/DeleteConfirmationModal"
+import ConfirmationModal from "@/components/modals/ConfirmationModal"
+import DeleteConfirmationModal from "@/components/modals/DeleteConfirmationModal"
 import { ExperiencePageShell } from "@/components/experience/ExperiencePageShell"
 import { ExperiencePagination } from "@/components/experience/ExperiencePagination"
 import { ExperienceSearch } from "@/components/experience/ExperienceSearch"
