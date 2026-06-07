@@ -1,14 +1,16 @@
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { Bell, MessageCircle, TrendingUp } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { NOTIFICATIONS_ROUTE } from "@/routes/route-paths"
 import { useNotifications } from "@/hooks/useNotifications"
 import type { NotificationItem } from "@/services/notificationsService"
 import { navigateFromNotification } from '@/utils/notifications/notificationNavigation'
+import { useClickOutside } from '@/hooks/useClickOutside'
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  useClickOutside(dropdownRef, () => {setIsOpen(false)})
   const navigate = useNavigate()
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications({ pollIntervalMs: 5000 })
   const visibleNotifications = notifications.slice(0, 3)
@@ -23,17 +25,6 @@ export function NotificationBell() {
     setIsOpen(false)
     navigate(NOTIFICATIONS_ROUTE)
   }
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
 
   return (
     <div className="relative" ref={dropdownRef}>
