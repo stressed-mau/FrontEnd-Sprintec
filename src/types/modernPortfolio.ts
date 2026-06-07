@@ -33,7 +33,8 @@ export type ModernSkill = {
   key: string
   name: string
   sublabel: string
-  level?: unknown
+  type: "tecnica" | "blanda"
+  level: string
 }
 
 export type ModernProject = {

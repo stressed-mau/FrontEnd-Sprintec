@@ -40,6 +40,7 @@ export type MinimalistSkill = {
   id: string
   label: string
   level: string
+  type: "tecnica" | "blanda"
 }
 
 export type MinimalistProject = {

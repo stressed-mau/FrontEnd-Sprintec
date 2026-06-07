@@ -8,6 +8,7 @@ import type {
   CorporatePortfolioLink,
   CorporatePortfolioProps,
   CorporateProjectItem,
+  CorporateSkillItem,
   CorporateTemplateData,
   CorporateTemplateSection,
 } from "@/types/corporatePortfolio"
@@ -81,10 +82,24 @@ function getSocialLinks(networks: unknown[]): CorporatePortfolioLink[] {
     }))
 }
 
-function getSkills(skills: unknown[]): string[] {
+function getSkills(skills: unknown[]): CorporateSkillItem[] {
   return skills
-    .map((skill) => getCorporateText(getCorporateRecord(skill).name))
-    .filter(Boolean)
+    .map((skill) => {
+      const source = getCorporateRecord(skill)
+      return {
+        id: String(source.id ?? getCorporateText(source.name)),
+        name: getCorporateText(source.name),
+        type: getSkillType(source),
+        level: getCorporateText(source.level) || getCorporateText(source.level_of_domain) || getCorporateText(source.nivel) || "Sin nivel",
+      }
+    })
+    .filter((skill) => Boolean(skill.name))
+}
+
+function getSkillType(source: Record<string, unknown>): "tecnica" | "blanda" {
+  const value = getCorporateText(source.type) || getCorporateText(source.tipo)
+  const normalized = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  return normalized.includes("tecn") || normalized === "technical" ? "tecnica" : "blanda"
 }
 
 function getExperience(experiences: unknown[]): CorporateExperienceItem[] {
