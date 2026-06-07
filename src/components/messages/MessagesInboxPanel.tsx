@@ -92,8 +92,6 @@ function MessageListItem({
         <div className="min-w-0 flex-1">
           <MessageListSender message={message} />
           <p className="mb-1 text-xs font-medium text-[#0E7D96]">{message.category}</p>
-          <p className="line-clamp-2 text-xs text-[#4B5563]">{message.message}</p>
-          <MessageListDate date={message.date} />
         </div>
       </div>
     </button>
@@ -102,11 +100,11 @@ function MessageListItem({
 
 function MessageListSender({ message }: { message: InboxMessage }) {
   return (
-    <div className="mb-1 flex items-center justify-between gap-2">
+    <div className="mb-1 flex items-start justify-between gap-2">
       <div className="min-w-0 flex-1">
         <p className={`truncate text-sm text-[#003A6C] ${!message.read ? "font-bold" : "font-medium"}`}>{message.from}</p>
-        <p className="truncate text-xs text-[#5B8FB9]">{message.fromEmail}</p>
       </div>
+      <MessageListDate date={message.date} />
       {!message.read ? <span className="h-2 w-2 flex-shrink-0 rounded-full bg-[#003A6C]" /> : null}
     </div>
   )
@@ -114,7 +112,7 @@ function MessageListSender({ message }: { message: InboxMessage }) {
 
 function MessageListDate({ date }: { date: string }) {
   return (
-    <div className="mt-2 flex items-center gap-1 text-xs text-[#5B8FB9]">
+    <div className="flex shrink-0 items-center gap-1 pt-0.5 text-xs text-[#5B8FB9]">
       <Clock className="h-3 w-3" />
       <span>{date}</span>
     </div>
