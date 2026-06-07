@@ -36,8 +36,7 @@ export async function getNotifications(page = 1): Promise<NotificationsResponse>
     return normalizeNotificationsResponse(response.data?.data ?? response.data)
   } catch (error) {
     throw new Error(buildErrorMessage(error))
-  }
-}
+  }}
 
 export async function markNotificationAsRead(id: string): Promise<void> {
   try {
