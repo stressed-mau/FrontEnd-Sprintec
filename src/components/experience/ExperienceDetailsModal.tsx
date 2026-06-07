@@ -3,6 +3,7 @@ import { Briefcase, X } from "lucide-react"
 
 import { ExperienceCertificatePreviewModal } from "@/components/experience/ExperienceCertificatePreviewModal"
 import { ExperienceStatusBadge } from "@/components/experience/ExperienceStatusBadge"
+import { SectionHeader } from "@/components/sections/SectionHeader"
 import { Button } from "@/components/ui/button"
 import { formatExperienceDate } from "@/hooks/useExperienceManager"
 import type { ExperienceItem } from "@/types/experience"
@@ -30,10 +31,12 @@ export function ExperienceDetailsModal({ experience, onClose }: { experience: Ex
 function ExperienceDetailsHeader({ onClose }: { onClose: () => void }) {
   return (
     <div className="mb-6 flex items-start justify-between gap-4">
-      <div>
-        <h2 className="text-2xl font-bold text-[#003A6C]">Detalle de Experiencia Laboral</h2>
-        <p className="mt-1 text-sm text-[#4B778D]">Información completa del registro seleccionado.</p>
-      </div>
+      <SectionHeader
+        title="Detalle de Experiencia Laboral"
+        description="Información completa del registro seleccionado."
+        size="modal"
+        headingLevel={2}
+      />
       <button type="button" onClick={onClose} className="rounded-full p-1 text-[#003A6C] transition hover:bg-[#EEF5F9]" aria-label="Cerrar detalle de experiencia">
         <X className="size-5" />
       </button>

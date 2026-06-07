@@ -1,4 +1,4 @@
-export { DuplicateRegistrationModal } from "@/components/experience/DuplicateRegistrationModal"
+export { DuplicateRegistrationModal } from "@/components/modals/DuplicateRegistrationModal"
 export { ExperienceDetailsModal } from "@/components/experience/ExperienceDetailsModal"
 export { ExperienceManagerModals } from "@/components/experience/ExperienceManagerModals"
 export { ExperiencePageShell } from "@/components/experience/ExperiencePageShell"

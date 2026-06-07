@@ -1,6 +1,6 @@
 import ConfirmActionModal from "@/components/modals/ConfirmActionModal"
 import ConfirmationModal from "@/components/modals/ConfirmationModal"
-import { DuplicateRegistrationModal } from "@/components/experience/DuplicateRegistrationModal"
+import { DuplicateRegistrationModal } from "@/components/modals/DuplicateRegistrationModal"
 import { ExperienceFormModal } from "@/components/experience/ExperienceFormModal"
 import type { useExperienceManager } from "@/hooks/useExperienceManager"
 

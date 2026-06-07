@@ -5,6 +5,7 @@ import { NetworkFeedback } from "@/components/networks/NetworkFeedback"
 import { NetworkOAuthInfoCard } from "@/components/networks/NetworkOAuthInfoCard"
 import { NetworkSuccessModal } from "@/components/networks/NetworkSuccessModal"
 import { ProfessionalNetworksGrid } from "@/components/networks/ProfessionalNetworksGrid"
+import { SectionHeader } from "@/components/sections/SectionHeader"
 import { useNetworksManager } from "@/hooks/useNetworksManager"
 
 const NetworksPage = () => {
@@ -40,16 +41,12 @@ const NetworksPage = () => {
 
 function NetworksPageHeader() {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <h1 id="titulo-pagina-redes-profesionales" className="mb-2 text-3xl font-bold text-[#111827]">
-          Enlazar Redes Profesionales
-        </h1>
-        <p id="descripcion-pagina-redes-profesionales" className="text-sm text-gray-600 sm:text-base">
-          Enlaza tus perfiles profesionales de forma segura mediante OAuth
-        </p>
-      </div>
-    </div>
+    <SectionHeader
+      title="Enlazar Redes Profesionales"
+      description="Enlaza tus perfiles profesionales de forma segura mediante OAuth"
+      titleId="titulo-pagina-redes-profesionales"
+      descriptionId="descripcion-pagina-redes-profesionales"
+    />
   )
 }
 
