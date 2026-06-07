@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
 import Header from "../components/HeaderUser"
 import Sidebar from "../components/Sidebar"
@@ -10,14 +10,18 @@ import { CorporatePortfolioTemplate } from "@/components/templates/corporate/Cor
 import ClassicPortfolioTemplate from "@/components/portfolio/ClassicPortfolioTemplate";
 import { useUserPersonalData } from "@/hooks/useUserPersonalData"
 import { asBoolean, mapToVisibilityData } from "@/utils/PortfolioVisibility";
-import PortfolioRecordModal, {
-  type PortfolioDetailTheme,
-  type SelectedPortfolioDetail,
-} from "@/components/portfolio/PortfolioRecordModal";
+import ProjectDetailModal from "@/components/portfolio/ProjectDetailModal"
+import DetailRecordModal from "@/components/portfolio/DetailRecordModal"
+import { PROJECT_MODAL_THEMES } from "@/utils/PublicPortfolioUtils"
+
 type PortfolioItem = {
   id: string | number;
   is_public?: boolean;
 };
+type SelectedPortfolioDetail = {
+  type: "project" | "experience" | "education";
+  item: unknown;
+} | null;
 
 type ExperienceItem = PortfolioItem & {
   type?: string;
@@ -39,13 +43,8 @@ const MyPortfolio = () => {
   const { slug } = useParams()
   const { portfolio, loading } = usePortfolio(slug)
   const { form, phoneNumber, countryCode } = useUserPersonalData()
-  const [visibilityData, setVisibilityData] = useState<PortfolioVisibilityData | null>(null)
   const [selectedDetail, setSelectedDetail] = useState<SelectedPortfolioDetail>(null)
-  useEffect(() => {
-    if (portfolio) {
-      setVisibilityData(mapToVisibilityData(portfolio))
-    }
-  }, [portfolio])
+  const visibilityData = useMemo<PortfolioVisibilityData | null>(() => (portfolio ? mapToVisibilityData(portfolio) : null), [portfolio])
     if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center font-bold text-[#003A6C]">
@@ -76,13 +75,14 @@ const MyPortfolio = () => {
   const isModern = template === 1;
   const isMinimalist = template === 2;
   const isCorporate = template === 3;
-  const detailModalTheme: PortfolioDetailTheme = isModern
+  const detailModalTheme = isModern
     ? "modern"
     : isMinimalist
       ? "minimalist"
       : isCorporate
         ? "corporate"
         : "default"
+  const modalTheme = PROJECT_MODAL_THEMES[detailModalTheme]
   
   const profile = {
     fullname: form.fullName || "",
@@ -218,7 +218,30 @@ const MyPortfolio = () => {
           )}
         </main>
       </div>
-      <PortfolioRecordModal selected={selectedDetail} theme={detailModalTheme} onClose={() => setSelectedDetail(null)} />
+      {selectedDetail?.type === "project" ? (
+        <ProjectDetailModal
+          project={selectedDetail.item}
+          theme={modalTheme}
+          onClose={() => setSelectedDetail(null)}
+          onProjectLinkClick={() => undefined}
+        />
+      ) : null}
+      {selectedDetail?.type === "experience" ? (
+        <DetailRecordModal
+          kind="experience"
+          record={selectedDetail.item}
+          theme={modalTheme}
+          onClose={() => setSelectedDetail(null)}
+        />
+      ) : null}
+      {selectedDetail?.type === "education" ? (
+        <DetailRecordModal
+          kind="education"
+          record={selectedDetail.item}
+          theme={modalTheme}
+          onClose={() => setSelectedDetail(null)}
+        />
+      ) : null}
     </div>
   )
 }

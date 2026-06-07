@@ -10,7 +10,7 @@ export function MinimalistProjectsPage({ projects, onProjectClick }: MinimalistP
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Proyectos</h2>
-      <div className="flex flex-wrap gap-4 pt-2 overflow-y-auto max-h-[350px] pr-2">
+      <div className="grid max-h-[350px] gap-4 overflow-y-auto pt-2 pr-2 sm:grid-cols-2">
         {projects.map((project) => <ProjectCard key={project.id} project={project} onProjectClick={onProjectClick} />)}
       </div>
     </div>
@@ -27,23 +27,10 @@ function ProjectCard({ project, onProjectClick }: {
       tabIndex={0}
       onClick={() => onProjectClick?.(project.id)}
       onKeyDown={(event) => handleItemKeyDown(event, project.id, onProjectClick)}
-      className="w-full cursor-pointer bg-stone-50/50 border border-stone-100 rounded-xl p-3 transition-all hover:bg-white hover:shadow-xl hover:shadow-stone-200/50 group focus:outline-none focus:ring-2 focus:ring-zinc-900 md:w-64 md:max-w-full md:rounded-2xl md:p-4"
+      className="min-w-0 cursor-pointer rounded-xl border border-stone-100 bg-stone-50/50 p-3 transition-all hover:bg-white hover:shadow-xl hover:shadow-stone-200/50 focus:outline-none focus:ring-2 focus:ring-zinc-900 md:rounded-2xl md:p-4"
     >
-      <h3 className="font-bold text-sm text-zinc-900 uppercase mb-1">{project.label}</h3>
+      <h3 className="mb-1 break-words text-sm font-bold uppercase text-zinc-900">{project.label}</h3>
       <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500">{project.role}</p>
-      {project.technologies.length ? <ProjectTechnologies technologies={project.technologies} /> : null}
-    </div>
-  )
-}
-
-function ProjectTechnologies({ technologies }: { technologies: string[] }) {
-  return (
-    <div className="mt-3 flex flex-wrap gap-1.5">
-      {technologies.map((technology) => (
-        <span key={technology} className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-stone-600 ring-1 ring-stone-200">
-          {technology}
-        </span>
-      ))}
     </div>
   )
 }

@@ -9,6 +9,7 @@ import type {
   ModernTemplateData,
   ModernTemplateProps,
 } from "@/types/modernPortfolio"
+import { getProjectImage, getRecordImage } from "@/utils/PublicPortfolioUtils"
 import {
   getModernId,
   getModernKey,
@@ -87,6 +88,7 @@ function getProjects(projects: unknown[]): ModernProject[] {
       key: getModernKey(source, "projects"),
       name: getModernText(source.nombre) || getModernText(source.name) || getModernText(source.title) || "Proyecto sin titulo",
       role: getModernText(source.project_rol) || getModernText(source.role) || getModernText(source.rol) || "Rol no especificado",
+      image: getProjectImage(project),
       technologies: getModernProjectTechnologies(project),
     }
   })
@@ -100,6 +102,7 @@ function getExperience(experiences: unknown[]): ModernExperience[] {
       key: getModernKey(source, "work"),
       company: getModernText(source.company),
       position: getModernText(source.position),
+      image: getRecordImage(experience),
     }
   })
 }

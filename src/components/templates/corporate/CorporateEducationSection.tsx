@@ -38,11 +38,10 @@ function EducationList({ education, desktop, onEducationClick }: {
           onKeyDown={(event) => handleItemKeyDown(event, item.id, onEducationClick)}
           className={getCardClassName(desktop)}
         >
-          <div className={desktop ? "flex flex-col gap-2" : "flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between"}>
-            <p className="text-lg font-bold text-white">{item.title}</p>
-            {item.period.trim() ? <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/48">{item.period}</span> : null}
+          <div className="min-w-0">
+            <p className="break-words text-lg font-bold leading-tight text-white">{item.title}</p>
+            <p className="mt-2 break-words text-sm text-white/68">{item.institution}</p>
           </div>
-          <p className="mt-2 text-sm text-white/68">{item.institution}</p>
         </article>
       ))}
     </div>

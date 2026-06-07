@@ -10,7 +10,7 @@ export function CorporatePortfolioTemplate(props: CorporatePortfolioProps) {
   const [activeSectionId, setActiveSectionId] = useState<string | null>(data.sections[0]?.id ?? null)
 
   return (
-    <article className="overflow-hidden rounded-[2rem] border border-[#26221D] bg-[#111111] text-white shadow-[0_28px_90px_rgba(0,0,0,0.35)]">
+    <article className="overflow-hidden rounded-[2rem] border border-[#26221D] bg-[#111111] font-sans text-white shadow-[0_28px_90px_rgba(0,0,0,0.35)]">
       <CorporateHeader displayEmail={data.displayEmail} displayLocation={data.displayLocation} />
       <CorporateMobileLayout
         data={data}

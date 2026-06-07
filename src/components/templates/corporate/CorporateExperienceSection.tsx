@@ -55,17 +55,13 @@ function ExperienceCard({ item, index, desktop, onExperienceClick }: {
       onKeyDown={(event) => handleItemKeyDown(event, item.id, onExperienceClick)}
       className={cardClassName}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="min-w-0">
           <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#8C6E46]">
             {String(index + 1).padStart(2, "0")}
           </p>
-          <h4 className="mt-2 text-xl font-bold">{item.title}</h4>
-          <p className="mt-1 text-sm font-medium text-[#5E6670]">{item.organization}</p>
-        </div>
-        {item.period.trim() ? <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7C8791]">{item.period}</span> : null}
+        <h4 className="mt-2 break-words text-xl font-bold leading-tight">{item.title}</h4>
+        <p className="mt-1 break-words text-sm font-medium text-[#5E6670]">{item.organization}</p>
       </div>
-      {item.description.trim() ? <p className="mt-4 text-sm leading-7 text-[#47515B]">{item.description}</p> : null}
     </article>
   )
 }

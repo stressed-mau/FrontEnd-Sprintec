@@ -15,7 +15,7 @@ export function ModernExperienceSection({ experience, onExperienceClick }: Moder
         <div className="h-1 w-12 bg-[#ee8e3b]"></div>
         <h3 className="text-4xl font-black uppercase tracking-tighter">Experiencias</h3>
       </div>
-      <div className="space-y-8">
+      <div className="grid gap-6 md:grid-cols-2">
         {experience.map((item) => (
           <ExperienceCard key={item.key} item={item} onExperienceClick={onExperienceClick} />
         ))}

@@ -16,7 +16,7 @@ export function ModernEducationSection({ education, onEducationClick }: ModernEd
         <GraduationCap className="text-[#ee8e3b]" size={32} />
         <h3 className="text-2xl font-black uppercase">Formación</h3>
       </div>
-      <div className="space-y-8">
+      <div className="grid gap-4 sm:grid-cols-2">
         {education.map((item) => <EducationCard key={item.key} item={item} onEducationClick={onEducationClick} />)}
       </div>
     </div>
@@ -36,7 +36,7 @@ function EducationCard({ item, onEducationClick }: {
       className="group cursor-pointer rounded-xl p-2 outline-none transition hover:bg-[#fcecd4]/45 focus:ring-2 focus:ring-[#ee8e3b]"
     >
       <span className="text-[#ee8e3b] font-black text-lg">/ Formación</span>
-      <h4 className="text-xl font-bold group-hover:text-[#2f606b] transition-colors">{item.title}</h4>
+      <h4 className="break-words text-xl font-bold transition-colors group-hover:text-[#2f606b]">{item.title}</h4>
       <p className="text-sm text-[#7d959e] font-medium">{item.institution}</p>
     </div>
   )

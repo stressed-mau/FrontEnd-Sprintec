@@ -5,6 +5,7 @@ import {
   getEducationTitle,
   getEducationInstitution,
   getRecordDescription,
+  getRecordImage,
   getRecordStartDate,
   getRecordEndDate,
   getEducationField,
@@ -37,6 +38,8 @@ function DetailRecordModal({
     : getExperienceCompany(record)
 
   const description = getRecordDescription(record)
+  const image = getRecordImage(record)
+  const panelWidthClassName = image ? "w-[min(100%,38rem)]" : "w-[min(100%,32rem)]"
   const startDate = getRecordStartDate(record)
   const endDate = getRecordEndDate(record)
 
@@ -61,7 +64,7 @@ function DetailRecordModal({
       aria-modal="true"
     >
       <div
-        className={`max-h-[88vh] w-[min(100%,38rem)] overflow-y-auto rounded-2xl shadow-2xl ${theme.fontClass} ${theme.panel}`}
+        className={`max-h-[88vh] ${panelWidthClassName} overflow-y-auto rounded-2xl shadow-2xl ${theme.fontClass} ${theme.panel}`}
       >
         <div
           className={`sticky top-0 z-10 flex items-start justify-between gap-3 border-b px-4 py-4 sm:px-5 ${theme.header}`}
@@ -102,45 +105,58 @@ function DetailRecordModal({
           </button>
         </div>
 
-        <div className="space-y-4 px-4 py-4 sm:px-5">
-          {description && (
-            <section>
-              <h3
-                className={`text-sm font-bold uppercase tracking-[0.16em] ${theme.sectionTitle}`}
-              >
-                Descripcion
-              </h3>
+        <div className={`grid ${image ? "md:grid-cols-[12rem_1fr]" : ""}`}>
+          {image ? <RecordImage image={image} title={title} /> : null}
 
-              <p
-                className={`mt-2 whitespace-pre-line text-sm leading-6 ${theme.text}`}
-              >
-                {description}
-              </p>
-            </section>
-          )}
+          <div className="space-y-4 px-4 py-4 sm:px-5">
+            {description && (
+              <section>
+                <h3
+                  className={`text-sm font-bold uppercase tracking-[0.16em] ${theme.sectionTitle}`}
+                >
+                  Descripcion
+                </h3>
 
-          {rows.length > 0 && (
-            <dl className="grid gap-3 sm:grid-cols-2">
-              {rows.map(([label, value]) => (
-                <div key={label} className={`min-w-0 rounded-xl border p-4 ${theme.infoCard}`}>
-                  <dt
-                    className={`text-xs font-bold uppercase tracking-[0.16em] ${theme.sectionTitle}`}
-                  >
-                    {label}
-                  </dt>
+                <p
+                  className={`mt-2 whitespace-pre-line text-sm leading-6 ${theme.text}`}
+                >
+                  {description}
+                </p>
+              </section>
+            )}
 
-                  <dd
-                    className={`mt-1 break-words text-sm ${theme.text}`}
-                  >
-                    {value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          )}
+            {rows.length > 0 && (
+              <dl className="grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(9rem,max-content))]">
+                {rows.map(([label, value]) => (
+                  <div key={label} className={`min-w-0 max-w-full rounded-xl border px-3 py-2.5 ${theme.infoCard}`}>
+                    <dt
+                      className={`text-xs font-bold uppercase tracking-[0.16em] ${theme.sectionTitle}`}
+                    >
+                      {label}
+                    </dt>
+
+                    <dd
+                      className={`mt-1 break-words text-sm ${theme.text}`}
+                    >
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </div>
         </div>
       </div>
     </div>
   )
 }
+
+function RecordImage({ image, title }: { image: string; title: string }) {
+  return (
+    <div className="flex h-32 items-center justify-center overflow-hidden border-b border-black/10 px-4 py-4 sm:h-40 sm:px-5 md:h-44 md:border-b-0 md:border-r">
+      <img src={image} alt={title} className="max-h-full max-w-full rounded-xl object-contain" />
+    </div>
+  )
+}
+
 export default DetailRecordModal;

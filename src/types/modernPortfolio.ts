@@ -40,6 +40,7 @@ export type ModernProject = {
   key: string
   name: string
   role: string
+  image: string
   technologies: string[]
 }
 
@@ -48,6 +49,7 @@ export type ModernExperience = {
   key: string
   company: string
   position: string
+  image: string
 }
 
 export type ModernEducation = {

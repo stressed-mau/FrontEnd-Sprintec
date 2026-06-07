@@ -42,6 +42,7 @@ export type CorporateExperienceItem = {
   organization: string
   period: string
   description: string
+  image: string
 }
 
 export type CorporateEducationItem = {
@@ -63,6 +64,7 @@ export type CorporateProjectItem = {
   name: string
   role: string
   description: string
+  image: string
   stack: string[]
 }
 

@@ -1,6 +1,13 @@
 import { getSocialNetworkKey } from "@/components/portfolio/SocialNetworkIcon"
+import type { ProjectModalTheme } from "@/types/projectModalTheme"
 
 type PublicPortfolioRecord = Record<string, unknown>
+const PUBLIC_DATE_FORMATTER = new Intl.DateTimeFormat("es-BO", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+})
 
 function asRecord(value: unknown): PublicPortfolioRecord {
   return value && typeof value === "object" ? (value as PublicPortfolioRecord) : {}
@@ -12,6 +19,24 @@ function getNamedValues(value: unknown): string[] {
   return value
     .map((item) => (typeof item === "string" ? item : getFirstText(asRecord(item).name)))
     .filter(Boolean)
+}
+
+export function formatPublicPortfolioDate(value: unknown): string {
+  const text = getFirstText(value)
+  if (!text) return ""
+
+  const normalizedDate = text.match(/^\d{4}-\d{2}-\d{2}/)?.[0]
+  const parsedDate = normalizedDate ? new Date(`${normalizedDate}T00:00:00Z`) : new Date(text)
+  if (Number.isNaN(parsedDate.getTime())) return text
+
+  return PUBLIC_DATE_FORMATTER.format(parsedDate)
+}
+
+export function formatPublicPortfolioPeriod(startDate: unknown, endDate: unknown, isCurrent = false) {
+  const startText = formatPublicPortfolioDate(startDate)
+  const endText = isCurrent ? "En curso" : formatPublicPortfolioDate(endDate)
+
+  return [startText, endText].filter(Boolean).join(" - ")
 }
 
 export const asBoolean = (value: unknown): boolean => {
@@ -53,12 +78,12 @@ export const getProjectDescription = (project: unknown): string => {
 
 export const getProjectStartDate = (project: unknown): string => {
   const record = asRecord(project)
-  return getFirstText(record.fechaInicio, record.start_date, record.startDate)
+  return formatPublicPortfolioDate(getFirstText(record.fechaInicio, record.start_date, record.startDate))
 }
 
 export const getProjectEndDate = (project: unknown): string => {
   const record = asRecord(project)
-  return getFirstText(record.fechaFin, record.end_date, record.endDate)
+  return formatPublicPortfolioDate(getFirstText(record.fechaFin, record.end_date, record.endDate))
 }
 
 export const getProjectImage = (project: unknown): string => {
@@ -146,14 +171,19 @@ export const getRecordDescription = (item: unknown): string => {
   return getFirstText(record.description, record.descripcion, record.summary, record.details)
 }
 
+export const getRecordImage = (item: unknown): string => {
+  const record = asRecord(item)
+  return getFirstText(record.image, record.image_url, record.logo, record.logo_url, record.company_logo, record.institution_logo, record.photograph)
+}
+
 export const getRecordStartDate = (item: unknown): string => {
   const record = asRecord(item)
-  return getFirstText(record.start_date, record.startDate, record.fechaInicio)
+  return formatPublicPortfolioDate(getFirstText(record.start_date, record.startDate, record.fechaInicio))
 }
 
 export const getRecordEndDate = (item: unknown): string => {
   const record = asRecord(item)
-  return getFirstText(record.end_date, record.endDate, record.fechaFin)
+  return formatPublicPortfolioDate(getFirstText(record.end_date, record.endDate, record.fechaFin))
 }
 
 export const getEducationField = (education: unknown): string => {
@@ -169,23 +199,6 @@ export const isCurrentRecord = (item: unknown): boolean => {
   if (typeof value === "string") return ["1", "true", "si", "sÃ­", "yes"].includes(value.trim().toLowerCase())
   return false
 }
-export type ProjectModalTheme = {
-  fontClass: string
-  panel: string
-  header: string
-  eyebrow: string
-  title: string
-  role: string
-  closeButton: string
-  sectionTitle: string
-  text: string
-  infoCard: string
-  iconText: string
-  tag: string
-  primaryLink: string
-  secondaryLink: string
-}
-
 export const PROJECT_MODAL_THEMES: Record<
   "modern" | "minimalist" | "corporate" | "default",
   ProjectModalTheme

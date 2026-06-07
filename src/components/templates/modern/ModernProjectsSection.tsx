@@ -30,9 +30,6 @@ function ProjectsHeader() {
         <h2 className="text-6xl font-black text-[#fcecd4]">PROYECTOS</h2>
         <p className="text-[#ee8e3b] font-bold mt-2 uppercase tracking-[0.3em]">Muestra de trabajo</p>
       </div>
-      <div className="px-6 py-2 bg-[#2f606b] rounded-full text-[#fcecd4] font-bold text-sm">
-        SOCIAL MEDIA FEED
-      </div>
     </div>
   )
 }
@@ -52,20 +49,7 @@ function ProjectCard({ project, onProjectClick }: {
       <div className="absolute inset-0 bg-linear-to-t from-[#173b61] via-transparent to-transparent opacity-100 p-5 flex flex-col justify-end sm:p-8">
         <h4 className="text-[#fcecd4] text-2xl font-black">{project.name}</h4>
         <p className="text-[#ee8e3b] font-bold text-sm mt-2">{project.role}</p>
-        {project.technologies.length ? <ProjectTechnologies technologies={project.technologies} /> : null}
       </div>
-    </div>
-  )
-}
-
-function ProjectTechnologies({ technologies }: { technologies: string[] }) {
-  return (
-    <div className="mt-4 flex flex-wrap gap-2">
-      {technologies.map((technology) => (
-        <span key={technology} className="rounded-full bg-[#EEF5F9] px-2.5 py-1 text-xs font-semibold text-[#003A6C]">
-          {technology}
-        </span>
-      ))}
     </div>
   )
 }

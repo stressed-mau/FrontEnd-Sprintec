@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import { getSocialNetworkDisplayName } from "@/components/portfolio/SocialNetworkIcon"
+import { formatPublicPortfolioPeriod, getProjectImage, getRecordImage, isCurrentRecord } from "@/utils/PublicPortfolioUtils"
 import type {
   CorporateCertificateItem,
   CorporateEducationItem,
@@ -93,8 +94,9 @@ function getExperience(experiences: unknown[]): CorporateExperienceItem[] {
       id: String(source.id ?? ""),
       title: getCorporateText(source.position) || "Sin cargo",
       organization: getCorporateText(source.company) || "Sin empresa",
-      period: "",
+      period: formatPublicPortfolioPeriod(source.start_date ?? source.startDate, source.end_date ?? source.endDate, isCurrentRecord(source)),
       description: getCorporateText(source.description),
+      image: getRecordImage(item),
     }
   })
 }
@@ -106,7 +108,7 @@ function getEducation(educations: unknown[]): CorporateEducationItem[] {
       id: String(source.id ?? ""),
       title: getCorporateText(source.title) || "Sin título",
       institution: getCorporateText(source.institution) || "Sin institución",
-      period: "",
+      period: formatPublicPortfolioPeriod(source.start_date ?? source.startDate, source.end_date ?? source.endDate, isCurrentRecord(source)),
     }
   })
 }
@@ -131,6 +133,7 @@ function getProjects(projects: unknown[]): CorporateProjectItem[] {
       name: getCorporateText(source.nombre) || getCorporateText(source.name) || getCorporateText(source.title) || "Proyecto",
       role: getCorporateText(source.project_rol) || getCorporateText(source.role) || getCorporateText(source.rol) || "Rol no especificado",
       description: getCorporateText(source.description) || "Sin descripción",
+      image: getProjectImage(project),
       stack: getCorporateProjectTechnologies(project),
     }
   })
