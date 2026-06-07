@@ -1,31 +1,22 @@
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, MessageCircle } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { usePortfolio } from "@/hooks/usePortfolio"
 import MinimalistTemplate from "@/components/templates/minimalist/MinimalistTemplate"
 import ModernTemplate from "@/components/templates/modern/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/templates/corporate/CorporatePortfolioTemplate"
-import { LOGIN_ROUTE } from "@/routes/route-paths"
-import { getAuthSession, isAuthenticated } from "@/services/auth"
-import PortfolioMessageModal from "@/components/portfolio/PortfolioMessageModal";
+import { PublicPortfolioMessageControls } from "@/components/portfolio/PublicPortfolioMessageControls"
 import ProjectDetailModal from "@/components/portfolio/ProjectDetailModal";
 import DetailRecordModal from "@/components/portfolio/DetailRecordModal"
+import { usePublicPortfolioMessageAccess } from "@/hooks/usePublicPortfolioMessageAccess"
+import { usePublicPortfolioTracking } from "@/hooks/usePublicPortfolioTracking"
 import {
   asBoolean,
-  getNetworkName,
   sameProjectId,
   sameRecordId,
   getPortfolioRecipientId,
   PROJECT_MODAL_THEMES, 
 } from "@/utils/PublicPortfolioUtils"
-import {
-  recordPortfolioView,
-  recordProjectClick,
-  recordProjectLinkClick,
-  recordSocialClick,
-  sendPortfolioTrackingPulse,
-  startPortfolioTracking,
-} from "@/services/portfolioAnalyticsService"
 interface PortfolioProject {
   id: string | number
   is_public?: boolean
@@ -88,15 +79,14 @@ const PublicPortfolio = () => {
     loading: boolean
     visitId: string | null
   }
-  const recordedViewRef = useRef<string | null>(null)
-  const trackingStartRef = useRef<number>(Date.now())
   const [selectedProject, setSelectedProject] = useState<PortfolioProject | null>(null)
   const [selectedExperience, setSelectedExperience] = useState<PortfolioExperience | null>(null)
   const [selectedEducation, setSelectedEducation] = useState<PortfolioEducation | null>(null)
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false)
   const [messageFeedback, setMessageFeedback] = useState("")
-  const visitIdRef = useRef<string | null>(null)
   const fromExplore = Boolean((location.state as { fromExplore?: boolean } | null)?.fromExplore)
+  const messageAccess = usePublicPortfolioMessageAccess(portfolio)
+  const portfolioTracking = usePublicPortfolioTracking({ portfolio, slug, loading, visitId })
   const handleBack = () => {
     if (fromExplore) {
       navigate(-1)
@@ -113,55 +103,16 @@ const PublicPortfolio = () => {
       Volver
     </button>
   )
-
-  useEffect(() => {
-    if (!visitId) return;
-    visitIdRef.current = visitId
-    trackingStartRef.current = Date.now()
-    const pulseInterval = setInterval(async () => {
-      const secondsElapsed = Math.max(1, Math.round((Date.now() - trackingStartRef.current) / 1000))
-      await sendPortfolioTrackingPulse(visitId, secondsElapsed)
-    }, 30000);
-    return () => clearInterval(pulseInterval);
-  }, [visitId]);
-
-  useEffect(() => {
-    const publicSlug = portfolio?.config?.slug ?? slug
-    if (loading || !publicSlug || recordedViewRef.current === String(publicSlug)) {return}
-    recordedViewRef.current = String(publicSlug)
-    recordPortfolioView(String(publicSlug))
-  }, [loading, portfolio, slug])
-
-  const getTrackingVisitId = async () => {
-    if (visitIdRef.current) return visitIdRef.current
-
-    const portfolioSlug = String(portfolio?.config?.slug ?? slug ?? "")
-    if (!portfolioSlug) return ""
-
-    const trackedVisitId = await startPortfolioTracking({
-      slug: portfolioSlug,
-      template: portfolio?.config?.template ?? portfolio?.template ?? "0",
-    })
-    visitIdRef.current = trackedVisitId || null
-    return trackedVisitId
-  }
-
   const handleProjectClick = async (projectId?: string | number) => {
     if (!projectId) return
     const clickedProject = (portfolio?.projects ?? []).find((project) => sameProjectId(project, projectId))
     if (clickedProject) {
       setSelectedProject(clickedProject)
     }
-    if (!visitId) return
-    await recordProjectClick({ visitId, projectId })
+    await portfolioTracking.trackProjectClick(projectId)
   };
   const handleSocialClick = async (network: unknown) => {
-    const networkName = getNetworkName(network)
-    if (!networkName) return
-
-    const currentVisitId = await getTrackingVisitId()
-    if (!currentVisitId) return
-    await recordSocialClick({ visitId: currentVisitId, networkName })
+    await portfolioTracking.trackSocialClick(network)
   }
   const handleExperienceClick = (experienceId?: string | number) => {
     const clickedExperience = (portfolio?.experiences ?? []).find((experience: unknown) => sameRecordId(experience, experienceId))
@@ -176,26 +127,12 @@ const PublicPortfolio = () => {
     }
   }
   const handleProjectLinkClick = (linkType: "repository" | "demo", url: string) => {
-    if (!selectedProject?.id || !visitId || !url) return
-    void recordProjectLinkClick({
-      visitId,
-      projectId: selectedProject.id,
-      linkType,
-    })
+    portfolioTracking.trackProjectLinkClick(selectedProject?.id, linkType, url)
   }
   const handleOpenMessageModal = () => {
-    if (!isAuthenticated()) {
-      navigate(LOGIN_ROUTE, { state: { from: location.pathname } })
-      return
-    }
-    const session = getAuthSession()
-    const portfolioOwnerId = getPortfolioRecipientId(portfolio)
-    if (!portfolioOwnerId) {
-      setMessageFeedback("No se pudo identificar al destinatario del mensaje.")
-      return
-    }
-    if (session?.user?.id != null && String(session.user.id) === String(portfolioOwnerId)) {
-      setMessageFeedback("No puedes enviarte un mensaje a ti mismo.")
+    const accessError = messageAccess.getMessageAccessError()
+    if (accessError) {
+      setMessageFeedback(accessError)
       return
     }
     setMessageFeedback("")
@@ -262,19 +199,20 @@ const PublicPortfolio = () => {
   return (
     <main className="flex-1 p-4 md:p-10">
       {backButton}
-      <button
-        type="button"
-        onClick={handleOpenMessageModal}
-        className="fixed bottom-5 right-5 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[#00457A] text-white shadow-xl shadow-black/25 transition hover:bg-[#003A6C] focus:outline-none focus:ring-4 focus:ring-[#6DACBF]/40"
-        aria-label={`Enviar mensaje a ${recipientName}`}
-        title={`Enviar mensaje a ${recipientName}`}>
-        <MessageCircle className="h-8 w-8" />
-      </button>
-      {messageFeedback ? (
-        <div className="fixed bottom-24 right-5 z-40 max-w-[min(24rem,calc(100vw-2.5rem))] rounded-xl border border-[#6DACBF]/40 bg-white px-4 py-3 text-sm font-semibold text-[#003A6C] shadow-xl">
-          {messageFeedback}
-        </div>
-      ) : null}
+      <PublicPortfolioMessageControls
+        recipientName={recipientName}
+        recipientId={recipientId}
+        portfolioSlug={portfolioSlug}
+        isGuest={messageAccess.isGuestMessage}
+        messageFeedback={messageFeedback}
+        isMessageModalOpen={isMessageModalOpen}
+        onOpen={handleOpenMessageModal}
+        onClose={() => setIsMessageModalOpen(false)}
+        onSent={() => {
+          setIsMessageModalOpen(false)
+          setMessageFeedback("Mensaje enviado correctamente.")
+        }}
+      />
       {isModern && <ModernTemplate 
       profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onExperienceClick={handleExperienceClick} onEducationClick={handleEducationClick} onSocialClick={handleSocialClick} />}
       {isMinimalist && <MinimalistTemplate 
@@ -299,17 +237,6 @@ const PublicPortfolio = () => {
           record={selectedEducation}
           theme={modalTheme}
           onClose={() => setSelectedEducation(null)}/>
-      ) : null}
-      {isMessageModalOpen ? (
-        <PortfolioMessageModal
-          recipientName={recipientName}
-          recipientId={recipientId}
-          portfolioSlug={portfolioSlug}
-          onClose={() => setIsMessageModalOpen(false)}
-          onSent={() => {
-            setIsMessageModalOpen(false)
-            setMessageFeedback("Mensaje enviado correctamente.")
-          }}/>
       ) : null}
     </main>
   )
