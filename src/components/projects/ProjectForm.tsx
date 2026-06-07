@@ -29,7 +29,7 @@ export function ProjectForm(props: ProjectFormProps) {
   return (
     <form onSubmit={props.onSubmit} className={isModalTone ? "space-y-6 rounded-2xl bg-[#C2DBED]" : "space-y-5 rounded-2xl border border-[#A5D7E8] bg-white p-5 shadow-sm sm:p-6"}>
       <FeedbackMessage message={props.errors.form ?? ""} type="error" />
-      <ProjectBasicFields formProps={{ ...props, tone, readOnlyFields }} classNames={classNames} tone={tone} readOnlyFields={readOnlyFields} gridClassName={isModalTone ? "space-y-6" : "grid gap-4 md:grid-cols-3"} />
+      <ProjectBasicFields formProps={{ ...props, tone, readOnlyFields }} classNames={classNames} tone={tone} readOnlyFields={readOnlyFields} gridClassName={isModalTone ? "space-y-6" : "grid gap-4 md:grid-cols-2"} />
       <ProjectDateFields
         formData={props.formData}
         errors={props.errors}
@@ -38,7 +38,7 @@ export function ProjectForm(props: ProjectFormProps) {
         canEditEndDate={canEditEndDate}
         classNames={classNames}
         tone={tone}
-        gridClassName={isModalTone ? "grid gap-6 md:grid-cols-2" : "grid gap-4 md:grid-cols-3"}
+        gridClassName={isModalTone ? "grid gap-6 md:grid-cols-2" : "grid gap-4 md:grid-cols-2"}
         onFieldChange={props.onFieldChange}
       />
       <ProjectLinkFields formData={props.formData} errors={props.errors} canEditGithub={canEditGithub} canEditDemo={canEditDemo} classNames={classNames} tone={tone} onFieldChange={props.onFieldChange} />

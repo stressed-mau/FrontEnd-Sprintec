@@ -39,6 +39,8 @@ export function ProjectBasicFields({ formProps, classNames, tone, readOnlyFields
           tone={tone}
           onFieldChange={formProps.onFieldChange}
         />
+      </div>
+      <div className={tone === "modal" ? "mt-6" : "mt-4"}>
         <ProjectTechnologyField
           error={formProps.errors.tecnologias}
           technologies={formProps.technologies}

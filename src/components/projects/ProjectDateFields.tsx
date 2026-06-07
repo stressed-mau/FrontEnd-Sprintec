@@ -25,7 +25,7 @@ export function ProjectDateFields(props: ProjectDateFieldsProps) {
   const isCurrentDisabled = props.isSaving || props.readOnlyFields || Boolean(props.formData.fechaFin)
 
   return (
-    <>
+    <div className="space-y-3">
       <div className={props.gridClassName}>
         <ProjectFormField label="Fecha de inicio" error={props.errors.fechaInicio} required tone={props.tone}>
           <Input
@@ -60,6 +60,6 @@ export function ProjectDateFields(props: ProjectDateFieldsProps) {
         />
         Proyecto en curso
       </label>
-    </>
+    </div>
   )
 }
