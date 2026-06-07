@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
-import {getNotifications,markAllNotificationsAsRead,markNotificationAsRead,normalizeNotification,type NotificationItem,type NotificationsPageMeta,} from "@/services/notificationsService"
+import {getNotifications,markAllNotificationsAsRead,markNotificationAsRead,type NotificationItem,type NotificationsPageMeta,} from "@/services/notificationsService"
+import { normalizeNotification } from "@/utils/notifications/notificationMapperUtils"
 import { getAuthSession } from "@/services/auth"
 import { subscribeToUserNotifications } from "@/services/realtimeNotificationsService"
 
