@@ -60,22 +60,51 @@ function getEchoClient() {
   return echoClient
 }
 
-export function subscribeToUserNotifications(userId: string, onNotification: () => void) {
+export type NotificationCallbacks = {
+  onGeneric?: () => void
+  onCreated?: (payload: any) => void
+  onRead?: (payload: { id: string; unread_count: number }) => void
+}
+
+export function subscribeToUserNotifications(userId: string, callbacks: NotificationCallbacks | (() => void)) {
   const echo = getEchoClient()
 
   if (!echo || !userId) {
     return () => {}
   }
 
+  const cbs = typeof callbacks === 'function' ? { onGeneric: callbacks } : callbacks
+
   const channelName = `${(import.meta.env.VITE_NOTIFICATIONS_CHANNEL_PREFIX as string | undefined) || "user.notifications."}${userId}`
   const channel = echo.private(channelName)
 
-  channel.notification?.(() => onNotification())
-  channel.listen?.("MessageNotificationSent", () => onNotification())
-  channel.listen?.(".MessageNotificationSent", () => onNotification())
-  channel.listen?.(".new_message", () => onNotification())
-  channel.listen?.("new_message", () => onNotification())
-  channel.listen?.(".Illuminate\\Notifications\\Events\\BroadcastNotificationCreated", () => onNotification())
+  const handleGeneric = () => cbs.onGeneric?.()
+
+  channel.notification?.(handleGeneric)
+  channel.listen?.("MessageNotificationSent", handleGeneric)
+  channel.listen?.(".MessageNotificationSent", handleGeneric)
+  channel.listen?.(".new_message", handleGeneric)
+  channel.listen?.("new_message", handleGeneric)
+  
+  channel.listen?.(".Illuminate\\Notifications\\Events\\BroadcastNotificationCreated", (payload: any) => {
+    if (cbs.onCreated) {
+      cbs.onCreated(payload)
+    } else {
+      handleGeneric()
+    }
+  })
+
+  const handleRead = (payload: any) => {
+    if (cbs.onRead && payload?.id && typeof payload.unread_count === 'number') {
+      cbs.onRead({ id: String(payload.id), unread_count: payload.unread_count })
+    } else {
+      handleGeneric()
+    }
+  }
+
+  channel.listen?.(".NotificationMarkedAsRead", handleRead)
+  channel.listen?.("NotificationMarkedAsRead", handleRead)
+  channel.listen?.(".App\\Events\\NotificationMarkedAsRead", handleRead)
 
   return () => {
     echo.leave(channelName)

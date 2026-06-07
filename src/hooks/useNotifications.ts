@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import {getNotifications,markAllNotificationsAsRead,markNotificationAsRead,type NotificationItem,type NotificationsPageMeta,} from "@/services/notificationsService"
+import {getNotifications,markAllNotificationsAsRead,markNotificationAsRead,normalizeNotification,type NotificationItem,type NotificationsPageMeta,} from "@/services/notificationsService"
 import { getAuthSession } from "@/services/auth"
 import { subscribeToUserNotifications } from "@/services/realtimeNotificationsService"
 
@@ -56,8 +56,26 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
       return
     }
 
-    return subscribeToUserNotifications(String(userId), () => {
-      void refreshNotifications(false)
+    return subscribeToUserNotifications(String(userId), {
+      onGeneric: () => {
+        void refreshNotifications(false)
+      },
+      onCreated: (payload: any) => {
+        const newItem = normalizeNotification(payload)
+        setNotifications((current) => {
+          if (current.some((n) => n.id === newItem.id)) return current
+          return [newItem, ...current]
+        })
+        setMeta((current) => ({
+          ...current,
+          total: current.total + 1,
+        }))
+      },
+      onRead: (payload: { id: string; unread_count: number }) => {
+        setNotifications((current) =>
+          current.map((n) => (n.id === payload.id ? { ...n, read: true } : n))
+        )
+      }
     })
   }, [refreshNotifications])
 
