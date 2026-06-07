@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import { Bell, MessageCircle, TrendingUp } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
-import { MESSAGES_ROUTE, NOTIFICATIONS_ROUTE } from "@/routes/route-paths"
+import { NOTIFICATIONS_ROUTE } from "@/routes/route-paths"
 import { useNotifications } from "@/hooks/useNotifications"
 import type { NotificationItem } from "@/services/notificationsService"
+import { navigateFromNotification } from '@/utils/notifications/notificationNavigation'
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
@@ -15,33 +16,9 @@ export function NotificationBell() {
     if (!notification.read) {
       await markAsRead(notification.id)
     }
+    navigateFromNotification(notification, navigate)  }
 
-    setIsOpen(false)
-
-    if (!notification.data) {
-      navigate(notification.link || '/notificaciones')
-      return
-    }
-
-    const data = notification.data
-
-    switch (notification.dataType) {
-      case 'weekly_global_report':
-        navigate('/tendencia-plantillas')
-        break
-      case 'new_message':
-        navigate(data.message_id ? `${MESSAGES_ROUTE}/${data.message_id}` : MESSAGES_ROUTE)
-        break
-      case 'portfolio_view':
-        navigate('/visualizaciones')
-        break
-      default:
-        navigate(notification.link || '/notificaciones')
-        break
-    }
-  }
-
-  const handleMarkAllAsRead = async () => {
+  const handleMarkAllAsRead = async () => { 
     await markAllAsRead()
     setIsOpen(false)
     navigate(NOTIFICATIONS_ROUTE)
