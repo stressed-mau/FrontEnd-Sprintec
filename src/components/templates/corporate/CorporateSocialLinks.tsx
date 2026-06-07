@@ -22,7 +22,7 @@ export function CorporateSocialLinks({ links, className, linkClassName, onSocial
           onClick={() => onSocialClick?.(link.source ?? link)}
           className={linkClassName}
         >
-          <SocialNetworkIcon network={link.source ?? link} className="h-3.5 w-3.5" />
+          <SocialNetworkIcon network={link.source ?? link} className="h-5 w-5" />
           {link.label}
         </a>
       ))}

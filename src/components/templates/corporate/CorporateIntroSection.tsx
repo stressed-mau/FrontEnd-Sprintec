@@ -95,8 +95,8 @@ function CorporateSummary({ summary, desktop }: { summary: string; desktop: bool
 
 function CorporateContact({ data, desktop, onSocialClick }: { data: CorporateTemplateData; desktop: boolean; onSocialClick?: (network: unknown) => void }) {
   const linkClassName = desktop
-    ? "inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#3D4348] transition hover:-translate-y-0.5 hover:border-[#8C6E46] hover:bg-white hover:text-[#8C6E46]"
-    : "inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-2 text-xs font-semibold text-[#3D4348] transition hover:border-[#8C6E46] hover:text-[#8C6E46]"
+    ? "inline-flex items-center gap-2 rounded-full border border-[#8C6E46]/70 bg-[#D6A96B]/35 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#1F2933] shadow-[0_8px_18px_rgba(99,72,35,0.10)] transition hover:-translate-y-0.5 hover:border-[#1F2933] hover:bg-[#1F2933] hover:text-[#F4D8AE]"
+    : "inline-flex items-center gap-2 rounded-full border border-[#8C6E46]/70 bg-[#D6A96B]/35 px-3 py-2 text-xs font-bold text-[#1F2933] shadow-[0_8px_18px_rgba(99,72,35,0.10)] transition hover:border-[#1F2933] hover:bg-[#1F2933] hover:text-[#F4D8AE]"
 
   return (
     <div className={desktop ? "mt-8" : "rounded-[1.25rem] border border-black/10 bg-white/40 p-4 lg:rounded-[1.5rem] lg:p-5"}>

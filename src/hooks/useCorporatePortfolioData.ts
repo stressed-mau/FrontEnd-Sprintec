@@ -72,7 +72,7 @@ function getUserProfile(profile: CorporatePortfolioProps["profile"]) {
 function getSocialLinks(networks: unknown[]): CorporatePortfolioLink[] {
   return networks
     .map((network) => getCorporateRecord(network))
-    .filter((network) => getCorporateText(network.label).trim() && getCorporateText(network.sublabel).trim())
+    .filter((network) => Boolean(getCorporateText(network.url).trim()))
     .map((network) => ({
       id: String(network.id ?? ""),
       label: getSocialNetworkDisplayName(network),

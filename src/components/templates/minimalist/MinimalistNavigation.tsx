@@ -32,7 +32,7 @@ function MinimalistNetworks({ networks, onSocialClick }: {
   onSocialClick?: (network: unknown) => void
 }) {
   return (
-    <div className="flex gap-4 text-stone-300">
+    <div className="flex gap-2 text-zinc-700">
       {networks.map((network) => (
         <a
           key={network.id}
@@ -40,10 +40,10 @@ function MinimalistNetworks({ networks, onSocialClick }: {
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => onSocialClick?.(network.source)}
-          className="hover:text-zinc-900 transition-colors"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-stone-50 transition-colors hover:border-zinc-900 hover:bg-zinc-900 hover:text-white"
           title={getSocialNetworkDisplayName(network.source)}
         >
-          <SocialNetworkIcon network={network.source} className="h-[18px] w-[18px]" />
+          <SocialNetworkIcon network={network.source} className="h-5 w-5" />
         </a>
       ))}
     </div>
