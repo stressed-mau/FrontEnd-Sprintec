@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import ConfirmationModal from "@/components/modals/ConfirmationModal";
-import { DuplicateProjectModal } from "@/components/projects/DuplicateProjectModal";
+import { DuplicateRegistrationModal } from "@/components/modals/DuplicateRegistrationModal";
 import { FeedbackMessage } from "@/components/projects/FeedbackMessage";
 import { ProjectForm } from "@/components/projects/ProjectForm";
 import { ProjectPageShell } from "@/components/projects/ProjectPageShell";
@@ -53,7 +53,11 @@ export default function AddProjectsPage() {
           navigate("/proyectos/ver");
         }}
       />
-      <DuplicateProjectModal message={duplicateGuard.duplicateMessage} onClose={duplicateGuard.clearDuplicateMessage} />
+      <DuplicateRegistrationModal
+        title="Proyecto duplicado"
+        message={duplicateGuard.duplicateMessage}
+        onClose={duplicateGuard.clearDuplicateMessage}
+      />
     </ProjectPageShell>
   );
 }

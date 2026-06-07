@@ -1,5 +1,6 @@
 import ConfirmActionModal from "@/components/modals/ConfirmActionModal"
 import ConfirmationModal from "@/components/modals/ConfirmationModal"
+import { DuplicateRegistrationModal } from "@/components/modals/DuplicateRegistrationModal"
 import { EducationFormModal } from "@/components/education/EducationFormModal"
 import type { useEducationManager } from "@/hooks/useEducationManager"
 
@@ -23,11 +24,11 @@ export function EducationManagerModals({ manager, onSuccessClose }: { manager: E
       ) : null}
 
       {manager.isDuplicateModalOpen ? (
-        <ConfirmationModal
+        <DuplicateRegistrationModal
           isOpen={manager.isDuplicateModalOpen}
           title="Registro duplicado"
           message={manager.duplicateMessage}
-          buttonText="Aceptar"
+          closeLabel="Aceptar"
           onClose={manager.closeDuplicateModal}
         />
       ) : null}

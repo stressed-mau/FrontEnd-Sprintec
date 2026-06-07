@@ -1,11 +1,11 @@
 import { useEffect, type FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 
-import { EducationDuplicateRegistrationModal } from "@/components/education/EducationDuplicateRegistrationModal"
 import { EducationFeedbackMessage } from "@/components/education/EducationFeedbackMessage"
 import { EducationInlineForm } from "@/components/education/EducationInlineForm"
 import { EducationManagerModals } from "@/components/education/EducationManagerModals"
 import { EducationPageShell } from "@/components/education/EducationPageShell"
+import { DuplicateRegistrationModal } from "@/components/modals/DuplicateRegistrationModal"
 import { useEducationDuplicateGuard } from "@/hooks/useEducationDuplicateGuard"
 import { useEducationManager } from "@/hooks/useEducationManager"
 
@@ -51,7 +51,7 @@ export default function AddEducationPage() {
       />
 
       <EducationManagerModals manager={manager} onSuccessClose={() => navigate("/formacion-academica/ver")} />
-      <EducationDuplicateRegistrationModal
+      <DuplicateRegistrationModal
         title="Formación duplicada"
         message={duplicateGuard.duplicateMessage}
         onClose={duplicateGuard.clearDuplicateMessage}
