@@ -19,7 +19,7 @@ export function CorporateExperienceSection({ experience, isActive = false, mode,
     <section id={isDesktop ? "corporate-experience" : undefined} className={sectionClassName}>
       <h3 className={titleClassName}>Experiencia</h3>
       {experience.length ? (
-        <div className="mt-6 flex flex-wrap gap-4">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {experience.map((item, index) => (
             <ExperienceCard
               key={item.id}
@@ -44,8 +44,8 @@ function ExperienceCard({ item, index, desktop, onExperienceClick }: {
   onExperienceClick?: (experienceId?: string | number) => void
 }) {
   const cardClassName = desktop
-    ? "w-full cursor-pointer rounded-[1.25rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-4 transition duration-300 hover:-translate-y-1 hover:border-[#8C6E46] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-2 focus:ring-[#8C6E46] sm:w-80 sm:max-w-full lg:rounded-[1.6rem] lg:p-5"
-    : "w-full cursor-pointer rounded-[1.35rem] border border-black/10 bg-white p-4 transition duration-300 hover:-translate-y-1 hover:border-[#111111] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-2 focus:ring-[#8C6E46] sm:w-80 sm:max-w-full sm:rounded-[1.6rem] sm:p-5"
+    ? "w-full cursor-pointer rounded-[1.25rem] border border-black/10 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] p-4 transition duration-300 hover:-translate-y-1 hover:border-[#8C6E46] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-2 focus:ring-[#8C6E46] lg:rounded-[1.6rem] lg:p-5"
+    : "w-full cursor-pointer rounded-[1.35rem] border border-black/10 bg-white p-4 transition duration-300 hover:-translate-y-1 hover:border-[#111111] hover:shadow-[0_18px_40px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-2 focus:ring-[#8C6E46] sm:rounded-[1.6rem] sm:p-5"
 
   return (
     <article

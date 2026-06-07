@@ -15,7 +15,7 @@ import type { ProjectModalTheme } from "@/types/projectModalTheme"
 
 type DetailRecordModalProps = {
   kind: "experience" | "education"
-  record: any
+  record: unknown
   theme: ProjectModalTheme
   onClose: () => void
 }
@@ -61,7 +61,7 @@ function DetailRecordModal({
       aria-modal="true"
     >
       <div
-        className={`max-h-[88vh] w-[min(100%,30rem)] overflow-y-auto rounded-2xl shadow-2xl ${theme.panel}`}
+        className={`max-h-[88vh] w-[min(100%,38rem)] overflow-y-auto rounded-2xl shadow-2xl ${theme.fontClass} ${theme.panel}`}
       >
         <div
           className={`sticky top-0 z-10 flex items-start justify-between gap-3 border-b px-4 py-4 sm:px-5 ${theme.header}`}
@@ -120,25 +120,23 @@ function DetailRecordModal({
           )}
 
           {rows.length > 0 && (
-            <div className={`rounded-xl border p-4 ${theme.infoCard}`}>
-              <dl className="space-y-3">
-                {rows.map(([label, value]) => (
-                  <div key={label}>
-                    <dt
-                      className={`text-xs font-bold uppercase tracking-[0.16em] ${theme.sectionTitle}`}
-                    >
-                      {label}
-                    </dt>
+            <dl className="grid gap-3 sm:grid-cols-2">
+              {rows.map(([label, value]) => (
+                <div key={label} className={`min-w-0 rounded-xl border p-4 ${theme.infoCard}`}>
+                  <dt
+                    className={`text-xs font-bold uppercase tracking-[0.16em] ${theme.sectionTitle}`}
+                  >
+                    {label}
+                  </dt>
 
-                    <dd
-                      className={`mt-1 break-words text-sm ${theme.text}`}
-                    >
-                      {value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
+                  <dd
+                    className={`mt-1 break-words text-sm ${theme.text}`}
+                  >
+                    {value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           )}
         </div>
       </div>

@@ -28,7 +28,7 @@ function EducationList({ education, desktop, onEducationClick }: {
   onEducationClick?: (educationId?: string | number) => void
 }) {
   return (
-    <div className="mt-6 flex flex-wrap gap-4">
+    <div className="mt-6 grid gap-4 sm:grid-cols-2">
       {education.map((item) => (
         <article
           key={item.id}
@@ -55,8 +55,8 @@ function getSectionClassName(isDesktop: boolean, isActive: boolean) {
 }
 
 function getCardClassName(desktop: boolean) {
-  if (desktop) return "w-full cursor-pointer rounded-[1.2rem] border border-white/10 bg-white/3 p-4 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-[#1B1815] focus:outline-none focus:ring-2 focus:ring-[#D6A96B] sm:w-80 sm:max-w-full"
-  return "w-full cursor-pointer rounded-[1.35rem] border border-white/10 bg-white/3 p-4 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-[#D6A96B] sm:w-80 sm:max-w-full sm:rounded-[1.6rem] sm:p-5"
+  if (desktop) return "w-full cursor-pointer rounded-[1.2rem] border border-white/10 bg-white/3 p-4 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-[#1B1815] focus:outline-none focus:ring-2 focus:ring-[#D6A96B]"
+  return "w-full cursor-pointer rounded-[1.35rem] border border-white/10 bg-white/3 p-4 transition duration-300 hover:-translate-y-1 hover:border-[#D6A96B]/60 hover:bg-white/[0.07] focus:outline-none focus:ring-2 focus:ring-[#D6A96B] sm:rounded-[1.6rem] sm:p-5"
 }
 
 function handleItemKeyDown(event: KeyboardEvent<HTMLElement>, itemId: string, onItemClick?: (itemId?: string | number) => void) {

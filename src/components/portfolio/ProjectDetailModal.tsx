@@ -18,25 +18,10 @@ import {
   getProjectDemoUrl,
   isProjectCurrent,
 } from "@/utils/PublicPortfolioUtils";
-
-type ProjectModalTheme = {
-  panel: string;
-  header: string;
-  eyebrow: string;
-  title: string;
-  role: string;
-  closeButton: string;
-  sectionTitle: string;
-  text: string;
-  infoCard: string;
-  iconText: string;
-  tag: string;
-  primaryLink: string;
-  secondaryLink: string;
-};
+import type { ProjectModalTheme } from "@/types/projectModalTheme";
 
 type ProjectDetailModalProps = {
-  project: any;
+  project: unknown;
   theme: ProjectModalTheme;
   onClose: () => void;
   onProjectLinkClick: (
@@ -77,7 +62,7 @@ export default function ProjectDetailModal({
       aria-modal="true"
     >
       <div
-        className={`max-h-[92vh] w-full overflow-y-auto rounded-t-2xl shadow-2xl sm:max-h-[88vh] sm:w-[min(92vw,40rem)] sm:rounded-2xl ${theme.panel}`}
+        className={`max-h-[92vh] w-full overflow-y-auto rounded-t-2xl shadow-2xl sm:max-h-[88vh] sm:w-[min(92vw,40rem)] sm:rounded-2xl ${theme.fontClass} ${theme.panel}`}
       >
         <div
           className={`sticky top-0 z-10 flex items-start justify-between gap-3 border-b px-4 py-4 sm:gap-4 sm:px-5 ${theme.header}`}
@@ -138,10 +123,10 @@ export default function ProjectDetailModal({
           ) : null}
 
           {(hasDates || technologies.length > 0) ? (
-            <div className="flex flex-wrap gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               {hasDates ? (
                 <div
-                  className={`w-full min-w-0 rounded-xl border p-4 sm:w-auto sm:min-w-52 sm:max-w-full sm:p-5 ${theme.infoCard}`}
+                  className={`min-w-0 rounded-xl border p-4 sm:p-5 ${theme.infoCard}`}
                 >
                   <div
                     className={`flex items-center gap-2 text-sm font-bold ${theme.iconText}`}
@@ -165,7 +150,7 @@ export default function ProjectDetailModal({
 
               {technologies.length > 0 ? (
                 <div
-                  className={`w-full min-w-0 rounded-xl border p-4 sm:w-auto sm:min-w-56 sm:max-w-full sm:p-5 ${theme.infoCard}`}
+                  className={`min-w-0 rounded-xl border p-4 sm:p-5 ${theme.infoCard}`}
                 >
                   <div
                     className={`flex items-center gap-2 text-sm font-bold ${theme.iconText}`}

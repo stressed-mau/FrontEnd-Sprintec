@@ -1,4 +1,5 @@
 export type ProjectModalTheme = {
+  fontClass: string
   panel: string
   header: string
   eyebrow: string
