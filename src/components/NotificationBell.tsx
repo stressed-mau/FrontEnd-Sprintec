@@ -66,9 +66,7 @@ export function NotificationBell() {
                   <div
                     key={notification.id}
                     onClick={() => void handleNotificationClick(notification)}
-                    className={`block border-b border-[#6DACBF]/10 px-3 py-3 transition-colors sm:px-4 sm:py-4 cursor-pointer ${
-                      !notification.read ? "bg-[#C4A57C] hover:bg-[#B89468]" : "bg-white hover:bg-[#F7F0E1]/50"
-                    }`} >
+                    className="block cursor-pointer border-b border-[#6DACBF]/10 bg-white px-3 py-3 transition-colors hover:bg-[#F7F0E1]/50 sm:px-4 sm:py-4">
                     <div className="flex gap-3">
                       <div className="shrink-0">
                         <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${isMessage ? "bg-[#003A6C]/10 text-[#003A6C]" : "bg-[#003A6C]/10 text-[#003A6C]"}`}>
