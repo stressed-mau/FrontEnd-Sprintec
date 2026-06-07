@@ -1,65 +1,30 @@
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { Bell, MessageCircle, TrendingUp } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
-
-import { MESSAGES_ROUTE, NOTIFICATIONS_ROUTE } from "@/routes/route-paths"
+import { NOTIFICATIONS_ROUTE } from "@/routes/route-paths"
 import { useNotifications } from "@/hooks/useNotifications"
 import type { NotificationItem } from "@/services/notificationsService"
+import { navigateFromNotification } from '@/utils/notifications/notificationNavigation'
+import { useClickOutside } from '@/hooks/useClickOutside'
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  useClickOutside(dropdownRef, () => {setIsOpen(false)})
   const navigate = useNavigate()
   const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications({ pollIntervalMs: 5000 })
-
   const visibleNotifications = notifications.slice(0, 3)
-
   const handleNotificationClick = async (notification: NotificationItem) => {
     if (!notification.read) {
       await markAsRead(notification.id)
     }
+    navigateFromNotification(notification, navigate)  }
 
-    setIsOpen(false)
-
-    if (!notification.data) {
-      navigate(notification.link || '/notificaciones')
-      return
-    }
-
-    const data = notification.data
-
-    switch (notification.dataType) {
-      case 'weekly_global_report':
-        navigate('/tendencia-plantillas')
-        break
-      case 'new_message':
-        navigate(data.message_id ? `${MESSAGES_ROUTE}/${data.message_id}` : MESSAGES_ROUTE)
-        break
-      case 'portfolio_view':
-        navigate('/visualizaciones')
-        break
-      default:
-        navigate(notification.link || '/notificaciones')
-        break
-    }
-  }
-
-  const handleMarkAllAsRead = async () => {
+  const handleMarkAllAsRead = async () => { 
     await markAllAsRead()
     setIsOpen(false)
     navigate(NOTIFICATIONS_ROUTE)
   }
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -80,15 +45,13 @@ export function NotificationBell() {
 
       {isOpen && (
        <div className="fixed inset-x-4 top-20 z-100 mt-2 max-w-none overflow-hidden rounded-2xl border border-[#6DACBF] bg-white shadow-xl animate-in fade-in zoom-in duration-200 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:w-80 md:w-96">
-          
           <div className="flex items-center justify-between border-b border-[#6DACBF]/30 px-4 py-3">
             <h3 className="text-sm font-semibold text-[#003A6C] sm:text-base">Notificaciones</h3>
             {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={() => void handleMarkAllAsRead()}
-                className="text-xs text-[#003A6C] transition-colors hover:underline"
-              >
+                className="text-xs text-[#003A6C] transition-colors hover:underline">
                 Marcar como leídas
               </button>
             )}
@@ -105,8 +68,7 @@ export function NotificationBell() {
                     onClick={() => void handleNotificationClick(notification)}
                     className={`block border-b border-[#6DACBF]/10 px-3 py-3 transition-colors sm:px-4 sm:py-4 cursor-pointer ${
                       !notification.read ? "bg-[#C4A57C] hover:bg-[#B89468]" : "bg-white hover:bg-[#F7F0E1]/50"
-                    }`}
-                  >
+                    }`} >
                     <div className="flex gap-3">
                       <div className="shrink-0">
                         <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${isMessage ? "bg-[#003A6C]/10 text-[#003A6C]" : "bg-[#003A6C]/10 text-[#003A6C]"}`}>
@@ -136,8 +98,7 @@ export function NotificationBell() {
             <Link
               to={NOTIFICATIONS_ROUTE}
               onClick={() => setIsOpen(false)}
-              className="block px-4 py-3 text-center text-sm font-bold text-[#003A6C] transition-colors hover:bg-[#F7F0E1]"
-            >
+              className="block px-4 py-3 text-center text-sm font-bold text-[#003A6C] transition-colors hover:bg-[#F7F0E1]" >
               Ver todas las notificaciones
             </Link>
           </div>

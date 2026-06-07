@@ -1,17 +1,9 @@
 import { useCallback, useEffect, useState } from "react"
-import {
-  getNotifications,
-  markAllNotificationsAsRead,
-  markNotificationAsRead,
-  type NotificationItem,
-  type NotificationsPageMeta,
-} from "@/services/notificationsService"
+import {getNotifications,markAllNotificationsAsRead,markNotificationAsRead,type NotificationItem,type NotificationsPageMeta,} from "@/services/notificationsService"
 import { getAuthSession } from "@/services/auth"
 import { subscribeToUserNotifications } from "@/services/realtimeNotificationsService"
 
-type UseNotificationsOptions = {
-  pollIntervalMs?: number
-}
+type UseNotificationsOptions = { pollIntervalMs?: number}
 
 export function useNotifications(options: UseNotificationsOptions = {}) {
   const { pollIntervalMs = 0 } = options
@@ -20,13 +12,11 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
   const [pageError, setPageError] = useState("")
   const [page, setPage] = useState(1)
   const [meta, setMeta] = useState<NotificationsPageMeta>({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 })
-
   const refreshNotifications = useCallback(
     async (showLoading = false) => {
       if (showLoading) {
         setLoading(true)
       }
-
       try {
         const result = await getNotifications(page)
         setNotifications(result.notifications)
@@ -93,16 +83,5 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
 
   const unreadCount = notifications.filter((notification) => !notification.read).length
 
-  return {
-    notifications,
-    unreadCount,
-    loading,
-    pageError,
-    markAsRead,
-    markAllAsRead,
-    refreshNotifications,
-    page,
-    setPage,
-    meta,
-  }
+  return {notifications,unreadCount,loading,pageError,markAsRead,markAllAsRead,refreshNotifications, page,setPage, meta, }
 }

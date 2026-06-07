@@ -1,11 +1,4 @@
-import {
-  BadgeCheck,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-  X,
-  type LucideIcon,
-} from "lucide-react";
+import { BadgeCheck,ChevronLeft,ChevronRight,Users, X, type LucideIcon,} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -120,13 +113,13 @@ const AdminSideBar = () => {
 
         {isMobileOpen && (
           <div
-            className="fixed inset-0 z-[60] bg-black/30 backdrop-blur-[2px]"
+            className="fixed inset-0 z-60 bg-black/30 backdrop-blur-[2px]"
             onClick={() => setIsMobileOpen(false)}
           />
         )}
 
         <aside
-          className={`fixed left-0 top-0 z-[70] h-full w-[280px] bg-white p-6 shadow-2xl transition-transform duration-300 ease-in-out ${
+          className={`fixed left-0 top-0 z-70 h-full w-70 bg-white p-6 shadow-2xl transition-transform duration-300 ease-in-out ${
             isMobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >

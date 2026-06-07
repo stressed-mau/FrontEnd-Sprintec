@@ -1,7 +1,6 @@
 import { Check, ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { NotificationItem } from '@/services/notificationsService'
-
 import { Footer } from '@/components/Footer'
 import Header from '@/components/HeaderUser'
 import Sidebar from '@/components/Sidebar'
