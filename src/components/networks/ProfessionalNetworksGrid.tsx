@@ -1,6 +1,7 @@
 import { Check, ExternalLink, Link2, Loader2, Unplug } from "lucide-react"
 
 import { PROFESSIONAL_NETWORKS, type ConnectedProfessionalNetwork } from "@/components/networks/ProfessionalNetworksCatalog"
+import { SectionHeader } from "@/components/sections/SectionHeader"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -14,9 +15,7 @@ type ProfessionalNetworksGridProps = {
 export function ProfessionalNetworksGrid({ networks, isLoading, onConnect, onDelete }: ProfessionalNetworksGridProps) {
   return (
     <div>
-      <h2 id="titulo-lista-redes-profesionales" className="mb-4 text-lg font-semibold text-[#111827]">
-        Redes disponibles
-      </h2>
+      <SectionHeader title="Redes disponibles" size="subsection" headingLevel={2} titleId="titulo-lista-redes-profesionales" className="mb-4" />
       {isLoading ? <NetworkLoadingGrid /> : <NetworkCards networks={networks} onConnect={onConnect} onDelete={onDelete} />}
     </div>
   )

@@ -3,6 +3,7 @@ import { GraduationCap, X } from "lucide-react"
 
 import { EducationCertificatePreviewModal } from "@/components/education/EducationCertificatePreviewModal"
 import { EducationStatusBadge } from "@/components/education/EducationStatusBadge"
+import { SectionHeader } from "@/components/sections/SectionHeader"
 import { Button } from "@/components/ui/button"
 import type { EducationItem } from "@/types/education"
 import { formatEducationDate } from "@/utils/educationDateUtils"
@@ -30,10 +31,12 @@ export function EducationDetailsModal({ education, onClose }: { education: Educa
 function EducationDetailsHeader({ onClose }: { onClose: () => void }) {
   return (
     <div className="mb-6 flex items-start justify-between gap-4">
-      <div>
-        <h2 className="text-2xl font-bold text-[#003A6C]">Detalle de Formación Académica</h2>
-        <p className="mt-1 text-sm text-[#4B778D]">Información completa del registro seleccionado.</p>
-      </div>
+      <SectionHeader
+        title="Detalle de Formación Académica"
+        description="Información completa del registro seleccionado."
+        size="modal"
+        headingLevel={2}
+      />
       <button type="button" onClick={onClose} className="rounded-full p-1 text-[#003A6C] transition hover:bg-[#EEF5F9]" aria-label="Cerrar detalle de formación académica">
         <X className="size-5" />
       </button>

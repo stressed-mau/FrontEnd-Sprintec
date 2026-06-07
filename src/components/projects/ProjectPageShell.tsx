@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 
 import { Footer } from "@/components/Footer"
 import Header from "@/components/HeaderUser"
+import { SectionHeader } from "@/components/sections/SectionHeader"
 import Sidebar from "@/components/Sidebar"
 
 export function ProjectPageShell({
@@ -20,10 +21,7 @@ export function ProjectPageShell({
         <Sidebar />
         <main className="flex-1 p-4 sm:p-6 md:p-10">
           <div className="mx-auto max-w-6xl space-y-6">
-            <div className="text-center sm:text-left">
-              <h1 className="text-3xl font-bold text-[#003A6C] md:text-4xl">{title}</h1>
-              <p className="mt-2 text-sm text-[#4B778D] md:text-base">{description}</p>
-            </div>
+            <SectionHeader title={title} description={description} align="center" />
             {children}
           </div>
         </main>

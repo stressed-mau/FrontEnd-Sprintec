@@ -18,7 +18,7 @@ export default function BaseModal({
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-md rounded-[32px] bg-white p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200 sm:rounded-[32px] sm:p-8">
         <button
           type="button"
           onClick={onClose}
