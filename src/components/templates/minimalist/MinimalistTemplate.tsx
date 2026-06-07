@@ -12,6 +12,7 @@ export default function MinimalistTemplate({
   onProjectClick,
   onExperienceClick,
   onEducationClick,
+  onCertificateClick,
   onSocialClick,
 }: MinimalistTemplateProps) {
   const data = useMinimalistTemplateData(profile, portfolio, isPreview)
@@ -38,6 +39,7 @@ export default function MinimalistTemplate({
             onProjectClick={onProjectClick}
             onExperienceClick={onExperienceClick}
             onEducationClick={onEducationClick}
+            onCertificateClick={onCertificateClick}
           />
         </div>
         <MinimalistNavigation

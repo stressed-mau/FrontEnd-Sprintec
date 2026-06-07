@@ -28,6 +28,7 @@ export function EducationFormModal({ manager }: { manager: EducationManager }) {
             educationFieldOptions={manager.educationOptions.fields}
             certificateInputRef={manager.certificateInputRef}
             canEditEndDate={manager.canEditEndDate}
+            isEditing
             tone="modal"
             onFieldChange={manager.updateField}
             onBlur={manager.handleBlur}

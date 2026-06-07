@@ -14,6 +14,7 @@ export type MinimalistTemplateProps = {
   onProjectClick?: (projectId?: string | number) => void
   onExperienceClick?: (experienceId?: string | number) => void
   onEducationClick?: (educationId?: string | number) => void
+  onCertificateClick?: (certificateId?: string | number) => void
   onSocialClick?: (network: unknown) => void
 }
 
@@ -66,6 +67,7 @@ export type MinimalistCertificate = {
   id: string
   name: string
   issuer: string
+  source: Record<string, unknown>
 }
 
 export type MinimalistSocialNetwork = {

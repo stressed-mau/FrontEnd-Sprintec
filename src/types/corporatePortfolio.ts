@@ -57,6 +57,7 @@ export type CorporateCertificateItem = {
   title: string
   institution: string
   period: string
+  source: Record<string, unknown>
 }
 
 export type CorporateProjectItem = {
@@ -99,5 +100,6 @@ export type CorporatePortfolioProps = {
   onProjectClick?: (projectId?: string | number) => void
   onExperienceClick?: (experienceId?: string | number) => void
   onEducationClick?: (educationId?: string | number) => void
+  onCertificateClick?: (certificateId?: string | number) => void
   onSocialClick?: (network: unknown) => void
 }

@@ -121,6 +121,7 @@ function getCertificates(certificates: unknown[]): CorporateCertificateItem[] {
       title: getCorporateText(source.name) || "Sin certificado",
       institution: getCorporateText(source.issuer) || "Sin institución",
       period: "",
+      source,
     }
   })
 }

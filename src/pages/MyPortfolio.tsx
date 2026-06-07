@@ -12,6 +12,7 @@ import { useUserPersonalData } from "@/hooks/useUserPersonalData"
 import { asBoolean, mapToVisibilityData } from "@/utils/PortfolioVisibility";
 import ProjectDetailModal from "@/components/portfolio/ProjectDetailModal"
 import DetailRecordModal from "@/components/portfolio/DetailRecordModal"
+import CertificateDetailModal from "@/components/portfolio/CertificateDetailModal"
 import { PROJECT_MODAL_THEMES } from "@/utils/PublicPortfolioUtils"
 
 type PortfolioItem = {
@@ -19,7 +20,7 @@ type PortfolioItem = {
   is_public?: boolean;
 };
 type SelectedPortfolioDetail = {
-  type: "project" | "experience" | "education";
+  type: "project" | "experience" | "education" | "certificate";
   item: unknown;
 } | null;
 
@@ -166,6 +167,10 @@ const MyPortfolio = () => {
     const education = visiblePortfolio.educations.find((item: EducationItem) => String(item.id) === String(educationId))
     if (education) setSelectedDetail({ type: "education", item: education })
   }
+  const openCertificateDetail = (certificateId?: string | number) => {
+    const certificate = visiblePortfolio.certificates.find((item: PortfolioItem) => String(item.id) === String(certificateId))
+    if (certificate) setSelectedDetail({ type: "certificate", item: certificate })
+  }
   return (
     <div className="min-h-screen bg-[#F7F0E1]">
       <Header />
@@ -181,6 +186,7 @@ const MyPortfolio = () => {
           onProjectClick={openProjectDetail}
           onExperienceClick={openExperienceDetail}
           onEducationClick={openEducationDetail}
+          onCertificateClick={openCertificateDetail}
           />}
 
           {isMinimalist && <MinimalistTemplate 
@@ -191,6 +197,7 @@ const MyPortfolio = () => {
             onProjectClick={openProjectDetail}
             onExperienceClick={openExperienceDetail}
             onEducationClick={openEducationDetail}
+            onCertificateClick={openCertificateDetail}
           />}
 
           {isCorporate && <CorporatePortfolioTemplate 
@@ -200,6 +207,7 @@ const MyPortfolio = () => {
           onProjectClick={openProjectDetail}
           onExperienceClick={openExperienceDetail}
           onEducationClick={openEducationDetail}
+          onCertificateClick={openCertificateDetail}
           />}
 
           {!isModern && !isMinimalist && !isCorporate && (
@@ -238,6 +246,13 @@ const MyPortfolio = () => {
         <DetailRecordModal
           kind="education"
           record={selectedDetail.item}
+          theme={modalTheme}
+          onClose={() => setSelectedDetail(null)}
+        />
+      ) : null}
+      {selectedDetail?.type === "certificate" ? (
+        <CertificateDetailModal
+          certificate={selectedDetail.item}
           theme={modalTheme}
           onClose={() => setSelectedDetail(null)}
         />

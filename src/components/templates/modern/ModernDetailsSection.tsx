@@ -8,6 +8,7 @@ type ModernDetailsSectionProps = {
   data: ModernTemplateData
   onExperienceClick?: (experienceId?: string | number) => void
   onEducationClick?: (educationId?: string | number) => void
+  onCertificateClick?: (certificateId?: string | number) => void
   onSocialClick?: (network: unknown) => void
 }
 
@@ -20,7 +21,7 @@ export function ModernDetailsSection(props: ModernDetailsSectionProps) {
         <ModernExperienceSection experience={props.data.workExperience} onExperienceClick={props.onExperienceClick} />
         <div className="space-y-16">
           <ModernEducationSection education={props.data.academicExperience} onEducationClick={props.onEducationClick} />
-          <ModernCertificatesSection certificates={props.data.certificates} />
+          <ModernCertificatesSection certificates={props.data.certificates} onCertificateClick={props.onCertificateClick} />
           <ModernNetworksSection networks={props.data.socialNetworks} onSocialClick={props.onSocialClick} />
         </div>
       </div>
@@ -29,5 +30,5 @@ export function ModernDetailsSection(props: ModernDetailsSectionProps) {
 }
 
 function hasDetails(data: ModernTemplateData) {
-  return Boolean(data.workExperience.length || data.academicExperience.length || data.socialNetworks.length)
+  return Boolean(data.workExperience.length || data.academicExperience.length || data.certificates.length || data.socialNetworks.length)
 }

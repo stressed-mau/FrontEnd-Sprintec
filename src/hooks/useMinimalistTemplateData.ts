@@ -112,6 +112,7 @@ function getCertificates(certificates: unknown[]): MinimalistCertificate[] {
       id: getMinimalistId(source),
       name: getMinimalistText(source.name) || "Certificado",
       issuer: getMinimalistText(source.issuer) || "Institución",
+      source,
     }
   })
 }

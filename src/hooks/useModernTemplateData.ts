@@ -126,6 +126,7 @@ function getCertificates(certificates: unknown[]): ModernCertificate[] {
       id: getModernId(source),
       name: getModernText(source.name),
       issuer: getModernText(source.issuer),
+      source,
     }
   })
 }
