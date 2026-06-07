@@ -12,7 +12,7 @@ export function NotificationBell() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   useClickOutside(dropdownRef, () => {setIsOpen(false)})
   const navigate = useNavigate()
-  const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications({ pollIntervalMs: 5000 })
+  const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications()
   const visibleNotifications = notifications.slice(0, 3)
   const handleNotificationClick = async (notification: NotificationItem) => {
     if (!notification.read) {

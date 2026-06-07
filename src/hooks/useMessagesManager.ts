@@ -9,7 +9,7 @@ import { getInboxMessages, readInboxMessage } from "@/services/messagesService"
 import { subscribeToUserNotifications } from "@/services/realtimeNotificationsService"
 import type { InboxMessage } from "@/types/messages"
 
-const MESSAGES_POLL_INTERVAL_MS = 5000
+const MESSAGES_FALLBACK_REFRESH_MS = 15000
 
 export function useMessagesManager() {
   const navigate = useNavigate()
@@ -90,7 +90,7 @@ export function useMessagesManager() {
   }, [messages])
 
   useEffect(() => subscribeToMessages(loadMessages), [loadMessages])
-  useEffect(() => pollMessages(loadMessages), [loadMessages])
+  useEffect(() => refreshMessagesFallback(loadMessages), [loadMessages])
   useEffect(() => {
     if (!messageId) return
     void loadMessageFromRoute(messageId)
@@ -139,10 +139,19 @@ function subscribeToMessages(loadMessages: (showLoading?: boolean) => Promise<vo
   })
 }
 
-function pollMessages(loadMessages: (showLoading?: boolean) => Promise<void>) {
+function refreshMessagesFallback(loadMessages: (showLoading?: boolean) => Promise<void>) {
   const intervalId = window.setInterval(() => {
-    void loadMessages(false)
-  }, MESSAGES_POLL_INTERVAL_MS)
+    if (document.visibilityState === "visible") void loadMessages(false)
+  }, MESSAGES_FALLBACK_REFRESH_MS)
 
-  return () => window.clearInterval(intervalId)
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === "visible") void loadMessages(false)
+  }
+
+  document.addEventListener("visibilitychange", handleVisibilityChange)
+
+  return () => {
+    window.clearInterval(intervalId)
+    document.removeEventListener("visibilitychange", handleVisibilityChange)
+  }
 }
