@@ -10,7 +10,7 @@ import {
   type PersonalDataForm,
 } from "@/utils/PersonalDataValidation";
 import { mapUserToForm, userHasData } from "@/utils/PersonalDataMapper";
-import {createUserInformation, getUserInformation, updateUserInformation, type UserInformation,} from "@/services/personalDataService";
+import {createUserInformation, getUserInformation, updateUserInformation, type UserInformation,} from "@/services/PersonalDataService";
 import { usePhoneData } from "@/hooks/usePhoneData";
 export const useUserPersonalData = () => {
   const {countryCode, setCountryCode, phoneNumber, setPhoneNumber, originalPhoneNumber, applyPhoneNumber,} = usePhoneData();

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import type { Portfolio } from "@/types/portfolio";
 import { getAuthSession } from "@/services/auth/authStorageService";
 import { api } from "@/services/api";
-import { getUserInformation } from "@/services/personalDataService"; 
+import { getUserInformation } from "@/services/PersonalDataService"; 
 import { getSkills } from "@/services/skillsService";
 import { getEducation } from "@/services/educationService";
 import { getExperiences } from "@/services/experienceService";
