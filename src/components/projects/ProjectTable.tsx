@@ -117,13 +117,30 @@ function ProjectTableRow({ project, selectable, selectedIds, onToggleSelect, onR
   return (
     <tr key={project.id} onClick={() => onRowClick?.(project)} className={getRowClassName(isEditVariant, Boolean(onRowClick))}>
       {selectable ? <ProjectSelectCell project={project} selectedIds={selectedIds} onToggleSelect={onToggleSelect} isEditVariant={isEditVariant} /> : null}
-      <td className={isEditVariant ? "px-4 py-3 font-medium text-gray-900" : "px-4 py-3 font-semibold text-[#003A6C]"}>{project.nombre}</td>
+      <td className="px-4 py-3"><ProjectIdentityCell project={project} isEditVariant={isEditVariant} /></td>
       <td className={isEditVariant ? "px-4 py-3 text-gray-600" : "px-4 py-3 text-[#355468]"}>{project.rol}</td>
       <td className="px-4 py-3"><ProjectTechnologyBadges project={project} isEditVariant={isEditVariant} /></td>
       <td className={isEditVariant ? "px-4 py-3 text-gray-600" : "px-4 py-3 text-[#4B778D]"}>{formatProjectDate(project.fechaInicio)} - {project.is_current ? (isEditVariant ? "Presente" : "Actualidad") : formatProjectDate(project.fechaFin)}</td>
       <td className="px-4 py-3"><ProjectStatusBadge project={project} isEditVariant={isEditVariant} /></td>
       {onEdit ? <ProjectEditCell project={project} onEdit={onEdit} isEditVariant={isEditVariant} /> : null}
     </tr>
+  )
+}
+
+function ProjectIdentityCell({ project, isEditVariant }: { project: ProjectItem; isEditVariant: boolean }) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      {project.image ? (
+        <img src={project.image} alt="" className={getProjectImageClassName(isEditVariant)} />
+      ) : (
+        <div className={getProjectIconClassName(isEditVariant)}>
+          <FolderGit2 className="size-5" />
+        </div>
+      )}
+      <p className={isEditVariant ? "min-w-0 break-words font-medium text-gray-900" : "min-w-0 break-words font-semibold text-[#003A6C]"}>
+        {project.nombre}
+      </p>
+    </div>
   )
 }
 
@@ -179,6 +196,18 @@ function getRowClassName(isEditVariant: boolean, canClick: boolean) {
   if (isEditVariant) return `border-b border-gray-100 transition last:border-0 ${canClick ? "cursor-pointer hover:bg-gray-50" : ""}`
 
   return `border-t border-[#D7E6F2] transition ${canClick ? "cursor-pointer hover:bg-[#F7FBFD]" : ""}`
+}
+
+function getProjectImageClassName(isEditVariant: boolean) {
+  return isEditVariant
+    ? "size-10 shrink-0 rounded-lg border border-gray-200 bg-white object-contain p-1"
+    : "size-10 shrink-0 rounded-lg border border-[#D7E6F2] bg-white object-contain p-1"
+}
+
+function getProjectIconClassName(isEditVariant: boolean) {
+  return isEditVariant
+    ? "flex size-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500"
+    : "flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#D9EAF4] text-[#003A6C]"
 }
 
 function getTechnologyBadgeClassName(isEditVariant: boolean) {

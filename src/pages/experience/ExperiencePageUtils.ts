@@ -1,6 +1,6 @@
 import type { ExperienceItem } from "@/hooks/useExperienceManager"
 
-export const ITEMS_PER_PAGE = 10
+export const ITEMS_PER_PAGE = 5
 
 export function getExperienceTypeLabel(type: ExperienceItem["type"]) {
   return type === "academica" ? "Formación Académica" : "Experiencia Laboral"

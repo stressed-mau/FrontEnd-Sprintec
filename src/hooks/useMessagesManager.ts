@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { MutableRefObject } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 
+import { usePagination } from "@/hooks/usePagination"
 import { MESSAGES_ROUTE } from "@/routes/route-paths"
 import { getAuthSession } from "@/services/auth"
 import { getInboxMessages, readInboxMessage } from "@/services/messagesService"
@@ -20,6 +21,7 @@ export function useMessagesManager() {
   const [pageError, setPageError] = useState("")
   const selectionRequestRef = useRef(0)
   const messagesRef = useRef<InboxMessage[]>([])
+  const pagination = usePagination({ items: messages })
 
   const unreadCount = useMemo(() => messages.filter((message) => !message.read).length, [messages])
 
@@ -114,7 +116,7 @@ export function useMessagesManager() {
     if (selectionRequestRef.current === requestId) setLoadingMessageId("")
   }
 
-  return { messages, selectedMessage, unreadCount, loading, loadingMessageId, pageError, selectMessage }
+  return { messages, paginatedMessages: pagination.items, pagination, selectedMessage, unreadCount, loading, loadingMessageId, pageError, selectMessage }
 }
 
 function createSelectionRequest(selectionRequestRef: MutableRefObject<number>) {

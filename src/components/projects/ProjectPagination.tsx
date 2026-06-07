@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button"
 interface ProjectPaginationProps {
   currentPage: number
   totalPages: number
-  startIndex: number
-  endIndex: number
+  startIndex?: number
+  endIndex?: number
   totalItems: number
   onPageChange: (page: number) => void
 }
@@ -12,19 +12,14 @@ interface ProjectPaginationProps {
 export function ProjectPagination({
   currentPage,
   totalPages,
-  startIndex,
-  endIndex,
   totalItems,
   onPageChange,
 }: ProjectPaginationProps) {
   if (totalItems === 0 || totalPages <= 1) return null
 
   return (
-    <div className="flex flex-col gap-3 px-2 text-sm text-gray-700 sm:flex-row sm:items-center sm:justify-between">
-      <span>
-        Mostrando {startIndex + 1} a {endIndex} de {totalItems} resultados
-      </span>
-      <div className="flex flex-wrap gap-2">
+    <div className="flex justify-center px-2 text-sm text-gray-700">
+      <div className="flex flex-wrap justify-center gap-2">
         <Button type="button" variant="outline" disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)} className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
           Anterior
         </Button>

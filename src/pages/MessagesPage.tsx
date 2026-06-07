@@ -1,6 +1,7 @@
 import { MessageDetailPanel } from "@/components/messages/MessageDetailPanel"
 import { MessagesInboxPanel } from "@/components/messages/MessagesInboxPanel"
 import { MessagesPageHeader } from "@/components/messages/MessagesPageHeader"
+import { MessagesPagination } from "@/components/messages/MessagesPagination"
 import { Footer } from "@/components/Footer"
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
@@ -21,12 +22,22 @@ export function MessagesPage() {
             <div className="grid gap-6 lg:grid-cols-5">
               <div className="lg:col-span-2">
                 <MessagesInboxPanel
-                  messages={manager.messages}
+                  messages={manager.paginatedMessages}
                   selectedMessage={manager.selectedMessage}
                   loading={manager.loading}
                   loadingMessageId={manager.loadingMessageId}
                   onSelectMessage={(message) => void manager.selectMessage(message)}
                 />
+                <div className="mt-4">
+                  <MessagesPagination
+                    currentPage={manager.pagination.currentPage}
+                    totalPages={manager.pagination.totalPages}
+                    startIndex={manager.pagination.startIndex}
+                    endIndex={manager.pagination.endIndex}
+                    totalItems={manager.messages.length}
+                    onPageChange={manager.pagination.goToPage}
+                  />
+                </div>
               </div>
               <div className="lg:col-span-3">
                 <MessageDetailPanel selectedMessage={manager.selectedMessage} />

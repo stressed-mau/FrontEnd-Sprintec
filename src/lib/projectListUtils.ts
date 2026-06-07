@@ -1,6 +1,6 @@
 import type { ProjectItem } from "@/types/project"
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 5
 
 export function filterProjects(projects: ProjectItem[], searchTerm: string) {
   const normalizedSearch = searchTerm.trim().toLowerCase()

@@ -3,21 +3,18 @@ import { Button } from "@/components/ui/button"
 type EducationPaginationProps = {
   currentPage: number
   totalPages: number
-  startIndex: number
-  endIndex: number
+  startIndex?: number
+  endIndex?: number
   totalItems: number
   onPageChange: (page: number) => void
 }
 
-export function EducationPagination({ currentPage, totalPages, startIndex, endIndex, totalItems, onPageChange }: EducationPaginationProps) {
+export function EducationPagination({ currentPage, totalPages, totalItems, onPageChange }: EducationPaginationProps) {
   if (totalItems === 0 || totalPages <= 1) return null
 
   return (
-    <div className="flex flex-col gap-3 text-sm text-[#355468] sm:flex-row sm:items-center sm:justify-between">
-      <p>
-        Mostrando {startIndex + 1} a {Math.min(endIndex, totalItems)} de {totalItems} resultados
-      </p>
-      <div className="flex flex-wrap gap-2">
+    <div className="flex justify-center text-sm text-[#355468]">
+      <div className="flex flex-wrap justify-center gap-2">
         <PageButton label="Anterior" disabled={currentPage === 1} onClick={() => onPageChange(Math.max(1, currentPage - 1))} />
         {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
           <PageButton key={page} label={String(page)} active={currentPage === page} onClick={() => onPageChange(page)} />
