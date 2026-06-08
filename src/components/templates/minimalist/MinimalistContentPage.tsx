@@ -12,6 +12,7 @@ type MinimalistContentPageProps = {
   onProjectClick?: (projectId?: string | number) => void
   onExperienceClick?: (experienceId?: string | number) => void
   onEducationClick?: (educationId?: string | number) => void
+  onCertificateClick?: (certificateId?: string | number) => void
 }
 
 export function MinimalistContentPage(props: MinimalistContentPageProps) {
@@ -20,5 +21,5 @@ export function MinimalistContentPage(props: MinimalistContentPageProps) {
   if (props.currentPageId === "projects") return <MinimalistProjectsPage projects={props.data.projects} onProjectClick={props.onProjectClick} />
   if (props.currentPageId === "experience") return <MinimalistExperiencePage experiences={props.data.experiences} onExperienceClick={props.onExperienceClick} />
   if (props.currentPageId === "education") return <MinimalistEducationPage education={props.data.education} onEducationClick={props.onEducationClick} />
-  return <MinimalistCertificatesPage certificates={props.data.certificates} />
+  return <MinimalistCertificatesPage certificates={props.data.certificates} onCertificateClick={props.onCertificateClick} />
 }

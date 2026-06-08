@@ -14,13 +14,14 @@ type CorporateSectionContentProps = {
   onProjectClick?: (projectId?: string | number) => void
   onExperienceClick?: (experienceId?: string | number) => void
   onEducationClick?: (educationId?: string | number) => void
+  onCertificateClick?: (certificateId?: string | number) => void
   onSocialClick?: (network: unknown) => void
 }
 
 export function CorporateSectionContent(props: CorporateSectionContentProps) {
   if (props.sectionId === "corporate-intro") return <CorporateIntroSection {...props} />
   if (props.sectionId === "corporate-experience") return <CorporateExperienceSection {...props} experience={props.data.experience} />
-  if (props.sectionId === "corporate-certificates") return <CorporateCertificatesSection mode={props.mode} certificates={props.data.certificates} />
+  if (props.sectionId === "corporate-certificates") return <CorporateCertificatesSection mode={props.mode} certificates={props.data.certificates} onCertificateClick={props.onCertificateClick} />
   if (props.sectionId === "corporate-education") return <CorporateEducationSection {...props} education={props.data.education} />
   if (props.sectionId === "corporate-projects") return <CorporateProjectsSection {...props} projects={props.data.projects} />
   return <CorporateSkillsSection mode={props.mode} isActive={props.isActive} skills={props.data.skills} />

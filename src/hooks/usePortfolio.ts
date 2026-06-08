@@ -8,12 +8,14 @@ import { getEducation } from "@/services/educationService";
 import { getExperiences } from "@/services/experienceService";
 import { getProjects } from "@/services/projectCrudService";
 import { getUserSocialNetworks } from "@/services/socialNetworksService";
+import { getCertificates } from "@/services/certificatesService";
 import {
   normalizeProfile,
   mergeProjectDetails,
   normalizePortfolioProject,
   normalizePortfolioExperience,
   normalizePortfolioEducation,
+  normalizePortfolioCertificate,
 } from "@/utils/PortfolioNormalizers";
 type AuthSession = {
   user: {
@@ -63,6 +65,7 @@ type PortfolioApi = {
   work_experiences?: unknown[];
   experiences?: unknown[];
   educations?: unknown[];
+  certificates?: unknown[];
   social_networks?: SocialNetworkApi[];
   socialNetworks?: SocialNetworkApi[];
 };
@@ -81,7 +84,7 @@ const fetchPublicPortfolio = async (slug: string) => {
   return res.data?.success ? res.data.data : null;
 };
 const fetchUserPortfolio = async (session: AuthSession) => {
-  const [userData, skills, experiences, education, projects, social] =
+  const [userData, skills, experiences, education, projects, social, certificates] =
     await Promise.all([
       getUserInformation(String(session.user.id)),
       getSkills(),
@@ -89,6 +92,7 @@ const fetchUserPortfolio = async (session: AuthSession) => {
       getEducation(),
       getProjects(),
       getUserSocialNetworks(),
+      getCertificates(),
     ]);
 
   return {
@@ -98,6 +102,7 @@ const fetchUserPortfolio = async (session: AuthSession) => {
     education,
     projects,
     social,
+    certificates,
   };
 };
 const buildPortfolioFromApi = async (d:any , session: AuthSession | null, externalSlug?: string) => {
@@ -134,7 +139,7 @@ const buildPortfolioFromApi = async (d:any , session: AuthSession | null, extern
       platform: n.name ?? n.platform,
       url: n.url ?? "",
     })),
-    certificates: [],
+    certificates: (d.certificates || []).map(normalizePortfolioCertificate),
     isPublished: d.config.is_public ?? true,
     template: Number(d.config.template),
     config: d.config,
@@ -232,7 +237,7 @@ export const usePortfolio = (externalSlug?: string) => {
           educations: userData.education.map(normalizePortfolioEducation),
           projects: userData.projects.map(normalizePortfolioProject),
           socialNetworks: userData.social,
-          certificates: [],
+          certificates: userData.certificates.map(normalizePortfolioCertificate),
           template: 0,
           isPublished: false,
           config: (userData.userData as any).config || {},

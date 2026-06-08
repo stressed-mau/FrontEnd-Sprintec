@@ -70,14 +70,27 @@ function getEmptyProfile() {
 function getSkills(skills: unknown[]): ModernSkill[] {
   return skills.map((skill) => {
     const source = getModernRecord(skill)
+    const type = getSkillType(source)
+    const level = getSkillLevel(source)
     return {
       id: getModernId(source),
       key: getModernKey(source, "skills"),
       name: getModernText(source.name),
-      sublabel: getModernText(source.sublabel),
-      level: source.level,
+      sublabel: type === "tecnica" ? level : "Habilidad blanda",
+      type,
+      level,
     }
   })
+}
+
+function getSkillType(source: Record<string, unknown>): "tecnica" | "blanda" {
+  const value = getModernText(source.type) || getModernText(source.tipo)
+  const normalized = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  return normalized.includes("tecn") || normalized === "technical" ? "tecnica" : "blanda"
+}
+
+function getSkillLevel(source: Record<string, unknown>) {
+  return getModernText(source.level) || getModernText(source.level_of_domain) || getModernText(source.nivel) || "Sin nivel"
 }
 
 function getProjects(projects: unknown[]): ModernProject[] {
@@ -126,6 +139,7 @@ function getCertificates(certificates: unknown[]): ModernCertificate[] {
       id: getModernId(source),
       name: getModernText(source.name),
       issuer: getModernText(source.issuer),
+      source,
     }
   })
 }

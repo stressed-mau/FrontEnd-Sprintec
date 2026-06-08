@@ -61,12 +61,20 @@ function getPreviewItems<T>(items: T[], isPreview: boolean) {
 function getSkills(skills: unknown[]): MinimalistSkill[] {
   return skills.map((skill) => {
     const source = getMinimalistRecord(skill)
+    const type = getSkillType(source)
     return {
       id: getMinimalistId(source),
       label: getMinimalistText(source.label) || getMinimalistText(source.name),
-      level: getMinimalistText(source.level) || "Sin nivel",
+      level: getMinimalistText(source.level) || getMinimalistText(source.level_of_domain) || getMinimalistText(source.nivel) || "Sin nivel",
+      type,
     }
   })
+}
+
+function getSkillType(source: Record<string, unknown>): "tecnica" | "blanda" {
+  const value = getMinimalistText(source.type) || getMinimalistText(source.tipo)
+  const normalized = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  return normalized.includes("tecn") || normalized === "technical" ? "tecnica" : "blanda"
 }
 
 function getProjects(projects: unknown[]): MinimalistProject[] {
@@ -112,6 +120,7 @@ function getCertificates(certificates: unknown[]): MinimalistCertificate[] {
       id: getMinimalistId(source),
       name: getMinimalistText(source.name) || "Certificado",
       issuer: getMinimalistText(source.issuer) || "Institución",
+      source,
     }
   })
 }
