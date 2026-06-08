@@ -27,11 +27,12 @@ export interface NotificationsResponse {
 }
 
 const NOTIFICATIONS_ENDPOINT = "/notifications"
+export const DEFAULT_NOTIFICATIONS_PER_PAGE = 5
 
-export async function getNotifications(page = 1): Promise<NotificationsResponse> {
+export async function getNotifications(page = 1, perPage = DEFAULT_NOTIFICATIONS_PER_PAGE): Promise<NotificationsResponse> {
   try {
     const response = await api.get(NOTIFICATIONS_ENDPOINT, {
-      params: page > 1 ? { page } : undefined,
+      params: { page, per_page: perPage },
     })
     return normalizeNotificationsResponse(response.data?.data ?? response.data)
   } catch (error) {

@@ -23,7 +23,7 @@ export default function ModernTemplate({
     <div className={`w-full min-h-screen font-sans bg-[#fcecd4] ${previewClassName} text-[#173b61]`}>
       <ModernHeader displayOccupation={data.displayOccupation} />
       <ModernProfileSection data={data} />
-      <ModernSkillsSection skills={data.skills} highlightedSkills={data.highlightedSkills} />
+      <ModernSkillsSection technicalSkills={data.technicalSkills} softSkills={data.softSkills} />
       <ModernProjectsSection projects={data.projects} onProjectClick={onProjectClick} />
       <ModernDetailsSection
         data={data}

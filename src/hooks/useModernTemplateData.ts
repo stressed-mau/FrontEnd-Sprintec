@@ -25,11 +25,15 @@ export function useModernTemplateData(
   return useMemo(() => {
     const userProfile = getUserProfile(profile)
     const skills = getSkills(portfolio?.skills ?? [])
+    const technicalSkills = skills.filter((skill) => normalizeSkillType(skill.type) !== "blanda")
+    const softSkills = skills.filter((skill) => normalizeSkillType(skill.type) === "blanda")
 
     return {
       ...userProfile,
       skills,
-      highlightedSkills: skills.slice(0, 4),
+      highlightedSkills: technicalSkills.slice(0, 4),
+      technicalSkills,
+      softSkills,
       projects: getProjects(portfolio?.projects ?? []),
       workExperience: getExperience(portfolio?.experiences ?? []),
       academicExperience: getEducation(portfolio?.educations ?? []),
@@ -75,9 +79,17 @@ function getSkills(skills: unknown[]): ModernSkill[] {
       key: getModernKey(source, "skills"),
       name: getModernText(source.name),
       sublabel: getModernText(source.sublabel),
+      type: getModernText(source.type) || getModernText(source.tipo) || getModernText(source.skill_type) || getModernText(source.category),
+      levelLabel: getModernText(source.level_of_domain) || getModernText(source.level) || getModernText(source.nivel),
       level: source.level,
     }
   })
+}
+
+function normalizeSkillType(type?: string) {
+  const value = (type ?? "").trim().toLowerCase()
+  if (["blanda", "soft", "soft_skill", "habilidad blanda"].includes(value)) return "blanda"
+  return "tecnica"
 }
 
 function getProjects(projects: unknown[]): ModernProject[] {

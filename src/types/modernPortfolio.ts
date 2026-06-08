@@ -32,6 +32,8 @@ export type ModernSkill = {
   key: string
   name: string
   sublabel: string
+  type?: string
+  levelLabel?: string
   level?: unknown
 }
 
@@ -83,6 +85,8 @@ export type ModernTemplateData = {
   imageUrl: string
   skills: ModernSkill[]
   highlightedSkills: ModernSkill[]
+  technicalSkills: ModernSkill[]
+  softSkills: ModernSkill[]
   projects: ModernProject[]
   workExperience: ModernExperience[]
   academicExperience: ModernEducation[]

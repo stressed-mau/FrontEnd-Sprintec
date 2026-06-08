@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import {getNotifications,markAllNotificationsAsRead,markNotificationAsRead,type NotificationItem,type NotificationsPageMeta,} from "@/services/notificationsService"
+import {getNotifications,markAllNotificationsAsRead,markNotificationAsRead,type NotificationItem,type NotificationsPageMeta,DEFAULT_NOTIFICATIONS_PER_PAGE,} from "@/services/notificationsService"
 import { normalizeNotification } from "@/utils/notifications/notificationMapperUtils"
 import { getAuthSession } from "@/services/auth"
 import { subscribeToUserNotifications } from "@/services/realtimeNotificationsService"
@@ -12,20 +12,20 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
   const [loading, setLoading] = useState(true)
   const [pageError, setPageError] = useState("")
   const [page, setPage] = useState(1)
-  const [meta, setMeta] = useState<NotificationsPageMeta>({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 })
+  const [meta, setMeta] = useState<NotificationsPageMeta>({ currentPage: 1, perPage: DEFAULT_NOTIFICATIONS_PER_PAGE, total: 0, totalPages: 1 })
   const refreshNotifications = useCallback(
     async (showLoading = false) => {
       if (showLoading) {
         setLoading(true)
       }
       try {
-        const result = await getNotifications(page)
+        const result = await getNotifications(page, DEFAULT_NOTIFICATIONS_PER_PAGE)
         setNotifications(result.notifications)
         setMeta(result.meta)
         setPageError("")
       } catch (error) {
         setNotifications([])
-        setMeta({ currentPage: 1, perPage: 15, total: 0, totalPages: 1 })
+        setMeta({ currentPage: 1, perPage: DEFAULT_NOTIFICATIONS_PER_PAGE, total: 0, totalPages: 1 })
         setPageError(error instanceof Error ? error.message : "No se pudieron cargar las notificaciones.")
       } finally {
         if (showLoading) {

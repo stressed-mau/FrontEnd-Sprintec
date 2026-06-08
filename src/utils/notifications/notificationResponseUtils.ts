@@ -37,7 +37,7 @@ export function normalizeNotificationsResponse(data: unknown): NotificationsResp
     const record = payload as Record<string, unknown>
     const notifications = Array.isArray(record.data) ? record.data : Array.isArray(record.notifications) ? record.notifications : []
     const currentPage = Number(record.current_page ?? 1)
-    const perPage = Number(record.per_page ?? (notifications.length > 0 ? notifications.length : 15))
+    const perPage = Number(record.per_page ?? (notifications.length > 0 ? notifications.length : 5))
     const total = Number(record.total ?? notifications.length)
     const totalPages = perPage > 0 ? Math.max(1, Math.ceil(total / perPage)) : 1
 
@@ -54,6 +54,6 @@ export function normalizeNotificationsResponse(data: unknown): NotificationsResp
 
   return {
     notifications: [],
-    meta: { currentPage: 1, perPage: 15, total: 0, totalPages: 1 },
+    meta: { currentPage: 1, perPage: 5, total: 0, totalPages: 1 },
   }
 }

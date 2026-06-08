@@ -149,22 +149,22 @@ export default function ExplorePortfolioPage() {
                       navigate(`/p/${portfolio.slug}`, { state: { fromExplore: true } });
                     }
                   }}
-                  className="group flex w-full items-center gap-4 rounded-xl border border-gray-100 bg-white p-2 shadow-sm transition-all hover:border-[#4982AD]/30 hover:shadow-md" >
-                  <div className="shrink-0">
+                  className="group flex w-full max-w-105 items-start justify-end gap-5 rounded-xl border border-gray-100 bg-white p-2 shadow-sm transition-all hover:border-[#4982AD]/30 hover:shadow-md sm:gap-6 sm:justify-self-end" >
+                  <div className="shrink-0 pt-1">
                     {portfolio.profileImage ? (
                       <img
                         src={portfolio.profileImage}
                         className="size-16 rounded-full object-cover ring-2 ring-[#FDF8F0] md:size-18"
                         alt="Perfil" />
                     ) : (
-                      <div className="size-16 md:size-18 flex items-center justify-center rounded-full bg-[#003A6C] text-lg font-bold text-white">
+                      <div className="flex size-16 items-center justify-center rounded-full bg-[#003A6C] text-lg font-bold text-white md:size-18">
                         {getInitials(portfolio.fullName || portfolio.username)}
                       </div>
                     )}
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-col">
+                  <div className="min-w-0 flex-1 pt-0.5 sm:pt-1">
+                    <div className="flex flex-col gap-0.5">
                       <h3 className="truncate text-base font-bold text-[#003A6C]">
                         {portfolio.fullName || "Sin nombre"}
                       </h3>
