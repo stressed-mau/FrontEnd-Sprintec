@@ -10,7 +10,7 @@ export function MinimalistProjectsPage({ projects, onProjectClick }: MinimalistP
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <h2 className="text-4xl font-black text-zinc-900 uppercase tracking-tighter">Proyectos</h2>
-      <div className="grid max-h-[350px] gap-4 overflow-y-auto pt-2 pr-2 sm:grid-cols-2">
+      <div className="grid gap-4 pt-2 sm:grid-cols-2">
         {projects.map((project) => <ProjectCard key={project.id} project={project} onProjectClick={onProjectClick} />)}
       </div>
     </div>

@@ -8,9 +8,9 @@ import {
   validatePreservedFields,
   type FormErrors,
   type PersonalDataForm,
-} from "@/utils/PersonalDataValidation";
-import { mapUserToForm, userHasData } from "@/utils/PersonalDataMapper";
-import {createUserInformation, getUserInformation, updateUserInformation, type UserInformation,} from "@/services/PersonalDataService";
+} from "@/utils/personalDataValidationUtils";
+import { mapUserToForm, userHasData } from "@/services/mappers/personalDataMapper";
+import {createUserInformation, getUserInformation, updateUserInformation, type UserInformation,} from "@/services/personalDataService";
 import { usePhoneData } from "@/hooks/usePhoneData";
 export const useUserPersonalData = () => {
   const {countryCode, setCountryCode, phoneNumber, setPhoneNumber, originalPhoneNumber, applyPhoneNumber,} = usePhoneData();

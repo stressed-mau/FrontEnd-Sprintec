@@ -17,7 +17,7 @@ import {
   sameRecordId,
   getPortfolioRecipientId,
   PROJECT_MODAL_THEMES, 
-} from "@/utils/PublicPortfolioUtils"
+} from "@/utils/publicPortfolioUtils"
 interface PortfolioProject {
   id: string | number
   is_public?: boolean

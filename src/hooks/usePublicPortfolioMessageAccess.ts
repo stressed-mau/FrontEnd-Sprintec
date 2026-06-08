@@ -1,5 +1,5 @@
 import { getAuthSession, isAuthenticated } from "@/services/auth";
-import { getPortfolioRecipientId } from "@/utils/PublicPortfolioUtils";
+import { getPortfolioRecipientId } from "@/utils/publicPortfolioUtils";
 
 export function usePublicPortfolioMessageAccess(portfolio: unknown) {
   const isGuestMessage = !isAuthenticated();

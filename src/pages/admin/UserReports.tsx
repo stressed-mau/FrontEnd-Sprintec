@@ -9,7 +9,7 @@ import LoginChart from "@/components/reports/LoginChart";
 import { Footer } from '@/components/Footer';
 import { useUserReports } from "@/hooks/useUserReports";
 import Header from '../../components/HeaderUser'; 
-import AdminSidebar from '../../components/Admin/AdminSidebar';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
 const UserReports = () => {
 
@@ -18,7 +18,7 @@ const UserReports = () => {
   >('Mes');
 
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 6;
+  const usersPerPage = 5;
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
 

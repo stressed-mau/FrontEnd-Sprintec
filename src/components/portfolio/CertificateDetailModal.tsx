@@ -3,7 +3,7 @@ import { useState } from "react"
 
 import { CertificateDocumentPreviewModal } from "@/components/certificates/CertificateDocumentPreview"
 import type { ProjectModalTheme } from "@/types/projectModalTheme"
-import { formatPublicPortfolioDate, getFirstText } from "@/utils/PublicPortfolioUtils"
+import { formatPublicPortfolioDate, getFirstText } from "@/utils/publicPortfolioUtils"
 
 type CertificateDetailModalProps = {
   certificate: unknown

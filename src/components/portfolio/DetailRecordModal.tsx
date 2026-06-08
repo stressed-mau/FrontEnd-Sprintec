@@ -13,7 +13,7 @@ import {
   getRecordEndDate,
   getEducationField,
   isCurrentRecord,
-} from "@/utils/PublicPortfolioUtils"
+} from "@/utils/publicPortfolioUtils"
 
 import type { ProjectModalTheme } from "@/types/projectModalTheme"
 

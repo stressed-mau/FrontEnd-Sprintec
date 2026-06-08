@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { getSocialNetworkDisplayName } from "@/components/portfolio/SocialNetworkIcon"
-import { formatPublicPortfolioPeriod, getProjectImage, getRecordImage, isCurrentRecord } from "@/utils/PublicPortfolioUtils"
+import { formatPublicPortfolioPeriod, getProjectImage, getRecordImage, isCurrentRecord } from "@/utils/publicPortfolioUtils"
 import type {
   CorporateCertificateItem,
   CorporateEducationItem,

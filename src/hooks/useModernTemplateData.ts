@@ -9,7 +9,7 @@ import type {
   ModernTemplateData,
   ModernTemplateProps,
 } from "@/types/modernPortfolio"
-import { getProjectImage, getRecordImage } from "@/utils/PublicPortfolioUtils"
+import { getProjectImage, getRecordImage } from "@/utils/publicPortfolioUtils"
 import {
   getModernId,
   getModernKey,

@@ -9,11 +9,11 @@ import ModernTemplate from "@/components/templates/modern/ModernTemplate"
 import { CorporatePortfolioTemplate } from "@/components/templates/corporate/CorporatePortfolioTemplate"
 import ClassicPortfolioTemplate from "@/components/portfolio/ClassicPortfolioTemplate";
 import { useUserPersonalData } from "@/hooks/useUserPersonalData"
-import { asBoolean, mapToVisibilityData } from "@/utils/PortfolioVisibility";
+import { asBoolean, mapToVisibilityData } from "@/utils/portfolioVisibilityUtils";
 import ProjectDetailModal from "@/components/portfolio/ProjectDetailModal"
 import DetailRecordModal from "@/components/portfolio/DetailRecordModal"
 import CertificateDetailModal from "@/components/portfolio/CertificateDetailModal"
-import { PROJECT_MODAL_THEMES } from "@/utils/PublicPortfolioUtils"
+import { PROJECT_MODAL_THEMES } from "@/utils/publicPortfolioUtils"
 
 type PortfolioItem = {
   id: string | number;
