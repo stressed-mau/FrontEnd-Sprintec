@@ -9,7 +9,7 @@ import {
   sendPortfolioTrackingPulse,
   startPortfolioTracking,
 } from "@/services/portfolioAnalyticsService";
-import { getNetworkName } from "@/utils/PublicPortfolioUtils";
+import { getNetworkName } from "@/utils/publicPortfolioUtils";
 
 type TrackingPortfolio = {
   config?: {

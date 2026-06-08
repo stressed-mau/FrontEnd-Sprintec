@@ -5,7 +5,7 @@ import { Footer } from '@/components/Footer';
 import StatCard from "@/components/reports/StatCard";
 import PrintHeader from "@/components/reports/PrintHeader";
 import Header from '../../components/HeaderUser'; 
-import AdminSidebar from '../../components/Admin/AdminSidebar';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 import TopIssuersChart from "@/components/reports/TopIssuersChart";
 import FormatDistributionChart from "@/components/reports/FormatDistributionChart";
 import ExpirationChart from "@/components/reports/ExpirationChart";

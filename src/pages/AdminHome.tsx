@@ -1,5 +1,5 @@
 import Header from "../components/HeaderUser";
-import AdminSidebar from '../components/Admin/AdminSidebar';
+import AdminSidebar from '../components/admin/AdminSidebar';
 import { Footer } from "@/components/Footer";
 import { getAuthSession } from "@/services/auth";
 import { FileBarChart2, BadgeCheck, Info, Shield } from "lucide-react";
@@ -19,7 +19,6 @@ const AdminHome = () => {
         <main className="flex-1 p-6 md:p-10">
           <div className="max-w-5xl mx-auto">
 
-            {/* HEADER */}
             <div className="text-center mb-12">
               <h1 className="text-[#003A6C] text-3xl md:text-5xl font-black mb-4">
                 Panel de Administración, {displayName}
@@ -29,14 +28,10 @@ const AdminHome = () => {
               </p>
             </div>
 
-            {/* ALERTA INFORMATIVA */}
-            
-
-            {/* ACCESOS PRINCIPALES */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
 
               <Link
-                to="/admin/reports"
+                to="/admin/usuarios"
                 className="flex items-center gap-4 rounded-2xl border-2 border-[#C2DBED] bg-white p-6 shadow-sm hover:shadow-md transition"
               >
                 <div className="flex size-12 items-center justify-center rounded-full bg-[#C2DBED]/30 text-[#003A6C]">
@@ -53,7 +48,7 @@ const AdminHome = () => {
               </Link>
 
               <Link
-                to="/admin/certificates"
+                to="/admin/certificados"
                 className="flex items-center gap-4 rounded-2xl border-2 border-[#C2DBED] bg-white p-6 shadow-sm hover:shadow-md transition"
               >
                 <div className="flex size-12 items-center justify-center rounded-full bg-[#C2DBED]/30 text-[#003A6C]">
@@ -84,7 +79,7 @@ const AdminHome = () => {
                 </p>
               </div>
             </div>
-            {/* INFO FINAL */}
+
             <div className="flex items-start gap-4 rounded-2xl bg-[#FFF7ED] p-6 border-l-8 border-[#EA580C] shadow-sm">
               <div className="flex size-10 items-center justify-center rounded-full bg-[#EA580C] text-white">
                 <Info size={20} />

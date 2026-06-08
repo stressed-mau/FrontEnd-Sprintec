@@ -9,7 +9,7 @@ import { usePasswordVisibility } from '@/hooks/usePasswordVisibility';
 import { getAuthSession } from '@/services/auth';
 import Header from '../components/HeaderUser';
 import Sidebar from '../components/Sidebar';
-import AdminSidebar from '../components/Admin/AdminSidebar';
+import AdminSidebar from '../components/admin/AdminSidebar';
 
 type TabType = 'info' | 'password';
 

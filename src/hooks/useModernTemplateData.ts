@@ -9,7 +9,7 @@ import type {
   ModernTemplateData,
   ModernTemplateProps,
 } from "@/types/modernPortfolio"
-import { getProjectImage, getRecordImage } from "@/utils/PublicPortfolioUtils"
+import { getProjectImage, getRecordImage } from "@/utils/publicPortfolioUtils"
 import {
   getModernId,
   getModernKey,
@@ -138,6 +138,7 @@ function getCertificates(certificates: unknown[]): ModernCertificate[] {
       id: getModernId(source),
       name: getModernText(source.name),
       issuer: getModernText(source.issuer),
+      source,
     }
   })
 }

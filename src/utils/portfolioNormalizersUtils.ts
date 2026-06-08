@@ -1,3 +1,5 @@
+import { toAbsoluteAssetUrl } from "@/services/assetUrl";
+
 export const asText = (value: any): string => {
   if (typeof value === "string") return value.trim();
   if (typeof value === "number") return String(value);
@@ -239,6 +241,40 @@ export const normalizePortfolioEducation = (education: any, index: number) => {
     nestedEducation.company_name,
     nestedEducation.sublabel,
   ) || "Sin institucion";
+  const certificate = toAbsoluteAssetUrl(
+    firstText(
+      direct.certification_url,
+      direct.certification_path,
+      direct.certification,
+      direct.certificate_file_url,
+      direct.certificate_file,
+      direct.certificate_url,
+      direct.certificate_path,
+      direct.certificate,
+      direct.document_url,
+      direct.document_path,
+      direct.document,
+      direct.file_url,
+      direct.file_path,
+      direct.file,
+      direct.attachment,
+      nestedEducation.certification_url,
+      nestedEducation.certification_path,
+      nestedEducation.certification,
+      nestedEducation.certificate_file_url,
+      nestedEducation.certificate_file,
+      nestedEducation.certificate_url,
+      nestedEducation.certificate_path,
+      nestedEducation.certificate,
+      nestedEducation.document_url,
+      nestedEducation.document_path,
+      nestedEducation.document,
+      nestedEducation.file_url,
+      nestedEducation.file_path,
+      nestedEducation.file,
+      nestedEducation.attachment,
+    )
+  );
 
   return {
     ...source,
@@ -253,7 +289,36 @@ export const normalizePortfolioEducation = (education: any, index: number) => {
     description: asText(source.description ?? source.descripcion),
     start_date: source.start_date ?? source.startDate ?? source.issue_date ?? source.date_issued ?? "",
     end_date: source.end_date ?? source.endDate ?? null,
+    certificate,
+    document_url: certificate,
     is_public: source.is_public ?? education?.is_public,
+  };
+};
+
+export const normalizePortfolioCertificate = (certificate: any, index: number) => {
+  const direct = certificate ?? {};
+  const nestedCertificate = direct.certificate && typeof direct.certificate === "object" ? direct.certificate : {};
+  const source = { ...nestedCertificate, ...direct };
+  const name = firstText(source.name, source.title, source.label) || `Certificado ${index + 1}`;
+  const issuer = firstText(source.issuer, source.institution, source.institution_name, source.organization, source.company, source.sublabel) || "Institucion no especificada";
+  const fileBonusUrl = toAbsoluteAssetUrl(firstText(source.file_bonus_url, source.file_url, source.document_url, source.certificate_url, source.file, source.document, source.attachment));
+
+  return {
+    ...source,
+    id: String(source.id ?? source.certificate_id ?? certificate?.id ?? `certificate-${index}`),
+    name,
+    title: name,
+    label: name,
+    issuer,
+    institution: issuer,
+    sublabel: issuer,
+    description: asText(source.description ?? source.descripcion),
+    date_issued: source.date_issued ?? source.issue_date ?? source.issued_at ?? source.emission_date ?? "",
+    date_expired: source.date_expired ?? source.expiration_date ?? source.expires_at ?? null,
+    credential_id: source.credential_id ?? source.certification_id ?? "",
+    credential_url: source.credential_url ?? source.verification_url ?? source.url ?? "",
+    file_bonus_url: fileBonusUrl,
+    is_public: source.is_public ?? certificate?.is_public,
   };
 };
 

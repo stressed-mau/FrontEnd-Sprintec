@@ -5,7 +5,7 @@ import Sidebar from "../components/Sidebar"
 import { Palette } from "lucide-react"
 import { usePublishPortfolio } from "../hooks/usePublishPortfolio"
 import { getAuthSession } from "@/services/auth/authStorageService"
-import { getUserInformation } from "@/services/PersonalDataService"
+import { getUserInformation } from "@/services/personalDataService"
 import { useNavigate } from "react-router-dom"
 import ModernTemplate, { type ModernTemplateProfile } from "../components/templates/modern/ModernTemplate"
 import MinimalistTemplate from "../components/templates/minimalist/MinimalistTemplate"
@@ -20,8 +20,7 @@ const PortfolioTemplatesPage = () => {
     handlePublish,
     checkInitialStatus,
     selectedTemplate: selectedIdFromHook,
-    isPublished,
-    loading
+    isPublished
   } = usePublishPortfolio()
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null)
@@ -90,16 +89,6 @@ const PortfolioTemplatesPage = () => {
 
     await handlePublish(dbId, isPublished); 
   };
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex items-center text-[#003A6C]">
-          <div className="mr-2 h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          Cargando...
-        </div>
-      </div>
-    )
-  }
   if (isPublished) {
     return (
       <div className="min-h-screen bg-[#F7F0E1] flex flex-col">

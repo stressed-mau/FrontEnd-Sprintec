@@ -1,5 +1,7 @@
 import { ChevronLeft, ChevronRight, Clock, Crown, MousePointer2, TrendingDown, TrendingUp, Users, Download } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { getAuthSession } from "@/services/auth";
+import AdminSidebar from "../components/admin/AdminSidebar";
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
 import { Footer } from "@/components/Footer"
@@ -13,6 +15,9 @@ import { useSearchParams } from "react-router-dom"
 import logo from "@/assets/logo/LogoPG.png"
 
 const TendenciaPlantillasPage = () => {
+  const session = getAuthSession();
+  const roleId = session?.user?.role_id;
+  const isAdmin = roleId === 2;
   const [searchParams, setSearchParams] = useSearchParams()
   
   const [weekOffset, setWeekOffset] = useState(() => {
@@ -44,7 +49,7 @@ const TendenciaPlantillasPage = () => {
       <Header />
 
       <div className="flex flex-col lg:flex-row flex-1">
-        <Sidebar />
+        {isAdmin ? <AdminSidebar /> : <Sidebar />}
 
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           {/* Se optimizó el escalado para ocupar el espacio ideal de la página impresa y expandirse al 100% de ancho */}

@@ -57,6 +57,14 @@ export type CorporateCertificateItem = {
   title: string
   institution: string
   period: string
+  source: Record<string, unknown>
+}
+
+export type CorporateSkillItem = {
+  id: string
+  name: string
+  type: "tecnica" | "blanda"
+  level: string
 }
 
 export type CorporateProjectItem = {
@@ -78,7 +86,7 @@ export type CorporateTemplateData = {
   initials: string
   hasContactInfo: boolean
   socialLinks: CorporatePortfolioLink[]
-  skills: string[]
+  skills: CorporateSkillItem[]
   experience: CorporateExperienceItem[]
   education: CorporateEducationItem[]
   certificates: CorporateCertificateItem[]
@@ -99,5 +107,6 @@ export type CorporatePortfolioProps = {
   onProjectClick?: (projectId?: string | number) => void
   onExperienceClick?: (experienceId?: string | number) => void
   onEducationClick?: (educationId?: string | number) => void
+  onCertificateClick?: (certificateId?: string | number) => void
   onSocialClick?: (network: unknown) => void
 }

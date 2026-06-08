@@ -14,6 +14,7 @@ export default function ModernTemplate({
   onProjectClick,
   onExperienceClick,
   onEducationClick,
+  onCertificateClick,
   onSocialClick,
 }: ModernTemplateProps) {
   const data = useModernTemplateData(profile, portfolio)
@@ -29,6 +30,7 @@ export default function ModernTemplate({
         data={data}
         onExperienceClick={onExperienceClick}
         onEducationClick={onEducationClick}
+        onCertificateClick={onCertificateClick}
         onSocialClick={onSocialClick}
       />
       <ModernFooter displayName={data.displayName} />

@@ -8,6 +8,7 @@ import { CorporatePortfolioTemplate } from "@/components/templates/corporate/Cor
 import { PublicPortfolioMessageControls } from "@/components/portfolio/PublicPortfolioMessageControls"
 import ProjectDetailModal from "@/components/portfolio/ProjectDetailModal";
 import DetailRecordModal from "@/components/portfolio/DetailRecordModal"
+import CertificateDetailModal from "@/components/portfolio/CertificateDetailModal"
 import { usePublicPortfolioMessageAccess } from "@/hooks/usePublicPortfolioMessageAccess"
 import { usePublicPortfolioTracking } from "@/hooks/usePublicPortfolioTracking"
 import {
@@ -16,7 +17,7 @@ import {
   sameRecordId,
   getPortfolioRecipientId,
   PROJECT_MODAL_THEMES, 
-} from "@/utils/PublicPortfolioUtils"
+} from "@/utils/publicPortfolioUtils"
 interface PortfolioProject {
   id: string | number
   is_public?: boolean
@@ -34,6 +35,7 @@ interface PortfolioEducation {
   [key: string]: unknown
 }
 interface BaseItem {
+  id?: string | number
   is_public?: boolean
 }
 interface Experience extends BaseItem {
@@ -82,6 +84,7 @@ const PublicPortfolio = () => {
   const [selectedProject, setSelectedProject] = useState<PortfolioProject | null>(null)
   const [selectedExperience, setSelectedExperience] = useState<PortfolioExperience | null>(null)
   const [selectedEducation, setSelectedEducation] = useState<PortfolioEducation | null>(null)
+  const [selectedCertificate, setSelectedCertificate] = useState<BaseItem | null>(null)
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false)
   const [messageFeedback, setMessageFeedback] = useState("")
   const fromExplore = Boolean((location.state as { fromExplore?: boolean } | null)?.fromExplore)
@@ -128,6 +131,12 @@ const PublicPortfolio = () => {
   }
   const handleProjectLinkClick = (linkType: "repository" | "demo", url: string) => {
     portfolioTracking.trackProjectLinkClick(selectedProject?.id, linkType, url)
+  }
+  const handleCertificateClick = (certificateId?: string | number) => {
+    const clickedCertificate = (portfolio?.certificates ?? []).find((certificate: BaseItem) => certificateId != null && String(certificate.id) === String(certificateId))
+    if (clickedCertificate) {
+      setSelectedCertificate(clickedCertificate)
+    }
   }
   const handleOpenMessageModal = () => {
     const accessError = messageAccess.getMessageAccessError()
@@ -214,11 +223,11 @@ const PublicPortfolio = () => {
         }}
       />
       {isModern && <ModernTemplate 
-      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onExperienceClick={handleExperienceClick} onEducationClick={handleEducationClick} onSocialClick={handleSocialClick} />}
+      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onExperienceClick={handleExperienceClick} onEducationClick={handleEducationClick} onCertificateClick={handleCertificateClick} onSocialClick={handleSocialClick} />}
       {isMinimalist && <MinimalistTemplate 
-      profile={profile} portfolio={visiblePortfolio} isPreview={false} onProjectClick={handleProjectClick} onExperienceClick={handleExperienceClick} onEducationClick={handleEducationClick} onSocialClick={handleSocialClick} />}
+      profile={profile} portfolio={visiblePortfolio} isPreview={false} onProjectClick={handleProjectClick} onExperienceClick={handleExperienceClick} onEducationClick={handleEducationClick} onCertificateClick={handleCertificateClick} onSocialClick={handleSocialClick} />}
       {isCorporate && <CorporatePortfolioTemplate 
-      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onExperienceClick={handleExperienceClick} onEducationClick={handleEducationClick} onSocialClick={handleSocialClick} />}
+      profile={profile} portfolio={visiblePortfolio} onProjectClick={handleProjectClick} onExperienceClick={handleExperienceClick} onEducationClick={handleEducationClick} onCertificateClick={handleCertificateClick} onSocialClick={handleSocialClick} />}
       <ProjectDetailModal
         project={selectedProject}
         theme={modalTheme}
@@ -237,6 +246,13 @@ const PublicPortfolio = () => {
           record={selectedEducation}
           theme={modalTheme}
           onClose={() => setSelectedEducation(null)}/>
+      ) : null}
+      {selectedCertificate ? (
+        <CertificateDetailModal
+          certificate={selectedCertificate}
+          theme={modalTheme}
+          onClose={() => setSelectedCertificate(null)}
+        />
       ) : null}
     </main>
   )

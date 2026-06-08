@@ -12,7 +12,7 @@ import {
   getProjectTechnologies,
   getProjectTitle,
   isProjectCurrent,
-} from "@/utils/PublicPortfolioUtils";
+} from "@/utils/publicPortfolioUtils";
 
 type ProjectDetailModalProps = {
   project: unknown;

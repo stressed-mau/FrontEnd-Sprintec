@@ -41,19 +41,19 @@ export default function UsersTable({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="text-[#4B778D] text-sm uppercase tracking-wider">
-                  <th className="px-6 py-4 font-semibold border-b border-[#E2E8F0]">
+                  <th className="px-6 py-3 font-semibold border-b border-[#E2E8F0]">
                     Nombre
                   </th>
-                  <th className="px-6 py-4 font-semibold border-b border-[#E2E8F0]">
+                  <th className="px-6 py-3 font-semibold border-b border-[#E2E8F0]">
                     Correo
                   </th>
-                  <th className="px-6 py-4 font-semibold border-b border-[#E2E8F0]">
+                  <th className="px-6 py-3 font-semibold border-b border-[#E2E8F0]">
                     Ocupación
                   </th>
-                  <th className="px-6 py-4 font-semibold border-b border-[#E2E8F0]">
+                  <th className="px-6 py-3 font-semibold border-b border-[#E2E8F0]">
                     Fecha de registro
                   </th>
-                  <th className="px-6 py-4 font-semibold border-b border-[#E2E8F0]">
+                  <th className="px-6 py-3 font-semibold border-b border-[#E2E8F0]">
                     Última conexión
                   </th>
                 </tr>
@@ -65,11 +65,11 @@ export default function UsersTable({
                     key={idx}
                     className="hover:bg-slate-50 transition-colors"
                   >
-                    <td className="px-6 py-4 font-medium">{user.name}</td>
-                    <td className="px-6 py-4">{user.email}</td>
-                    <td className="px-6 py-4">{user.job}</td>
-                    <td className="px-6 py-4 text-sm">{user.date}</td>
-                    <td className="px-6 py-4 text-sm">{user.last}</td>
+                    <td className="px-6 py-3 font-medium">{user.name}</td>
+                    <td className="px-6 py-3">{user.email}</td>
+                    <td className="px-6 py-3">{user.job}</td>
+                    <td className="px-6 py-3 text-sm">{user.date}</td>
+                    <td className="px-6 py-3 text-sm">{user.last}</td>
                   </tr>
                 ))}
               </tbody>

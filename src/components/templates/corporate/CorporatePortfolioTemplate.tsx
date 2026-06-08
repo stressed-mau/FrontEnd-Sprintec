@@ -19,6 +19,7 @@ export function CorporatePortfolioTemplate(props: CorporatePortfolioProps) {
         onProjectClick={props.onProjectClick}
         onExperienceClick={props.onExperienceClick}
         onEducationClick={props.onEducationClick}
+        onCertificateClick={props.onCertificateClick}
         onSocialClick={props.onSocialClick}
       />
       <CorporateDesktopLayout
@@ -27,6 +28,7 @@ export function CorporatePortfolioTemplate(props: CorporatePortfolioProps) {
         onProjectClick={props.onProjectClick}
         onExperienceClick={props.onExperienceClick}
         onEducationClick={props.onEducationClick}
+        onCertificateClick={props.onCertificateClick}
         onSocialClick={props.onSocialClick}
       />
     </article>

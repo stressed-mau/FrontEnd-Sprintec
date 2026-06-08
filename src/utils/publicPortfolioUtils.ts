@@ -176,6 +176,27 @@ export const getRecordImage = (item: unknown): string => {
   return getFirstText(record.image, record.image_url, record.logo, record.logo_url, record.company_logo, record.institution_logo, record.photograph)
 }
 
+export const getRecordDocument = (item: unknown): string => {
+  const record = asRecord(item)
+  return getFirstText(
+    record.certification_url,
+    record.certification_path,
+    record.certification,
+    record.certificate_file_url,
+    record.certificate_file,
+    record.certificate_url,
+    record.certificate_path,
+    record.certificate,
+    record.document_url,
+    record.document_path,
+    record.document,
+    record.file_url,
+    record.file_path,
+    record.file,
+    record.attachment,
+  )
+}
+
 export const getRecordStartDate = (item: unknown): string => {
   const record = asRecord(item)
   return formatPublicPortfolioDate(getFirstText(record.start_date, record.startDate, record.fechaInicio))

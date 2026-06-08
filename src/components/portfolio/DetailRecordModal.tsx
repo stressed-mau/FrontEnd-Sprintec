@@ -1,16 +1,19 @@
-import { X } from "lucide-react"
+import { FileText, X } from "lucide-react"
+import { useState } from "react"
+import { CertificateDocumentPreviewModal } from "@/components/certificates/CertificateDocumentPreview"
 import {
   getExperienceTitle,
   getExperienceCompany,
   getEducationTitle,
   getEducationInstitution,
   getRecordDescription,
+  getRecordDocument,
   getRecordImage,
   getRecordStartDate,
   getRecordEndDate,
   getEducationField,
   isCurrentRecord,
-} from "@/utils/PublicPortfolioUtils"
+} from "@/utils/publicPortfolioUtils"
 
 import type { ProjectModalTheme } from "@/types/projectModalTheme"
 
@@ -28,6 +31,7 @@ function DetailRecordModal({
   onClose,
 }: DetailRecordModalProps) {
   const isEducation = kind === "education"
+  const [documentPreviewUrl, setDocumentPreviewUrl] = useState<string | null>(null)
 
   const title = isEducation
     ? getEducationTitle(record)
@@ -39,6 +43,7 @@ function DetailRecordModal({
 
   const description = getRecordDescription(record)
   const image = getRecordImage(record)
+  const documentUrl = isEducation ? getRecordDocument(record) : ""
   const panelWidthClassName = image ? "w-[min(100%,38rem)]" : "w-[min(100%,32rem)]"
   const startDate = getRecordStartDate(record)
   const endDate = getRecordEndDate(record)
@@ -144,9 +149,32 @@ function DetailRecordModal({
                 ))}
               </dl>
             )}
+
+            {documentUrl ? (
+              <section>
+                <h3
+                  className={`text-sm font-bold uppercase tracking-[0.16em] ${theme.sectionTitle}`}
+                >
+                  Documento
+                </h3>
+
+                <button
+                  type="button"
+                  onClick={() => setDocumentPreviewUrl(documentUrl)}
+                  className={`mt-2 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition ${theme.primaryLink}`}
+                >
+                  <FileText className="h-4 w-4" />
+                  Ver documento
+                </button>
+              </section>
+            ) : null}
           </div>
         </div>
       </div>
+      <CertificateDocumentPreviewModal
+        url={documentPreviewUrl}
+        onClose={() => setDocumentPreviewUrl(null)}
+      />
     </div>
   )
 }

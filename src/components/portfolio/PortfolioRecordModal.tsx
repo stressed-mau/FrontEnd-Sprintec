@@ -12,7 +12,7 @@ import {
   getProjectRole,
   getProjectTechnologies,
   getProjectTitle,
-} from "@/utils/PortfolioUtils"
+} from "@/utils/portfolioUtils"
 
 type PortfolioDetailType =
   | "project"

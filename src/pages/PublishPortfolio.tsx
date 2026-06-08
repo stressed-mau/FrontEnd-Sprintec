@@ -47,16 +47,15 @@ const PublishPortfolio = () => {
 
         <main id="publishportfolio-main" className="flex-1 p-4 md:p-10">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center md:text-left mb-8">
+            <div className="text-center md:text-left mb-5">
               <h1 className="text-[#003A6C] text-3xl md:text-4xl font-bold mb-2">Publicar Portafolio</h1>
               <p className="text-gray-600 text-sm md:text-base">
                 Finaliza la configuración y lanza tu portafolio al mundo.
               </p>
             </div>
 
-            {/* Sección de Resumen de Plantilla */}
-            <section className="bg-white rounded-3xl border-2 border-[#9EC9E2] overflow-hidden mb-8 shadow-sm">
-              <div className="p-8">
+            <section className="bg-white rounded-3xl border-2 border-[#9EC9E2] overflow-hidden mb-5 shadow-sm">
+              <div className="p-5">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="bg-[#0B3C6D] p-3 rounded-xl">
                     <CheckCircle2 className="w-6 h-6 text-white" />
@@ -67,7 +66,7 @@ const PublishPortfolio = () => {
                   </div>
                 </div>
 
-                <div className="bg-[#F1F7FC] rounded-2xl p-6 border border-[#C9E1F0]">
+                <div className="bg-[#F1F7FC] rounded-2xl p-4 border border-[#C9E1F0]">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-[#003A6C] text-xs font-bold uppercase tracking-wider mb-1 opacity-70">Plantilla Actual</p>
@@ -87,10 +86,9 @@ const PublishPortfolio = () => {
               </div>
             </section>
 
-            {/* Estado de Publicación */}
             {!isPublished ? (
-              <div className="bg-white rounded-[2rem] border border-[#C9E1F0] p-10 shadow-sm flex flex-col items-center text-center space-y-6">
-                <div className="bg-gray-50 p-6 rounded-full border-2 border-dashed border-gray-200">
+              <div className="bg-white rounded-[2rem] border border-[#C9E1F0] p-6 shadow-sm flex flex-col items-center text-center space-y-4">
+                <div className="bg-gray-50 p-4 rounded-full border-2 border-dashed border-gray-200">
                   <Upload className="w-10 h-10 text-gray-400" />
                 </div>
                 <div>
@@ -127,9 +125,8 @@ const PublishPortfolio = () => {
                 </div>
               </div>
             ) : (
-              /* Sección cuando ya está publicado */
-              <div className="space-y-6 animate-in fade-in duration-500">
-                <div className="bg-[#E7F6EC] border border-[#34A853] rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+              <div className="space-y-4 animate-in fade-in duration-500">
+                <div className="bg-[#E7F6EC] border border-[#34A853] rounded-[2rem] p-5 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
                   <div className="flex items-center gap-5">
                     <div className="bg-[#34A853] p-3 rounded-2xl shadow-lg shadow-green-200">
                       <CheckCircle2 className="w-8 h-8 text-white" />
@@ -152,7 +149,7 @@ const PublishPortfolio = () => {
                   </button>
                 </div>
 
-                <div className="bg-white border border-[#C9E1F0] rounded-[2rem] p-10 text-center shadow-sm">
+                <div className="bg-white border border-[#C9E1F0] rounded-[2rem] p-6 text-center shadow-sm">
                   <h4 className="text-[#003A6C] font-bold text-xl mb-4">Comparte tu éxito</h4>
                   <div className="flex flex-col md:flex-row items-center gap-4 max-w-2xl mx-auto bg-[#F8FAFC] p-4 rounded-2xl border border-gray-100">
                     <div className="flex-1 text-blue-600 truncate font-mono text-sm px-2 w-full text-center md:text-left">
