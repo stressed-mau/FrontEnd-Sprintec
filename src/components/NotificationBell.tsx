@@ -6,6 +6,7 @@ import { useNotifications } from "@/hooks/useNotifications"
 import type { NotificationItem } from "@/services/notificationsService"
 import { navigateFromNotification } from '@/utils/notifications/notificationNavigation'
 import { useClickOutside } from '@/hooks/useClickOutside'
+import { motion, AnimatePresence } from "framer-motion"
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
@@ -59,34 +60,41 @@ export function NotificationBell() {
 
           <div className="max-h-[60vh] overflow-y-auto">
             {visibleNotifications.length > 0 ? (
-              visibleNotifications.map((notification) => {
-                const isMessage = notification.dataType === "new_message"
+              <AnimatePresence initial={false}>
+                {visibleNotifications.map((notification) => {
+                  const isMessage = notification.dataType === "new_message"
 
-                return (
-                  <div
-                    key={notification.id}
-                    onClick={() => void handleNotificationClick(notification)}
-                    className="block cursor-pointer border-b border-[#6DACBF]/10 bg-white px-3 py-3 transition-colors hover:bg-[#F7F0E1]/50 sm:px-4 sm:py-4">
-                    <div className="flex gap-3">
-                      <div className="shrink-0">
-                        <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${isMessage ? "bg-[#003A6C]/10 text-[#003A6C]" : "bg-[#003A6C]/10 text-[#003A6C]"}`}>
-                          {isMessage ? <MessageCircle className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
+                  return (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.3 }}
+                      key={notification.id}
+                      onClick={() => void handleNotificationClick(notification)}
+                      className="block cursor-pointer border-b border-[#6DACBF]/10 bg-white px-3 py-3 transition-colors hover:bg-[#F7F0E1]/50 sm:px-4 sm:py-4">
+                      <div className="flex gap-3">
+                        <div className="shrink-0">
+                          <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${isMessage ? "bg-[#003A6C]/10 text-[#003A6C]" : "bg-[#003A6C]/10 text-[#003A6C]"}`}>
+                            {isMessage ? <MessageCircle className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold leading-tight text-[#003A6C]">{notification.title}</p>
+                          <p className="mt-1 text-xs leading-snug text-[#4982AD]">{notification.description}</p>
+                          <div className="mt-2 flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-medium text-[#5B8FB9]">{notification.time}</span>
+                            <span className="text-[10px] font-bold uppercase text-[#003A6C]">
+                              {notification.dataType === 'weekly_global_report' ? 'Ver reporte' : 'Ver detalles'}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold leading-tight text-[#003A6C]">{notification.title}</p>
-                        <p className="mt-1 text-xs leading-snug text-[#4982AD]">{notification.description}</p>
-                        <div className="mt-2 flex items-center justify-between gap-2">
-                          <span className="text-[10px] font-medium text-[#5B8FB9]">{notification.time}</span>
-                          <span className="text-[10px] font-bold uppercase text-[#003A6C]">
-                            {notification.dataType === 'weekly_global_report' ? 'Ver reporte' : 'Ver detalles'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })
+                    </motion.div>
+                  )
+                })}
+              </AnimatePresence>
             ) : (
               <div className="p-6 text-center text-sm text-gray-400 sm:p-8">No tienes notificaciones</div>
             )}

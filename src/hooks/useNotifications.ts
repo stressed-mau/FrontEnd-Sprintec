@@ -6,6 +6,20 @@ import { subscribeToUserNotifications } from "@/services/realtimeNotificationsSe
 
 type UseNotificationsOptions = { pollIntervalMs?: number}
 
+function applyReadToQueue(current: NotificationItem[], id: string) {
+  const targetIndex = current.findIndex((n) => n.id === id)
+  if (targetIndex === -1) return current
+  if (current[targetIndex].read) return current
+
+  const targetNotification = { ...current[targetIndex], read: true }
+  const filteredArray = current.filter((n) => n.id !== id)
+  
+  const unreadList = filteredArray.filter((n) => !n.read)
+  const readList = filteredArray.filter((n) => n.read)
+  
+  return [...unreadList, targetNotification, ...readList]
+}
+
 export function useNotifications(options: UseNotificationsOptions = {}) {
   const { pollIntervalMs = 0 } = options
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
@@ -73,19 +87,18 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
         }))
       },
       onRead: (payload: { id: string; unread_count: number }) => {
-        setNotifications((current) =>
-          current.map((n) => (n.id === payload.id ? { ...n, read: true } : n))
-        )
+        setNotifications((current) => applyReadToQueue(current, payload.id))
       }
     })
   }, [refreshNotifications])
 
   const markAsRead = async (id: string) => {
+    setNotifications((current) => applyReadToQueue(current, id))
     try {
       await markNotificationAsRead(id)
-      await refreshNotifications(false)
       setPageError("")
     } catch (error) {
+      void refreshNotifications(false)
       setPageError(error instanceof Error ? error.message : "No se pudo actualizar la notificacion.")
     }
   }
