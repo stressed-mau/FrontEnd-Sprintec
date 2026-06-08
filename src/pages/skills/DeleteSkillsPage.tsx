@@ -1,6 +1,10 @@
 import { Code2, Lightbulb, Trash2 } from 'lucide-react';
 import { Footer } from '@/components/Footer';
+import { ExperiencePagination } from '@/components/experience/ExperiencePagination';
+import { SectionHeader } from '@/components/sections/SectionHeader';
+import { Card, CardContent } from '@/components/ui/card';
 import { useSkillsManager } from '@/hooks/skills/useSkillsManager';
+import { usePagination } from '@/hooks/usePagination';
 import SkillsSearchBar from '@/components/skills/skillsSearchBar';
 import SkillsLoading from '@/components/skills/SkillsLoading';
 import SkillsEmptyState from '@/components/skills/SkillsEmptyState';
@@ -16,8 +20,11 @@ const DeleteSkillsPage = () => {
     showConfirmDelete, setShowConfirmDelete, confirmDeleteSelected,  cancelDelete, isDeleting,
     showSuccessModal, closeSuccessModal, successMessage,
   } = useSkillsManager();
+  const pagination = usePagination({ items: filteredSkills, itemsPerPage: 5 });
 
   const selectedCount = selectedSkillIds.size;
+  const visibleIds = pagination.items.map((skill) => skill.id);
+  const allVisibleSelected = pagination.items.length > 0 && pagination.items.every((skill) => selectedSkillIds.has(skill.id));
 
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
@@ -26,43 +33,39 @@ const DeleteSkillsPage = () => {
         <Sidebar />
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-6xl space-y-6">
-
-              <div>
-                <h1 className="mb-2 text-3xl font-bold text-[#003A6C]">
-                  Eliminar Habilidades
-                </h1>
-                <p className="text-sm text-[#4B778D] md:text-base">
-                  {selectedCount > 0
-                    ? `${selectedCount} habilidad${selectedCount > 1 ? 'es' : ''} seleccionada${selectedCount > 1 ? 's' : ''}`
-                    : 'Selecciona una habilidad para eliminar'}
-                </p>
-             
-              {selectedCount > 0 && (
+            <SectionHeader
+              title="Eliminar Habilidades"
+              description={selectedCount > 0
+                ? `${selectedCount} habilidad${selectedCount > 1 ? 'es' : ''} seleccionada${selectedCount > 1 ? 's' : ''}`
+                : 'Selecciona una habilidad para eliminar'}
+              actions={selectedCount > 0 ? (
                 <div className="flex justify-end">
-  <button
-    onClick={() => setShowConfirmDelete(true)}
-    disabled={isDeleting}
-    className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-red-700 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"  >
-    <Trash2 className="size-4" />
-    Eliminar ({selectedCount})
-  </button>
-</div>
-
-              )}
-            </div>
+                  <button
+                    onClick={() => setShowConfirmDelete(true)}
+                    disabled={isDeleting}
+                    className="flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 font-bold text-white shadow-sm transition-all hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Trash2 className="size-4" />
+                    Eliminar ({selectedCount})
+                  </button>
+                </div>
+              ) : undefined}
+            />
 
             {pageError && (
-              <div className="mb-6 rounded-2xl border-2 border-red-400 bg-red-100 px-4 py-4 text-sm text-red-900 font-semibold shadow-md">
+              <div className="mb-6 rounded-2xl border-2 border-red-400 bg-red-100 px-4 py-2 text-sm text-red-900 font-semibold shadow-md">
                 <p className="font-bold mb-1">Error:</p>
                 <p>{pageError}</p>
               </div>
             )}
 
             <div className="relative mb-6">
-           <SkillsSearchBar
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Buscar por nombre o nivel..."/> </div>
+              <SkillsSearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Buscar por nombre o nivel..."
+              />
+            </div>
 
             {isLoading ? (
               <SkillsLoading />
@@ -73,64 +76,80 @@ const DeleteSkillsPage = () => {
                 searchMessage="No hay habilidades que coincidan con la búsqueda"
               />
             ) : (              
-              <div className="rounded-2xl border border-[#6dacbf]/30 bg-white shadow-sm overflow-hidden">
-                <div className="grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_120px_140px] px-5 py-3 border-b border-[#6dacbf]/20 gap-4 items-center">
-                 <input
-                      type="checkbox"
-                      checked={ filteredSkills.length > 0 && filteredSkills.every((skill) => selectedSkillIds.has(skill.id)) }
-                      onChange={() =>
-                        toggleSelectAll(filteredSkills.map((skill) => skill.id))
-                      }
-                      className="w-4 h-4 accent-[#003A6C] cursor-pointer rounded" />
-                  <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider">  Habilidad  </span>
-                  <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider hidden sm:block">  Tipo </span>
-                  <span className="text-xs font-bold text-[#4B778D] uppercase tracking-wider hidden sm:block">  Nivel  </span>
-                </div>
-
-                {filteredSkills.map((skill, idx) => {
-                  const isSelected = selectedSkillIds.has(skill.id);
-                  const isTechnical = skill.type === 'tecnica';
-                  return (
-                    <div
-                      key={skill.id}
-                      onClick={() => toggleSelectSkill(skill.id)}
-                      className={`grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-[auto_1fr_120px_140px] px-5 py-4 items-center gap-4 cursor-pointer transition-colors ${
-                        isSelected ? 'bg-blue-50' : 'hover:bg-[#EEF6FC]'
-                      } ${idx !== filteredSkills.length - 1 ? 'border-b border-[#6dacbf]/10' : ''}`}    >
-                    
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggleSelectSkill(skill.id)}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-4 h-4 accent-[#003A6C] cursor-pointer rounded"
-                        aria-label={`Seleccionar ${skill.name}`}   />
-
-                      <div className="flex items-center gap-2 min-w-0">
-                        {isTechnical ? (
-                          <Code2 className="size-4 text-[#4B778D] shrink-0" />
-                        ) : (
-                          <Lightbulb className="size-4 text-[#4B778D] shrink-0" />
-                        )}
-                        <span
-                          className={`font-semibold truncate ${
-                            isSelected ? 'text-[#003A6C]' : 'text-[#003A6C]'
-                          }`}   >
-                          {skill.name}
-                        </span>
-                      </div>
-
-                      <span className="text-[#4B778D] text-sm hidden sm:block">
-                        {isTechnical ? 'Técnica' : 'Blanda'}
-                      </span>
-
-                      <div className="hidden sm:block">
-                        <SkillLevelBadge  level={skill.level}/>
-                      </div>
+              <>
+                <Card className="rounded-2xl border border-[#A5D7E8] bg-white py-0 shadow-sm">
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-full border-collapse">
+                        <thead className="bg-[#EEF5F9] text-left text-xs uppercase text-[#003A6C]">
+                          <tr>
+                            <th className="w-12 px-4 py-2">
+                              <input
+                                type="checkbox"
+                                checked={allVisibleSelected}
+                                onChange={() => toggleSelectAll(visibleIds)}
+                                className="size-4 rounded-none border-[#A5D7E8]"
+                                aria-label="Seleccionar todas las habilidades visibles"
+                              />
+                            </th>
+                            <th className="px-4 py-3 font-semibold">Habilidad</th>
+                            <th className="px-4 py-3 font-semibold">Tipo</th>
+                            <th className="px-4 py-3 font-semibold">Nivel</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#D9EAF4]">
+                          {pagination.items.map((skill) => {
+                            const isSelected = selectedSkillIds.has(skill.id);
+                            const isTechnical = skill.type === 'tecnica';
+                            return (
+                              <tr
+                                key={skill.id}
+                                onClick={() => toggleSelectSkill(skill.id)}
+                                className={`cursor-pointer transition hover:bg-[#EEF5F9] ${isSelected ? 'bg-[#EEF5F9]' : ''}`}
+                              >
+                                <td className="px-4 py-2" onClick={(event) => event.stopPropagation()}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => toggleSelectSkill(skill.id)}
+                                    className="size-4 rounded-none border-[#A5D7E8]"
+                                    aria-label={`Seleccionar ${skill.name}`}
+                                  />
+                                </td>
+                                <td className="px-4 py-2">
+                                  <div className="flex items-center gap-3">
+                                    <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#D9EAF4] text-[#003A6C]">
+                                      {isTechnical ? <Code2 className="size-5" /> : <Lightbulb className="size-5" />}
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-[#003A6C]">{skill.name}</p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-2 text-sm text-[#355468]">
+                                  {isTechnical ? 'Técnica' : 'Blanda'}
+                                </td>
+                                <td className="px-4 py-2 text-sm text-[#355468]">
+                                  <SkillLevelBadge level={skill.level} />
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
-                  );
-                })}
-              </div>
+                  </CardContent>
+                </Card>
+
+                <ExperiencePagination
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages}
+                  startIndex={pagination.startIndex}
+                  endIndex={pagination.endIndex}
+                  totalItems={filteredSkills.length}
+                  onPageChange={pagination.goToPage}
+                />
+              </>
             )}
           </div>
         </main>

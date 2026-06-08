@@ -10,7 +10,7 @@ export default function SkillsEmptyState({
   searchMessage,
 }: SkillsEmptyStateProps) {
   return (
-    <div className="rounded-2xl border-2 border-dashed border-[#6dacbf] bg-[#F7F0E1] py-14 text-center shadow-sm">
+    <div className="rounded-2xl border border-[#A5D7E8] bg-white px-6 py-14 text-center shadow-sm">
       <p className="text-sm text-[#4B778D]">
         {searchQuery
           ? searchMessage
