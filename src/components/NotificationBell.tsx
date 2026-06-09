@@ -1,5 +1,5 @@
 import { useRef, useState } from "react"
-import { Bell, MessageCircle, TrendingUp } from "lucide-react"
+import { Bell, MessageCircle, TrendingUp, AlertCircle } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { NOTIFICATIONS_ROUTE } from "@/routes/route-paths"
 import { useNotifications } from "@/hooks/useNotifications"
@@ -73,20 +73,38 @@ export function NotificationBell() {
                       transition={{ duration: 0.3 }}
                       key={notification.id}
                       onClick={() => void handleNotificationClick(notification)}
-                      className="block cursor-pointer border-b border-[#6DACBF]/10 bg-white px-3 py-3 transition-colors hover:bg-[#F7F0E1]/50 sm:px-4 sm:py-4">
+                      className={`block cursor-pointer border-b border-[#6DACBF]/10 px-3 py-3 transition-colors sm:px-4 sm:py-4 ${
+                        notification.dataType === 'certificate_rejected'
+                          ? (notification.read ? 'bg-red-50/30 hover:bg-red-50/80' : 'bg-red-50 hover:bg-red-100/80')
+                          : 'bg-white hover:bg-[#F7F0E1]/50'
+                      }`}>
                       <div className="flex gap-3">
                         <div className="shrink-0">
-                          <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${isMessage ? "bg-[#003A6C]/10 text-[#003A6C]" : "bg-[#003A6C]/10 text-[#003A6C]"}`}>
-                            {isMessage ? <MessageCircle className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
+                          <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                            notification.dataType === 'certificate_rejected' ? 'bg-red-100 text-red-600' : 'bg-[#003A6C]/10 text-[#003A6C]'
+                          }`}>
+                            {notification.dataType === 'certificate_rejected' ? (
+                              <AlertCircle className="h-5 w-5" />
+                            ) : isMessage ? (
+                              <MessageCircle className="h-5 w-5" />
+                            ) : (
+                              <TrendingUp className="h-5 w-5" />
+                            )}
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold leading-tight text-[#003A6C]">{notification.title}</p>
+                          <p className={`text-sm font-bold leading-tight ${notification.dataType === 'certificate_rejected' ? 'text-red-700' : 'text-[#003A6C]'}`}>
+                            {notification.title}
+                          </p>
                           <p className="mt-1 text-xs leading-snug text-[#4982AD]">{notification.description}</p>
                           <div className="mt-2 flex items-center justify-between gap-2">
                             <span className="text-[10px] font-medium text-[#5B8FB9]">{notification.time}</span>
-                            <span className="text-[10px] font-bold uppercase text-[#003A6C]">
-                              {notification.dataType === 'weekly_global_report' ? 'Ver reporte' : 'Ver detalles'}
+                            <span className={`text-[10px] font-bold uppercase ${notification.dataType === 'certificate_rejected' ? 'text-red-600' : 'text-[#003A6C]'}`}>
+                              {notification.dataType === 'certificate_rejected' 
+                                ? 'Corregir certificado' 
+                                : notification.dataType === 'weekly_global_report' 
+                                  ? 'Ver reporte' 
+                                  : 'Ver detalles'}
                             </span>
                           </div>
                         </div>

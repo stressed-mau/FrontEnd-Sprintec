@@ -30,6 +30,14 @@ export function navigateFromNotification(
       navigate('/visualizaciones')
       break
 
+    case 'certificate_rejected':
+      navigate(
+        data.certificate_id
+          ? `/certificados/editar?id=${data.certificate_id}`
+          : '/certificados/ver'
+      )
+      break
+
     default:
       navigate(notification.link || '/notificaciones')
   }
