@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { publishPortfolioRequest } from "../services/publishPortfolioService";
+import { publishPortfolioRequest } from "../services/PublishPortfolioService";
 import { getPortfolioVisibilityDataService } from "@/services/portfolioVisibilityService";
 import { api } from "../services/api";
 import { getAuthSession } from "@/services/auth/authStorageService";
