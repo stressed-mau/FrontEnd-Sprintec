@@ -17,7 +17,7 @@ export function CorporateSkillsSection({ skills, isActive = false, mode }: Corpo
     <section id={isDesktop ? "corporate-skills" : undefined} className={getSectionClassName(isDesktop, isActive)}>
       <div className={isDesktop ? "rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,#1F1F1F_0%,#171717_100%)] p-4 text-white lg:rounded-[1.7rem] lg:p-6" : ""}>
         {!isDesktop ? <p className="text-xs uppercase tracking-[0.32em] text-white/45">Capacidades</p> : null}
-        <h3 className={isDesktop ? "text-4xl font-black tracking-[-0.05em]" : "mt-2 text-3xl font-bold text-white"}>Skills</h3>
+        <h3 className={isDesktop ? "text-4xl font-black tracking-[-0.05em]" : "mt-2 text-3xl font-bold text-white"}>Habilidades</h3>
         {skills.length ? (
           <div className="mt-6 space-y-6">
             <SkillGroup title="Tecnicas" skills={technicalSkills} showLevel />

@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, Clock, Crown, MousePointer2, TrendingDown, TrendingUp, Users, Download } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { getAuthSession } from "@/services/auth";
-import AdminSidebar from "../components/admin/AdminSidebar";
+import AdminSidebar from "../components/Admin/AdminSidebar";
 import Header from "@/components/HeaderUser"
 import Sidebar from "@/components/Sidebar"
 import { Footer } from "@/components/Footer"

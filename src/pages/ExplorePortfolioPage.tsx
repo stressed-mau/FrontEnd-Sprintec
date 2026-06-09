@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useExplorePortfolios } from "@/hooks/useExplorePortfolios";
 import { isAuthenticated, getAuthSession } from "@/services/auth";
 import Sidebar from "@/components/Sidebar";
-import AdminSidebar from "../components/admin/AdminSidebar";
+import AdminSidebar from "../components/Admin/AdminSidebar";
 import { getInitials } from "@/utils/explore/stringUtils";
 import FilterDropdown from "@/components/explore/FilterDropdown";
 

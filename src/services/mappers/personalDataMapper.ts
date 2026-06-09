@@ -1,4 +1,4 @@
-import type { UserInformation } from "@/services/personalDataService";
+import type { UserInformation } from "@/services/PersonalDataService";
 import type { PersonalDataForm } from "@/utils/personalDataValidationUtils";
 
 export const userHasData = (user: UserInformation): boolean =>

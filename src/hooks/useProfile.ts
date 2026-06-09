@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { updateProfileCredentials } from '@/services/profileService';
+import { updateProfileCredentials } from '@/services/ProfileService';
 import { useEmailValidation } from '@/hooks/useEmailValidation';
 import { getAuthSession, updateAuthSession } from '@/services/auth/authStorageService';
 export interface ProfileData {
