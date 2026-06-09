@@ -26,12 +26,16 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react')) {
-              return 'react'
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'react-vendor';
             }
-            if (id.includes('axios') || id.includes('lodash')) {
-              return 'vendor'
+            if (id.includes('recharts') || id.includes('d3-')) {
+              return 'charts-vendor';
             }
+            if (id.includes('lucide-react') || id.includes('@radix-ui')) {
+              return 'ui-vendor';
+            }
+            return 'vendor';
           }
         },
       },
