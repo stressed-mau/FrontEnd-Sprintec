@@ -15,7 +15,11 @@ export function navigateFromNotification(
 
   switch (notification.dataType) {
     case 'weekly_global_report':
-      navigate('/tendencia-plantillas')
+      navigate(
+        data.report_id 
+          ? `/tendencia-plantillas?report_id=${data.report_id}` 
+          : '/tendencia-plantillas'
+      )
       break
 
     case 'new_message':

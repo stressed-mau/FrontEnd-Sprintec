@@ -56,10 +56,20 @@ function buildErrorMessage(error: unknown) {
   return "No se pudo cargar el reporte de plantillas.";
 }
 
-export async function getTemplateTrends(weekOffset = 0): Promise<TemplateTrendsResponse> {
+export interface TemplateTrendsOptions {
+  weekOffset?: number;
+  reportId?: string | null;
+}
+
+export async function getTemplateTrends(options: TemplateTrendsOptions = {}): Promise<TemplateTrendsResponse> {
+  const { weekOffset = 0, reportId = null } = options;
   let payload: TrackingReportData | null = null;
+  
   try {
-    if (weekOffset === 0) {
+    if (reportId) {
+      const response = await api.get(`/tracking/global-reports/${reportId}`);
+      payload = normalizeReportPayload(response.data?.data ?? response.data);
+    } else if (weekOffset === 0) {
       const response = await api.get("/tracking/global-reports/latest");
       payload = normalizeReportPayload(response.data?.data ?? response.data);
     } else {

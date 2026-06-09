@@ -20,20 +20,15 @@ const TendenciaPlantillasPage = () => {
   const isAdmin = roleId === 2;
   const [searchParams, setSearchParams] = useSearchParams()
   
-  const [weekOffset, setWeekOffset] = useState(() => {
-    return parseInt(searchParams.get("offset") || "0", 10)
-  })
+  const reportId = searchParams.get("report_id")
+  const weekOffset = parseInt(searchParams.get("offset") || "0", 10)
 
-  useEffect(() => {
-    setSearchParams({ offset: weekOffset.toString() }, { replace: true })
-  }, [weekOffset, setSearchParams])
-
-  const { loading, stats, chartData, report, pageError } = useTemplateTrends(weekOffset)
+  const { loading, stats, chartData, report, pageError } = useTemplateTrends({ weekOffset, reportId })
   const reportRef = useRef<HTMLDivElement>(null)
   const currentWeekRange = useCurrentWeekRange(weekOffset)
   const reportPeriod = report?.periodLabel ?? currentWeekRange
   const totalPortfolios = report?.totalPortfolios ?? 0
-  const canGoNext = weekOffset < 0
+  const canGoNext = weekOffset < 0 || reportId !== null
   const handleExportPDF = useReactToPrint({
     contentRef: reportRef,
     documentTitle: `Reporte-Plantillas-${reportPeriod}`,
@@ -93,7 +88,7 @@ const TendenciaPlantillasPage = () => {
                   <button
                     className="rounded-lg p-1 text-[#003A6C] transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
                     type="button"
-                    onClick={() => setWeekOffset((current) => current - 1)}
+                    onClick={() => setSearchParams({ offset: (weekOffset - 1).toString() })}
                     aria-label="Ver semana anterior"
                   >
                     <ChevronLeft size={20} />
@@ -102,7 +97,7 @@ const TendenciaPlantillasPage = () => {
                   <button
                     className="rounded-lg p-1 text-[#003A6C] transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
                     type="button"
-                    onClick={() => setWeekOffset((current) => Math.min(current + 1, 0))}
+                    onClick={() => setSearchParams({ offset: Math.min(weekOffset + 1, 0).toString() })}
                     disabled={!canGoNext}
                     aria-label="Volver a la semana actual"
                   >
