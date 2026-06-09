@@ -168,11 +168,6 @@ const CertificateReports = () => {
                 Generar PDF
               </button>
             </div>
-            <div className="mb-5 p-2 bg-[#E0F2FE] border border-[#7DD3FC] rounded-2xl w-fit">
-              <span className="text-[#0369A1] font-bold text-sm italic">
-                Reporte actualizado automáticamente
-              </span>
-            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCard title="Total de Certificados" value={stats.totalCertificados} subtext="Certificados en el sistema" Icon={Award} />
               <StatCard title="Certificados con link" value={stats.conLink} subtext="Con URL de credencial" Icon={Link} />

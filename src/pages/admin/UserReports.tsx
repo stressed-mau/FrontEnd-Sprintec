@@ -167,11 +167,6 @@ const isCompact = isMobile && !isPrinting;
                 Generar PDF
               </button>
             </div>
-            <div className="mb-2 p-2 bg-[#E0F2FE] border border-[#7DD3FC] rounded-2xl w-fit">
-              <span className="text-[#0369A1] font-bold text-sm italic">
-                Reporte actualizado automáticamente
-              </span>
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
               <StatCardUser title="Total de usuarios" value={stats?.totalUsers ?? 0} subtext="Usuarios registrados en el sistema" Icon={Users} /> 
               <StatCardUser title="Usuarios nuevos este mes" value={stats?.newUsers ?? 0} subtext="Registros en el mes actual" Icon={UserPlus} />
