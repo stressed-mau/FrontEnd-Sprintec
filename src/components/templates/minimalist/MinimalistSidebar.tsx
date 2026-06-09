@@ -10,7 +10,7 @@ export function MinimalistSidebar({ user }: MinimalistSidebarProps) {
     <div className="w-full md:w-1/3 bg-stone-50 p-6 md:p-8 flex flex-col items-center text-center border-r border-stone-100">
       <div className="mb-8 flex flex-col items-center">
         <div className="w-32 h-32 rounded-full overflow-hidden mb-6 border-2 border-white shadow-sm">
-          <img src={user.imageUrl || "https://via.placeholder.com/150"} alt={user.fullname} className="w-full h-full object-cover grayscale" />
+          <img src={user.imageUrl || "https://via.placeholder.com/150"} alt={user.fullname} className="w-full h-full object-cover" />
         </div>
         <h1 className="text-2xl font-black leading-tight tracking-tighter uppercase mb-2">{user.fullname}</h1>
         <p className="text-[10px] font-bold tracking-[0.2em] text-stone-400 uppercase">{user.occupation}</p>
