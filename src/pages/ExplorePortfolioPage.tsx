@@ -132,7 +132,9 @@ export default function ExplorePortfolioPage() {
 
             {!loading && currentData.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[#6DACBF]/30 bg-white p-8 text-center text-sm text-[#5B8FB9] shadow-sm">
-                No hay portafolios disponibles en este momento.
+                {searchTerm.trim() || hasActiveFilters
+                  ? "No se encontraron portafolios con esos criterios."
+                  : "No hay portafolios disponibles en este momento."}
               </div>
             ) : null}
 

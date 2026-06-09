@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const DEFAULT_ITEMS_PER_PAGE = 5;
 
@@ -13,6 +13,11 @@ export function usePagination<T>({ items, itemsPerPage = DEFAULT_ITEMS_PER_PAGE,
 
   const totalPages = Math.max(1, Math.ceil(items.length / itemsPerPage));
   const safeCurrentPage = Math.min(currentPage, totalPages);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(Math.max(1, page), totalPages));
+  }, [totalPages]);
+
   const startIndex = (safeCurrentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, items.length);
 

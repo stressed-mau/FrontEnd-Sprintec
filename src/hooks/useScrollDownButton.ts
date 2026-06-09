@@ -13,6 +13,17 @@ export function useScrollDownButton({
 }: UseScrollDownButtonOptions = {}) {
   const [isVisible, setIsVisible] = useState(false)
 
+  const getNextSectionTarget = useCallback(() => {
+    if (typeof window === "undefined") return null
+
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("main section, section")).filter(
+      (section) => section.getBoundingClientRect().height > 0
+    )
+    const currentTop = window.scrollY + 8
+
+    return sections.find((section) => section.getBoundingClientRect().top + window.scrollY > currentTop) ?? document.getElementById(targetId)
+  }, [targetId])
+
   const updateVisibility = useCallback(() => {
     if (typeof window === "undefined") return
 
@@ -28,9 +39,9 @@ export function useScrollDownButton({
   const scrollDown = useCallback(() => {
     if (typeof window === "undefined") return
 
-    const target = document.getElementById(targetId)
-    target?.scrollIntoView({ behavior: "smooth", block: "end" })
-  }, [targetId])
+    const target = getNextSectionTarget()
+    target?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }, [getNextSectionTarget])
 
   useEffect(() => {
     updateVisibility()
