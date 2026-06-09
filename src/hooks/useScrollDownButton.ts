@@ -27,13 +27,11 @@ export function useScrollDownButton({
   const updateVisibility = useCallback(() => {
     if (typeof window === "undefined") return
 
-    const scrollTop = window.scrollY
     const viewportHeight = window.innerHeight
     const documentHeight = document.documentElement.scrollHeight
-    const remainingSpace = documentHeight - (scrollTop + viewportHeight)
     const canScroll = documentHeight > viewportHeight + 1
 
-    setIsVisible(scrollTop <= revealOffset && remainingSpace > hideOffset && canScroll)
+    setIsVisible(canScroll)
   }, [hideOffset, revealOffset])
 
   const scrollDown = useCallback(() => {
