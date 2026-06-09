@@ -5,7 +5,6 @@ import { Footer } from '@/components/Footer'
 import Header from '@/components/HeaderUser'
 import Sidebar from '@/components/Sidebar'
 import { useNotifications } from '@/hooks/useNotifications'
-import { MESSAGES_ROUTE } from '@/routes/route-paths'
 import { AlertCircle } from 'lucide-react'
 import { navigateFromNotification } from '@/utils/notifications/notificationNavigation'
 

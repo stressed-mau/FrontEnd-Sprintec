@@ -9,7 +9,7 @@ import { useTemplateTrends } from "@/hooks/useTemplateTrends"
 import type { TrendStats } from "@/services/templateTrendsService";
 import { formatTemplateTime,formatTemplateVariation,} from "@/utils/reports/templateTrendUtils";import { Button } from "@/components/ui/button"
 import { useCurrentWeekRange } from "@/hooks/useCurrentWeekRange"
-import { useEffect, useRef, useState } from "react"
+import { useRef } from "react"
 import { useReactToPrint } from "react-to-print"
 import { useSearchParams } from "react-router-dom"
 import logo from "@/assets/logo/LogoPG.png"
