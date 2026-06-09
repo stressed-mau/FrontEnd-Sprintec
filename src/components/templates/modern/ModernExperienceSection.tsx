@@ -37,8 +37,8 @@ function ExperienceCard({ item, onExperienceClick }: {
       className="relative cursor-pointer border-l-2 border-[#7d959e]/30 pb-4 pl-10 outline-none transition hover:border-[#ee8e3b] focus:ring-2 focus:ring-[#ee8e3b]"
     >
       <div className="absolute -left-2.25 top-0 w-4 h-4 rounded-full bg-[#ee8e3b] shadow-[0_0_10px_#ee8e3b]"></div>
-      <h4 className="text-2xl font-bold leading-tight">{item.company}</h4>
-      <p className="text-[#2f606b] font-semibold mt-1">{item.position}</p>
+      <h4 className="break-words text-xl font-bold leading-tight sm:text-2xl">{item.company}</h4>
+      <p className="break-words font-semibold leading-snug text-[#2f606b] mt-1">{item.position}</p>
     </div>
   )
 }

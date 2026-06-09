@@ -50,7 +50,7 @@ function SkillGroup({ title, cardAccentClassName, badgeClassName, skills, kind }
 
 function SoftSkillsGrid({ skills, badgeClassName }: { skills: ModernSkill[]; badgeClassName: string }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="flex flex-col gap-4">
       {skills.map((skill) => (
         <SoftSkill key={skill.key} skill={skill} badgeClassName={badgeClassName} />
       ))}
@@ -60,12 +60,12 @@ function SoftSkillsGrid({ skills, badgeClassName }: { skills: ModernSkill[]; bad
 
 function SoftSkill({ skill, badgeClassName }: { skill: ModernSkill; badgeClassName: string }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#173b61]/10 transition-all hover:-translate-y-0.5 hover:shadow-md">
+    <div className="flex w-full max-w-full items-center gap-4 overflow-x-auto rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#173b61]/10 transition-all hover:-translate-y-0.5 hover:shadow-md">
       <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#173b61] text-3xl font-black text-white ${badgeClassName}`}>
         {skill.name.slice(0, 1).toUpperCase()}
       </div>
       <div className="min-w-0 flex-1 text-left">
-        <p className="truncate text-lg font-black text-[#173b61] md:text-xl">{skill.name}</p>
+        <p className="whitespace-nowrap text-lg font-black leading-tight text-[#173b61] md:text-xl">{skill.name}</p>
       </div>
     </div>
   )
@@ -83,12 +83,12 @@ function TechnicalSkillsList({ skills, cardAccentClassName }: { skills: ModernSk
 
 function TechnicalSkillRow({ skill, cardAccentClassName }: { skill: ModernSkill; cardAccentClassName: string }) {
   return (
-    <div className={`group flex items-center justify-between rounded-2xl border-l-8 bg-white p-5 shadow-sm transition-all hover:shadow-md ${cardAccentClassName}`}>
-      <div className="flex items-center gap-4">
+    <div className={`group flex items-start justify-between gap-4 rounded-2xl border-l-8 bg-white p-5 shadow-sm transition-all hover:shadow-md ${cardAccentClassName}`}>
+      <div className="flex min-w-0 items-start gap-4">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fcecd4] font-bold text-[#173b61]">✓</div>
-        <p className="text-xl font-bold text-[#173b61]">{skill.name}</p>
+        <p className="wrap-break-word text-xl font-bold leading-tight text-[#173b61]">{skill.name}</p>
       </div>
-      <div className="min-w-0 text-right">
+      <div className="min-w-0 shrink-0 text-right">
         <p className="text-xs font-bold uppercase tracking-widest text-[#7d959e]">Nivel de dominio</p>
         <p className="mt-1 text-sm font-black uppercase tracking-[0.24em] text-[#173b61]">
           {skill.levelLabel || skill.sublabel || "No disponible"}
