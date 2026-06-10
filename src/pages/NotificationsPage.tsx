@@ -3,16 +3,20 @@ import { useNavigate } from 'react-router-dom'
 import type { NotificationItem } from '@/services/notificationsService'
 import { Footer } from '@/components/Footer'
 import Header from '@/components/HeaderUser'
+import AdminSidebar from '@/components/Admin/AdminSidebar'
 import Sidebar from '@/components/Sidebar'
 import { useNotifications } from '@/hooks/useNotifications'
 import { AlertCircle } from 'lucide-react'
 import { navigateFromNotification } from '@/utils/notifications/notificationNavigation'
+import { getAuthSession } from '@/services/auth'
 
 export function NotificationsPage() {
   const navigate = useNavigate()
   const { notifications, unreadCount, loading, pageError, markAsRead, markAllAsRead, page, setPage, meta } = useNotifications()
   const hasPreviousPage = page > 1
   const hasNextPage = page < meta.totalPages
+  const session = getAuthSession()
+  const isAdmin = session?.user.is_admin === true || session?.user.role_id === 2
 
   const handleNotificationClick = async (notification: NotificationItem) => {
     if (!notification.read) {
@@ -25,7 +29,7 @@ export function NotificationsPage() {
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
       <Header />
       <div className="flex flex-col lg:flex-row flex-1">
-        <Sidebar />
+        {isAdmin ? <AdminSidebar /> : <Sidebar />}
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-5xl space-y-6">
             <div className="flex flex-col gap-3 p-2 md:flex-row md:justify-between">
