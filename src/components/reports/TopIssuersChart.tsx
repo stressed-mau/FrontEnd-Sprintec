@@ -22,6 +22,7 @@ export default function TopIssuersChart({
   }
 
   return (
+  <>
     <div
       className="w-full print:hidden"
       style={{
@@ -42,20 +43,31 @@ export default function TopIssuersChart({
           <Bar dataKey="cantidad" fill="#4A6CF7" />
         </BarChart>
       </ResponsiveContainer>
-
-      {/* PRINT VERSION */}
-      <div className="hidden print:block mx-auto">
-        <BarChart
-          data={data}
-          layout="vertical"
-          width={900}
-          height={Math.max(data.length * 50, 250)}
-        >
-          <XAxis type="number" />
-          <YAxis type="category" dataKey="name" width={140} />
-          <Bar dataKey="cantidad" fill="#4A6CF7" />
-        </BarChart>
-      </div>
     </div>
+
+    {/* Vista impresión */}
+    <div className="hidden print:block mx-auto">
+      <BarChart
+        data={data}
+        layout="vertical"
+        margin={{
+          top: 5,
+          right: 85,
+          left: 20,
+          bottom: 5,
+        }}
+        width={900}
+        height={Math.max(data.length * 50, 250)}
+      >
+        <XAxis type="number" />
+        <YAxis
+          type="category"
+          dataKey="name"
+          width={140}
+        />
+        <Bar dataKey="cantidad" fill="#4A6CF7" />
+      </BarChart>
+    </div>
+  </>
   );
 }

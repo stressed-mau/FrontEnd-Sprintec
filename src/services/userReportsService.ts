@@ -52,7 +52,8 @@ export const getUserReports = async (
   );
 
   const backendData = response.data.data;
-
+  console.log("Response:", response.data);
+  console.log("BackendData:", backendData);
   return {
     stats: {
       totalUsers: backendData.total_users.total,

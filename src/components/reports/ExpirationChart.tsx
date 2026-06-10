@@ -39,9 +39,9 @@ export default function ExpirationChart({
       </div>
 
       {/* PRINT */}
-      <div className="hidden print:block w-[450px] h-[320px] mx-auto">
-        <PieChart width={450} height={320}>
-          <Pie data={data} outerRadius={90} dataKey="value">
+      <div className="hidden print:block w-[350px] h-[320px] mx-auto">
+        <PieChart width={350} height={320}>
+          <Pie data={data} outerRadius={90} cx={175} cy={160} dataKey="value">
             {data.map((_: any, i: number) => (
               <Cell key={i} fill={COLORS[i % COLORS.length]} />
             ))}

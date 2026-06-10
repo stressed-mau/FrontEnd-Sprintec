@@ -209,7 +209,7 @@ const CertificateReports = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-2">
               <div className="bg-white border border-[#A5C9D7] rounded-3xl p-6 shadow-sm break-inside-avoid print:mt-6">
                 <div className="mb-4">
-                  <h2 className="text-xl font-bold text-[#003A6C']">
+                  <h2 className="text-xl font-bold text-[#003A6C]">
                     Distribución por Formato
                   </h2>
                   <p className="text-sm text-[#4B778D]">
