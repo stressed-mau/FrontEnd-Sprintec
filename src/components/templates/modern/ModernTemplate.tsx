@@ -4,6 +4,7 @@ import { ModernHeader } from "@/components/templates/modern/ModernHeader"
 import { ModernProfileSection } from "@/components/templates/modern/ModernProfileSection"
 import { ModernProjectsSection } from "@/components/templates/modern/ModernProjectsSection"
 import { ModernSkillsSection } from "@/components/templates/modern/ModernSkillsSection"
+import ScrollDownButton from "@/components/ScrollDownButton"
 import { useModernTemplateData } from "@/hooks/useModernTemplateData"
 import type { ModernTemplateProfile, ModernTemplateProps } from "@/types/modernPortfolio"
 
@@ -22,6 +23,7 @@ export default function ModernTemplate({
 
   return (
     <div className={`w-full min-h-screen font-sans bg-[#fcecd4] ${previewClassName} text-[#173b61]`}>
+      <ScrollDownButton />
       <ModernHeader displayOccupation={data.displayOccupation} />
       <ModernProfileSection data={data} />
       <ModernSkillsSection technicalSkills={data.technicalSkills} softSkills={data.softSkills} />

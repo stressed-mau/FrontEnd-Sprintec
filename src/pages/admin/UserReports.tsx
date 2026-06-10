@@ -9,7 +9,7 @@ import LoginChart from "@/components/reports/LoginChart";
 import { Footer } from '@/components/Footer';
 import { useUserReports } from "@/hooks/useUserReports";
 import Header from '../../components/HeaderUser'; 
-import AdminSidebar from '../../components/admin/AdminSidebar';
+import AdminSidebar from '../../components/Admin/AdminSidebar';
 
 const UserReports = () => {
 

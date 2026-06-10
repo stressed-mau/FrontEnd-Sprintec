@@ -15,7 +15,11 @@ export function navigateFromNotification(
 
   switch (notification.dataType) {
     case 'weekly_global_report':
-      navigate('/tendencia-plantillas')
+      navigate(
+        data.report_id 
+          ? `/tendencia-plantillas?report_id=${data.report_id}` 
+          : '/tendencia-plantillas'
+      )
       break
 
     case 'new_message':
@@ -28,6 +32,14 @@ export function navigateFromNotification(
 
     case 'portfolio_view':
       navigate('/visualizaciones')
+      break
+
+    case 'certificate_rejected':
+      navigate(
+        data.certificate_id
+          ? `/certificados/editar?id=${data.certificate_id}`
+          : '/certificados/ver'
+      )
       break
 
     default:

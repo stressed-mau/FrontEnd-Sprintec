@@ -56,19 +56,58 @@ function buildErrorMessage(error: unknown) {
   return "No se pudo cargar el reporte de plantillas.";
 }
 
-export async function getTemplateTrends(weekOffset = 0): Promise<TemplateTrendsResponse> {
+function findReportData(obj: any): any {
+  if (!obj || typeof obj !== "object") return null;
+  if (obj.templates_data && obj.daily_visits) {
+    // If it's a string, parse it so the rest of the app doesn't break
+    if (typeof obj.templates_data === "string") {
+      try { obj.templates_data = JSON.parse(obj.templates_data); } catch (e) {}
+    }
+    if (typeof obj.daily_visits === "string") {
+      try { obj.daily_visits = JSON.parse(obj.daily_visits); } catch (e) {}
+    }
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const found = findReportData(item);
+      if (found) return found;
+    }
+  } else {
+    for (const key of Object.keys(obj)) {
+      const found = findReportData(obj[key]);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+export interface TemplateTrendsOptions {
+  weekOffset?: number;
+  reportId?: string | null;
+}
+
+export async function getTemplateTrends(options: TemplateTrendsOptions = {}): Promise<TemplateTrendsResponse> {
+  const { weekOffset = 0, reportId = null } = options;
   let payload: TrackingReportData | null = null;
+  
   try {
-    if (weekOffset === 0) {
+    if (reportId) {
+      const response = await api.get(`/tracking/global-reports/${reportId}`);
+      const extracted = findReportData(response.data);
+      payload = normalizeReportPayload(extracted);
+    } else if (weekOffset === 0) {
       const response = await api.get("/tracking/global-reports/latest");
-      payload = normalizeReportPayload(response.data?.data ?? response.data);
+      const extracted = findReportData(response.data);
+      payload = normalizeReportPayload(extracted);
     } else {
       const response = await api.get("/tracking/global-reports");
       const arrayData = response.data?.data ?? response.data;
       if (Array.isArray(arrayData)) {
         const targetIndex = Math.abs(weekOffset);
         if (arrayData[targetIndex]) {
-          payload = normalizeReportPayload(arrayData[targetIndex]);
+          const extracted = findReportData(arrayData[targetIndex]);
+          payload = normalizeReportPayload(extracted);
         }
       }
     }

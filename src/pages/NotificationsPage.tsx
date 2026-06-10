@@ -3,49 +3,33 @@ import { useNavigate } from 'react-router-dom'
 import type { NotificationItem } from '@/services/notificationsService'
 import { Footer } from '@/components/Footer'
 import Header from '@/components/HeaderUser'
+import AdminSidebar from '@/components/Admin/AdminSidebar'
 import Sidebar from '@/components/Sidebar'
 import { useNotifications } from '@/hooks/useNotifications'
-import { MESSAGES_ROUTE } from '@/routes/route-paths'
+import { AlertCircle } from 'lucide-react'
+import { navigateFromNotification } from '@/utils/notifications/notificationNavigation'
+import { getAuthSession } from '@/services/auth'
 
 export function NotificationsPage() {
   const navigate = useNavigate()
   const { notifications, unreadCount, loading, pageError, markAsRead, markAllAsRead, page, setPage, meta } = useNotifications()
   const hasPreviousPage = page > 1
   const hasNextPage = page < meta.totalPages
+  const session = getAuthSession()
+  const isAdmin = session?.user.is_admin === true || session?.user.role_id === 2
 
   const handleNotificationClick = async (notification: NotificationItem) => {
     if (!notification.read) {
       await markAsRead(notification.id)
     }
-
-    if (!notification.data) {
-      navigate(notification.link || '/notificaciones')
-      return
-    }
-
-    const data = notification.data
-
-    switch (notification.dataType) {
-      case 'weekly_global_report':
-        navigate('/tendencia-plantillas')
-        break
-      case 'new_message':
-        navigate(data.message_id ? `${MESSAGES_ROUTE}/${data.message_id}` : MESSAGES_ROUTE)
-        break
-      case 'portfolio_view':
-        navigate('/visualizaciones')
-        break
-      default:
-        navigate(notification.link || '/notificaciones')
-        break
-    }
+    navigateFromNotification(notification, navigate)
   }
 
   return (
     <div className="min-h-screen bg-[#F7F0E1] flex flex-col">
       <Header />
       <div className="flex flex-col lg:flex-row flex-1">
-        <Sidebar />
+        {isAdmin ? <AdminSidebar /> : <Sidebar />}
         <main className="flex-1 px-4 py-6 md:px-8 lg:px-10">
           <div className="mx-auto max-w-5xl space-y-6">
             <div className="flex flex-col gap-3 p-2 md:flex-row md:justify-between">
@@ -105,12 +89,22 @@ export function NotificationsPage() {
                   <div
                     key={notification.id}
                     onClick={() => void handleNotificationClick(notification)}
-                    className={`p-4 hover:bg-[#F7F0E1] transition-colors cursor-pointer ${!notification.read ? "bg-[#C2DBED]/20" : ""}`}
+                    className={`p-4 hover:bg-[#F7F0E1] transition-colors cursor-pointer ${
+                      notification.dataType === 'certificate_rejected'
+                        ? (notification.read ? 'bg-red-50/50' : 'bg-red-100/50')
+                        : (!notification.read ? 'bg-[#C2DBED]/20' : '')
+                    }`}
                   >
                     <div className="flex gap-4">
                       <div className="shrink-0 mt-1">
-                        <div className="w-10 h-10 rounded-full bg-[#003A6C]/10 flex items-center justify-center">
-                          <TrendingUp className="h-5 w-5 text-[#003A6C]" />
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          notification.dataType === 'certificate_rejected' ? 'bg-red-100' : 'bg-[#003A6C]/10'
+                        }`}>
+                          {notification.dataType === 'certificate_rejected' ? (
+                            <AlertCircle className="h-5 w-5 text-red-600" />
+                          ) : (
+                            <TrendingUp className="h-5 w-5 text-[#003A6C]" />
+                          )}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -119,7 +113,12 @@ export function NotificationsPage() {
                           {!notification.read && <span className="shrink-0 w-2 h-2 bg-[#003A6C] rounded-full mt-2"></span>}
                         </div>
                         <p className="text-sm text-[#4982AD] mb-2">{notification.description}</p>
-                        <span className="text-xs text-[#5B8FB9]">{notification.time}</span>
+                        {notification.dataType === 'certificate_rejected' && notification.data?.reason && (
+                          <p className="text-xs text-red-600/90 mb-2 font-medium bg-red-100/50 p-2 rounded inline-block">
+                            {notification.data.reason}
+                          </p>
+                        )}
+                        <span className="text-xs text-[#5B8FB9] block">{notification.time}</span>
                       </div>
                     </div>
                   </div>
