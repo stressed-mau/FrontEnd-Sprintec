@@ -12,7 +12,6 @@ export type {
 } from "@/types/messages"
 
 const MESSAGES_ENDPOINT = "/messages"
-const PUBLIC_PORTFOLIO_MESSAGES_ENDPOINT = "/public/portfolio-messages"
 
 interface MessageErrorResponse {
   message?: string
@@ -44,8 +43,7 @@ function unwrapMessagePayload(data: unknown): unknown {
 export async function sendPortfolioMessage(payload: SendPortfolioMessagePayload): Promise<ApiMessage> {
   try {
     const isGuestMessage = Boolean(payload.contact_name?.trim() || payload.contact_email?.trim())
-    const endpoint = isGuestMessage ? PUBLIC_PORTFOLIO_MESSAGES_ENDPOINT : MESSAGES_ENDPOINT
-    const response = await api.post(endpoint, buildMessageRequest(payload, isGuestMessage), {
+    const response = await api.post(MESSAGES_ENDPOINT, buildMessageRequest(payload, isGuestMessage), {
       skipAuth: isGuestMessage,
       skipAuthRedirect: true,
     })
@@ -78,16 +76,15 @@ export async function readInboxMessage(id: string): Promise<InboxMessage> {
 }
 
 function buildMessageRequest(payload: SendPortfolioMessagePayload, isGuestMessage: boolean) {
-  return {
-    recipient_id: payload.recipient_id,
-    ...(isGuestMessage ? {} : { receiver_id: payload.recipient_id }),
-    portfolio_slug: payload.portfolio_slug,
-    reason: payload.reason,
-    reason_title: payload.reason_title,
-    base_message: payload.base_message,
-    additional_details: payload.additional_details,
-    contact_name: payload.contact_name,
-    contact_email: payload.contact_email,
+  const request: Record<string, any> = {
+    receiver_id: payload.recipient_id,
     message: composeBackendMessage(payload),
   }
+
+  if (isGuestMessage) {
+    request.guest_name = payload.contact_name
+    request.guest_email = payload.contact_email
+  }
+
+  return request
 }
