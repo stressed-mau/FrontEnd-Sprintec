@@ -32,7 +32,7 @@ export function PortfolioMessageContactFields({
       <div className="space-y-3">
         <ContactTextField
           id="portfolio-message-contact-name"
-          label="Nombre completo"
+          label="Nombre completo *"
           value={contactName}
           error={contactErrors.contactName}
           maxLength={CONTACT_NAME_MAX_LENGTH}
@@ -40,7 +40,7 @@ export function PortfolioMessageContactFields({
         />
         <ContactTextField
           id="portfolio-message-contact-email"
-          label="Correo de contacto"
+          label="Correo de contacto *"
           type="email"
           value={contactEmail}
           error={contactErrors.contactEmail}

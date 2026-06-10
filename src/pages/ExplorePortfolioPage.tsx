@@ -138,7 +138,7 @@ export default function ExplorePortfolioPage() {
               </div>
             ) : null}
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-[minmax(0,20rem)] justify-center gap-4 sm:grid-cols-[repeat(2,minmax(18rem,20rem))] lg:grid-cols-[repeat(3,minmax(18rem,20rem))]">
               {currentData.map((portfolio) => (
                 <div
                   key={portfolio.id}
@@ -151,7 +151,7 @@ export default function ExplorePortfolioPage() {
                       navigate(`/p/${portfolio.slug}`, { state: { fromExplore: true } });
                     }
                   }}
-                  className="group flex w-full max-w-105 items-start justify-end gap-5 rounded-xl border border-gray-100 bg-white p-2 shadow-sm transition-all hover:border-[#4982AD]/30 hover:shadow-md sm:gap-6 sm:justify-self-end" >
+                  className="group flex w-full items-start gap-3 rounded-xl border border-gray-100 bg-white px-3 py-3 shadow-sm transition-all hover:border-[#4982AD]/30 hover:shadow-md" >
                   <div className="shrink-0 pt-1">
                     {portfolio.profileImage ? (
                       <img
