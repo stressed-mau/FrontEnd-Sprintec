@@ -42,7 +42,7 @@ export function useCorporatePortfolioData(
       education,
       certificates,
       projects,
-      hasContactInfo: Boolean(userProfile.displayEmail || userProfile.displayLocation || socialLinks.length),
+      hasContactInfo: Boolean(userProfile.displayEmail || userProfile.displayLocation || userProfile.displayPhone || socialLinks.length),
       sections: getSections({ experience, certificates, education, projects, skills }),
     }
   }, [profile, portfolio])
@@ -66,6 +66,7 @@ function getUserProfile(profile: CorporatePortfolioProps["profile"]) {
     displaySummary: userProfile.biography.trim() || "Descripción profesional pendiente de completar.",
     displayEmail: userProfile.public_email.trim(),
     displayLocation: userProfile.residence.trim() || "Ubicación pendiente",
+    displayPhone: userProfile.phone.trim(),
     displayProfileImage: userProfile.image_url.trim(),
   }
 }

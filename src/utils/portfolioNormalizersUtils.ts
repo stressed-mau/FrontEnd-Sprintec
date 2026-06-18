@@ -322,14 +322,20 @@ export const normalizePortfolioCertificate = (certificate: any, index: number) =
   };
 };
 
-export const normalizeProfile = (d: any) => ({
-  id: d.profile.id ?? d.profile.profile_id ?? "",
-  user_id: d.profile.user_id ?? d.profile.userId ?? d.profile.user?.id ?? "",
-  fullname: d.profile.name || "",
-  occupation: d.profile.occupation || "",
-  biography: d.profile.bio || "",
-  image_url: d.profile.image || "",
-  public_email: d.profile.email || "",
-  phone_number: d.profile.phone || "",
-  nationality: d.profile.nacionality || d.profile.nationality || "",
-});
+export const normalizeProfile = (d: unknown) => {
+  const data = d && typeof d === "object" ? d as Record<string, unknown> : {};
+  const profile = data.profile && typeof data.profile === "object" ? data.profile as Record<string, unknown> : {};
+  const profileUser = profile.user && typeof profile.user === "object" ? profile.user as Record<string, unknown> : {};
+
+  return {
+    id: asText(profile.id ?? profile.profile_id),
+    user_id: asText(profile.user_id ?? profile.userId ?? profileUser.id),
+    fullname: firstText(profile.name, profile.fullname),
+    occupation: asText(profile.occupation),
+    biography: firstText(profile.bio, profile.biography),
+    image_url: firstText(profile.image, profile.image_url),
+    public_email: firstText(profile.email, profile.public_email),
+    phone_number: firstText(profile.phone, profile.phone_number),
+    nationality: firstText(profile.nacionality, profile.nationality),
+  };
+};

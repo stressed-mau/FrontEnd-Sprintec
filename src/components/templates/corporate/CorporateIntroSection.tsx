@@ -1,4 +1,4 @@
-import { Mail, MapPin } from "lucide-react"
+import { Mail, MapPin, Phone } from "lucide-react"
 import { CorporateProfileImage } from "@/components/templates/corporate/CorporateProfileImage"
 import { CorporateSocialLinks } from "@/components/templates/corporate/CorporateSocialLinks"
 import type { CorporateTemplateData } from "@/types/corporatePortfolio"
@@ -108,13 +108,14 @@ function CorporateContact({ data, desktop, onSocialClick }: { data: CorporateTem
 }
 
 function CorporateContactInfo({ data, desktop }: { data: CorporateTemplateData; desktop: boolean }) {
-  if (!data.displayEmail && !data.displayLocation) return null
-  if (!desktop) return <div className="mt-4 grid gap-3 text-sm text-[#3D4348]"><CorporateEmail email={data.displayEmail} /><CorporateLocation location={data.displayLocation} /></div>
+  if (!data.displayEmail && !data.displayLocation && !data.displayPhone) return null
+  if (!desktop) return <div className="mt-4 grid gap-3 text-sm text-[#3D4348]"><CorporateEmail email={data.displayEmail} /><CorporateLocation location={data.displayLocation} /><CorporatePhone phone={data.displayPhone} /></div>
 
   return (
     <div className="grid max-w-3xl gap-4 md:grid-cols-2">
       {data.displayEmail ? <CorporateInfoCard label="Correo"><CorporateEmail email={data.displayEmail} /></CorporateInfoCard> : null}
       {data.displayLocation ? <CorporateInfoCard label="Ubicacion"><CorporateLocation location={data.displayLocation} /></CorporateInfoCard> : null}
+      {data.displayPhone ? <CorporateInfoCard label="Telefono"><CorporatePhone phone={data.displayPhone} /></CorporateInfoCard> : null}
     </div>
   )
 }
@@ -127,6 +128,11 @@ function CorporateEmail({ email }: { email: string }) {
 function CorporateLocation({ location }: { location: string }) {
   if (!location) return null
   return <div className="flex items-center gap-3"><MapPin className="h-4 w-4" />{location}</div>
+}
+
+function CorporatePhone({ phone }: { phone: string }) {
+  if (!phone) return null
+  return <a href={`tel:${phone}`} className="flex items-center gap-3 transition hover:text-[#8C6E46]"><Phone className="h-4 w-4" />{phone}</a>
 }
 
 function CorporateInfoCard({ label, children }: { label: string; children: React.ReactNode }) {

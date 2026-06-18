@@ -82,6 +82,7 @@ export type CorporateTemplateData = {
   displaySummary: string
   displayEmail: string
   displayLocation: string
+  displayPhone: string
   displayProfileImage: string
   initials: string
   hasContactInfo: boolean

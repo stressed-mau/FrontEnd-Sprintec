@@ -44,7 +44,7 @@ interface Experience extends BaseItem {
 interface Portfolio {
   config?: {
     slug?: string
-    template?: number
+    template?: string | number
     is_public?: boolean
   }
   template?: number
@@ -55,13 +55,19 @@ interface Portfolio {
   certificates?: BaseItem[]
   socialNetworks?: BaseItem[]
   profile?: {
+    fullname?: string
     name?: string
     occupation?: string
     image?: string
+    image_url?: string
     nacionality?: string
+    nationality?: string
     email?: string
+    public_email?: string
     phone?: string
+    phone_number?: string
     bio?: string
+    biography?: string
   }
   user?: {
     fullname?: string
@@ -69,6 +75,7 @@ interface Portfolio {
     image_url?: string
     nationality?: string
     public_email?: string
+    phone_number?: string
     biography?: string
     username?: string
   }
@@ -173,7 +180,7 @@ const PublicPortfolio = () => {
       </div>
     )
   }
-  const template = portfolio.config?.template ?? portfolio.template;
+  const template = Number(portfolio.config?.template ?? portfolio.template ?? 0);
   const isModern = template === 1
   const isMinimalist = template === 2
   const isCorporate = template === 3
@@ -194,13 +201,15 @@ const PublicPortfolio = () => {
     socialNetworks: (portfolio.socialNetworks ?? []).filter((item: BaseItem) => asBoolean(item.is_public)),
   }
   const profile = {
-    fullname: portfolio.profile?.name || portfolio.user?.fullname || "",
+    fullname: portfolio.profile?.name || portfolio.profile?.fullname || portfolio.user?.fullname || "",
     occupation: portfolio.profile?.occupation || portfolio.user?.occupation || "",
-    image_url: portfolio.profile?.image || portfolio.user?.image_url || "",
-    residence: portfolio.profile?.nacionality || portfolio.user?.nationality || "",
-    public_email: portfolio.profile?.email || portfolio.user?.public_email || "",
-    phone: portfolio.profile?.phone || "",
-    biography: portfolio.profile?.bio || portfolio.user?.biography || "",
+    image_url: portfolio.profile?.image || portfolio.profile?.image_url || portfolio.user?.image_url || "",
+    residence: portfolio.profile?.nacionality || portfolio.profile?.nationality || portfolio.user?.nationality || "",
+    nationality: portfolio.profile?.nacionality || portfolio.profile?.nationality || portfolio.user?.nationality || "",
+    public_email: portfolio.profile?.email || portfolio.profile?.public_email || portfolio.user?.public_email || "",
+    phone: portfolio.profile?.phone || portfolio.profile?.phone_number || portfolio.user?.phone_number || "",
+    phone_number: portfolio.profile?.phone || portfolio.profile?.phone_number || portfolio.user?.phone_number || "",
+    biography: portfolio.profile?.bio || portfolio.profile?.biography || portfolio.user?.biography || "",
   };
   const recipientName = profile.fullname || portfolio.user?.fullname || portfolio.user?.username || "este usuario"
   const recipientId = getPortfolioRecipientId(portfolio)

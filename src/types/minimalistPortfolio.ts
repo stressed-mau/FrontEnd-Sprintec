@@ -4,7 +4,10 @@ export type MinimalistTemplateProfile = {
   biography?: string
   image_url?: string
   public_email?: string
+  residence?: string
   nationality?: string
+  phone?: string
+  phone_number?: string
 }
 
 export type MinimalistTemplateProps = {
@@ -34,6 +37,7 @@ export type MinimalistUser = {
   imageUrl: string
   publicEmail: string
   nationality: string
+  phone: string
 }
 
 export type MinimalistSkill = {

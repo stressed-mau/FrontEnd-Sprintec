@@ -50,7 +50,8 @@ function getUser(profile: MinimalistTemplateProps["profile"]) {
     biography: user.biography || "Biografía no disponible. Configura tu perfil para mostrar tu información aquí.",
     imageUrl: user.image_url || "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=600",
     publicEmail: user.public_email || "Email no disponible",
-    nationality: user.nationality || "Ubicación no disponible",
+    phone: user.phone || user.phone_number || "Telefono no disponible",
+    nationality: user.residence || user.nationality || "Ubicación no disponible",
   }
 }
 

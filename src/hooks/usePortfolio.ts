@@ -53,12 +53,22 @@ type PortfolioApi = {
     name?: string;
     occupation?: string;
     bio?: string;
+    nacionality?: string;
     nationality?: string;
     email?: string;
     phone?: string;
     image?: string;
   };
-  user?: { id?: string };
+  user?: {
+    id?: string;
+    fullname?: string;
+    occupation?: string;
+    biography?: string;
+    nationality?: string;
+    public_email?: string;
+    phone_number?: string;
+    image_url?: string;
+  };
   user_information?: { user_id?: string };
   projects?: unknown[];
   skills?: unknown[];
@@ -121,16 +131,16 @@ const buildPortfolioFromApi = async (d:any , session: AuthSession | null, extern
     owner_id: getPortfolioOwnerUserId(d) ? String(getPortfolioOwnerUserId(d)) : undefined,
     user: {
       id: String(getPortfolioOwnerUserId(d) ?? ""),
-      fullname: d.profile.name,
-      occupation: d.profile.occupation || "",
-      biography: d.profile.bio || "",
-      nationality: d.profile.nationality || "",
-      public_email: d.profile.email || "",
-      phone_number: d.profile.phone || "",
-      image_url: d.profile.image || "",
+      fullname: d.profile?.name || d.user?.fullname || "",
+      occupation: d.profile?.occupation || d.user?.occupation || "",
+      biography: d.profile?.bio || d.user?.biography || "",
+      nationality: d.profile?.nacionality || d.profile?.nationality || d.user?.nationality || "",
+      public_email: d.profile?.email || d.user?.public_email || "",
+      phone_number: d.profile?.phone || d.user?.phone_number || "",
+      image_url: d.profile?.image || d.user?.image_url || "",
     },
     projects: projectsWithDetails,
-    skills: d.skills,
+    skills: d.skills ?? [],
     experiences: (d.work_experiences || d.experiences || []).map(normalizePortfolioExperience),
     educations: (d.educations || []).map(normalizePortfolioEducation),
     socialNetworks: (d.social_networks || d.socialNetworks || []).map((n: SocialNetworkApi, i: number) => ({
@@ -140,9 +150,9 @@ const buildPortfolioFromApi = async (d:any , session: AuthSession | null, extern
       url: n.url ?? "",
     })),
     certificates: (d.certificates || []).map(normalizePortfolioCertificate),
-    isPublished: d.config.is_public ?? true,
-    template: Number(d.config.template),
-    config: d.config,
+    isPublished: d.config?.is_public ?? true,
+    template: Number(d.config?.template),
+    config: d.config ?? {},
     profile: normalizeProfile(d),
   };
 };

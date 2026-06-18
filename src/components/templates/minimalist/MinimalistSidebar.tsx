@@ -1,4 +1,4 @@
-import { Mail, MapPin } from "lucide-react"
+import { Mail, MapPin, Phone } from "lucide-react"
 import type { MinimalistUser } from "@/types/minimalistPortfolio"
 
 type MinimalistSidebarProps = {
@@ -23,6 +23,10 @@ export function MinimalistSidebar({ user }: MinimalistSidebarProps) {
         <div className="flex items-center gap-3 text-stone-500">
           <MapPin size={14} />
           <span className="text-xs font-medium">{user.nationality}</span>
+        </div>
+        <div className="flex items-center gap-3 text-stone-500">
+          <Phone size={14} />
+          <span className="text-xs font-medium">{user.phone}</span>
         </div>
       </div>
     </div>
