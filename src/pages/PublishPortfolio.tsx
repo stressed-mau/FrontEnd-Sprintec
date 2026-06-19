@@ -25,10 +25,15 @@ const PublishPortfolio = () => {
     void syncStatus();
   }, []);
   const publicUrl = portfolioUrl ? portfolioUrl.replace('/api', '') : "";
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(portfolioUrl)
+ const copyToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(publicUrl)
     alert("¡Enlace copiado!")
+  } catch (error) {
+    console.error("Error al copiar:", error)
+    alert("No se pudo copiar el enlace")
   }
+}
 
   const templateNames: Record<number, string> = {
     1: "Moderna",
@@ -150,7 +155,7 @@ const PublishPortfolio = () => {
                 </div>
 
                 <div className="bg-white border border-[#C9E1F0] rounded-[2rem] p-6 text-center shadow-sm">
-                  <h4 className="text-[#003A6C] font-bold text-xl mb-4">Comparte tu éxito</h4>
+                  <h4 className="text-[#003A6C] font-bold text-xl mb-4">Comparte tu portafolio</h4>
                   <div className="flex flex-col md:flex-row items-center gap-4 max-w-2xl mx-auto bg-[#F8FAFC] p-4 rounded-2xl border border-gray-100">
                     <div className="flex-1 text-blue-600 truncate font-mono text-sm px-2 w-full text-center md:text-left">
                       {publicUrl}
