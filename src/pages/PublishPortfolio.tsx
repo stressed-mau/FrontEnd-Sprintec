@@ -1,9 +1,12 @@
-import { useEffect } from "react"
+import { useEffect, useState} from "react"
 import { Upload, CheckCircle2, Copy } from "lucide-react"
 import { Footer } from "@/components/Footer"
 import Header from "../components/HeaderUser"
 import Sidebar from "../components/Sidebar"
 import { usePublishPortfolio } from "../hooks/usePublishPortfolio"
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
+
+
 const PublishPortfolio = () => {
   const {
     isPublished,
@@ -24,16 +27,37 @@ const PublishPortfolio = () => {
     };
     void syncStatus();
   }, []);
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
+const [copyMessage, setCopyMessage] = useState("");
   const publicUrl = portfolioUrl ? portfolioUrl.replace('/api', '') : "";
- const copyToClipboard = async () => {
+const copyToClipboard = async () => {
   try {
-    await navigator.clipboard.writeText(publicUrl)
-    alert("¡Enlace copiado!")
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(publicUrl);
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = publicUrl;
+
+      document.body.appendChild(textArea);
+      textArea.select();
+
+      document.execCommand("copy");
+
+      document.body.removeChild(textArea);
+    }
+
+    setCopyMessage("El enlace de tu portafolio fue copiado correctamente.");
+    setCopyModalOpen(true);
+
   } catch (error) {
-    console.error("Error al copiar:", error)
-    alert("No se pudo copiar el enlace")
+    console.error("Error al copiar:", error);
+
+    setCopyMessage(
+      "No se pudo copiar el enlace. Puedes seleccionarlo manualmente y copiarlo."
+    );
+    setCopyModalOpen(true);
   }
-}
+};
 
   const templateNames: Record<number, string> = {
     1: "Moderna",
@@ -174,6 +198,13 @@ const PublishPortfolio = () => {
           </div>
         </main>
       </div>
+      <ConfirmationModal
+  isOpen={copyModalOpen}
+  title="Portafolio"
+  message={copyMessage}
+  buttonText="Entendido"
+  onClose={() => setCopyModalOpen(false)}
+/>
       <Footer />
     </div>
   )
